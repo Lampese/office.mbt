@@ -12,6 +12,28 @@ Breaking and notable changes for the published modules in this workspace.
 Entries are grouped by module and by the version they ship in; `Unreleased`
 covers changes that have landed on `main` but are not yet published.
 
+### moonbitlang/pdflite [Unreleased]
+
+- `export`: an image can keep its compressed samples. `Image::deflated`
+  returns the image with its `Samples` as `ImageData::Deflated`, the zlib
+  streams of the colour samples and of the alpha channel, compressed as
+  `Document::finish` compresses them; a document that is given such an image
+  writes the streams as they are, and is byte for byte the document that
+  the image with `Samples` gives. A caller that exports again and again
+  (an export after every edit) keeps the returned image and pays for the
+  compression of an image once instead of once per document; it also need
+  not keep the samples. This is what krilla's images do (`SampledRepr`).
+  There is no table of images in the package and nothing to evict: what is
+  kept is the value the caller holds, and what a document adds (the colour
+  space, the profile's stream, `/Interpolate`, the mask's reference,
+  validation) is made for every document. A JPEG and the image data of a
+  PNG, which are embedded as they are, and samples without a byte are
+  returned unchanged. `Deflated` data that does not start as a zlib stream
+  (samples that were not compressed) makes `Document::finish` raise an
+  `ImageError`. `ImageData` gains the case (breaking for code outside the
+  package that matches on all cases of `ImageData`; building an `Image` is
+  unchanged).
+
 ### moonbitlang/pdflite [0.3.8]
 
 - `export`: a real number is written with the digits pdf-writer writes. The

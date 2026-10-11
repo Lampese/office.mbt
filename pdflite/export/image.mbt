@@ -47,6 +47,18 @@ pub(all) enum ImageData {
   /// combinations make `Document::finish` raise an `ImageError`, as do 16-bit
   /// samples before PDF 1.5.
   Png(Bytes, Int, Int, Bytes?)
+  /// The samples of `Samples`, compressed: the zlib stream of the colour
+  /// samples and, if the image has an alpha channel, the zlib stream of its
+  /// alpha samples, each written as it is with `/FlateDecode`. This is the
+  /// form an image is embedded in (krilla's `SampledRepr`, which is all its
+  /// images keep of their samples), and [Image::deflated] makes it from
+  /// `Samples`: a caller that embeds an image in several documents (an
+  /// export after every edit) keeps this form and pays for the compression
+  /// once. A stream that does not start as a zlib stream makes
+  /// `Document::finish` raise an `ImageError`; whether it is the stream of
+  /// the image's samples is the caller's to know, as the length of
+  /// `Samples` is.
+  Deflated(Bytes, Bytes?)
 }
 
 ///|
@@ -63,6 +75,86 @@ pub(all) struct Image {
   interpolate : Bool
   /// Whether the JPEG uses Adobe's inverted CMYK convention.
   inverted_cmyk : Bool
+}
+
+///|
+/// The image with its samples compressed, for a caller that keeps it for
+/// more than one document: `Samples` become `Deflated`, compressed as
+/// `Document::finish` compresses the samples of an image that was drawn
+/// with `Samples`. A document is, byte for byte, the same whether its
+/// images were drawn in one form or the other.
+///
+/// An image that has nothing to compress is returned as it is: a JPEG and
+/// the image data of a PNG are embedded as they are (a PNG that cannot be
+/// embedded is refused by every document it is drawn in), and samples
+/// without a byte are written without a filter.
+///
+/// krilla compresses when an image is made and keeps the result in the
+/// image (`Image::from_custom`: `deflate_encode` of the colour and of the
+/// alpha channel, behind the image's `Arc`), so that every document that is
+/// given the image writes the same streams. Here the result is the image
+/// value itself: this package has no table of images, and nothing of one
+/// document is looked up for another. What a document adds (its colour
+/// space, the stream of the profile, `/Interpolate`, the reference of the
+/// mask, validation, the object numbers) is not part of it and is made for
+/// every document.
+pub fn Image::deflated(self : Image) -> Image {
+  match self.data {
+    Samples(color, alpha) => {
+      // `put_stream` gives data without a byte no filter.
+      if color.length() == 0 || (alpha is Some(alpha) && alpha.length() == 0) {
+        return self
+      }
+      {
+        ..self,
+        data: Deflated(
+          deflate_stream_data(color),
+          alpha.map(deflate_stream_data),
+        ),
+      }
+    }
+    Deflated(_) | Jpeg(_) | Png(_) => self
+  }
+}
+
+///|
+/// Write the image XObject of 8-bit samples and, if the image has an alpha
+/// channel, the soft mask. `deflated` says that the samples are zlib
+/// streams already ([ImageData::Deflated]).
+fn SerializeContext::put_sampled_image(
+  self : SerializeContext,
+  ref_ : Int,
+  d : DictBuilder,
+  image : Image,
+  color : Bytes,
+  alpha : Bytes?,
+  deflated~ : Bool,
+) -> Unit {
+  if alpha is Some(alpha) {
+    let mask_ref = self.new_ref()
+    let md = DictBuilder::new()
+    md.set("Type", Name("XObject"))
+    md.set("Subtype", Name("Image"))
+    md.set("Width", Int(image.width))
+    md.set("Height", Int(image.height))
+    md.set("ColorSpace", Name("DeviceGray"))
+    md.set("BitsPerComponent", Int(8))
+    if image.interpolate {
+      md.set("Interpolate", Bool(true))
+    }
+    if deflated {
+      self.put_deflated_stream(mask_ref, md.entries(), alpha)
+    } else {
+      self.put_stream(mask_ref, md.entries(), alpha)
+    }
+    d.set("SMask", Ref(mask_ref))
+    self.register_validation_error(Transparency(self.location))
+  }
+  if deflated {
+    self.put_deflated_stream(ref_, d.entries(), color)
+  } else {
+    self.put_stream(ref_, d.entries(), color)
+  }
 }
 
 ///|
@@ -90,6 +182,16 @@ fn SerializeContext::register_image(
         )
         return
       }
+    }
+    if image.data is Deflated(color, alpha) &&
+      !(is_zlib_stream(color) && alpha.map_or(true, is_zlib_stream)) {
+      self.register_error(
+        ImageError(
+          self.location,
+          "the compressed samples of the image are not a zlib stream",
+        ),
+      )
+      return
     }
     if image.interpolate {
       self.register_validation_error(ImageInterpolation(self.location))
@@ -135,32 +237,17 @@ fn SerializeContext::register_image(
     }
     let bits_per_component = match image.data {
       Png(_, _, bit_depth, _) => bit_depth
-      Samples(_) | Jpeg(_) => 8
+      Samples(_) | Deflated(_) | Jpeg(_) => 8
     }
     d.set("BitsPerComponent", Int(bits_per_component))
     if image.interpolate {
       d.set("Interpolate", Bool(true))
     }
     match image.data {
-      Samples(color, alpha) => {
-        if alpha is Some(alpha) {
-          let mask_ref = self.new_ref()
-          let md = DictBuilder::new()
-          md.set("Type", Name("XObject"))
-          md.set("Subtype", Name("Image"))
-          md.set("Width", Int(image.width))
-          md.set("Height", Int(image.height))
-          md.set("ColorSpace", Name("DeviceGray"))
-          md.set("BitsPerComponent", Int(8))
-          if image.interpolate {
-            md.set("Interpolate", Bool(true))
-          }
-          self.put_stream(mask_ref, md.entries(), alpha)
-          d.set("SMask", Ref(mask_ref))
-          self.register_validation_error(Transparency(self.location))
-        }
-        self.put_stream(r, d.entries(), color)
-      }
+      Samples(color, alpha) =>
+        self.put_sampled_image(r, d, image, color, alpha, deflated=false)
+      Deflated(color, alpha) =>
+        self.put_sampled_image(r, d, image, color, alpha, deflated=true)
       Jpeg(data) => {
         if image.colorspace == Cmyk && image.inverted_cmyk {
           d.set(
@@ -186,6 +273,25 @@ fn SerializeContext::register_image(
       }
     }
   })
+}
+
+///|
+/// Whether data starts like a zlib stream that `/FlateDecode` decodes (RFC
+/// 1950: the deflate method, a header whose check bits are right, no preset
+/// dictionary) and is long enough to be one. This is not a check of the
+/// stream, which would cost what keeping it saves: it tells compressed
+/// samples from samples that were not compressed.
+fn is_zlib_stream(data : Bytes) -> Bool {
+  // The header, at least one block and the checksum.
+  if data.length() < 8 {
+    return false
+  }
+  let cmf = data[0].to_int()
+  let flg = data[1].to_int()
+  (cmf & 0x0f) == 8 &&
+  cmf >> 4 <= 7 &&
+  ((cmf << 8) | flg) % 31 == 0 &&
+  (flg & 0x20) == 0
 }
 
 ///|
