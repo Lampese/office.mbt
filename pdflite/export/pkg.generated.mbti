@@ -274,6 +274,7 @@ pub(all) struct Image {
   interpolate : Bool
   inverted_cmyk : Bool
 }
+pub fn Image::deflated(Self) -> Self
 
 pub(all) enum ImageColorspace {
   Luma
@@ -285,6 +286,7 @@ pub(all) enum ImageData {
   Samples(Bytes, Bytes?)
   Jpeg(Bytes)
   Png(Bytes, Int, Int, Bytes?)
+  Deflated(Bytes, Bytes?)
 }
 
 pub(all) enum Indirect {

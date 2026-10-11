@@ -162,13 +162,33 @@ fn SerializeContext::put_stream(
   compress? : Bool = true,
 ) -> Unit {
   if compress && data.length() > 0 {
-    let encoded = @flate.pdf_flate_encode(data)
-    let dict = dict.copy()
-    dict.push(("Filter", Name("FlateDecode")))
-    self.objects[ref_] = Stream(dict, encoded)
+    self.put_deflated_stream(ref_, dict, deflate_stream_data(data))
   } else {
     self.objects[ref_] = Stream(dict, data)
   }
+}
+
+///|
+/// The data of a compressed stream: what [SerializeContext::put_stream]
+/// writes for `data`, and what [SerializeContext::put_deflated_stream]
+/// takes. It is a function of the data alone, not of the document or its
+/// settings, which is what lets an image keep it ([Image::deflated]).
+fn deflate_stream_data(data : Bytes) -> Bytes {
+  @flate.pdf_flate_encode(data)
+}
+
+///|
+/// Write a stream object whose data is compressed already
+/// ([deflate_stream_data]).
+fn SerializeContext::put_deflated_stream(
+  self : SerializeContext,
+  ref_ : Int,
+  dict : Array[(String, Obj)],
+  encoded : Bytes,
+) -> Unit {
+  let dict = dict.copy()
+  dict.push(("Filter", Name("FlateDecode")))
+  self.objects[ref_] = Stream(dict, encoded)
 }
 
 ///|
