@@ -14,12 +14,12 @@ fn test_samples(n : Int, seed : Int) -> Bytes {
 fn sampled_image(
   key : String,
   seed : Int,
-  width? : Int = 40,
-  height? : Int = 30,
-  alpha? : Bool = false,
-  luma? : Bool = false,
-  icc? : Bytes? = None,
-  interpolate? : Bool = false,
+  width~ : Int = 40,
+  height~ : Int = 30,
+  alpha~ : Bool = false,
+  luma~ : Bool = false,
+  icc~ : Bytes? = None,
+  interpolate~ : Bool = false,
 ) -> @export.Image {
   let n = width * height
   {
@@ -59,7 +59,7 @@ fn export_outcome(f : () -> Bytes raise) -> Result[Bytes, String] {
 /// A document of one page that draws the images in their order.
 fn document_of(
   images : Array[@export.Image],
-  settings? : @export.SerializeSettings = plain_settings(),
+  settings~ : @export.SerializeSettings = plain_settings(),
 ) -> Result[Bytes, String] {
   export_outcome(() => {
     one_page(
@@ -493,4 +493,233 @@ test "a kept image that is dropped and made again" {
     fail("not deflated")
   }
   assert_true(c1 == c3 && a1 == a3)
+}
+
+///|
+/// The locations of what an export refuses: of its validation errors
+/// (`Transparency`, `ImageInterpolation`) or of its image error.
+fn refused_at(f : () -> Bytes raise) -> Array[UInt64?] {
+  try f() catch {
+    @export.Validation(errors) =>
+      errors.map(e => {
+        match e.0 {
+          Transparency(location) | ImageInterpolation(location) => location
+          _ => None
+        }
+      })
+    @export.ImageError(location, _) => [location]
+    _ => []
+  } noraise {
+    _ => []
+  }
+}
+
+///|
+test "an error of a kept image has the location of the document that draws it" {
+  // The location is where the caller says an image is drawn; a kept image
+  // is drawn at other places in other documents.
+  let plain = sampled_image("located", 31, alpha=true, interpolate=true)
+  let kept = plain.deflated()
+  let bad = { ..kept, data: Deflated(b"not a stream", None), }
+  let a1 = settings_with(a=Some(A1_B), version=Pdf14)
+  let drawn_at = (
+    image : @export.Image,
+    location : UInt64?,
+    settings : @export.SerializeSettings,
+  ) => {
+    refused_at(() => {
+      one_page(
+        s => {
+          if location is Some(location) {
+            s.set_location(location)
+          }
+          s.draw_image(image, @export.Size::from_wh(10.0, 10.0).unwrap())
+          s.reset_location()
+        },
+        settings~,
+      )
+    })
+  }
+  assert_eq(drawn_at(kept, Some(1UL), a1), [Some(1UL), Some(1UL)])
+  assert_eq(drawn_at(kept, Some(2UL), a1), [Some(2UL), Some(2UL)])
+  assert_eq(drawn_at(kept, None, a1), [None, None])
+  assert_eq(drawn_at(kept, Some(3UL), plain_settings()), [])
+  assert_eq(drawn_at(kept, Some(1UL), a1), [Some(1UL), Some(1UL)])
+  assert_eq(drawn_at(bad, Some(7UL), plain_settings()), [Some(7UL)])
+  assert_eq(drawn_at(bad, Some(8UL), plain_settings()), [Some(8UL)])
+  // As for the image with its samples.
+  assert_eq(drawn_at(plain, Some(2UL), a1), [Some(2UL), Some(2UL)])
+}
+
+///|
+test "kept images: CMYK samples, the smallest image, one that does not compress" {
+  let icc = Bytes::makei(200, i => (i * 7).to_byte())
+  let cmyk = @export.Image::{
+    key: "cmyk",
+    width: 1,
+    height: 1,
+    colorspace: Cmyk,
+    data: Samples(b"\x00\x00\x00\xff", Some(b"\x80")),
+    icc: None,
+    interpolate: false,
+    inverted_cmyk: false,
+  }
+  let cmyk_icc = { ..cmyk, key: "cmyk profile", icc: Some(icc), }
+  let one = @export.Image::{
+    ..cmyk,
+    key: "one",
+    colorspace: Luma,
+    data: Samples(b"\x00", None),
+  }
+  // Samples that the compressor cannot shrink, and more of them than one
+  // of its output windows holds.
+  let mut seed = 0x2545F491UL
+  let noise = Bytes::makei(65537, _ => {
+    seed = seed ^ (seed << 13)
+    seed = seed ^ (seed >> 7)
+    seed = seed ^ (seed << 17)
+    (seed >> 24).to_byte()
+  })
+  let wide = @export.Image::{
+    ..one,
+    key: "noise",
+    width: 65537,
+    data: Samples(noise, None),
+  }
+  let images = [cmyk, cmyk_icc, one, wide]
+  let kept = images.map(image => image.deflated())
+  for image in kept {
+    assert_true(image.data is Deflated(_))
+  }
+  guard kept[3].data is Deflated(noise_z, None) else { fail("not deflated") }
+  assert_true(noise_z.length() > noise.length())
+  let lines = []
+  for
+    entry in [
+      ("plain", plain_settings()),
+      ("default", @export.SerializeSettings::default()),
+      ("A-2b", settings_with(a=Some(A2_B))),
+      ("no device colour spaces", { ..plain_settings(), no_device_cs: true, }),
+    ] {
+    let (name, settings) = entry
+    for i, image in images {
+      let plain = document_of([image], settings~)
+      assert_eq(document_of([kept[i]], settings~), plain)
+      let outcome = match plain {
+        Ok(_) => "ok"
+        Err(message) => message
+      }
+      lines.push("\{name}, \{image.key}: \{outcome}")
+    }
+    assert_eq(document_of(kept, settings~), document_of(images, settings~))
+  }
+  inspect(
+    lines.join("\n"),
+    content=(
+      #|plain, cmyk: ok
+      #|plain, cmyk profile: ok
+      #|plain, one: ok
+      #|plain, noise: ok
+      #|default, cmyk: ok
+      #|default, cmyk profile: ok
+      #|default, one: ok
+      #|default, noise: ok
+      #|A-2b, cmyk: Validation: MissingCMYKProfile by PDF/A-2b
+      #|A-2b, cmyk profile: ok
+      #|A-2b, one: ok
+      #|A-2b, noise: ok
+      #|no device colour spaces, cmyk: ok
+      #|no device colour spaces, cmyk profile: ok
+      #|no device colour spaces, one: ok
+      #|no device colour spaces, noise: ok
+    ),
+  )
+  // A reader gets the samples back.
+  guard document_of([kept[3], kept[2], kept[0]]) is Ok(bytes) else {
+    fail("no document")
+  }
+  let p = parse(bytes)
+  let xobjects = p.path(p.page(0), ["Resources", "XObject"])
+  assert_eq(p.stream_data(p.get(xobjects, "x0")), noise)
+  assert_eq(p.stream_data(p.get(xobjects, "x1")), b"\x00")
+  assert_eq(p.stream_data(p.get(xobjects, "x2")), b"\x00\x00\x00\xff")
+}
+
+///|
+test "kept images on the pages of a tagged document with metadata" {
+  // The settings a caller exports with, not the plain ones of the other
+  // tests: tagging, XMP metadata, compressed content streams, PDF/A.
+  let image = sampled_image("first", 41, alpha=true)
+  let other = sampled_image("second", 42, luma=true)
+  let pages = (
+    first : @export.Image,
+    second : @export.Image,
+    settings : @export.SerializeSettings,
+  ) => {
+    export_outcome(() => {
+      let doc = @export.Document::new_with(settings)
+      for i in 0..<4 {
+        let page = doc.start_page_with(
+          @export.PageSettings::from_wh(100.0, 100.0).unwrap(),
+        )
+        let surface = page.surface()
+        surface.set_location(i.to_uint64())
+        surface.draw_image(
+          if i % 2 == 0 {
+            first
+          } else {
+            second
+          },
+          @export.Size::from_wh(10.0, 10.0).unwrap(),
+        )
+        surface.draw_image(second, @export.Size::from_wh(20.0, 10.0).unwrap())
+        surface.reset_location()
+        surface.finish()
+        page.finish()
+      }
+      doc.finish()
+    })
+  }
+  let kept = image.deflated()
+  let kept_other = other.deflated()
+  let default = @export.SerializeSettings::default()
+  let results = []
+  for
+    settings in [
+      default,
+      {
+        ..default,
+        configuration: { version: Pdf14, validators: { a: None, ua: None, }, },
+      },
+      {
+        ..default,
+        configuration: { version: Pdf20, validators: { a: None, ua: None, }, },
+      },
+      {
+        ..default,
+        configuration: {
+          version: Pdf17,
+          validators: { a: Some(A2_B), ua: None, },
+        },
+      },
+    ] {
+    let plain = pages(image, other, settings)
+    assert_eq(pages(kept, kept_other, settings), plain)
+    assert_eq(pages(kept, other, settings), plain)
+    assert_eq(pages(image, kept_other, settings), plain)
+    let outcome = match plain {
+      Ok(_) => "ok"
+      Err(message) => message
+    }
+    results.push(outcome)
+  }
+  inspect(
+    results.join("\n"),
+    content=(
+      #|ok
+      #|ok
+      #|ok
+      #|ok
+    ),
+  )
 }
