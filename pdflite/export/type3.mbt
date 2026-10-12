@@ -221,9 +221,10 @@ fn FontContainer::units_per_em(self : FontContainer, fid : Int) -> Double {
 /// Type 3 code (krilla `PDFGlyph::encode_into`).
 fn write_code(buf : Scratch, fid : Int, code : Int) -> Unit {
   if fid < 0 {
-    buf.push(((code >> 8) & 0xFF).to_byte())
+    buf.push2(((code >> 8) & 0xFF).to_byte(), (code & 0xFF).to_byte())
+  } else {
+    buf.push((code & 0xFF).to_byte())
   }
-  buf.push((code & 0xFF).to_byte())
 }
 
 ///|

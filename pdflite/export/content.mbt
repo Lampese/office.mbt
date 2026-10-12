@@ -77,6 +77,19 @@ fn Scratch::push(self : Scratch, byte : Byte) -> Unit {
 }
 
 ///|
+/// Two bytes, the code of a glyph of a CID font.
+fn Scratch::push2(self : Scratch, first : Byte, second : Byte) -> Unit {
+  if self.len + 2 > self.data.length() {
+    let grown = FixedArray::make((self.len * 2).max(64), b'\x00')
+    self.data.blit_to(grown, len=self.len)
+    self.data = grown
+  }
+  self.data[self.len] = first
+  self.data[self.len + 1] = second
+  self.len += 2
+}
+
+///|
 /// Show a string (`Tj`).
 fn Content::show(self : Content, encoded : Scratch) -> Unit {
   write_string_prefix(self.buf, encoded.data, encoded.len)

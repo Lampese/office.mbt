@@ -112,6 +112,28 @@ fn format_real(v : Double) -> String {
 ///|
 /// Write `format_real(v)` to `buf` without intermediate strings.
 fn write_real(buf : @buffer.Buffer, v : Double) -> Unit {
+  // First what most numbers of a content stream are: an integral value that
+  // an `f32` holds as it is (below 2^24), for which `write_any_real` comes
+  // to writing its digits.
+  if v > -16777216.0 && v < 16777216.0 {
+    let i = v.to_int()
+    if i.to_double() == v {
+      if i < 0 {
+        buf.write_byte(b'-')
+        write_digits(buf, (-i).to_int64())
+      } else {
+        write_digits(buf, i.to_int64())
+      }
+      return
+    }
+  }
+  write_any_real(buf, v)
+}
+
+///|
+/// `write_real` for any value (what it does for the values that it does not
+/// write itself first).
+fn write_any_real(buf : @buffer.Buffer, v : Double) -> Unit {
   if v.is_nan() || v.is_inf() {
     buf.write_byte(b'0')
     return
