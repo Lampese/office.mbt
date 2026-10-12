@@ -68,7 +68,7 @@ fn use_text_spanner(
   let mut do_text_span = false
   let check_single = (glyph : Glyph) => {
     if !do_text_span {
-      let (fid, code) = fc.add_glyph(sc, glyph.glyph_id, context_color)
+      let { fid, code, } = fc.add_glyph(sc, glyph.glyph_id, context_color)
       match fc.get_codepoints(fid, code) {
         Some(c) =>
           if c.view() != glyph_text_view(text, glyph) {
@@ -114,7 +114,7 @@ fn glyph_spans(
 ) -> Array[GlyphSpan] {
   let out = []
   let func = (g : Glyph, previous_range : (Int32, Int32)?) => {
-    let (fid, code) = fc.add_glyph(sc, g.glyph_id, context_color)
+    let { fid, code, } = fc.add_glyph(sc, g.glyph_id, context_color)
     let range = (g.text_start, g.text_end)
     let t = glyph_text_view(text, g)
     let codepoints = fc.get_codepoints(fid, code)
@@ -208,11 +208,11 @@ fn glyph_groups(
   let mut slice = slice
   while !slice.is_empty() {
     let first = slice[0]
-    let first_fid = fc.add_glyph(sc, first.glyph_id, context_color).0
+    let first_fid = fc.add_glyph(sc, first.glyph_id, context_color).fid
     let mut count = 1
     while count < slice.length() {
       let next = slice[count]
-      if first_fid != fc.add_glyph(sc, next.glyph_id, context_color).0 ||
+      if first_fid != fc.add_glyph(sc, next.glyph_id, context_color).fid ||
         first.y_offset != next.y_offset ||
         first.y_advance != 0.0 ||
         next.y_advance != 0.0 {
@@ -445,7 +445,7 @@ fn ContentBuilder::fill_stroke_glyph_span(
   }
   for group in glyph_groups(sc, span.glyphs, context_color, fc) {
     let first = group[0]
-    let fid = fc.add_glyph(sc, first.glyph_id, context_color).0
+    let fid = fc.add_glyph(sc, first.glyph_id, context_color).fid
     // Type 3 fonts are always filled.
     let mode = if fid >= 0 { FillMode } else { mode }
     self.content.raw(
@@ -509,7 +509,7 @@ fn ContentBuilder::encode_consecutive_glyph_run(
   // A single glyph without an x offset is shown with `Tj`.
   if glyphs.length() == 1 && glyphs[0].x_offset.abs() <= 0.001 {
     let g = glyphs[0]
-    let code = fc.add_glyph(sc, g.glyph_id, context_color).1
+    let code = fc.add_glyph(sc, g.glyph_id, context_color).code
     self.content.obj(Str(encode_code(fid, code)))
     self.content.op("Tj")
     cur_x.val = cur_x.val + g.x_advance * size
@@ -522,7 +522,7 @@ fn ContentBuilder::encode_consecutive_glyph_run(
   let mut adjustment = 0.0
   let scale = (v : Double) => v * upem
   for g in glyphs {
-    let code = fc.add_glyph(sc, g.glyph_id, context_color).1
+    let code = fc.add_glyph(sc, g.glyph_id, context_color).code
     let x_advance = scale(g.x_advance)
     let font_advance = match font.advance_width(g.glyph_id) {
       Some(n) => Some(scale(n / font.units_per_em))
