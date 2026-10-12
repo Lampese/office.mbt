@@ -8,6 +8,7 @@ import {
   "moonbitlang/core/bigint",
   "moonbitlang/core/buffer",
   "moonbitlang/core/cmp",
+  "moonbitlang/core/double",
   "moonbitlang/core/math",
 }
 

@@ -593,57 +593,99 @@ fn ContentBuilder::encode_consecutive_glyph_run(
       )
     }
   }
-  // A single glyph without an x offset is shown with `Tj`.
+  // If it's just a single glyph and without an x_offset, there is no need
+  // for individual positioning, so we can use `Tj` instead of `TJ`. The
+  // reason we're doing this is because Acrobat's copy-paste is a bit buggy
+  // if `/ActualText` is used at the end of a line, but only if `TJ` is used.
+  // With `Tj`, it's fine.
   if glyphs.length() == 1 && glyphs[0].x_offset.abs() <= 0.001 {
-    let g = glyphs[0]
-    let code = fc.add_glyph(sc, g.glyph_id, context_color).code
-    self.content.obj(Str(encode_code(fid, code)))
-    self.content.op("Tj")
-    cur_x.val = cur_x.val + g.x_advance * size
+    self.encode_single_glyph(sc, cur_x, fid, context_color, fc, size, glyphs[0])
     return
   }
-  // Individual positioning with `TJ`.
-  let upem = fc.units_per_em(fid)
-  let items : Array[Obj] = []
-  let encoded = Buffer()
-  let mut adjustment = 0.0
-  let scale = (v : Double) => v * upem
-  for g in glyphs {
-    let code = fc.add_glyph(sc, g.glyph_id, context_color).code
-    let x_advance = scale(g.x_advance)
-    let font_advance = match font.advance_width(g.glyph_id) {
-      Some(n) => Some(scale(n / font.units_per_em))
-      None => None
-    }
-    let x_offset = scale(g.x_offset)
-    adjustment += x_offset
-    // Make sure we don't write miniscule adjustments.
-    if adjustment.abs() > 0.001 {
-      if encoded.length() > 0 {
-        items.push(Str(encoded.to_bytes()))
-        encoded.reset()
-      }
-      // Adjustments are always in 1000 units, even for Type 3 fonts.
-      items.push(Real(-(adjustment / upem * pdf_units_per_em)))
-      adjustment = 0.0
-    }
-    write_code(encoded, fid, code)
-    if font_advance is Some(fa) {
-      adjustment += x_advance - fa
-    }
-    adjustment -= x_offset
-    cur_x.val = cur_x.val + g.x_advance * size
-  }
-  if encoded.length() > 0 {
-    items.push(Str(encoded.to_bytes()))
-  }
-  self.content.obj(Arr(items))
-  self.content.op("TJ")
+  self.encode_glyphs_with_individual_positioning(
+    sc, cur_x, fid, context_color, fc, size, glyphs,
+  )
 }
 
 ///|
-fn encode_cid(cid : Int) -> Bytes {
-  Bytes::from_array([((cid >> 8) & 0xFF).to_byte(), (cid & 0xFF).to_byte()])
+fn ContentBuilder::encode_single_glyph(
+  self : ContentBuilder,
+  sc : SerializeContext,
+  cur_x : Ref[Double],
+  fid : Int,
+  context_color : Int,
+  fc : FontContainer,
+  size : Double,
+  glyph : Glyph,
+) -> Unit {
+  let code = fc.add_glyph(sc, glyph.glyph_id, context_color).code
+  let encoded = self.scratch
+  encoded.clear()
+  write_code(encoded, fid, code)
+  self.content.show(encoded)
+  cur_x.val = cur_x.val + glyph.x_advance * size
+}
+
+///|
+/// Not upstream in two ways. The items of the `TJ` array are written as
+/// they come (pdf-writer's `show_positioned().items()`), not collected as
+/// objects first; `items` counts them. And the advance width of a glyph is
+/// asked of the font container, which keeps it
+/// (`FontContainer::advance_width`), where krilla asks the font.
+fn ContentBuilder::encode_glyphs_with_individual_positioning(
+  self : ContentBuilder,
+  sc : SerializeContext,
+  cur_x : Ref[Double],
+  fid : Int,
+  context_color : Int,
+  fc : FontContainer,
+  size : Double,
+  glyphs : ArrayView[Glyph],
+) -> Unit {
+  let font = fc.font
+  let upem = fc.units_per_em(fid)
+  let encoded = self.scratch
+  encoded.clear()
+  let mut adjustment = 0.0
+  self.content.begin_positioned()
+  let mut items = 0
+  for g in glyphs {
+    let code = fc.add_glyph(sc, g.glyph_id, context_color).code
+    // (krilla's `scale` is a multiplication by `upem`.)
+    let x_advance = g.x_advance * upem
+    let x_offset = g.x_offset * upem
+    adjustment += x_offset
+    // Make sure we don't write miniscule adjustments.
+    if adjustment.abs() > 0.001 {
+      if encoded.len > 0 {
+        self.content.positioned_show(items, encoded)
+        items += 1
+        encoded.clear()
+      }
+      // Adjustments are always in 1000 units, even for Type 3 fonts.
+      self.content.positioned_adjust(
+        items,
+        -(adjustment / upem * pdf_units_per_em),
+      )
+      items += 1
+      adjustment = 0.0
+    }
+    write_code(encoded, fid, code)
+    let advance = fc.advance_width(g.glyph_id)
+    // (Not NaN: the advance is kept.)
+    if advance == advance {
+      adjustment += x_advance - advance / font.units_per_em * upem
+    } else if font.advance_width(g.glyph_id) is Some(n) {
+      adjustment += x_advance - n / font.units_per_em * upem
+    }
+    adjustment -= x_offset
+    // cur_x/cur_y and glyph metrics are in user space units.
+    cur_x.val = cur_x.val + g.x_advance * size
+  }
+  if encoded.len > 0 {
+    self.content.positioned_show(items, encoded)
+  }
+  self.content.end_positioned()
 }
 
 ///|

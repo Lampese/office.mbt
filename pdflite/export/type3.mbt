@@ -70,6 +70,9 @@ priv struct FontContainer {
   mut cid_cache : FixedArray[Int]
   /// The Type 3 font and code of each colored glyph.
   type3_cache : Map[(Int, Int), (Int, Int)]
+  /// The advance widths of the font's glyphs that are known, indexed by
+  /// glyph ID (NaN: not known), see `FontContainer::advance_width`.
+  mut advances : FixedArray[Double]
 }
 
 ///|
@@ -81,6 +84,7 @@ fn FontContainer::new(font : Font, ref_ : Int) -> FontContainer {
     type3: [],
     cid_cache: [],
     type3_cache: {},
+    advances: [],
   }
 }
 
@@ -213,23 +217,58 @@ fn FontContainer::units_per_em(self : FontContainer, fid : Int) -> Double {
 }
 
 ///|
-/// Encode a code of a PDF font.
-fn write_code(buf : @buffer.Buffer, fid : Int, code : Int) -> Unit {
+/// Encode a code of a PDF font: two big-endian bytes for a CID, one for a
+/// Type 3 code (krilla `PDFGlyph::encode_into`).
+fn write_code(buf : Scratch, fid : Int, code : Int) -> Unit {
   if fid < 0 {
-    buf.write_byte(((code >> 8) & 0xFF).to_byte())
+    buf.push(((code >> 8) & 0xFF).to_byte())
   }
-  buf.write_byte((code & 0xFF).to_byte())
+  buf.push((code & 0xFF).to_byte())
 }
 
 ///|
-/// The bytes of a code: two big-endian bytes for a CID, one for a Type 3
-/// code (see `write_code`).
-fn encode_code(fid : Int, code : Int) -> Bytes {
-  if fid < 0 {
-    encode_cid(code)
-  } else {
-    Bytes::from_array([(code & 0xFF).to_byte()])
+/// The advance width of a glyph in font units, if `Font::advance_width`
+/// gave a finite number for it; else NaN, and the font is to be asked (it
+/// has no advance for the glyph, or one that is not a number).
+///
+/// Not upstream: krilla asks the font for every glyph it shows. Here that
+/// is three allocations (the options on the way) and a walk through `hmtx`
+/// and `HVAR`, so the answers are kept by glyph ID.
+fn FontContainer::advance_width(self : FontContainer, glyph : Int) -> Double {
+  let advances = self.advances
+  if glyph >= 0 && glyph < advances.length() {
+    let advance = advances[glyph]
+    // (Not NaN.)
+    if advance == advance {
+      return advance
+    }
   }
+  self.new_advance_width(glyph)
+}
+
+///|
+/// `advance_width` for a glyph whose advance is not kept.
+fn FontContainer::new_advance_width(
+  self : FontContainer,
+  glyph : Int,
+) -> Double {
+  guard self.font.advance_width(glyph) is Some(advance) else {
+    return @double.not_a_number
+  }
+  // (`advance - advance` is zero for a finite number and NaN otherwise.)
+  guard advance - advance == 0.0 && glyph <= 0xFFFF else {
+    return @double.not_a_number
+  }
+  if glyph >= self.advances.length() {
+    let grown = FixedArray::make(
+      (glyph + 1).max(self.advances.length() * 2).max(256),
+      @double.not_a_number,
+    )
+    self.advances.blit_to(grown, len=self.advances.length())
+    self.advances = grown
+  }
+  self.advances[glyph] = advance
+  advance
 }
 
 ///|

@@ -360,6 +360,43 @@ fn write_string_bytes(buf : @buffer.Buffer, bytes : Bytes) -> Unit {
 }
 
 ///|
+/// `write_string_bytes` for the first `len` bytes of `bytes` (`len <=
+/// bytes.length()`): what the content stream shows of its scratch buffer,
+/// without a `Bytes` of its own.
+fn write_string_prefix(
+  buf : @buffer.Buffer,
+  bytes : FixedArray[Byte],
+  len : Int,
+) -> Unit {
+  // Use a literal string if all bytes are printable, else a hex string.
+  let mut printable = true
+  for i in 0..<len {
+    let b = bytes[i].to_int()
+    if b < 0x20 || b > 0x7E {
+      printable = false
+      break
+    }
+  }
+  if printable {
+    buf.write_byte(b'(')
+    for i in 0..<len {
+      let b = bytes[i]
+      if b == b'(' || b == b')' || b == b'\\' {
+        buf.write_byte(b'\\')
+      }
+      buf.write_byte(b)
+    }
+    buf.write_byte(b')')
+  } else {
+    buf.write_byte(b'<')
+    for i in 0..<len {
+      write_hex_byte(buf, bytes[i].to_int())
+    }
+    buf.write_byte(b'>')
+  }
+}
+
+///|
 /// Write a name (with the leading slash).
 fn write_name(buf : @buffer.Buffer, name : String) -> Unit {
   buf.write_byte(b'/')

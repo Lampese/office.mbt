@@ -45,6 +45,88 @@ fn Content::obj(self : Content, o : Obj) -> Unit {
 }
 
 ///|
+/// The bytes of a string that is being encoded (krilla's `scratch:
+/// Vec<u8>`): the content builder has one and uses it for every string it
+/// shows, where a `@buffer.Buffer` would have to be copied to be read.
+priv struct Scratch {
+  mut data : FixedArray[Byte]
+  mut len : Int
+}
+
+///|
+fn Scratch::new() -> Scratch {
+  { data: [], len: 0, }
+}
+
+///|
+fn Scratch::clear(self : Scratch) -> Unit {
+  self.len = 0
+}
+
+///|
+fn Scratch::push(self : Scratch, byte : Byte) -> Unit {
+  if self.len == self.data.length() {
+    let grown = FixedArray::make((self.len * 2).max(64), b'\x00')
+    self.data.blit_to(grown, len=self.len)
+    self.data = grown
+  }
+  self.data[self.len] = byte
+  self.len += 1
+}
+
+///|
+/// Show a string (`Tj`).
+fn Content::show(self : Content, encoded : Scratch) -> Unit {
+  write_string_prefix(self.buf, encoded.data, encoded.len)
+  self.buf.write_byte(b' ')
+  self.op("Tj")
+}
+
+///|
+/// Start showing strings with individual glyph positioning (`TJ`,
+/// pdf-writer's `show_positioned().items()`): the items follow
+/// (`positioned_show`, `positioned_adjust`), then `end_positioned`. Written
+/// like `write_obj` writes an array of strings and reals.
+fn Content::begin_positioned(self : Content) -> Unit {
+  self.buf.write_byte(b'[')
+}
+
+///|
+/// An item of a `TJ` array: a string. `items` is the number of items
+/// written before it.
+fn Content::positioned_show(
+  self : Content,
+  items : Int,
+  encoded : Scratch,
+) -> Unit {
+  if items > 0 {
+    self.buf.write_byte(b' ')
+  }
+  write_string_prefix(self.buf, encoded.data, encoded.len)
+}
+
+///|
+/// An item of a `TJ` array: an adjustment in thousandths of a unit of text
+/// space.
+fn Content::positioned_adjust(
+  self : Content,
+  items : Int,
+  amount : Double,
+) -> Unit {
+  if items > 0 {
+    self.buf.write_byte(b' ')
+  }
+  write_real(self.buf, amount)
+}
+
+///|
+fn Content::end_positioned(self : Content) -> Unit {
+  self.buf.write_byte(b']')
+  self.buf.write_byte(b' ')
+  self.op("TJ")
+}
+
+///|
 fn Content::save_state(self : Content) -> Unit {
   self.depth += 1
   self.op("q")
@@ -91,6 +173,8 @@ priv enum ContentColorSpace {
 priv struct ContentBuilder {
   rd : ResourceDictionary
   content : Content
+  /// The bytes of the string that is being shown.
+  scratch : Scratch
   validation_errors : Array[ValidationError]
   root_transform : Transform
   graphics_states : GraphicsStates
@@ -113,6 +197,7 @@ fn ContentBuilder::new(
   {
     rd: ResourceDictionary::new(),
     content: Content::new(),
+    scratch: Scratch::new(),
     validation_errors: [],
     root_transform,
     graphics_states: GraphicsStates::new(),
