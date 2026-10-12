@@ -23,9 +23,9 @@ fn page_flip_stream_for_test(
 ///|
 fn page_flip_page_for_test(
   ops : ArrayView[@content.PdfContentOp],
-  resources? : @syntax.PdfObject = PdfDictionary([]),
-  rest? : @syntax.PdfObject = PdfDictionary([]),
-  mediabox? : @syntax.PdfObject = page_flip_rect_for_test(
+  resources~ : @syntax.PdfObject = PdfDictionary([]),
+  rest~ : @syntax.PdfObject = PdfDictionary([]),
+  mediabox~ : @syntax.PdfObject = page_flip_rect_for_test(
     0.0, 0.0, 100.0, 100.0,
   ),
 ) -> @page.PdfPage {

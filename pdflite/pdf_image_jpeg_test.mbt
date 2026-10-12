@@ -3,13 +3,13 @@
 /// marker when `adobe`, and a frame (baseline, or of marker `frame`) of
 /// `components` samples a pixel of `precision` bits.
 fn image_jpeg_of_components_for_test(
-  components : Int,
+  components : Int32,
   adobe : Bool,
-  precision? : Int = 8,
-  frame? : Int = 0xC0,
-  jfif? : Bool = true,
+  precision~ : Int32 = 8,
+  frame~ : Int32 = 0xC0,
+  jfif~ : Bool = true,
 ) -> @core.PdfBytes {
-  let bytes : Array[Int] = [0xFF, 0xD8]
+  let bytes : Array[Int32] = [0xFF, 0xD8]
   if jfif {
     // APP0: "JFIF", version 1.1, no units, density 1 by 1, no thumbnail
     bytes.append([
@@ -269,7 +269,7 @@ test "pdf_image_object_of_jpeg_data has components named R, G and B untransforme
     }
   }
   // the frame's component identifiers follow its count: R, G, B for 1, 2, 3
-  let named = (jpeg : @core.PdfBytes, at : Int) => {
+  let named = (jpeg : @core.PdfBytes, at : Int32) => {
     let bytes = jpeg.to_array()
     bytes[at] = b'R'
     bytes[at + 3] = b'G'

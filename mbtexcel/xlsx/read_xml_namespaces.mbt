@@ -170,7 +170,7 @@ fn drawing_reader_relationship_attribute(
 /// lexical searches.
 fn validate_xlsx_drawing_reader_structure(
   source : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Unit raise XlsxError {
   let scanner = @ooxml.XmlStartTagScanner::new(source, cancelled~)
   if !workbook_scanner_next(scanner) ||
@@ -210,13 +210,13 @@ fn validate_xlsx_drawing_reader_structure(
   let mut current_reader_object = ""
   let mut reader_payload_seen = false
   let mut graphic_data_uri : String? = None
-  let mut extension_depth : Int? = None
-  let mut text_body_depth : Int? = None
+  let mut extension_depth : Int32? = None
+  let mut text_body_depth : Int32? = None
   let mut text_container = ""
   let mut text_run_properties_seen = false
   let mut text_value_seen = false
-  let mut solid_fill_depth : Int? = None
-  let mut color_depth : Int? = None
+  let mut solid_fill_depth : Int32? = None
+  let mut color_depth : Int32? = None
   let mut marker_parent = ""
   let mut marker_col_seen = false
   let mut marker_col_off_seen = false
@@ -246,7 +246,7 @@ fn validate_xlsx_drawing_reader_structure(
   let mut text_body_seen = false
   let mut graphic_seen = false
   let mut graphic_data_seen = false
-  let mut unsupported_reader_object_depth : Int? = None
+  let mut unsupported_reader_object_depth : Int32? = None
   let anchor_sequence : Array[String] = []
   let marker_sequence : Array[String] = []
   while workbook_scanner_next(scanner) {
@@ -933,8 +933,8 @@ fn validate_xlsx_drawing_reader_structure(
 /// Fallback must be selected while its namespace context is still available.
 fn project_xlsx_markup_compatibility(
   source : StringView,
-  max_output_chars : Int,
-  cancelled? : () -> Bool = () => false,
+  max_output_chars : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> String raise XlsxError {
   @ooxml.project_xml_markup_compatibility(
     source,
@@ -954,8 +954,8 @@ fn project_xlsx_markup_compatibility(
 /// structure-validated before rewriting; only names change, never values.
 fn canonicalize_xlsx_xml(
   xml : StringView,
-  max_output_chars? : Int = default_max_xml_part_bytes,
-  cancelled? : () -> Bool = () => false,
+  max_output_chars~ : Int32 = default_max_xml_part_bytes,
+  cancelled~ : () -> Bool = () => false,
 ) -> String raise XlsxError {
   let root_scanner = @ooxml.XmlStartTagScanner::new(xml, cancelled~)
   if !workbook_scanner_next(root_scanner) || root_scanner.depth() != 1 {
@@ -1002,7 +1002,7 @@ fn canonicalize_xlsx_xml(
 fn xlsx_core_source_without_foreign(
   source : StringView,
   root_local_name : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String? raise XlsxError {
   let scanner = @ooxml.XmlStartTagScanner::new(source, cancelled~)
   if !workbook_scanner_next(scanner) ||
@@ -1030,8 +1030,8 @@ fn xlsx_core_source_without_foreign(
 /// including a foreign default namespace that reuses a core local name.
 fn canonicalize_xlsx_worksheet_features(
   source : StringView,
-  max_output_chars : Int,
-  cancelled? : () -> Bool = () => false,
+  max_output_chars : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> String raise XlsxError {
   let scanner = @ooxml.XmlStartTagScanner::new(source, cancelled~)
   if !workbook_scanner_next(scanner) ||
@@ -1099,9 +1099,9 @@ fn charge_xlsx_drawing_xml_materialization(
 /// `c`, `sle`, or `mc` is defanged by the bounded XML canonicalizer.
 fn canonicalize_xlsx_drawing_xml(
   source : StringView,
-  max_output_chars : Int,
+  max_output_chars : Int32,
   budget? : ReadBudget,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String raise XlsxError {
   charge_xlsx_drawing_xml_pass(budget, source)
   let scanner = @ooxml.XmlStartTagScanner::new(source, cancelled~)
@@ -1212,7 +1212,7 @@ fn canonicalize_xlsx_drawing_xml(
 ///|
 fn validate_xlsx_worksheet_core(
   xml : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Unit raise XlsxError {
   let scanner = @ooxml.XmlStartTagScanner::new(xml, cancelled~)
   let mut worksheet_namespace : String? = None
@@ -1341,8 +1341,8 @@ fn validate_xlsx_worksheet_core(
 fn canonicalize_xlsx_worksheet_core(
   source : StringView,
   full_canonical : String,
-  max_output_chars : Int,
-  cancelled? : () -> Bool = () => false,
+  max_output_chars : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> String raise XlsxError {
   let without_extensions = @ooxml.remove_xml_expanded_name_subtrees(
     source,

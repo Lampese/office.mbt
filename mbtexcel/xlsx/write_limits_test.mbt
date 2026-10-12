@@ -8,7 +8,7 @@ fn write_limit_fixture() -> @xlsx.Workbook raise {
 }
 
 ///|
-fn archive_uncompressed_stats(bytes : BytesView) -> (Int, Int, Int) raise {
+fn archive_uncompressed_stats(bytes : BytesView) -> (Int32, Int32, Int32) raise {
   let archive = @zip.read(bytes)
   let mut largest = 0
   let mut total = 0

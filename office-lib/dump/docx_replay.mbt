@@ -13,8 +13,8 @@
 /// references would silently pair with chunk 1's bodies.
 fn docx_offset_note_refs(
   element : @document.DocumentElement,
-  footnote_offset : Int,
-  endnote_offset : Int,
+  footnote_offset : Int32,
+  endnote_offset : Int32,
 ) -> @document.DocumentElement raise ReplayError {
   fn walk(
     node : @document.DocumentElement,
@@ -32,7 +32,7 @@ fn docx_offset_note_refs(
         let mut index = 0
         let mut valid = note_id.length() > 0
         for unit in note_id {
-          if unit is ('0'..='9') {
+          if unit is ('0'..<='9') {
             index = index * 10 + (unit.to_int() - '0'.to_int())
           } else {
             valid = false

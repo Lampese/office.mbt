@@ -157,8 +157,8 @@ pub fn Table::resolve_columns(
 /// `column`. Spans past the grid are clamped to what exists.
 pub fn cell_span_pt(
   columns : Array[Double],
-  column : Int,
-  grid_span : Int,
+  column : Int32,
+  grid_span : Int32,
 ) -> Double {
   let span = if grid_span < 1 { 1 } else { grid_span }
   let last = if column + span > columns.length() {
@@ -176,7 +176,7 @@ pub fn cell_span_pt(
 ///|
 /// The horizontal offset of grid column `column` from the table's left
 /// edge, in points.
-pub fn column_offset_pt(columns : Array[Double], column : Int) -> Double {
+pub fn column_offset_pt(columns : Array[Double], column : Int32) -> Double {
   let last = if column > columns.length() { columns.length() } else { column }
   let mut x = 0.0
   for i in 0..<last {

@@ -9,10 +9,10 @@ pub struct ZipArchive {
 } derive(Debug, Eq)
 
 ///|
-const MAX_ZIP_ENTRY_NAME_CHARS : Int = 65_535
+const MAX_ZIP_ENTRY_NAME_CHARS : Int32 = 65_535
 
 ///|
-const MAX_ZIP_TOTAL_ENTRY_NAME_CHARS : Int = 4 * 1024 * 1024
+const MAX_ZIP_TOTAL_ENTRY_NAME_CHARS : Int32 = 4 * 1024 * 1024
 
 ///|
 fn canonical_part_name(path : String) -> String {
@@ -21,9 +21,9 @@ fn canonical_part_name(path : String) -> String {
 
 ///|
 fn checked_zip_entry_name_total(
-  total : Int,
+  total : Int32,
   name : String,
-) -> Int raise DocxError {
+) -> Int32 raise DocxError {
   let length = name.length()
   if length > MAX_ZIP_ENTRY_NAME_CHARS {
     raise InvalidZip(

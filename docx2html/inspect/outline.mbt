@@ -17,10 +17,10 @@
 pub fn outline(
   document : @document.DocumentElement,
   file~ : String,
-  messages? : Array[@core.Message] = [],
-  headers? : Array[@document.HeaderFooterPart] = [],
-  footers? : Array[@document.HeaderFooterPart] = [],
-  sections? : Array[@document.DocumentSection] = [],
+  messages~ : Array[@core.Message] = [],
+  headers~ : Array[@document.HeaderFooterPart] = [],
+  footers~ : Array[@document.HeaderFooterPart] = [],
+  sections~ : Array[@document.DocumentSection] = [],
 ) -> Json {
   let walk = Walk::new()
   let (children, notes, comments) = match document {
@@ -103,12 +103,12 @@ fn section_ref_json(section_ref : @document.SectionRef) -> Json {
 }
 
 ///|
-fn count_json(n : Int) -> Json {
+fn count_json(n : Int32) -> Json {
   Json::number(n.to_double())
 }
 
 ///|
-fn count_notes(notes : Array[@document.Note], note_type : String) -> Int {
+fn count_notes(notes : Array[@document.Note], note_type : String) -> Int32 {
   let mut count = 0
   for note in notes {
     if note.note_type == note_type {
@@ -121,10 +121,10 @@ fn count_notes(notes : Array[@document.Note], note_type : String) -> Int {
 ///|
 /// Accumulator for one pass over the body tree.
 priv struct Walk {
-  mut paragraphs : Int
-  mut tables : Int
-  mut hyperlinks : Int
-  mut bookmarks : Int
+  mut paragraphs : Int32
+  mut tables : Int32
+  mut hyperlinks : Int32
+  mut bookmarks : Int32
   images : Array[@document.Image]
   headings : Array[Json]
   styles : Array[Json]
@@ -229,7 +229,7 @@ fn Walk::record_style(
 fn Walk::record_heading(
   self : Walk,
   paragraph : @document.DocumentElement,
-  level : Int,
+  level : Int32,
   properties : @document.ParagraphProperties,
 ) -> Unit {
   // Raw text of a paragraph ends with Mammoth's "\n\n" separator; a heading
@@ -263,7 +263,7 @@ fn Walk::record_heading(
 /// equal (ignoring case) to `heading 1`..`heading 6`; bare id `Heading` or
 /// bare name `heading` (level 1). Anything else — `Heading7`+, `Heading10`,
 /// names without the space — is not a heading.
-pub fn heading_level(properties : @document.ParagraphProperties) -> Int? {
+pub fn heading_level(properties : @document.ParagraphProperties) -> Int32? {
   match digit_id_heading_level(properties.style_id) {
     Some(level) => Some(level)
     None =>
@@ -283,7 +283,7 @@ pub fn heading_level(properties : @document.ParagraphProperties) -> Int? {
 }
 
 ///|
-fn digit_id_heading_level(style_id : String?) -> Int? {
+fn digit_id_heading_level(style_id : String?) -> Int32? {
   match style_id {
     Some(id) =>
       if id.has_prefix("Heading") && id.length() == 8 {
@@ -296,7 +296,7 @@ fn digit_id_heading_level(style_id : String?) -> Int? {
 }
 
 ///|
-fn digit_name_heading_level(style_name : String?) -> Int? {
+fn digit_name_heading_level(style_name : String?) -> Int32? {
   match style_name {
     // Check the bounded shape before case folding. Style values originate in
     // XML and may otherwise be as large as the parser's per-token ceiling.
@@ -322,8 +322,8 @@ fn bare_name_is_heading(value : String?) -> Bool {
 }
 
 ///|
-fn digit_level(unit : UInt16) -> Int? {
-  if unit is ('1'..='6') {
+fn digit_level(unit : UInt16) -> Int32? {
+  if unit is ('1'..<='6') {
     Some(unit.to_int() - 0x30)
   } else {
     None

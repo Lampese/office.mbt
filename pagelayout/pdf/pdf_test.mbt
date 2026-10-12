@@ -333,10 +333,10 @@ test "latin text stays a simple font, but an embedded one" {
 /// encoder everywhere else, so the identical program comes out at two
 /// different sizes. `/Length1` is by definition the unfiltered program
 /// length, which is the only thing subsetting moves.
-fn embedded_program_lengths(bytes : Bytes) -> Array[Int] raise {
+fn embedded_program_lengths(bytes : Bytes) -> Array[Int32] raise {
   let document = @pdflite.pdf_read_document_from_bytes(bytes)
   let wanted = @core.pdf_name_of_bytes(@utf8.encode("/Length1"))
-  let lengths : Array[Int] = []
+  let lengths : Array[Int32] = []
   for number in document.objects.object_numbers() {
     guard document.lookup_object_or_null(number) is PdfStreamObject(stream) else {
       continue
@@ -417,7 +417,7 @@ test "metrics and outline programs agree on glyph ids" {
   guard @fontoutlines.outline_sfnt("Noto Sans SC") is Some(program) else {
     fail("Noto Sans SC has no bundled outlines")
   }
-  let from_program : Map[Int, Int] = Map([])
+  let from_program : Map[Int32, Int32] = Map([])
   for entry in @pdflite.pdf_truetype_cmap_glyphs(program) {
     from_program[entry.codepoint] = entry.glyph_index
   }

@@ -6,7 +6,7 @@ fn opc_ascii_hex_digit(character : Char) -> Bool {
 }
 
 ///|
-fn opc_ascii_hex_value(character : Char) -> Int {
+fn opc_ascii_hex_value(character : Char) -> Int32 {
   if character >= '0' && character <= '9' {
     character.to_int() - '0'.to_int()
   } else if character >= 'A' && character <= 'F' {
@@ -17,7 +17,7 @@ fn opc_ascii_hex_value(character : Char) -> Int {
 }
 
 ///|
-fn opc_percent_byte(characters : ArrayView[Char], index : Int) -> Int? {
+fn opc_percent_byte(characters : ArrayView[Char], index : Int32) -> Int32? {
   if index + 2 >= characters.length() ||
     characters[index] != '%' ||
     !opc_ascii_hex_digit(characters[index + 1]) ||
@@ -42,7 +42,7 @@ fn opc_uri_unreserved(character : Char) -> Bool {
 }
 
 ///|
-fn opc_uri_unreserved_byte(value : Int) -> Bool {
+fn opc_uri_unreserved_byte(value : Int32) -> Bool {
   (value >= 'A'.to_int() && value <= 'Z'.to_int()) ||
   (value >= 'a'.to_int() && value <= 'z'.to_int()) ||
   (value >= '0'.to_int() && value <= '9'.to_int()) ||
@@ -92,7 +92,7 @@ fn opc_iri_ucschar(character : Char) -> Bool {
 }
 
 ///|
-fn opc_utf8_percent_length(first : Int) -> Int? {
+fn opc_utf8_percent_length(first : Int32) -> Int32? {
   if first >= 0xc2 && first <= 0xdf {
     Some(2)
   } else if first >= 0xe0 && first <= 0xef {
@@ -110,8 +110,8 @@ fn opc_utf8_percent_length(first : Int) -> Int? {
 /// out-of-range scalars before they reach path normalization.
 fn opc_decode_percent_scalar(
   characters : ArrayView[Char],
-  index : Int,
-) -> (String, Char, Int)? {
+  index : Int32,
+) -> (String, Char, Int32)? {
   guard opc_percent_byte(characters, index) is Some(first) && first >= 0x80 else {
     return None
   }
@@ -198,7 +198,7 @@ pub fn part_name_key(name : StringView) -> String {
 priv struct PartNameTrieNode {
   mut terminal : String?
   mut first_part : String?
-  children : @sorted_map.SortedMap[String, Int]
+  children : @sorted_map.SortedMap[String, Int32]
 }
 
 ///|

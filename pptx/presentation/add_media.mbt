@@ -17,7 +17,7 @@
 /// the poster isn't a recognised image.
 pub fn Presentation::add_video_mut(
   self : Presentation,
-  slide_idx : Int,
+  slide_idx : Int32,
   video_bytes~ : FixedArray[Byte],
   poster_bytes~ : FixedArray[Byte],
   x~ : @units.Emu,
@@ -58,7 +58,7 @@ pub fn Presentation::add_video_mut(
 /// image shown for it (e.g. a speaker icon). Otherwise like `add_video_mut`.
 pub fn Presentation::add_audio_mut(
   self : Presentation,
-  slide_idx : Int,
+  slide_idx : Int32,
   audio_bytes~ : FixedArray[Byte],
   poster_bytes~ : FixedArray[Byte],
   x~ : @units.Emu,
@@ -100,7 +100,7 @@ pub fn Presentation::add_audio_mut(
 /// embed), the content-type defaults, and the `Picture::of_media` shape.
 fn Presentation::add_media_mut(
   self : Presentation,
-  slide_idx : Int,
+  slide_idx : Int32,
   media_bytes : FixedArray[Byte],
   fmt : @oxml.MediaFormat,
   kind : @slide.MediaKind,

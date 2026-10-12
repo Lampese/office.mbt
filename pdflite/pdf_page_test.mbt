@@ -86,7 +86,7 @@ fn page_hello_resources_for_test() -> @syntax.PdfObject {
 }
 
 ///|
-fn page_index_mediabox_for_test(index : Int) -> @syntax.PdfObject {
+fn page_index_mediabox_for_test(index : Int32) -> @syntax.PdfObject {
   PdfArray([
     PdfInteger(index),
     PdfInteger(0),
@@ -96,7 +96,7 @@ fn page_index_mediabox_for_test(index : Int) -> @syntax.PdfObject {
 }
 
 ///|
-fn page_indexed_blank_for_test(index : Int) -> @page.PdfPage {
+fn page_indexed_blank_for_test(index : Int32) -> @page.PdfPage {
   {
     ..@page.pdf_page_blank(@geometry.paper_a4),
     mediabox: page_index_mediabox_for_test(index),
@@ -392,7 +392,7 @@ test "PdfDocument pages_of_pagetree_quick rejects malformed kids" {
       (key_kids, PdfArray([PdfInteger(1)])),
     ]),
   )
-  let result : Result[Int, Error] = try doc.pages_of_pagetree_quick() catch {
+  let result : Result[Int32, Error] = try doc.pages_of_pagetree_quick() catch {
     err => Err(err)
   } noraise {
     value => Ok(value)
@@ -454,7 +454,7 @@ test "PdfDocument page_reference_numbers reports missing page root" {
   let doc = @pdflite.pdf_document_empty()
   doc.set_root(1)
   doc.add_object_given_number(1, @syntax.pdf_dictionary([]))
-  let result : Result[Array[Int], Error] = try
+  let result : Result[Array[Int32], Error] = try
     doc.page_reference_numbers()
   catch {
     err => Err(err)
@@ -845,7 +845,7 @@ test "pdf_page_process_stub returns identity page matrix" {
 
 ///|
 test "pdf_page_process_stub propagates callback errors" {
-  let result : Result[(Int, Int, @geometry.TransformMatrix), Error] = try
+  let result : Result[(Int32, Int32, @geometry.TransformMatrix), Error] = try
     @pdflite.pdf_page_process_stub(
       fn(n, p) raise {
         if p == 0 {
@@ -892,7 +892,7 @@ test "PdfDocument process_pages rewrites selected pages and carries matrices" {
   )
   @pdflite.pdf_clear_progress_output()
   @pdflite.pdf_set_progress(true)
-  let seen : Array[Int] = []
+  let seen : Array[Int32] = []
   let processed = try! document.process_pages([1, 99], (page_number, page) => {
     seen.push(page_number)
     (
@@ -930,7 +930,7 @@ test "PdfDocument process_pages rewrites selected pages and carries matrices" {
     (page, 2, @geometry.transform_identity_matrix)
   })
   @test.assert_eq((try! wrapped.pages_of_pagetree()).length(), 2)
-  let source_order_seen : Array[Int] = []
+  let source_order_seen : Array[Int32] = []
   let source_order = try! @pdflite.pdf_process_pages_cpdf_order(
     (page_number, page) => {
       source_order_seen.push(page_number)
@@ -952,20 +952,20 @@ test "PdfDocument process_pages rewrites selected pages and carries matrices" {
 ///|
 test "PdfDocument iter_pages and map_pages follow document order" {
   let document = try! @pdflite.pdf_blank_document(10.0, 10.0, 3)
-  let iterated : Array[Int] = []
+  let iterated : Array[Int32] = []
   try! document.iter_pages([3, 1, 9], (page_number, page) => {
     ignore(page)
     iterated.push(page_number)
   })
   @test.assert_eq(iterated, [1, 3])
 
-  let wrapped_iterated : Array[Int] = []
+  let wrapped_iterated : Array[Int32] = []
   try! @pdflite.pdf_iter_pages(document, [2], (page_number, page) => {
     ignore(page)
     wrapped_iterated.push(page_number)
   })
   @test.assert_eq(wrapped_iterated, [2])
-  let source_order_iterated : Array[Int] = []
+  let source_order_iterated : Array[Int32] = []
   try! @pdflite.pdf_iter_pages_cpdf_order(
     (page_number, page) => {
       ignore(page)

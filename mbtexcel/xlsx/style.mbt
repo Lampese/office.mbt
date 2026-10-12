@@ -24,7 +24,7 @@
 /// - 21: h:mm:ss
 /// - 22: m/d/yy h:mm
 pub enum NumberFormat {
-  Builtin(Int)
+  Builtin(Int32)
   Custom(String)
 } derive(Eq, Debug)
 
@@ -53,11 +53,11 @@ pub struct Font {
   mut underline : String?
   mut size : Double?
   mut color : String?
-  mut color_theme : Int?
-  mut color_indexed : Int?
+  mut color_theme : Int32?
+  mut color_indexed : Int32?
   mut color_tint : Double?
-  mut charset : Int?
-  mut family_number : Int?
+  mut charset : Int32?
+  mut family_number : Int32?
   mut scheme : String?
   mut vert_align : String?
   mut family : String?
@@ -113,11 +113,11 @@ pub fn Font::with_values(
   underline? : String,
   size? : Double,
   color? : String,
-  color_theme? : Int,
-  color_indexed? : Int,
+  color_theme? : Int32,
+  color_indexed? : Int32,
   color_tint? : Double,
-  charset? : Int,
-  family_number? : Int,
+  charset? : Int32,
+  family_number? : Int32,
   scheme? : String,
   vert_align? : String,
   family? : String,
@@ -214,15 +214,15 @@ pub fn Font::with_values(
 /// ```
 pub struct Fill {
   mut typ : String?
-  mut pattern : Int?
-  mut shading : Int?
+  mut pattern : Int32?
+  mut shading : Int32?
   mut colors : Array[String]?
-  mut transparency : Int?
-  mut fg_theme : Int?
-  mut fg_indexed : Int?
+  mut transparency : Int32?
+  mut fg_theme : Int32?
+  mut fg_indexed : Int32?
   mut fg_tint : Double?
-  mut bg_theme : Int?
-  mut bg_indexed : Int?
+  mut bg_theme : Int32?
+  mut bg_indexed : Int32?
   mut bg_tint : Double?
 } derive(Eq, Debug)
 
@@ -245,9 +245,9 @@ fn Fill::new() -> Fill {
 
 ///|
 pub fn Fill::pattern(
-  pattern? : Int,
+  pattern? : Int32,
   color? : String,
-  transparency? : Int,
+  transparency? : Int32,
 ) -> Fill {
   let fill = Fill::new()
   fill.typ = Some("pattern")
@@ -279,7 +279,7 @@ pub fn Fill::pattern(
 ///
 /// let semi_transparent = Fill::solid("FF0000", transparency=50)
 /// ```
-pub fn Fill::solid(color : String, transparency? : Int) -> Fill {
+pub fn Fill::solid(color : String, transparency? : Int32) -> Fill {
   Fill::pattern(pattern=1, color~, transparency?)
 }
 
@@ -467,8 +467,8 @@ let fill_gradient_variants : Array[GradientVariant] = [
 pub fn Fill::gradient(
   color1 : String,
   color2 : String,
-  shading? : Int = 0,
-  transparency? : Int,
+  shading~ : Int32 = 0,
+  transparency? : Int32,
 ) -> Fill {
   let fill = Fill::new()
   fill.typ = Some("gradient")
@@ -482,7 +482,7 @@ pub fn Fill::gradient(
 }
 
 ///|
-pub fn Fill::solid_theme(theme : Int, tint? : Double) -> Fill {
+pub fn Fill::solid_theme(theme : Int32, tint? : Double) -> Fill {
   let fill = Fill::new()
   fill.typ = Some("pattern")
   fill.pattern = Some(1)
@@ -495,7 +495,7 @@ pub fn Fill::solid_theme(theme : Int, tint? : Double) -> Fill {
 }
 
 ///|
-pub fn Fill::solid_indexed(indexed : Int, tint? : Double) -> Fill {
+pub fn Fill::solid_indexed(indexed : Int32, tint? : Double) -> Fill {
   let fill = Fill::new()
   fill.typ = Some("pattern")
   fill.pattern = Some(1)
@@ -508,7 +508,7 @@ pub fn Fill::solid_indexed(indexed : Int, tint? : Double) -> Fill {
 }
 
 ///|
-pub fn Fill::solid_bg_theme(theme : Int, tint? : Double) -> Fill {
+pub fn Fill::solid_bg_theme(theme : Int32, tint? : Double) -> Fill {
   let fill = Fill::new()
   fill.typ = Some("pattern")
   fill.pattern = Some(1)
@@ -521,7 +521,7 @@ pub fn Fill::solid_bg_theme(theme : Int, tint? : Double) -> Fill {
 }
 
 ///|
-pub fn Fill::solid_bg_indexed(indexed : Int, tint? : Double) -> Fill {
+pub fn Fill::solid_bg_indexed(indexed : Int32, tint? : Double) -> Fill {
   let fill = Fill::new()
   fill.typ = Some("pattern")
   fill.pattern = Some(1)
@@ -558,14 +558,14 @@ pub fn Fill::solid_bg_indexed(indexed : Int, tint? : Double) -> Fill {
 pub struct Border {
   typ : String
   mut color : String?
-  mut style : Int?
+  mut style : Int32?
 } derive(Eq, Debug)
 
 ///|
 priv struct BorderXmlEntry {
   diagonal_up : Bool
   diagonal_down : Bool
-  lines : Array[(String, Int, String?)]
+  lines : Array[(String, Int32, String?)]
 }
 
 ///|
@@ -590,7 +590,7 @@ fn Border::new(typ : String) -> Border {
 pub fn Border::with_values(
   typ : String,
   color? : String,
-  style? : Int,
+  style? : Int32,
 ) -> Border {
   let border = Border::new(typ)
   match color {
@@ -641,12 +641,12 @@ pub struct Alignment {
   mut horizontal : String?
   mut vertical : String?
   mut wrap_text : Bool?
-  mut text_rotation : Int?
-  mut indent : Int?
+  mut text_rotation : Int32?
+  mut indent : Int32?
   mut shrink_to_fit : Bool?
   mut justify_last_line : Bool?
-  mut reading_order : Int?
-  mut relative_indent : Int?
+  mut reading_order : Int32?
+  mut relative_indent : Int32?
 } derive(Eq, Debug)
 
 ///|
@@ -678,12 +678,12 @@ pub fn Alignment::with_values(
   horizontal? : String,
   vertical? : String,
   wrap_text? : Bool,
-  text_rotation? : Int,
-  indent? : Int,
+  text_rotation? : Int32,
+  indent? : Int32,
   shrink_to_fit? : Bool,
   justify_last_line? : Bool,
-  reading_order? : Int,
-  relative_indent? : Int,
+  reading_order? : Int32,
+  relative_indent? : Int32,
 ) -> Alignment {
   let align = Alignment::new()
   match horizontal {
@@ -745,8 +745,8 @@ pub fn Alignment::with_values(
 /// ```
 pub struct Style {
   number_format : NumberFormat?
-  num_fmt : Int?
-  decimal_places : Int?
+  num_fmt : Int32?
+  decimal_places : Int32?
   custom_num_fmt : String?
   neg_red : Bool?
   font : Font?
@@ -816,7 +816,7 @@ pub fn Style::number_format(format_code : String) -> Style {
 /// - 9: 0%
 /// - 10: 0.00%
 /// - 14: mm-dd-yy
-pub fn Style::builtin_number_format(id : Int) -> Style {
+pub fn Style::builtin_number_format(id : Int32) -> Style {
   {
     number_format: Some(Builtin(id)),
     num_fmt: None,
@@ -843,9 +843,9 @@ pub fn Style::excelize_custom_num_fmt(
 
 ///|
 pub fn Style::excelize_currency_num_fmt(
-  num_fmt : Int,
-  decimal_places? : Int = 2,
-  neg_red? : Bool = false,
+  num_fmt : Int32,
+  decimal_places~ : Int32 = 2,
+  neg_red~ : Bool = false,
 ) -> Style raise XlsxError {
   if decimal_places < 0 || decimal_places > 30 {
     raise InvalidOptions(msg="decimal places must be in [0, 30]")
@@ -997,7 +997,7 @@ pub fn Style::with_number_format(self : Style, format_code : String) -> Style {
 
 ///|
 /// Replaces the number format with a built-in format ID.
-pub fn Style::with_builtin_number_format(self : Style, id : Int) -> Style {
+pub fn Style::with_builtin_number_format(self : Style, id : Int32) -> Style {
   {
     ..self,
     number_format: Some(Builtin(id)),
@@ -1097,8 +1097,8 @@ fn write_styles_xml(
   for style in conditional_styles {
     dxf_list.push(style)
   }
-  let num_fmt_entries : Array[(Int, String)] = []
-  let num_fmt_ids : Map[String, Int] = Map([])
+  let num_fmt_entries : Array[(Int32, String)] = []
+  let num_fmt_ids : Map[String, Int32] = Map([])
   let mut next_id = 164
   for style in style_list {
     match style.number_format {
@@ -1150,7 +1150,7 @@ fn write_styles_xml(
   }
   // Font collection: id 0 is the workbook default font.
   let fonts : Array[Font] = [Font::with_values(size=11.0, family=font_name)]
-  let font_ids : Map[String, Int] = Map([])
+  let font_ids : Map[String, Int32] = Map([])
   fn normalize_font_key(font : Font, default_family : StringView) -> String {
     let family = match font.family {
       Some(v) => v.to_string()
@@ -1387,9 +1387,9 @@ fn write_styles_xml(
   for entry in fills {
     fill_budget.consume(entry)
   }
-  let fill_ids : Map[String, Int] = Map([])
+  let fill_ids : Map[String, Int32] = Map([])
   fn normalize_pattern_fill_key(
-    pattern : Int,
+    pattern : Int32,
     fg_attrs : String,
     bg_attrs : String,
   ) -> String {
@@ -1397,7 +1397,7 @@ fn write_styles_xml(
   }
 
   fn normalize_gradient_fill_key(
-    shading : Int,
+    shading : Int32,
     c1 : String,
     c2 : String,
   ) -> String {
@@ -1406,7 +1406,7 @@ fn write_styles_xml(
 
   fill_ids[normalize_pattern_fill_key(0, "", "")] = 0
   fill_ids[normalize_pattern_fill_key(17, "", "")] = 1
-  fn clamp_transparency(v : Int) -> Int {
+  fn clamp_transparency(v : Int32) -> Int32 {
     if v < 0 {
       0
     } else if v > 100 {
@@ -1416,7 +1416,7 @@ fn write_styles_xml(
     }
   }
 
-  fn fill_rgb(color : String, transparency : Int) -> String {
+  fn fill_rgb(color : String, transparency : Int32) -> String {
     let normalized = color.replace_all(old="#", new="")
     let base = if normalized.length() == 8 {
       normalized[2:].to_owned()
@@ -1435,11 +1435,11 @@ fn write_styles_xml(
   }
 
   fn fill_color_attrs(
-    theme : Int?,
-    indexed : Int?,
+    theme : Int32?,
+    indexed : Int32?,
     tint : Double?,
     rgb : String?,
-    transparency : Int,
+    transparency : Int32,
     budget : WritePartBudget?,
   ) -> String raise XlsxError {
     match theme {
@@ -1479,7 +1479,7 @@ fn write_styles_xml(
   }
 
   fn pattern_fill_xml(
-    pattern : Int,
+    pattern : Int32,
     fg_attrs : String,
     bg_attrs : String,
     budget : WritePartBudget?,
@@ -1672,7 +1672,7 @@ fn write_styles_xml(
       ],
     },
   ]
-  let border_ids : Map[String, Int] = Map([])
+  let border_ids : Map[String, Int32] = Map([])
   fn normalize_border_key(entry : BorderXmlEntry) -> String {
     let sb = StringBuilder()
     sb.write_view(if entry.diagonal_up { "1" } else { "0" })
@@ -1698,7 +1698,7 @@ fn write_styles_xml(
     let sides : Array[String] = [
       "left", "right", "top", "bottom", "vertical", "horizontal",
     ]
-    let lines : Array[(String, Int, String?)] = []
+    let lines : Array[(String, Int32, String?)] = []
     for side in sides {
       let mut style = 0
       let mut color : String? = None

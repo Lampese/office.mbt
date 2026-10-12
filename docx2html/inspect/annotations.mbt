@@ -202,7 +202,7 @@ fn annotation_story_element(
 fn render_container_segment(
   pairs : Array[(String, Array[@document.DocumentElement])],
   container_kind : String,
-  ordinal : Int,
+  ordinal : Int32,
 ) -> (String, Bool) {
   let (id, _) = pairs[ordinal - 1]
   let mut occurrences = 0
@@ -255,7 +255,7 @@ fn id_form_path(
   let inner = head[expected_prefix.length():head.length() - 1].to_owned()
   let mut ordinal = 0
   for ch in inner {
-    if ch is ('0'..='9') {
+    if ch is ('0'..<='9') {
       ordinal = ordinal * 10 + (ch.to_int() - '0'.to_int())
     } else {
       return path

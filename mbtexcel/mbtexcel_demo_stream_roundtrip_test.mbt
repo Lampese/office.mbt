@@ -1,5 +1,5 @@
 ///|
-fn assert_demo_stream_archive(bytes : Bytes, rows : Int) -> Unit raise {
+fn assert_demo_stream_archive(bytes : Bytes, rows : Int32) -> Unit raise {
   let archive = @zip.read(bytes)
   inspect(archive.get("xl/worksheets/sheet1.xml") is Some(_), content="true")
   inspect(

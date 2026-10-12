@@ -47,7 +47,7 @@ fn ContentTypes::to_xml(self : ContentTypes) -> String {
 ///|
 fn ContentTypes::to_xml_with_limit(
   self : ContentTypes,
-  maximum : Int?,
+  maximum : Int32?,
 ) -> String? {
   let sb = XmlOutputBuilder::new(maximum)
   sb.write_view("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")

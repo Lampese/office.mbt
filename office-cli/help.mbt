@@ -17,7 +17,7 @@ fn optional_value(matches : @argparse.Matches, name : String) -> String? {
 }
 
 ///|
-fn edit_distance(left : String, right : String) -> Int {
+fn edit_distance(left : String, right : String) -> Int32 {
   let left_chars = left.to_array()
   let right_chars = right.to_array()
   let seed = Array::make(right_chars.length() + 1, 0)
@@ -63,7 +63,7 @@ fn edit_distance(left : String, right : String) -> Int {
 fn nearest_suggestion_with_distance(
   value : String,
   candidates : Array[String],
-) -> (String, Int)? {
+) -> (String, Int32)? {
   let bounded = bounded_text(value.to_lower(), 64)
   let mut nearest : String? = None
   let mut best = 1_000_000

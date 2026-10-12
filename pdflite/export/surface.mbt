@@ -33,7 +33,7 @@ pub struct Surface {
   priv sub_builders : Array[ContentBuilder]
   priv push_instructions : Array[PushInstruction]
   /// The next marked content ID, if tagging is enabled.
-  priv mut mcid : Int?
+  priv mut mcid : Int32?
   priv kind : SurfaceKind
 }
 
@@ -172,7 +172,7 @@ pub fn Surface::end_tagged(self : Surface) -> Unit {
 ///|
 /// The context color of color glyphs: the rgb fill, else the rgb stroke,
 /// else black (`0xRRGGBB`).
-fn Surface::context_color(self : Surface) -> Int {
+fn Surface::context_color(self : Surface) -> Int32 {
   let rgb = match self.fill {
     Some(f) => f.paint.as_rgb()
     None => None
@@ -348,7 +348,7 @@ pub(all) struct ExternalXObject {
   key : String
   /// The bounding box of the XObject in the current user space.
   bbox : Rect
-  write : (Int, () -> Int, (Int, Indirect) -> Unit) -> Unit
+  write : (Int32, () -> Int32, (Int32, Indirect) -> Unit) -> Unit
 }
 
 ///|
@@ -371,7 +371,7 @@ pub fn Surface::draw_external_xobject(
 /// The reference of the page tree (the parent of all pages). External
 /// objects that contain page objects (e.g. hayro-write extracting a page
 /// with its annotations) use it as their `/Parent`.
-pub fn Surface::page_tree_ref(self : Surface) -> Int {
+pub fn Surface::page_tree_ref(self : Surface) -> Int32 {
   self.sc.page_tree_ref
 }
 

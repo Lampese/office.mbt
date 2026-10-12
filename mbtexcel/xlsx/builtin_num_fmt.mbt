@@ -72,7 +72,7 @@
 ///   debug_inspect(@xlsx.builtin_number_format_code(30), content="None")
 /// }
 /// ```
-pub fn builtin_number_format_code(id : Int) -> String? {
+pub fn builtin_number_format_code(id : Int32) -> String? {
   match id {
     1 => Some("0")
     2 => Some("0.00")

@@ -4,7 +4,7 @@
 
 ///|
 /// Generated predefined CMap lookup data.
-let pdf_text_hkscs_codepoint_table_flat : ReadOnlyArray[Int] = [
+let pdf_text_hkscs_codepoint_table_flat : ReadOnlyArray[Int32] = [
   0x0020, 0x0020, 0x0021, 0x0021, 0x0022, 0x0022, 0x0023, 0x0023, 0x0024, 0x0024,
   0x0025, 0x0025, 0x0026, 0x0026, 0x0027, 0x0027, 0x0028, 0x0028, 0x0029, 0x0029,
   0x002A, 0x002A, 0x002B, 0x002B, 0x002C, 0x002C, 0x002D, 0x002D, 0x002E, 0x002E,
@@ -3743,7 +3743,7 @@ let pdf_text_hkscs_codepoint_table_flat : ReadOnlyArray[Int] = [
 
 ///|
 /// Predefined CMap lookup table, unpacked at load from the flat static data above.
-pub let pdf_text_hkscs_codepoint_table : Array[(Int, Int)] = pdf_cmap_unpack2(
+pub let pdf_text_hkscs_codepoint_table : Array[(Int32, Int32)] = pdf_cmap_unpack2(
   pdf_text_hkscs_codepoint_table_flat,
 )
 
@@ -3752,7 +3752,7 @@ pub let pdf_text_hkscs_codepoint_table : Array[(Int, Int)] = pdf_cmap_unpack2(
 
 ///|
 /// Generated predefined CMap lookup data.
-let pdf_text_hkscs_charcode_table_flat : ReadOnlyArray[Int] = [
+let pdf_text_hkscs_charcode_table_flat : ReadOnlyArray[Int32] = [
   0x0000, 0xA1FE, 0x0020, 0x0020, 0x0021, 0x0021, 0x0022, 0x0022, 0x0023, 0x0023,
   0x0024, 0x0024, 0x0025, 0x0025, 0x0026, 0x0026, 0x0027, 0x0027, 0x0028, 0x0028,
   0x0029, 0x0029, 0x002A, 0x002A, 0x002B, 0x002B, 0x002C, 0x002C, 0x002D, 0x002D,
@@ -7472,6 +7472,6 @@ let pdf_text_hkscs_charcode_table_flat : ReadOnlyArray[Int] = [
 
 ///|
 /// Predefined CMap lookup table, unpacked at load from the flat static data above.
-pub let pdf_text_hkscs_charcode_table : Array[(Int, Int)] = pdf_cmap_unpack2(
+pub let pdf_text_hkscs_charcode_table : Array[(Int32, Int32)] = pdf_cmap_unpack2(
   pdf_text_hkscs_charcode_table_flat,
 )

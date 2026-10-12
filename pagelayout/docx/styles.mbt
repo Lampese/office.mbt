@@ -66,7 +66,7 @@ fn read_style_entry(style : @xml.XmlElement, theme : ThemeFonts) -> StyleEntry {
 /// Parse a `w:styles` root element.
 pub fn read_stylesheet(
   root : @xml.XmlElement,
-  theme? : ThemeFonts = ThemeFonts::empty(),
+  theme~ : ThemeFonts = ThemeFonts::empty(),
 ) -> StyleSheet {
   let sheet = StyleSheet::empty()
   let mut default_run = RunProps::empty()

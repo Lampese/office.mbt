@@ -232,9 +232,9 @@ fn read_row(
 pub fn read_table(
   tbl : @xml.XmlElement,
   sheet : StyleSheet,
-  theme? : ThemeFonts = ThemeFonts::empty(),
-  numbering? : @numbering.Numbering = @numbering.Numbering::empty(),
-  counters? : @numbering.Counters = @numbering.Counters::new(),
+  theme~ : ThemeFonts = ThemeFonts::empty(),
+  numbering~ : @numbering.Numbering = @numbering.Numbering::empty(),
+  counters~ : @numbering.Counters = @numbering.Counters::new(),
 ) -> @table.Table {
   let mut width : @table.Width = Auto
   let mut layout : @table.TableLayout = Autofit

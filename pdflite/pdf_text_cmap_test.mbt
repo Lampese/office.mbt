@@ -4,7 +4,7 @@ fn text_cmap_name_for_test(text : String) -> @core.PdfName {
 }
 
 ///|
-fn text_cmap_bytes_for_test(values : ArrayView[Int]) -> @core.PdfBytes {
+fn text_cmap_bytes_for_test(values : ArrayView[Int32]) -> @core.PdfBytes {
   try! @core.pdf_bytes_of_int_array(values)
 }
 
@@ -1519,7 +1519,7 @@ test "PdfDocument applies indirect external CMap text segmentation and CID mappi
   )
   @test.assert_eq(extractor.charcode_of_codepoint(202), Some(0x8142))
   @test.assert_eq(extractor.charcode_of_codepoint(0x30), None)
-  let truncated : Result[Array[Int], Error] = try
+  let truncated : Result[Array[Int32], Error] = try
     extractor.codepoints_of_text(text_cmap_bytes_for_test([0x81]))
   catch {
     err => Err(err)

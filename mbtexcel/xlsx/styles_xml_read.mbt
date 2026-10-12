@@ -1,12 +1,12 @@
 ///|
-fn find_last_substring(text : StringView, needle : StringView) -> Int? {
+fn find_last_substring(text : StringView, needle : StringView) -> Int32? {
   let text_str = text.to_owned()
   let needle_str = needle.to_owned()
   if needle_str == "" {
     return None
   }
   let mut i = 0
-  let mut last : Int? = None
+  let mut last : Int32? = None
   while i < text_str.length() {
     let rest = text_str[i:]
     match rest.find(needle_str) {
@@ -22,7 +22,7 @@ fn find_last_substring(text : StringView, needle : StringView) -> Int? {
 }
 
 ///|
-fn end_after_last_tag(xml : StringView, tag : StringView) -> Int? {
+fn end_after_last_tag(xml : StringView, tag : StringView) -> Int32? {
   let close_tag = "</\{tag.to_owned()}>"
   match find_last_substring(xml, close_tag) {
     Some(pos) => Some(pos + close_tag.length())

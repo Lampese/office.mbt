@@ -9,7 +9,7 @@
 /// builtin id, column B styled with the reverse-mapped code — and returns
 /// the two formatted output columns.
 fn rendered_columns(
-  id : Int,
+  id : Int32,
   values : ArrayView[Double],
 ) -> (Array[String?], Array[String?]) raise {
   let code = @xlsx.builtin_number_format_code(id).unwrap()
@@ -47,7 +47,7 @@ let date_serial_battery : Array[Double] = [
 
 ///|
 test "numfmt reverse lookup round-trips the numeric builtin ids" {
-  for id in ([1, 2, 3, 4, 9, 10] : Array[Int]) {
+  for id in ([1, 2, 3, 4, 9, 10] : Array[Int32]) {
     let (via_builtin, via_code) = rendered_columns(id, numeric_battery)
     assert_eq(via_builtin, via_code, msg="builtin id \{id}")
   }
@@ -55,7 +55,7 @@ test "numfmt reverse lookup round-trips the numeric builtin ids" {
 
 ///|
 test "numfmt reverse lookup round-trips the date builtin ids" {
-  for id in ([14, 15, 16, 17, 18, 19, 20, 21, 22] : Array[Int]) {
+  for id in ([14, 15, 16, 17, 18, 19, 20, 21, 22] : Array[Int32]) {
     let (via_builtin, via_code) = rendered_columns(id, date_serial_battery)
     assert_eq(via_builtin, via_code, msg="builtin id \{id}")
   }
@@ -95,7 +95,7 @@ test "numfmt rendering anchors for representative ids" {
 
 ///|
 test "numfmt reverse lookup coverage is exactly the fixed-code ids" {
-  let covered : Array[Int] = []
+  let covered : Array[Int32] = []
   for id in 0..<=500 {
     if @xlsx.builtin_number_format_code(id) is Some(_) {
       covered.push(id)
@@ -114,7 +114,7 @@ test "numfmt reverse lookup coverage is exactly the fixed-code ids" {
       [
         -1, 0, 5, 8, 11, 12, 13, 23, 26, 27, 30, 36, 37, 41, 44, 49, 50, 56, 62,
         63, 66, 67, 81, 82, 163, 164, 382,
-      ] : Array[Int]) {
+      ] : Array[Int32]) {
     assert_eq(@xlsx.builtin_number_format_code(id), None, msg="id \{id}")
   }
 }

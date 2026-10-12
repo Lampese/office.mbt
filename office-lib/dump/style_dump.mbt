@@ -12,8 +12,8 @@ priv struct StyleExtract {
 /// and its unexpressible attributes are reported once per workbook.
 priv struct StyleContext {
   workbook : @xlsx.Workbook
-  extracts : Map[Int, StyleExtract]
-  reported : Set[Int]
+  extracts : Map[Int32, StyleExtract]
+  reported : Set[Int32]
 }
 
 ///|
@@ -30,7 +30,7 @@ fn dump_sheet_styles(
   residual : Array[DumpResidual],
 ) -> Unit raise {
   let workbook = ctx.workbook
-  fn extract_for(id : Int) -> StyleExtract raise {
+  fn extract_for(id : Int32) -> StyleExtract raise {
     match ctx.extracts.get(id) {
       Some(found) => found
       None => {
@@ -115,7 +115,7 @@ fn dump_sheet_styles(
 ///|
 /// OOXML border style code → the batch `border` value name, for the seven
 /// codes the `style` op accepts. Other codes are unexpressible.
-fn border_style_name(code : Int) -> String? {
+fn border_style_name(code : Int32) -> String? {
   match code {
     1 => Some("thin")
     2 => Some("medium")
@@ -132,7 +132,7 @@ fn border_style_name(code : Int) -> String? {
 fn is_hex6(value : String) -> Bool {
   guard value.length() == 6 else { return false }
   for ch in value {
-    if !(ch is ('0'..='9' | 'a'..='f' | 'A'..='F')) {
+    if !(ch is ('0'..<='9' | 'a'..<='f' | 'A'..<='F')) {
       return false
     }
   }

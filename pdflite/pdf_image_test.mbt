@@ -4,17 +4,17 @@ fn image_name_for_test(text : String) -> @core.PdfName {
 }
 
 ///|
-fn image_bytes_for_test(values : ArrayView[Int]) -> @core.PdfBytes {
+fn image_bytes_for_test(values : ArrayView[Int32]) -> @core.PdfBytes {
   try! @core.pdf_bytes_of_int_array(values)
 }
 
 ///|
-fn image_json_int_for_test(value : Int) -> Json {
+fn image_json_int_for_test(value : Int32) -> Json {
   Json::number(value.to_double(), repr=value.to_string())
 }
 
 ///|
-fn image_json_int_or_null_for_test(value : Int?) -> Json {
+fn image_json_int_or_null_for_test(value : Int32?) -> Json {
   match value {
     Some(value) => image_json_int_for_test(value)
     None => Json::null()
@@ -31,17 +31,17 @@ fn image_json_string_or_null_for_test(value : String?) -> Json {
 
 ///|
 fn image_json_entry_for_test(
-  object_number : Int,
-  pages : ArrayView[Int],
+  object_number : Int32,
+  pages : ArrayView[Int32],
   name : String,
-  width : Int,
-  height : Int,
-  byte_count : Int,
-  bits_per_component : Int?,
+  width : Int32,
+  height : Int32,
+  byte_count : Int32,
+  bits_per_component : Int32?,
   colourspace : String?,
   filter : String?,
   mask : String,
-  mask_object_number : Int?,
+  mask_object_number : Int32?,
 ) -> Json {
   Json::object(
     Map([
@@ -69,11 +69,11 @@ fn image_json_entry_for_test(
 
 ///|
 fn image_resolution_json_entry_for_test(
-  object_number : Int,
-  page_number : Int,
+  object_number : Int32,
+  page_number : Int32,
   xobject : String,
-  width : Int,
-  height : Int,
+  width : Int32,
+  height : Int32,
   xdpi : Double,
   ydpi : Double,
 ) -> Json {
@@ -109,7 +109,7 @@ fn image_lookup_indirect_object_for_test(
   document : @pdflite.PdfDocument,
   object : @syntax.PdfObject,
   key : String,
-) -> (Int, @syntax.PdfObject) raise {
+) -> (Int32, @syntax.PdfObject) raise {
   let reference = try! image_lookup_for_test(object, key)
   guard reference is PdfIndirect(number) else {
     fail("expected dictionary key " + key + " to be indirect")
@@ -148,12 +148,12 @@ fn image_jbig2_for_document_test() -> @core.PdfBytes {
 }
 
 ///|
-fn image_push_byte_for_test(output : Array[Byte], value : Int) -> Unit {
+fn image_push_byte_for_test(output : Array[Byte], value : Int32) -> Unit {
   output.push(try! @core.pdf_byte_of_int(value))
 }
 
 ///|
-fn image_push_u32_for_test(output : Array[Byte], value : Int) -> Unit {
+fn image_push_u32_for_test(output : Array[Byte], value : Int32) -> Unit {
   image_push_byte_for_test(output, (value >> 24) & 0xFF)
   image_push_byte_for_test(output, (value >> 16) & 0xFF)
   image_push_byte_for_test(output, (value >> 8) & 0xFF)
@@ -169,7 +169,7 @@ fn image_append_bytes_for_test(output : Array[Byte], bytes : BytesView) -> Unit 
 
 ///|
 fn image_png_chunk_for_test(
-  chunk_type : ArrayView[Int],
+  chunk_type : ArrayView[Int32],
   data : BytesView,
 ) -> @core.PdfBytes {
   let output : Array[Byte] = []
@@ -184,11 +184,11 @@ fn image_png_chunk_for_test(
 
 ///|
 fn image_png_header_for_test(
-  width : Int,
-  height : Int,
-  bit_depth : Int,
-  color_type : Int,
-  interlace : Int,
+  width : Int32,
+  height : Int32,
+  bit_depth : Int32,
+  color_type : Int32,
+  interlace : Int32,
 ) -> @core.PdfBytes {
   let output : Array[Byte] = []
   image_push_u32_for_test(output, width)
@@ -203,11 +203,11 @@ fn image_png_header_for_test(
 
 ///|
 fn image_png_for_test(
-  width : Int,
-  height : Int,
-  bit_depth : Int,
-  color_type : Int,
-  interlace : Int,
+  width : Int32,
+  height : Int32,
+  bit_depth : Int32,
+  color_type : Int32,
+  interlace : Int32,
   idat_chunks : ArrayView[@core.PdfBytes],
 ) -> @core.PdfBytes {
   let output : Array[Byte] = []
@@ -266,7 +266,7 @@ fn image_png_rgba_for_test() -> @core.PdfBytes {
 fn image_bytes_start_with_at_for_test(
   haystack : BytesView,
   needle : BytesView,
-  start : Int,
+  start : Int32,
 ) -> Bool {
   if start < 0 || start + needle.length() > haystack.length() {
     false
@@ -282,7 +282,7 @@ fn image_bytes_start_with_at_for_test(
 }
 
 ///|
-fn image_find_bytes_for_test(haystack : BytesView, needle : BytesView) -> Int {
+fn image_find_bytes_for_test(haystack : BytesView, needle : BytesView) -> Int32 {
   if needle.length() == 0 {
     0
   } else if haystack.length() < needle.length() {
@@ -1196,7 +1196,7 @@ test "pdf_image_document_of_jbig2_data preserves globals object" {
 ///|
 test "pdf_image_object_of_jbig2_data reports short data" {
   let result : Result[
-    (@syntax.PdfObject, Array[(Int, @syntax.PdfObject)]),
+    (@syntax.PdfObject, Array[(Int32, @syntax.PdfObject)]),
     Error,
   ] = try
     @pdflite.pdf_image_object_of_jbig2_data(image_bytes_for_test([0, 1, 2]))
@@ -1425,11 +1425,11 @@ test "pdf_image_document_of_jpeg_data requires title for PDF/UA subformat" {
 ///|
 /// A PNG with `chunks` (type, data) between IHDR and IEND, in that order.
 fn image_png_with_chunks_for_test(
-  width : Int,
-  height : Int,
-  bit_depth : Int,
-  color_type : Int,
-  chunks : ArrayView[(ArrayView[Int], @core.PdfBytes)],
+  width : Int32,
+  height : Int32,
+  bit_depth : Int32,
+  color_type : Int32,
+  chunks : ArrayView[(ArrayView[Int32], @core.PdfBytes)],
 ) -> @core.PdfBytes {
   let output : Array[Byte] = []
   for value in [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A] {
@@ -1470,8 +1470,8 @@ fn image_png_mask_for_test(png : @core.PdfBytes) -> @syntax.PdfObject? {
 
 ///|
 test "pdf_image_object_of_png_data masks a PNG's colour key" {
-  let trns : ReadOnlyArray[Int] = [0x74, 0x52, 0x4E, 0x53]
-  let idat_type : ReadOnlyArray[Int] = [0x49, 0x44, 0x41, 0x54]
+  let trns : ReadOnlyArray[Int32] = [0x74, 0x52, 0x4E, 0x53]
+  let idat_type : ReadOnlyArray[Int32] = [0x49, 0x44, 0x41, 0x54]
   // greyscale: the grey sample 0x42 is transparent
   let grey = image_png_with_chunks_for_test(2, 1, 8, 0, [
     (trns, image_bytes_for_test([0, 0x42])),
@@ -1512,8 +1512,8 @@ test "pdf_image_object_of_png_data masks a PNG's colour key" {
 
 ///|
 test "pdf_image_object_of_png_data clears a colour key's unused bits" {
-  let trns : ReadOnlyArray[Int] = [0x74, 0x52, 0x4E, 0x53]
-  let idat_type : ReadOnlyArray[Int] = [0x49, 0x44, 0x41, 0x54]
+  let trns : ReadOnlyArray[Int32] = [0x74, 0x52, 0x4E, 0x53]
+  let idat_type : ReadOnlyArray[Int32] = [0x49, 0x44, 0x41, 0x54]
   // an 8-bit greyscale key of 0x0142 is the sample 0x42
   let grey = image_png_with_chunks_for_test(2, 1, 8, 0, [
     (trns, image_bytes_for_test([0x01, 0x42])),
@@ -1527,8 +1527,8 @@ test "pdf_image_object_of_png_data clears a colour key's unused bits" {
 
 ///|
 test "pdf_image_object_of_png_data stops at a chunk length past the data" {
-  let text_type : ReadOnlyArray[Int] = [0x74, 0x45, 0x58, 0x74]
-  let idat_type : ReadOnlyArray[Int] = [0x49, 0x44, 0x41, 0x54]
+  let text_type : ReadOnlyArray[Int32] = [0x74, 0x45, 0x58, 0x74]
+  let idat_type : ReadOnlyArray[Int32] = [0x49, 0x44, 0x41, 0x54]
   let png = image_png_with_chunks_for_test(2, 1, 8, 0, [
     (text_type, image_bytes_for_test([0x61])),
     (idat_type, @flate.pdf_flate_encode(image_bytes_for_test([0, 0x42, 7]))),
@@ -1561,8 +1561,8 @@ fn image_png_mask_absent_for_test(png : @core.PdfBytes) -> Unit raise {
 
 ///|
 test "pdf_image_object_of_png_data raises the version its masks need" {
-  let trns : ReadOnlyArray[Int] = [0x74, 0x52, 0x4E, 0x53]
-  let idat_type : ReadOnlyArray[Int] = [0x49, 0x44, 0x41, 0x54]
+  let trns : ReadOnlyArray[Int32] = [0x74, 0x52, 0x4E, 0x53]
+  let idat_type : ReadOnlyArray[Int32] = [0x49, 0x44, 0x41, 0x54]
   let grey = image_png_with_chunks_for_test(2, 1, 8, 0, [
     (trns, image_bytes_for_test([0, 0x42])),
     (idat_type, @flate.pdf_flate_encode(image_bytes_for_test([0, 0x42, 7]))),
@@ -1589,14 +1589,14 @@ test "pdf_image_object_of_png_data raises the version its masks need" {
 
 ///|
 test "pdf_read_png reads a colour key as the image's transparency" {
-  let trns : ReadOnlyArray[Int] = [0x74, 0x52, 0x4E, 0x53]
-  let idat_type : ReadOnlyArray[Int] = [0x49, 0x44, 0x41, 0x54]
+  let trns : ReadOnlyArray[Int32] = [0x74, 0x52, 0x4E, 0x53]
+  let idat_type : ReadOnlyArray[Int32] = [0x49, 0x44, 0x41, 0x54]
   let idat = @flate.pdf_flate_encode(
     image_bytes_for_test([0, 0, 0, 0, 0, 0, 0]),
   )
-  let key = (depth : Int, color_type : Int, chunks : Array[Array[Int]]) => {
-    let all : Array[(ArrayView[Int], @core.PdfBytes)] = chunks.map(c => {
-      let chunk : (ArrayView[Int], @core.PdfBytes) = (
+  let key = (depth : Int32, color_type : Int32, chunks : Array[Array[Int32]]) => {
+    let all : Array[(ArrayView[Int32], @core.PdfBytes)] = chunks.map(c => {
+      let chunk : (ArrayView[Int32], @core.PdfBytes) = (
         trns,
         image_bytes_for_test(c),
       )
@@ -1607,7 +1607,7 @@ test "pdf_read_png reads a colour key as the image's transparency" {
       image_png_with_chunks_for_test(1, 1, depth, color_type, all),
     ).transparency
   }
-  let colour_key = (samples : Array[Int]) => {
+  let colour_key = (samples : Array[Int32]) => {
     let transparency : @pdflite.PdfPNGTransparency? = Some(
       PdfPNGColourKey(samples),
     )
@@ -1630,7 +1630,7 @@ test "pdf_read_png reads a colour key as the image's transparency" {
 
 ///|
 test "pdf_image_object_of_png_data needs all of an alpha image's data" {
-  let refused = (width : Int, depth : Int, raster : ArrayView[Int]) => {
+  let refused = (width : Int32, depth : Int32, raster : ArrayView[Int32]) => {
     try
       @pdflite.pdf_image_object_of_png_data(
         @pdflite.pdf_document_empty(),

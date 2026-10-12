@@ -2,8 +2,8 @@
 fn PdfDocumentPageSpecContext::read_page_label_reference(
   self : PdfDocumentPageSpecContext,
   spec : BytesView,
-  open_index : Int,
-) -> (Bytes, Int) raise @core.PdfError {
+  open_index : Int32,
+) -> (Bytes, Int32) raise @core.PdfError {
   let label : Array[Byte] = []
   for index = open_index + 1; index < spec.length(); {
     match spec[index] {

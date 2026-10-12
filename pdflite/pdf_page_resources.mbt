@@ -244,7 +244,7 @@ fn pdf_page_merge_dictionary_objects(
 fn PdfDocument::pdf_page_process_form_xobject(
   self : PdfDocument,
   resources : @syntax.PdfObject,
-  object_number : Int,
+  object_number : Int32,
   process : (PdfDocument, @syntax.PdfObject, ArrayView[@syntax.PdfObject]) -> Array[
     @syntax.PdfObject,
   ] raise @core.PdfError,

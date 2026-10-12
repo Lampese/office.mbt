@@ -1,9 +1,9 @@
 ///|
 priv struct RawSpanEdit {
-  start : Int
-  end : Int
+  start : Int32
+  end : Int32
   replacement : Bytes
-  ordinal : Int
+  ordinal : Int32
 }
 
 ///|
@@ -143,7 +143,7 @@ fn parse_raw_attribute_name(
 ///|
 fn raw_attribute_source_name(
   document : RawXmlDocument,
-  node_index : Int,
+  node_index : Int32,
   name : RawExpandedName,
 ) -> String raise RawError {
   if name.prefix == "" {
@@ -188,10 +188,10 @@ fn raw_self_closing_with_child(
 ///|
 fn checked_raw_result_size(
   part : String,
-  current : Int,
-  removed : Int,
-  inserted : Int,
-) -> Int raise RawError {
+  current : Int32,
+  removed : Int32,
+  inserted : Int32,
+) -> Int32 raise RawError {
   if removed < 0 || removed > current || inserted < 0 {
     raise raw_error(
       "office.raw.overlapping_edits",
@@ -217,7 +217,7 @@ fn checked_raw_result_size(
 fn preflight_raw_edit_size(
   part : String,
   document : RawXmlDocument,
-  selected : ArrayView[Int],
+  selected : ArrayView[Int32],
   action : RawAction,
   fragment : Bytes?,
   attribute_name : RawExpandedName?,
@@ -249,7 +249,7 @@ fn preflight_raw_edit_size(
       SetAttribute => {
         let name = attribute_name.unwrap()
         let value_length = escaped_attribute_value.unwrap().length()
-        let mut existing : (Int, Int)? = None
+        let mut existing : (Int32, Int32)? = None
         for attribute in node.attributes {
           if attribute.expanded == name.expanded {
             existing = Some(
@@ -276,12 +276,12 @@ fn preflight_raw_edit_size(
 ///|
 fn raw_element_edit(
   document : RawXmlDocument,
-  node_index : Int,
+  node_index : Int32,
   action : RawAction,
   fragment : Bytes?,
   attribute_name : RawExpandedName?,
   escaped_attribute_value : Bytes?,
-  ordinal : Int,
+  ordinal : Int32,
 ) -> RawSpanEdit raise RawError {
   let node = document.nodes[node_index]
   match action {
@@ -410,7 +410,7 @@ fn apply_raw_span_edits(
 }
 
 ///|
-fn check_raw_package_limit(max_package_bytes : Int) -> Unit raise RawError {
+fn check_raw_package_limit(max_package_bytes : Int32) -> Unit raise RawError {
   if max_package_bytes < 0 {
     raise raw_error(
       "office.raw.invalid_request", "candidate package limit must be non-negative",
@@ -421,7 +421,7 @@ fn check_raw_package_limit(max_package_bytes : Int) -> Unit raise RawError {
 ///|
 fn write_raw_candidate_archive(
   archive : @zip.Archive,
-  max_package_bytes : Int,
+  max_package_bytes : Int32,
 ) -> Bytes raise RawError {
   check_raw_package_limit(max_package_bytes)
   let enforced_limit = if max_package_bytes < raw_max_package_bytes {
@@ -462,7 +462,7 @@ fn rebuild_raw_archive(
   pkg : RawPackage,
   part : String,
   replacement : Bytes,
-  max_package_bytes : Int,
+  max_package_bytes : Int32,
 ) -> Bytes raise RawError {
   let exact_name = match pkg.names.get(canonical_part_key(part)) {
     Some(name) => name
@@ -540,7 +540,7 @@ fn raw_replace_part_package(
   part : String,
   xml : String,
   validate_serialized : Bool,
-  max_package_bytes : Int,
+  max_package_bytes : Int32,
 ) -> RawMutation raise RawError {
   check_raw_package_limit(max_package_bytes)
   validate_part_selector(part)
@@ -601,7 +601,7 @@ pub fn raw_replace_part_archive(
   archive : @zip.Archive,
   part : String,
   xml : String,
-  max_package_bytes~ : Int,
+  max_package_bytes~ : Int32,
 ) -> RawMutation raise RawError {
   raw_replace_part_package(
     format,
@@ -619,7 +619,7 @@ fn raw_edit_package(
   pkg : RawPackage,
   request : RawEditRequest,
   validate_serialized : Bool,
-  max_package_bytes : Int,
+  max_package_bytes : Int32,
 ) -> RawMutation raise RawError {
   check_raw_package_limit(max_package_bytes)
   let (part, bytes) = pkg.checked_xml_part(request.part)
@@ -713,7 +713,7 @@ pub fn raw_edit_archive(
   format : @office.DocumentFormat,
   archive : @zip.Archive,
   request : RawEditRequest,
-  max_package_bytes~ : Int,
+  max_package_bytes~ : Int32,
 ) -> RawMutation raise RawError {
   raw_edit_package(
     format,

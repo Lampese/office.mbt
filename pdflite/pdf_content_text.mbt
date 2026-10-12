@@ -16,7 +16,7 @@ pub(all) struct PdfContentTextState {
   current_font : PdfFont
   font_cache : Array[PdfContentTextFontCacheEntry]
   font_size : Double
-  rendering_mode : Int
+  rendering_mode : Int32
   rise : Double
   knockout : Bool
   text_matrix : @geometry.TransformMatrix

@@ -8,7 +8,7 @@
 /// Slide backgrounds — paint a slide with a solid fill behind its content.
 fn sample_background_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
 ) -> Unit raise @presentation.PptxError {
   prs.update_slide_mut(
     idx,
@@ -38,7 +38,7 @@ fn sample_background_slide(
 /// plotted against its own (right-hand) value axis.
 fn sample_combo_chart_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
 ) -> Unit raise @presentation.PptxError {
   prs.update_slide_mut(
     idx,
@@ -105,7 +105,7 @@ fn sample_combo_chart_slide(
 /// viewers). Modern PowerPoint renders the crisp SVG.
 fn sample_svg_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
 ) -> Unit raise @presentation.PptxError {
   prs.update_slide_mut(
     idx,
@@ -130,7 +130,7 @@ fn sample_svg_slide(
 /// appending new ones).
 fn sample_edit_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
 ) -> Unit raise @presentation.PptxError {
   let y = prs.pct_h(45.0)
   let cy = prs.pct_h(32.0)
@@ -190,7 +190,7 @@ fn sample_edit_slide(
 /// the point is to show the embedding API + packaging.)
 fn sample_media_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
 ) -> Unit raise @presentation.PptxError {
   prs.update_slide_mut(
     idx,
@@ -227,7 +227,7 @@ fn sample_media_slide(
 /// node carries per-node colour overrides on top of the quick style.
 fn sample_smartart_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
 ) -> Unit raise @presentation.PptxError {
   prs.update_slide_mut(
     idx,
@@ -264,7 +264,7 @@ fn sample_smartart_slide(
 /// canonical `<p:timing>` tree.
 fn sample_animation_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
 ) -> Unit raise @presentation.PptxError {
   let box = @slide.AutoShape::rect(
     id=30,
@@ -298,7 +298,7 @@ fn sample_animation_slide(
 /// the package: just the external video relationships plus a poster frame.
 fn sample_online_video_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
 ) -> Unit raise @presentation.PptxError {
   prs.update_slide_mut(
     idx,
@@ -324,7 +324,7 @@ fn sample_online_video_slide(
 /// before/after). The recursive SmartArt layout is on the SmartArt slide.
 fn sample_text_fills_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
 ) -> Unit raise @presentation.PptxError {
   let navy = @units.RgbColor::new(0x1F, 0x4E, 0x79)
   let teal = @units.RgbColor::new(0x2C, 0x9C, 0x9C)
@@ -424,7 +424,7 @@ fn sample_text_fills_slide(
 /// shape-level hyperlinks.
 fn sample_formatting_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
 ) -> Unit raise @presentation.PptxError {
   let navy = @units.RgbColor::new(0x1F, 0x4E, 0x79)
   let teal = @units.RgbColor::new(0x2C, 0x9C, 0x9C)
@@ -641,7 +641,7 @@ fn sample_typed_layout_slides(
 /// per-node colours.
 fn sample_table_styles_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
 ) -> Unit raise @presentation.PptxError {
   let navy = @units.RgbColor::new(0x1F, 0x4E, 0x79)
   let teal = @units.RgbColor::new(0x2C, 0x9C, 0x9C)
@@ -772,7 +772,7 @@ fn ascii_bytes(s : String) -> FixedArray[Byte] {
 }
 
 ///|
-fn bytes_from_ints(raw : Array[Int]) -> FixedArray[Byte] {
+fn bytes_from_ints(raw : Array[Int32]) -> FixedArray[Byte] {
   let out = FixedArray::make(raw.length(), b'\x00')
   let mut i = 0
   while i < raw.length() {

@@ -41,8 +41,8 @@ pub fn contract_members(entries : Array[(String, String)]) -> Json {
 pub fn contract_object(
   name : String,
   entries : Array[(String, String)],
-  required? : Array[String] = [],
-  constraints? : Array[String] = [],
+  required~ : Array[String] = [],
+  constraints~ : Array[String] = [],
 ) -> Json {
   Json::object({
     "name": Json::string(name),
@@ -59,7 +59,7 @@ pub fn contract_object(
 pub fn contract_type(
   name : String,
   type_name : String,
-  constraints? : Array[String] = [],
+  constraints~ : Array[String] = [],
 ) -> Json {
   Json::object({
     "name": Json::string(name),

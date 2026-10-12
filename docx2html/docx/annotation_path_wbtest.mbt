@@ -33,8 +33,8 @@ test "annotation scanner and verification share bounded path materialization" {
 
 ///|
 fn annotation_hash_clustered_prefixes(
-  count : Int,
-  bucket_mask : Int,
+  count : Int32,
+  bucket_mask : Int32,
 ) -> Array[String] {
   let prefixes : Array[String] = []
   let mut candidate = 0

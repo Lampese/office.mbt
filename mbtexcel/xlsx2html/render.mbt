@@ -8,7 +8,7 @@
 ///|
 /// Hard ceiling on rendered cells per sheet; when rows x cols exceeds it,
 /// rows are reduced and a truncation marker is emitted.
-const MAX_RENDER_CELLS : Int = 262_144
+const MAX_RENDER_CELLS : Int32 = 262_144
 
 ///|
 /// Raised when `--sheet` names a sheet the workbook does not have.
@@ -31,14 +31,14 @@ pub impl Show for RenderError with fn output(self, logger) {
 pub fn render_workbook(
   workbook : @xlsx.Workbook,
   title~ : String,
-  sheet? : String = "",
-  max_rows? : Int = 1000,
-  max_cols? : Int = 256,
-  include_images? : Bool = true,
-  calc? : Bool = false,
+  sheet~ : String = "",
+  max_rows~ : Int32 = 1000,
+  max_cols~ : Int32 = 256,
+  include_images~ : Bool = true,
+  calc~ : Bool = false,
 ) -> String raise {
-  let style_order : Array[Int] = []
-  let style_seen : Map[Int, Unit] = Map([])
+  let style_order : Array[Int32] = []
+  let style_seen : Map[Int32, Unit] = Map([])
   let body = StringBuilder()
   let wanted = sheet.to_lower()
   let mut matched = false
@@ -125,8 +125,8 @@ fn find_chart_sheet(
 ///|
 /// One merged-range anchor: the span to emit at the range's top-left.
 priv struct MergeSpan {
-  colspan : Int
-  rowspan : Int
+  colspan : Int32
+  rowspan : Int32
 }
 
 ///|
@@ -135,12 +135,12 @@ fn render_worksheet(
   workbook : @xlsx.Workbook,
   worksheet : @xlsx.Worksheet,
   name : String,
-  max_rows : Int,
-  max_cols : Int,
+  max_rows : Int32,
+  max_cols : Int32,
   include_images : Bool,
   calc : Bool,
-  style_order : Array[Int],
-  style_seen : Map[Int, Unit],
+  style_order : Array[Int32],
+  style_seen : Map[Int32, Unit],
 ) -> Unit raise {
   body.write_string("<section data-sheet=\"\{escape_html_attribute(name)}\">\n")
   body.write_string("<h2>\{escape_html(name)}</h2>\n")
@@ -257,7 +257,7 @@ fn cell_text(
   workbook : @xlsx.Workbook,
   name : String,
   cell : String,
-  effective_style : Int,
+  effective_style : Int32,
   calc : Bool,
 ) -> (String, Bool) raise {
   let cached = match workbook.get_cell_value_raw(name, cell) {
@@ -290,8 +290,8 @@ fn cell_text(
 fn collect_merge_spans(
   workbook : @xlsx.Workbook,
   name : String,
-  rows : Int,
-  cols : Int,
+  rows : Int32,
+  cols : Int32,
   spans : Map[String, MergeSpan],
   covered : Map[String, Unit],
 ) -> Unit raise {

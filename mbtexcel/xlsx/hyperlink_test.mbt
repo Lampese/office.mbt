@@ -773,7 +773,7 @@ test "location hyperlink accepts unqualified A1 ranges" {
 ///|
 test "hyperlink mutation rejects XML-illegal text before mutation" {
   let sheet = @xlsx.Worksheet::new("Sheet1")
-  let control = String::from_array([Int::unsafe_to_char(1)])
+  let control = String::from_array([Int32::unsafe_to_char(1)])
   let cases : Array[(String, String, String, String)] = [
     ("target", "https://example.com/\{control}", "", ""),
     ("display", "https://example.com", "bad\{control}", ""),

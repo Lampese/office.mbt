@@ -3,7 +3,7 @@
 /// Levels outside `0..9` raise `InvalidFlateData`.
 pub fn pdf_flate_encode_view_with_level(
   data : BytesView,
-  level : Int,
+  level : Int32,
 ) -> @core.PdfBytes raise @core.PdfError {
   guard level >= 0 && level <= 9 else { raise InvalidFlateData }
   pdf_flate_encode_stream(data, level)
@@ -20,7 +20,7 @@ pub fn pdf_flate_encode_view(data : BytesView) -> @core.PdfBytes {
 /// Levels outside `0..9` raise `InvalidFlateData`.
 pub fn pdf_flate_encode_with_level(
   data : @core.PdfBytes,
-  level : Int,
+  level : Int32,
 ) -> @core.PdfBytes raise @core.PdfError {
   pdf_flate_encode_view_with_level(data, level)
 }
@@ -48,7 +48,7 @@ let pdf_flate_encoders : FixedArray[@zlib.Encoder?] = FixedArray::make(10, None)
 let pdf_flate_scratch : FixedArray[Byte] = FixedArray::make(32768, b'\x00')
 
 ///|
-fn pdf_flate_encoder(level : Int) -> @zlib.Encoder {
+fn pdf_flate_encoder(level : Int32) -> @zlib.Encoder {
   match pdf_flate_encoders[level] {
     Some(encoder) => {
       encoder.reset()
@@ -63,7 +63,7 @@ fn pdf_flate_encoder(level : Int) -> @zlib.Encoder {
 }
 
 ///|
-fn pdf_flate_encode_stream(data : BytesView, level : Int) -> Bytes {
+fn pdf_flate_encode_stream(data : BytesView, level : Int32) -> Bytes {
   let encoder = pdf_flate_encoder(level)
   let scratch = pdf_flate_scratch
   let output = @buffer.Buffer()
@@ -106,15 +106,15 @@ pub fn pdf_flate_decode(
 /// Empty input returns `(b"", 0)`; output is limited to 1 GiB.
 pub fn pdf_flate_decode_view_prefix(
   data : BytesView,
-) -> (@core.PdfBytes, Int) raise @core.PdfError {
+) -> (@core.PdfBytes, Int32) raise @core.PdfError {
   pdf_flate_decode_prefix_limited(data, 1 << 30)
 }
 
 ///|
 fn pdf_flate_decode_prefix_limited(
   data : BytesView,
-  max_output : Int,
-) -> (Bytes, Int) raise @core.PdfError {
+  max_output : Int32,
+) -> (Bytes, Int32) raise @core.PdfError {
   guard data.length() > 0 else { return (b"", 0) }
   let decoder = @zlib.Decoder()
   let scratch = FixedArray::make(32768, b'\x00')

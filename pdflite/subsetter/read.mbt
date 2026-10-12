@@ -6,7 +6,7 @@ priv struct Reader {
   /// The underlying data of the reader.
   data : BytesView
   /// The current offset in bytes. Is not guaranteed to be in range.
-  mut offset : Int
+  mut offset : Int32
 }
 
 ///|
@@ -17,7 +17,7 @@ fn Reader::new(data : BytesView) -> Reader {
 
 ///|
 /// Create a new readable stream of binary data at a specific position.
-fn Reader::new_at(data : BytesView, offset : Int) -> Reader {
+fn Reader::new_at(data : BytesView, offset : Int32) -> Reader {
   { data, offset, }
 }
 
@@ -33,13 +33,13 @@ fn Reader::tail(self : Reader) -> BytesView? {
 
 ///|
 /// Returns the current offset.
-fn Reader::offset(self : Reader) -> Int {
+fn Reader::offset(self : Reader) -> Int32 {
   self.offset
 }
 
 ///|
 /// Read a certain number of bytes.
-fn Reader::read_bytes(self : Reader, len : Int) -> BytesView? {
+fn Reader::read_bytes(self : Reader, len : Int32) -> BytesView? {
   // (`checked_add` on `usize`: lengths and offsets are non-negative and
   // below 2^31, so the sum fits into an `Int64`.)
   let end = self.offset.to_int64() + len.to_int64()
@@ -55,14 +55,14 @@ fn Reader::read_bytes(self : Reader, len : Int) -> BytesView? {
 }
 
 ///|
-fn Reader::read_u8(self : Reader) -> Int? {
+fn Reader::read_u8(self : Reader) -> Int32? {
   guard self.read_bytes(1) is Some(b) else { return None }
   Some(b[0].to_int())
 }
 
 ///|
 /// Peek a byte without advancing (upstream `peak::<u8>`).
-fn Reader::peak_u8(self : Reader) -> Int? {
+fn Reader::peak_u8(self : Reader) -> Int32? {
   let offset = self.offset
   let r = self.read_u8()
   self.offset = offset
@@ -70,25 +70,25 @@ fn Reader::peak_u8(self : Reader) -> Int? {
 }
 
 ///|
-fn Reader::read_u16(self : Reader) -> Int? {
+fn Reader::read_u16(self : Reader) -> Int32? {
   guard self.read_bytes(2) is Some(b) else { return None }
   Some((b[0].to_int() << 8) | b[1].to_int())
 }
 
 ///|
-fn Reader::read_i16(self : Reader) -> Int? {
+fn Reader::read_i16(self : Reader) -> Int32? {
   guard self.read_u16() is Some(v) else { return None }
   Some(if v >= 0x8000 { v - 0x10000 } else { v })
 }
 
 ///|
-fn Reader::read_u24(self : Reader) -> Int? {
+fn Reader::read_u24(self : Reader) -> Int32? {
   guard self.read_bytes(3) is Some(b) else { return None }
   Some((b[0].to_int() << 16) | (b[1].to_int() << 8) | b[2].to_int())
 }
 
 ///|
-fn Reader::read_u32(self : Reader) -> UInt? {
+fn Reader::read_u32(self : Reader) -> UInt32? {
   guard self.read_bytes(4) is Some(b) else { return None }
   Some(
     (b[0].to_uint() << 24) |
@@ -99,14 +99,18 @@ fn Reader::read_u32(self : Reader) -> UInt? {
 }
 
 ///|
-fn Reader::read_i32(self : Reader) -> Int? {
+fn Reader::read_i32(self : Reader) -> Int32? {
   guard self.read_u32() is Some(v) else { return None }
   Some(v.reinterpret_as_int())
 }
 
 ///|
 /// Reads the next `count` elements of `size` bytes each as a lazy array.
-fn Reader::read_array16(self : Reader, count : Int, size : Int) -> LazyArray16? {
+fn Reader::read_array16(
+  self : Reader,
+  count : Int32,
+  size : Int32,
+) -> LazyArray16? {
   guard self.read_bytes(count * size) is Some(data) else { return None }
   Some({ data, size, })
 }
@@ -119,13 +123,13 @@ fn Reader::at_end(self : Reader) -> Bool {
 
 ///|
 /// Jump to a specific location.
-fn Reader::jump(self : Reader, offset : Int) -> Unit {
+fn Reader::jump(self : Reader, offset : Int32) -> Unit {
   self.offset = offset
 }
 
 ///|
 /// Skip the next `n` bytes from the stream.
-fn Reader::skip_bytes(self : Reader, n : Int) -> Unit {
+fn Reader::skip_bytes(self : Reader, n : Int32) -> Unit {
   self.read_bytes(n) |> ignore
 }
 
@@ -134,18 +138,18 @@ fn Reader::skip_bytes(self : Reader, n : Int) -> Unit {
 /// (elements are big-endian unsigned integers of `size` bytes).
 priv struct LazyArray16 {
   data : BytesView
-  size : Int
+  size : Int32
 }
 
 ///|
 /// Returns array's length.
-fn LazyArray16::len(self : LazyArray16) -> Int {
+fn LazyArray16::len(self : LazyArray16) -> Int32 {
   (self.data.length() / self.size) & 0xFFFF
 }
 
 ///|
 /// Returns a value at `index`.
-fn LazyArray16::get(self : LazyArray16, index : Int) -> Int? {
+fn LazyArray16::get(self : LazyArray16, index : Int32) -> Int32? {
   if index < self.len() {
     let start = index * self.size
     let r = Reader::new(self.data[start:start + self.size])
@@ -162,7 +166,7 @@ fn LazyArray16::get(self : LazyArray16, index : Int) -> Int? {
 ///|
 /// Convert a `u32` offset to an `Int` offset (offsets beyond `Int` are out of
 /// range of any data anyway).
-fn u32_offset(v : UInt) -> Int {
+fn u32_offset(v : UInt32) -> Int32 {
   if v > 0x7FFFFFFFU {
     0x7FFFFFFF
   } else {

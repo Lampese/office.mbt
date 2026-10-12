@@ -140,8 +140,8 @@ pub fn detect_image_format(bytes : FixedArray[Byte]) -> ImageFormat? {
 /// - `dpi_y` — Vertical DPI (dots per inch). 96.0 when the file omits it.
 pub(all) struct ImageDimensions {
   format : ImageFormat
-  width_px : Int
-  height_px : Int
+  width_px : Int32
+  height_px : Int32
   dpi_x : Double
   dpi_y : Double
 } derive(Eq, Debug)
@@ -459,17 +459,17 @@ fn detect_tiff_dimensions(bytes : FixedArray[Byte]) -> ImageDimensions? {
 // --- byte readers ---
 
 ///|
-fn u16_be(bytes : FixedArray[Byte], offset : Int) -> Int {
+fn u16_be(bytes : FixedArray[Byte], offset : Int32) -> Int32 {
   bytes[offset].to_int() * 256 + bytes[offset + 1].to_int()
 }
 
 ///|
-fn u16_le(bytes : FixedArray[Byte], offset : Int) -> Int {
+fn u16_le(bytes : FixedArray[Byte], offset : Int32) -> Int32 {
   bytes[offset].to_int() + bytes[offset + 1].to_int() * 256
 }
 
 ///|
-fn u32_be(bytes : FixedArray[Byte], offset : Int) -> Int {
+fn u32_be(bytes : FixedArray[Byte], offset : Int32) -> Int32 {
   (bytes[offset].to_int() << 24) |
   (bytes[offset + 1].to_int() << 16) |
   (bytes[offset + 2].to_int() << 8) |
@@ -481,7 +481,7 @@ fn u32_be(bytes : FixedArray[Byte], offset : Int) -> Int {
 /// two's-complement, so this doubles as the signed reader (an i32
 /// "negative height" BMP top-down marker comes back as negative
 /// automatically).
-fn u32_le(bytes : FixedArray[Byte], offset : Int) -> Int {
+fn u32_le(bytes : FixedArray[Byte], offset : Int32) -> Int32 {
   bytes[offset].to_int() |
   (bytes[offset + 1].to_int() << 8) |
   (bytes[offset + 2].to_int() << 16) |

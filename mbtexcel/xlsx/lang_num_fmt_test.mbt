@@ -1,5 +1,5 @@
 ///|
-fn build_lang_fmt_workbook(num_fmt : Int) -> @xlsx.Workbook raise {
+fn build_lang_fmt_workbook(num_fmt : Int32) -> @xlsx.Workbook raise {
   let workbook = @xlsx.Workbook::new()
   let sheet = workbook.add_sheet("Sheet1")
   // 45476 is the serial for 2024-07-03

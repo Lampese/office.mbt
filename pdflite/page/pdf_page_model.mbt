@@ -23,7 +23,7 @@ pub(all) struct PdfPage {
 
 ///|
 /// Convert a normalized page rotation to the integer stored in `/Rotate`.
-pub fn pdf_page_int_of_rotation(rotation : PdfPageRotation) -> Int {
+pub fn pdf_page_int_of_rotation(rotation : PdfPageRotation) -> Int32 {
   match rotation {
     Rotate0 => 0
     Rotate90 => 90
@@ -37,7 +37,9 @@ pub fn pdf_page_int_of_rotation(rotation : PdfPageRotation) -> Int {
 ///
 /// Multiples equivalent to 0, 90, 180, and 270 degrees are accepted. Other
 /// values raise `PdfError::PageRotationExpected`.
-pub fn pdf_page_rotation_of_int(value : Int) -> PdfPageRotation raise PdfError {
+pub fn pdf_page_rotation_of_int(
+  value : Int32,
+) -> PdfPageRotation raise PdfError {
   match value % 360 {
     0 => Rotate0
     90 | -270 => Rotate90

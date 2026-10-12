@@ -5,16 +5,16 @@
 /// the path.
 priv struct PdfPageTreeFrame[S] {
   kids : Array[@syntax.PdfObject]
-  mut next : Int
+  mut next : Int32
   state : S
-  depth : Int
-  entered : Array[Int]
+  depth : Int32
+  entered : Array[Int32]
 }
 
 ///|
 /// The object number of `node`'s `/Kids` array when the node holds it by
 /// reference, else -1.
-fn pdf_page_tree_kids_number(node : @syntax.PdfObject) -> Int {
+fn pdf_page_tree_kids_number(node : @syntax.PdfObject) -> Int32 {
   match node.lookup_immediate(pdf_page_kids_key()) {
     Some(PdfIndirect(number)) => number
     _ => -1
@@ -47,11 +47,11 @@ fn pdf_page_tree_kids_number(node : @syntax.PdfObject) -> Int {
 fn[S] PdfDocument::pdf_page_tree_walk(
   self : PdfDocument,
   root : @syntax.PdfObject,
-  root_number : Int,
-  root_depth : Int,
+  root_number : Int32,
+  root_depth : Int32,
   state : S,
-  visit : (@syntax.PdfObject, Int, S) -> (Int, Array[@syntax.PdfObject], S)? raise @core.PdfError,
-  child : (@syntax.PdfObject) -> (@syntax.PdfObject, Int)? raise @core.PdfError,
+  visit : (@syntax.PdfObject, Int32, S) -> (Int32, Array[@syntax.PdfObject], S)? raise @core.PdfError,
+  child : (@syntax.PdfObject) -> (@syntax.PdfObject, Int32)? raise @core.PdfError,
 ) -> Unit raise @core.PdfError {
   let budget = 2 * self.object_count() + 16
   let mut steps = 0
@@ -61,13 +61,13 @@ fn[S] PdfDocument::pdf_page_tree_walk(
       raise PageTreeExpected
     }
   }
-  let on_path : Map[Int, Unit] = Map([])
+  let on_path : Map[Int32, Unit] = Map([])
   let stack : Array[PdfPageTreeFrame[S]] = []
   let enter = fn(
     node : @syntax.PdfObject,
-    number : Int,
+    number : Int32,
     state : S,
-    depth : Int,
+    depth : Int32,
   ) raise @core.PdfError {
     if depth > 10000 {
       raise PageTreeExpected
@@ -78,7 +78,7 @@ fn[S] PdfDocument::pdf_page_tree_walk(
     guard visit(node, number, state) is Some((kids_number, kids, child_state)) else {
       return
     }
-    let entered : Array[Int] = []
+    let entered : Array[Int32] = []
     if number >= 0 {
       on_path[number] = ()
       entered.push(number)

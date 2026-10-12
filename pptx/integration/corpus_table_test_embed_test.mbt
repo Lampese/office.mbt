@@ -9,7 +9,7 @@
 
 ///|
 /// Byte length of the original `table_test.pptx`.
-let corpus_table_test_len : Int = 28935
+let corpus_table_test_len : Int32 = 28935
 
 ///|
 /// `table_test.pptx` as fixed-width base64 chunks.

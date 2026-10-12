@@ -30,8 +30,8 @@ fn normalize_rgb_hex(value : StringView) -> String {
 pub fn Workbook::get_base_color(
   self : Workbook,
   hex_color : String,
-  indexed_color : Int,
-  theme_color? : Int,
+  indexed_color : Int32,
+  theme_color? : Int32,
 ) -> String {
   let theme_colors = self.theme_colors.unwrap_or(default_theme_colors)
   match theme_color {

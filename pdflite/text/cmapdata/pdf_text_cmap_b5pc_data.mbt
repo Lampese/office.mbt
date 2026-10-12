@@ -4,7 +4,7 @@
 
 ///|
 /// Generated predefined CMap lookup data.
-let pdf_text_b5pc_codepoint_table_flat : ReadOnlyArray[Int] = [
+let pdf_text_b5pc_codepoint_table_flat : ReadOnlyArray[Int32] = [
   0x0000, 0x0000, 0x0001, 0x0001, 0x0002, 0x0002, 0x0003, 0x0003, 0x0004, 0x0004,
   0x0005, 0x0005, 0x0006, 0x0006, 0x0007, 0x0007, 0x0008, 0x0008, 0x0009, 0x0009,
   0x000A, 0x000A, 0x000B, 0x000B, 0x000C, 0x000C, 0x000D, 0x000D, 0x000E, 0x000E,
@@ -2734,7 +2734,7 @@ let pdf_text_b5pc_codepoint_table_flat : ReadOnlyArray[Int] = [
 
 ///|
 /// Predefined CMap lookup table, unpacked at load from the flat static data above.
-pub let pdf_text_b5pc_codepoint_table : Array[(Int, Int)] = pdf_cmap_unpack2(
+pub let pdf_text_b5pc_codepoint_table : Array[(Int32, Int32)] = pdf_cmap_unpack2(
   pdf_text_b5pc_codepoint_table_flat,
 )
 
@@ -2743,7 +2743,7 @@ pub let pdf_text_b5pc_codepoint_table : Array[(Int, Int)] = pdf_cmap_unpack2(
 
 ///|
 /// Generated predefined CMap lookup data.
-let pdf_text_b5pc_charcode_table_flat : ReadOnlyArray[Int] = [
+let pdf_text_b5pc_charcode_table_flat : ReadOnlyArray[Int32] = [
   0x0000, 0x0000, 0x0001, 0x0001, 0x0002, 0x0002, 0x0003, 0x0003, 0x0004, 0x0004,
   0x0005, 0x0005, 0x0006, 0x0006, 0x0007, 0x0007, 0x0008, 0x0008, 0x0009, 0x0009,
   0x000A, 0x000A, 0x000B, 0x000B, 0x000C, 0x000C, 0x000D, 0x000D, 0x000E, 0x000E,
@@ -5471,6 +5471,6 @@ let pdf_text_b5pc_charcode_table_flat : ReadOnlyArray[Int] = [
 
 ///|
 /// Predefined CMap lookup table, unpacked at load from the flat static data above.
-pub let pdf_text_b5pc_charcode_table : Array[(Int, Int)] = pdf_cmap_unpack2(
+pub let pdf_text_b5pc_charcode_table : Array[(Int32, Int32)] = pdf_cmap_unpack2(
   pdf_text_b5pc_charcode_table_flat,
 )

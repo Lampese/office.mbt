@@ -16,7 +16,7 @@
 /// Read a `val="…"` attribute off a captured leaf element and parse
 /// it as an `Int`. Returns `None` if the attribute is absent or
 /// unparseable.
-fn val_int(el : @xml.XmlElement) -> Int? {
+fn val_int(el : @xml.XmlElement) -> Int32? {
   for kv in el.attributes {
     if kv.0.local_name == "val" {
       return @oxml.parse_signed_int(kv.1)
@@ -59,7 +59,7 @@ fn val_string(el : @xml.XmlElement) -> String? {
 fn emit_val_int(
   w : @xml.XmlWriter,
   local_name : String,
-  v : Int,
+  v : Int32,
 ) -> Unit raise @xml.XmlError {
   w.start_element(@xml.QName::new(@oxml.chart_ns, local_name))
   w.attribute(@xml.QName::unqualified("val"), v.to_string())

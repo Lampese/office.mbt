@@ -235,7 +235,7 @@ pub fn TransitionCorner::to_xml(self : TransitionCorner) -> String {
 /// falls back to it when the attribute is absent; the writer omits the
 /// attribute when the value equals it. They must agree for round-trip
 /// stability, so both reference this single constant.
-let transition_default_spokes : Int = 4
+let transition_default_spokes : Int32 = 4
 
 ///|
 /// The transition effect — the single optional choice child of
@@ -265,7 +265,7 @@ pub(all) enum TransitionKind {
   Split(TransitionOrientation, TransitionInOut) // orient, dir
   Strips(TransitionCorner)
   Wedge
-  Wheel(Int) // spokes
+  Wheel(Int32) // spokes
   Wipe(TransitionSide)
   Zoom(TransitionInOut)
 } derive(Eq, Debug)
@@ -291,7 +291,7 @@ pub struct Transition {
   kind : TransitionKind
   speed : TransitionSpeed
   advance_on_click : Bool
-  advance_after : Int?
+  advance_after : Int32?
   extension : Array[@xml.XmlElement]
 } derive(Eq, Debug)
 
@@ -325,13 +325,13 @@ pub fn Transition::none() -> Transition {
 ///|
 /// A fade transition (`<p:fade>`). `through_black` fades out to black before
 /// fading in the next slide (the `thruBlk` attribute).
-pub fn Transition::fade(through_black? : Bool = false) -> Transition {
+pub fn Transition::fade(through_black~ : Bool = false) -> Transition {
   Transition::of_kind(Fade(through_black))
 }
 
 ///|
 /// A cut transition (`<p:cut>`). `through_black` cuts via a black frame.
-pub fn Transition::cut(through_black? : Bool = false) -> Transition {
+pub fn Transition::cut(through_black~ : Bool = false) -> Transition {
   Transition::of_kind(Cut(through_black))
 }
 
@@ -401,7 +401,7 @@ pub fn Transition::with_on_click(
 /// `advTm` attribute).
 pub fn Transition::with_advance_after(
   self : Transition,
-  ms : Int,
+  ms : Int32,
 ) -> Transition {
   { ..self, advance_after: Some(ms), }
 }

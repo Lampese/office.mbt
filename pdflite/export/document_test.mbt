@@ -323,7 +323,7 @@ test "XMP metadata stream" {
 
 ///|
 test "the document ID is derived from the metadata" {
-  let make = (id : String?, pages : Int) => {
+  let make = (id : String?, pages : Int32) => {
     let doc = @export.Document::new_with(plain_settings())
     let mut m = @export.Metadata::new().title("T")
     if id is Some(id) {

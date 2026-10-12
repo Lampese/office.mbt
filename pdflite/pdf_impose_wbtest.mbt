@@ -61,21 +61,21 @@ fn impose_assert_cm_close_for_test(
 
 ///|
 fn impose_transforms_for_test(
-  fit? : Bool = false,
-  x? : Int = 2,
-  y? : Int = 2,
-  columns? : Bool = false,
-  rtl? : Bool = false,
-  btt? : Bool = false,
-  center? : Bool = false,
-  margin? : Double = 0.0,
-  page_width? : Double = 100.0,
-  page_height? : Double = 200.0,
-  output_width? : Double = 200.0,
-  output_height? : Double = 400.0,
-  fit_extra_hspace? : Double = 0.0,
-  fit_extra_vspace? : Double = 0.0,
-  count? : Int = 3,
+  fit~ : Bool = false,
+  x~ : Int32 = 2,
+  y~ : Int32 = 2,
+  columns~ : Bool = false,
+  rtl~ : Bool = false,
+  btt~ : Bool = false,
+  center~ : Bool = false,
+  margin~ : Double = 0.0,
+  page_width~ : Double = 100.0,
+  page_height~ : Double = 200.0,
+  output_width~ : Double = 200.0,
+  output_height~ : Double = 400.0,
+  fit_extra_hspace~ : Double = 0.0,
+  fit_extra_vspace~ : Double = 0.0,
+  count~ : Int32 = 3,
 ) -> Array[@geometry.TransformMatrix] raise @core.PdfError {
   pdf_document_empty().pdf_impose_transforms(
     fit,
@@ -112,11 +112,11 @@ fn impose_content_ops_for_test(
 ///|
 fn impose_page_for_test(
   ops : ArrayView[@content.PdfContentOp],
-  resources? : @syntax.PdfObject = PdfDictionary([]),
-  rest? : @syntax.PdfObject = PdfDictionary([]),
-  rotate? : @page.PdfPageRotation = Rotate0,
-  width? : Double = 100.0,
-  height? : Double = 100.0,
+  resources~ : @syntax.PdfObject = PdfDictionary([]),
+  rest~ : @syntax.PdfObject = PdfDictionary([]),
+  rotate~ : @page.PdfPageRotation = Rotate0,
+  width~ : Double = 100.0,
+  height~ : Double = 100.0,
 ) -> @page.PdfPage raise @core.PdfError {
   {
     content: [pdf_content_stream_of_ops(ops)],

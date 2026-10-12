@@ -5,7 +5,7 @@
 /// paragraph projection; then hold every byte outside the declared union.
 fn assert_partial_edits(
   body : String,
-  paragraph~ : Int,
+  paragraph~ : Int32,
   edits : Array[ParagraphTextEdit],
   expected~ : String,
 ) -> Unit raise {
@@ -39,7 +39,7 @@ fn assert_partial_edits(
 ///|
 fn assert_partial_refusal(
   body : String,
-  paragraph~ : Int,
+  paragraph~ : Int32,
   edits : Array[ParagraphTextEdit],
   refusal~ : String,
 ) -> Unit raise {
@@ -62,8 +62,8 @@ fn assert_partial_refusal(
 
 ///|
 fn partial_edit(
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
   replacement : String,
 ) -> ParagraphTextEdit {
   { start, end, replacement, }

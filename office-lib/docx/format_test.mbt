@@ -12,11 +12,11 @@ async fn format_probe(
   format : @word.DocxDirectFormat,
   text? : String,
   within? : String,
-  nth? : Int,
-  range? : (Int, Int),
-  expect? : Int,
-  allow_zero? : Bool = false,
-  dry_run? : Bool = false,
+  nth? : Int32,
+  range? : (Int32, Int32),
+  expect? : Int32,
+  allow_zero~ : Bool = false,
+  dry_run~ : Bool = false,
   preflight? : (@docx.DocxFormatReport) -> Unit raise,
 ) -> (@docx.DocxFormatResult?, String?, Bytes?) {
   let input = edit_fixture(directory, name + "-in.docx", runs)
@@ -306,8 +306,8 @@ async fn preflight_fixture(
   settings_body : String,
   extra : Array[(String, String)],
   content_types_insert? : String,
-  settings_root_insert? : String = "",
-  runs? : String = "<w:r><w:t>Hello world</w:t></w:r>",
+  settings_root_insert~ : String = "",
+  runs~ : String = "<w:r><w:t>Hello world</w:t></w:r>",
 ) -> String {
   let source = edit_fixture(directory, name + "-source.docx", runs)
   let archive = @zip.read(@afs.read_file(source).binary())
@@ -686,7 +686,7 @@ async test "format transaction dry run publishes nothing" {
 /// published, so refusing there leaves no file behind.
 async test "format transaction lets the caller refuse the plan" {
   with_docx_session_test_dir(directory => {
-    let seen : Ref[Int] = Ref(0)
+    let seen : Ref[Int32] = Ref(0)
     let (result, failure, published) = format_probe(
       directory,
       "preflight",
@@ -749,7 +749,7 @@ async fn repackaged_fixture(
   renames : Array[(String, String)],
   edits : Array[(String, String, String)],
   additions : Array[(String, String)],
-  runs? : String = "<w:r><w:t>Hello world</w:t></w:r>",
+  runs~ : String = "<w:r><w:t>Hello world</w:t></w:r>",
 ) -> String {
   let source = edit_fixture(directory, name + "-source.docx", runs)
   let archive = @zip.read(@afs.read_file(source).binary())
@@ -1428,8 +1428,8 @@ async fn signed_fixture(
   directory : String,
   name : String,
   settings_body : String,
-  runs? : String = "<w:r><w:t>Hello world</w:t></w:r>",
-  origin_only? : Bool = false,
+  runs~ : String = "<w:r><w:t>Hello world</w:t></w:r>",
+  origin_only~ : Bool = false,
 ) -> String {
   let additions : Array[(String, String)] = [
     ("_xmlsignatures/origin.sigs", "<origin/>"),

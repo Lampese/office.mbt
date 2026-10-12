@@ -27,7 +27,7 @@ pub(all) struct PieChartBody {
   vary_colors : Bool?
   series : Array[ChartSeriesCore]
   d_lbls : DLbls?
-  first_slice_ang : Int?
+  first_slice_ang : Int32?
   extension : Array[@xml.XmlElement]
 } derive(Eq, Debug)
 

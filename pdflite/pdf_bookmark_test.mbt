@@ -9,7 +9,9 @@ fn bookmark_bytes_for_test(text : String) -> @core.PdfBytes {
 }
 
 ///|
-fn bookmark_bytes_from_ints_for_test(values : ArrayView[Int]) -> @core.PdfBytes {
+fn bookmark_bytes_from_ints_for_test(
+  values : ArrayView[Int32],
+) -> @core.PdfBytes {
   try! @core.pdf_bytes_of_int_array(values)
 }
 
@@ -27,12 +29,12 @@ fn bookmark_join_bytes_for_test(
 }
 
 ///|
-fn bookmark_json_int_for_test(value : Int) -> Json {
+fn bookmark_json_int_for_test(value : Int32) -> Json {
   Json::number(value.to_double(), repr=value.to_string())
 }
 
 ///|
-fn bookmark_json_pdf_int_for_test(value : Int) -> Json {
+fn bookmark_json_pdf_int_for_test(value : Int32) -> Json {
   Json::object(Map([("I", bookmark_json_int_for_test(value))]))
 }
 

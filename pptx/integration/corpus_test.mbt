@@ -21,7 +21,10 @@
 /// `scripts/embed_pptx_corpus.py`. `expected_len` is the original byte
 /// length recorded at generation time; a mismatch aborts (a truncated
 /// or corrupted embed must never masquerade as a parser finding).
-fn corpus_bytes(chunks : Array[String], expected_len : Int) -> FixedArray[Byte] {
+fn corpus_bytes(
+  chunks : Array[String],
+  expected_len : Int32,
+) -> FixedArray[Byte] {
   let out = FixedArray::make(expected_len, b'\x00')
   let mut acc = 0
   let mut bits = 0
@@ -29,9 +32,9 @@ fn corpus_bytes(chunks : Array[String], expected_len : Int) -> FixedArray[Byte] 
   for chunk in chunks {
     for c in chunk {
       let v = match c {
-        'A'..='Z' => c.to_int() - 'A'.to_int()
-        'a'..='z' => c.to_int() - 'a'.to_int() + 26
-        '0'..='9' => c.to_int() - '0'.to_int() + 52
+        'A'..<='Z' => c.to_int() - 'A'.to_int()
+        'a'..<='z' => c.to_int() - 'a'.to_int() + 26
+        '0'..<='9' => c.to_int() - '0'.to_int() + 52
         '+' => 62
         '/' => 63
         _ => -1 // '=' padding — carries no data
@@ -63,7 +66,7 @@ fn corpus_bytes(chunks : Array[String], expected_len : Int) -> FixedArray[Byte] 
 /// callers can assert the file exercised what it was picked for.
 fn assert_reader_lossless(
   bytes : FixedArray[Byte],
-) -> (Int, Int, Int, Int, Int, Int, Int) raise {
+) -> (Int32, Int32, Int32, Int32, Int32, Int32, Int32) raise {
   let pkg_in = @opc.Package::open(bytes)
   let counts = parse_everything(pkg_in)
   let pkg_re = re_serialize_all(@opc.Package::open(bytes))

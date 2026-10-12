@@ -46,7 +46,7 @@ pub struct XmlReader {
   priv reader : @parser.NamespaceReader
   priv mut pending : XmlEvent?
   priv mut buffered : XmlEvent?
-  priv mut depth : Int
+  priv mut depth : Int32
 }
 
 ///|

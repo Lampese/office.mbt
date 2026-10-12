@@ -40,7 +40,7 @@ fn main {
 /// library recommends for generating a deck: one batched `add_slides_mut`
 /// rather than an add per slide, and one `slides()` rather than one per
 /// slide (see pptx/docs/pptx-benchmarks.md).
-fn build_and_save(n : Int) -> FixedArray[Byte] raise {
+fn build_and_save(n : Int32) -> FixedArray[Byte] raise {
   let prs = @presentation.Presentation::new()
   let _ = prs.add_slides_mut(0, n)
   let all = prs.slides()

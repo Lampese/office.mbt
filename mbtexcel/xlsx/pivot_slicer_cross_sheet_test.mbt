@@ -1,5 +1,5 @@
 ///|
-fn count_substr(text : StringView, needle : StringView) -> Int {
+fn count_substr(text : StringView, needle : StringView) -> Int32 {
   let mut count = 0
   let mut rest = text.to_owned()
   while true {

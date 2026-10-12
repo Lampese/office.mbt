@@ -15,7 +15,7 @@ fn stroked(
 ///|
 fn graphic_page(
   ops : Array[@pagelayout.GraphicOp],
-  x_pt? : Double = 0,
+  x_pt~ : Double = 0,
 ) -> @pagelayout.PageModel {
   let model = @pagelayout.PageModel::new()
   let page = @pagelayout.Page::{ width_pt: 200, height_pt: 100, items: [], }

@@ -11,7 +11,7 @@
 /// same canonical shape the K1 writer emits, in self-contained form.
 pub fn comment_anchor_fragments(
   id~ : String,
-  wordprocessing_namespace? : String = WORDPROCESSINGML_NAMESPACE,
+  wordprocessing_namespace~ : String = WORDPROCESSINGML_NAMESPACE,
 ) -> (String, String) {
   let namespaces = { "w": wordprocessing_namespace }
   let start = @xml.write_xml_fragment(
@@ -42,9 +42,9 @@ pub fn comment_anchor_fragments(
 pub fn comment_definition_fragment(
   spec : CommentSpec,
   id~ : String,
-  para_ids? : Array[String] = [],
-  max_output_bytes? : Int = 8 * 1024 * 1024,
-  wordprocessing_namespace? : String = WORDPROCESSINGML_NAMESPACE,
+  para_ids~ : Array[String] = [],
+  max_output_bytes~ : Int32 = 8 * 1024 * 1024,
+  wordprocessing_namespace~ : String = WORDPROCESSINGML_NAMESPACE,
 ) -> String raise DocxError {
   check_comment_body_for_fragment(spec.body, max_output_bytes)
   check_attribute_value("the comment id", id)

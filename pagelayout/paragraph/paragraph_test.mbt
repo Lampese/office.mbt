@@ -12,8 +12,8 @@ fn plain_style(size_pt : Double) -> @paragraph.RunStyle {
 ///|
 fn para(
   text : String,
-  align? : @paragraph.Alignment = AlignLeft,
-  first? : Double = 0,
+  align~ : @paragraph.Alignment = AlignLeft,
+  first~ : Double = 0,
 ) -> @paragraph.ParagraphInput {
   let style = @paragraph.ParagraphStyle::default()
   {

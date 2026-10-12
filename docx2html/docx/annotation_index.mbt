@@ -9,33 +9,33 @@
 // degrade to warnings; `docx validate` stays the strict gate.
 
 ///|
-const MAX_ANNOTATION_WARNINGS : Int = 256
+const MAX_ANNOTATION_WARNINGS : Int32 = 256
 
 ///|
-const MAX_ANNOTATION_WARNING_CHARS : Int = 512
+const MAX_ANNOTATION_WARNING_CHARS : Int32 = 512
 
 ///|
-const MAX_STORY_SCAN_WARNINGS : Int = 64
+const MAX_STORY_SCAN_WARNINGS : Int32 = 64
 
 ///|
-const DEFAULT_MAX_READER_DIAGNOSTICS : Int = 256
+const DEFAULT_MAX_READER_DIAGNOSTICS : Int32 = 256
 
 ///|
-const DEFAULT_MAX_READER_DIAGNOSTIC_CHARS : Int = 512
+const DEFAULT_MAX_READER_DIAGNOSTIC_CHARS : Int32 = 512
 
 ///|
 priv struct AnnotationWarningCollector {
   messages : Array[String]
   seen : StableStringSet
-  max_messages : Int
-  max_chars : Int
+  max_messages : Int32
+  max_chars : Int32
   mut truncated : Bool
 }
 
 ///|
 fn AnnotationWarningCollector::new(
-  max_messages : Int,
-  max_chars : Int,
+  max_messages : Int32,
+  max_chars : Int32,
 ) -> AnnotationWarningCollector {
   {
     messages: [],
@@ -228,7 +228,7 @@ pub struct CommentInfo {
   priv date : String?
   priv done : Bool?
   priv parent_id : String?
-  priv body_paragraphs : Int
+  priv body_paragraphs : Int32
   priv anchors : Array[AnnotationAnchor]
   // The definition's LAST body paragraph w14:paraId (the commentEx
   // key), None when unstamped — L2's retrofit trigger.
@@ -286,7 +286,7 @@ pub fn CommentInfo::parent_id(self : CommentInfo) -> String? {
 
 ///|
 /// Number of body paragraphs in the comment definition.
-pub fn CommentInfo::body_paragraphs(self : CommentInfo) -> Int {
+pub fn CommentInfo::body_paragraphs(self : CommentInfo) -> Int32 {
   self.body_paragraphs
 }
 
@@ -376,8 +376,8 @@ pub fn NoteInfo::references(self : NoteInfo) -> Array[String] {
 priv struct AnchorSpan {
   comment_id : String
   story : String
-  low : Int
-  high : Int
+  low : Int32
+  high : Int32
 }
 
 ///|
@@ -790,7 +790,7 @@ priv struct CommentDefinition {
   author : String?
   initials : String?
   date : String?
-  body_paragraphs : Int
+  body_paragraphs : Int32
   last_para_id : String?
 }
 
@@ -814,7 +814,7 @@ priv struct CommentStoryMarkers {
   story : String
   scan : StoryScan
   markers : Array[ScannedMarker]
-  node_spans : StableStringMap[(Int, Int)]
+  node_spans : StableStringMap[(Int32, Int32)]
 }
 
 ///|
@@ -822,8 +822,8 @@ priv struct CommentStoryMarkers {
 /// index. The package half is identical to `read_docx_package`.
 pub fn read_docx_annotated(
   docx : BytesView,
-  external_file_access? : Bool = false,
-  read_external_file? : (String) -> Bytes? = no_external_file_reader,
+  external_file_access~ : Bool = false,
+  read_external_file~ : (String) -> Bytes? = no_external_file_reader,
 ) -> DocxAnnotatedResult raise DocxError {
   read_docx_annotated_zip(
     open_zip(docx),
@@ -843,8 +843,8 @@ pub fn read_docx_annotated(
 /// is constructed.
 pub fn read_docx_annotated_archive(
   archive : @mbtzip.Archive,
-  external_file_access? : Bool = false,
-  read_external_file? : (String) -> Bytes? = no_external_file_reader,
+  external_file_access~ : Bool = false,
+  read_external_file~ : (String) -> Bytes? = no_external_file_reader,
 ) -> DocxAnnotatedResult raise DocxError {
   read_docx_annotated_zip(
     open_zip_archive(archive),
@@ -866,10 +866,10 @@ pub fn read_docx_annotated_archive(
 pub fn read_docx_annotated_archive_limited(
   archive : @mbtzip.Archive,
   xml_budget : @xml.XmlReadBudget,
-  external_file_access? : Bool = false,
-  read_external_file? : (String) -> Bytes? = no_external_file_reader,
-  max_diagnostics? : Int = DEFAULT_MAX_READER_DIAGNOSTICS,
-  max_diagnostic_chars? : Int = DEFAULT_MAX_READER_DIAGNOSTIC_CHARS,
+  external_file_access~ : Bool = false,
+  read_external_file~ : (String) -> Bytes? = no_external_file_reader,
+  max_diagnostics~ : Int32 = DEFAULT_MAX_READER_DIAGNOSTICS,
+  max_diagnostic_chars~ : Int32 = DEFAULT_MAX_READER_DIAGNOSTIC_CHARS,
   expected_main_document_path? : String,
 ) -> DocxAnnotatedResult raise DocxError {
   read_docx_annotated_archive_with_policy_limited(
@@ -893,10 +893,10 @@ pub fn read_docx_annotated_archive_limited(
 pub fn read_docx_annotated_archive_tolerant_limited(
   archive : @mbtzip.Archive,
   xml_budget : @xml.XmlReadBudget,
-  external_file_access? : Bool = false,
-  read_external_file? : (String) -> Bytes? = no_external_file_reader,
-  max_diagnostics? : Int = DEFAULT_MAX_READER_DIAGNOSTICS,
-  max_diagnostic_chars? : Int = DEFAULT_MAX_READER_DIAGNOSTIC_CHARS,
+  external_file_access~ : Bool = false,
+  read_external_file~ : (String) -> Bytes? = no_external_file_reader,
+  max_diagnostics~ : Int32 = DEFAULT_MAX_READER_DIAGNOSTICS,
+  max_diagnostic_chars~ : Int32 = DEFAULT_MAX_READER_DIAGNOSTIC_CHARS,
   expected_main_document_path? : String,
 ) -> DocxAnnotatedResult raise DocxError {
   read_docx_annotated_archive_with_policy_limited(
@@ -919,10 +919,10 @@ pub fn read_docx_annotated_archive_tolerant_limited(
 pub fn read_docx_annotated_archive_joined_projection_limited(
   archive : @mbtzip.Archive,
   xml_budget : @xml.XmlReadBudget,
-  external_file_access? : Bool = false,
-  read_external_file? : (String) -> Bytes? = no_external_file_reader,
-  max_diagnostics? : Int = DEFAULT_MAX_READER_DIAGNOSTICS,
-  max_diagnostic_chars? : Int = DEFAULT_MAX_READER_DIAGNOSTIC_CHARS,
+  external_file_access~ : Bool = false,
+  read_external_file~ : (String) -> Bytes? = no_external_file_reader,
+  max_diagnostics~ : Int32 = DEFAULT_MAX_READER_DIAGNOSTICS,
+  max_diagnostic_chars~ : Int32 = DEFAULT_MAX_READER_DIAGNOSTIC_CHARS,
   expected_main_document_path? : String,
 ) -> DocxAnnotatedResult raise DocxError {
   read_docx_annotated_archive_with_policy_limited(
@@ -994,8 +994,8 @@ fn read_docx_annotated_archive_with_policy_limited(
   xml_budget : @xml.XmlReadBudget,
   external_file_access : Bool,
   read_external_file : (String) -> Bytes?,
-  max_diagnostics : Int,
-  max_diagnostic_chars : Int,
+  max_diagnostics : Int32,
+  max_diagnostic_chars : Int32,
   expected_main_document_path : String?,
   policy : AnnotationReadPolicy,
 ) -> DocxAnnotatedResult raise DocxError {
@@ -1348,7 +1348,7 @@ fn build_verify_context(
     element : DocumentElement,
     prefix : String,
   ) -> Unit raise DocxError {
-    let ordinals : StableStringMap[Int] = SortedMap([])
+    let ordinals : StableStringMap[Int32] = SortedMap([])
     for child in @paths.element_children(element) {
       match @paths.segment_kind(child) {
         Some(kind) => {
@@ -1479,8 +1479,8 @@ fn build_annotation_index(
   collector : HeaderFooterCollector,
   ctx : VerifyContext,
   path_budget : AnnotationPathBudget,
-  max_warnings : Int,
-  max_warning_chars : Int,
+  max_warnings : Int32,
+  max_warning_chars : Int32,
   policy : AnnotationReadPolicy,
 ) -> AnnotationIndex raise DocxError {
   let warnings = AnnotationWarningCollector::new(
@@ -1841,8 +1841,8 @@ fn read_identity_story_xml_strict(
 /// Every ContentType attribute value declared in [Content_Types].xml
 /// (Override and Default alike), parsed — character references decoded.
 fn inverted_part_paths(
-  index_by_path : StableStringMap[Int],
-) -> Array[(Int, String)] {
+  index_by_path : StableStringMap[Int32],
+) -> Array[(Int32, String)] {
   // Collector indices are assigned densely in first-reference order. Place
   // paths directly into those slots so even attacker-sized section lists do
   // not require an O(n log n) sort.
@@ -1852,7 +1852,7 @@ fn inverted_part_paths(
       slots[index] = Some(path)
     }
   }
-  let pairs : Array[(Int, String)] = []
+  let pairs : Array[(Int32, String)] = []
   for index, path in slots {
     match path {
       Some(value) => pairs.push((index, value))
@@ -1976,15 +1976,15 @@ fn read_comments_extended(
 /// unpaired reference, paired range), so the constant-width merge is O(n).
 fn append_ordered_story_anchors(
   output : Array[AnnotationAnchor],
-  dangling_ends : Array[(Int, AnnotationAnchor)],
-  dangling_starts : Array[(Int, AnnotationAnchor)],
-  point_references : Array[(Int, AnnotationAnchor)],
-  paired_ranges : Array[(Int, AnnotationAnchor)],
+  dangling_ends : Array[(Int32, AnnotationAnchor)],
+  dangling_starts : Array[(Int32, AnnotationAnchor)],
+  point_references : Array[(Int32, AnnotationAnchor)],
+  paired_ranges : Array[(Int32, AnnotationAnchor)],
 ) -> Unit {
-  let streams : ReadOnlyArray[Array[(Int, AnnotationAnchor)]] = [
+  let streams : ReadOnlyArray[Array[(Int32, AnnotationAnchor)]] = [
     dangling_ends, dangling_starts, point_references, paired_ranges,
   ]
-  let positions : FixedArray[Int] = FixedArray::make(4, 0)
+  let positions : FixedArray[Int32] = FixedArray::make(4, 0)
   while true {
     let mut selected = -1
     let mut selected_seq = 0
@@ -2042,7 +2042,7 @@ fn build_comments(
     let (story, scan) = entry
     let story_markers : StableStringMap[Array[ScannedMarker]] = SortedMap([])
     let story_ids : Array[String] = []
-    let node_spans : StableStringMap[(Int, Int)] = SortedMap([])
+    let node_spans : StableStringMap[(Int32, Int32)] = SortedMap([])
     for node in scan.nodes {
       node_spans[node.path] = (node.open_seq, node.close_seq)
     }
@@ -2134,10 +2134,10 @@ fn build_comments(
           let scan = bucket.scan
           // FIFO pairing within this story. An index-based queue avoids the
           // quadratic front-removal cost of adversarial start/end runs.
-          let dangling_end_anchors : Array[(Int, AnnotationAnchor)] = []
-          let dangling_start_anchors : Array[(Int, AnnotationAnchor)] = []
-          let point_reference_anchors : Array[(Int, AnnotationAnchor)] = []
-          let paired_range_anchors : Array[(Int, AnnotationAnchor)] = []
+          let dangling_end_anchors : Array[(Int32, AnnotationAnchor)] = []
+          let dangling_start_anchors : Array[(Int32, AnnotationAnchor)] = []
+          let point_reference_anchors : Array[(Int32, AnnotationAnchor)] = []
+          let paired_range_anchors : Array[(Int32, AnnotationAnchor)] = []
           let open_starts : Array[ScannedMarker] = []
           let references : Array[ScannedMarker] = []
           let pairs : Array[(ScannedMarker, ScannedMarker)] = []
@@ -2422,7 +2422,7 @@ fn point_span(
   id : String,
   story : String,
   marker : ScannedMarker,
-  node_spans : StableStringMap[(Int, Int)],
+  node_spans : StableStringMap[(Int32, Int32)],
   path_budget : AnnotationPathBudget,
 ) -> AnchorSpan raise DocxError {
   match paragraph_prefix(marker.container_path(), path_budget) {

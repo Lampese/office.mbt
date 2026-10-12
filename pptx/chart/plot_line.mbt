@@ -45,7 +45,7 @@ pub(all) struct LineChartBody {
   up_down_bars : @xml.XmlElement?
   marker : Bool?
   smooth : Bool?
-  ax_ids : Array[Int]
+  ax_ids : Array[Int32]
   extension : Array[@xml.XmlElement]
 } derive(Eq, Debug)
 

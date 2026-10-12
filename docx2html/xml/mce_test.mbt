@@ -43,7 +43,7 @@ test "MCE parses decoded UTF-16 with an audited encoding declaration" {
 ///|
 fn mce_test_error(
   source : String,
-  understood? : Array[String] = ["urn:application"],
+  understood~ : Array[String] = ["urn:application"],
 ) -> String raise {
   try read_mce_test_xml(source, understood) catch {
     InvalidXml(message~) => message

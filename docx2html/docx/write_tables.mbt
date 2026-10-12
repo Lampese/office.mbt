@@ -8,13 +8,13 @@
 /// Word's hard table-column limit. Beyond it the document is unusable in
 /// Word anyway, and an unbounded span would drive the placement loop and
 /// the w:gridCol emission through billions of iterations.
-const MAX_GRID_COLUMNS : Int = 63
+const MAX_GRID_COLUMNS : Int32 = 63
 
 ///|
 /// Grid width (in columns) of one row: the sum of its cells' column spans.
 /// Fails closed past `MAX_GRID_COLUMNS` — checked per cell BEFORE summing
 /// so a huge span cannot overflow the accumulator.
-fn row_grid_width(cells : Array[DocumentElement]) -> Int raise DocxError {
+fn row_grid_width(cells : Array[DocumentElement]) -> Int32 raise DocxError {
   let mut width = 0
   for cell in cells {
     let span = match cell {
@@ -38,8 +38,8 @@ fn row_grid_width(cells : Array[DocumentElement]) -> Int raise DocxError {
 /// for the merge that started at this grid column, spanning `col_span`
 /// grid columns.
 priv struct PendingMerge {
-  mut remaining : Int
-  col_span : Int
+  mut remaining : Int32
+  col_span : Int32
 }
 
 ///|
@@ -84,7 +84,7 @@ fn write_table(
     )
   }
   // Active vertical merges by starting grid column.
-  let pending : Map[Int, PendingMerge] = Map([])
+  let pending : Map[Int32, PendingMerge] = Map([])
   let row_nodes : Array[XmlNode] = []
   for row_index, row in rows {
     let (cells, is_header) = row
@@ -204,7 +204,7 @@ fn write_table(
 ///|
 /// A `vMerge` continuation cell: empty paragraph body (required by the
 /// schema), continuing the merge started above.
-fn vmerge_continuation_cell(col_span : Int) -> XmlElement {
+fn vmerge_continuation_cell(col_span : Int32) -> XmlElement {
   let tc_pr : Array[XmlNode] = []
   if col_span > 1 {
     tc_pr.push(
@@ -225,7 +225,7 @@ fn vmerge_continuation_cell(col_span : Int) -> XmlElement {
 ///|
 fn write_table_cell(
   children : Array[DocumentElement],
-  col_span : Int,
+  col_span : Int32,
   starts_merge : Bool,
   ctx : WriteContext,
 ) -> XmlElement raise DocxError {

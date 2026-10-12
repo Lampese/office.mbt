@@ -40,7 +40,7 @@
 ///   `with_hyperlink_to_slide`, resolved by `Presentation::update_slide_mut`.
 ///   `None` for a parsed picture (round-trips via the captured `<p:cNvPr>`).
 pub(all) struct Picture {
-  id : Int
+  id : Int32
   name : String
   transform : Transform?
   geometry : Geometry?

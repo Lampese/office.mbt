@@ -13,22 +13,22 @@
 ///|
 /// Adam7 pass geometry, indexed by pass: first row and column each pass
 /// contributes, then the row and column strides between its samples.
-let pdf_png_adam7_start_row : Array[Int] = [0, 0, 4, 0, 2, 0, 1]
+let pdf_png_adam7_start_row : Array[Int32] = [0, 0, 4, 0, 2, 0, 1]
 
 ///|
-let pdf_png_adam7_start_col : Array[Int] = [0, 4, 0, 2, 0, 1, 0]
+let pdf_png_adam7_start_col : Array[Int32] = [0, 4, 0, 2, 0, 1, 0]
 
 ///|
-let pdf_png_adam7_row_step : Array[Int] = [8, 8, 8, 4, 4, 2, 2]
+let pdf_png_adam7_row_step : Array[Int32] = [8, 8, 8, 4, 4, 2, 2]
 
 ///|
-let pdf_png_adam7_col_step : Array[Int] = [8, 8, 4, 4, 2, 2, 1]
+let pdf_png_adam7_col_step : Array[Int32] = [8, 8, 4, 4, 2, 2, 1]
 
 ///|
 /// Samples per pixel, counting alpha. Distinct from
 /// `pdf_image_png_components`, which reports the *colour* components a PDF
 /// colour space names and so omits the alpha channel.
-fn pdf_png_channels(color_type : Int) -> Int raise @core.PdfError {
+fn pdf_png_channels(color_type : Int32) -> Int32 raise @core.PdfError {
   match color_type {
     0 | 3 => 1 // palette samples are indices: one channel, like greyscale
     2 => 3
@@ -44,8 +44,8 @@ fn pdf_png_channels(color_type : Int) -> Int raise @core.PdfError {
 /// bogus value would silently produce a mis-shaped raster rather than an
 /// error.
 fn pdf_png_check_bit_depth(
-  color_type : Int,
-  bit_depth : Int,
+  color_type : Int32,
+  bit_depth : Int32,
 ) -> Unit raise @core.PdfError {
   let allowed = match bit_depth {
     8 => true
@@ -75,7 +75,7 @@ fn pdf_png_check_bit_depth(
 /// `full` may be as large as an IHDR can declare, and adding to it first
 /// wraps into a negative extent that every later guard then reads as a
 /// small image.
-fn pdf_png_adam7_extent(full : Int, start : Int, step : Int) -> Int {
+fn pdf_png_adam7_extent(full : Int32, start : Int32, step : Int32) -> Int32 {
   if full > start {
     (full - start - 1) / step + 1
   } else {
@@ -92,9 +92,9 @@ fn pdf_png_adam7_extent(full : Int, start : Int, step : Int) -> Int {
 /// (`pdf_predictor_scanline_width` refuses one of 2^31 bits or more), so a
 /// width refused there is refused here, as a PNG.
 fn pdf_png_stride(
-  columns : Int,
-  bits_per_pixel : Int,
-) -> Int raise @core.PdfError {
+  columns : Int32,
+  bits_per_pixel : Int32,
+) -> Int32 raise @core.PdfError {
   let bits = columns.to_int64() * bits_per_pixel.to_int64() + 7L
   if bits > pdf_png_max_int64 {
     raise BadPNG("read_png: interlaced scanline too wide")
@@ -106,16 +106,16 @@ fn pdf_png_stride(
 /// Scatter one de-filtered pass into the flat raster.
 fn pdf_png_place_pass(
   raster : Array[Byte],
-  full_stride : Int,
-  bits_per_pixel : Int,
+  full_stride : Int32,
+  bits_per_pixel : Int32,
   pass : @core.PdfBytes,
-  pass_stride : Int,
-  pass_width : Int,
-  pass_height : Int,
-  start_row : Int,
-  start_col : Int,
-  row_step : Int,
-  col_step : Int,
+  pass_stride : Int32,
+  pass_width : Int32,
+  pass_height : Int32,
+  start_row : Int32,
+  start_col : Int32,
+  row_step : Int32,
+  col_step : Int32,
 ) -> Unit {
   if bits_per_pixel % 8 == 0 {
     let pixel_bytes = bits_per_pixel / 8
@@ -157,10 +157,10 @@ fn pdf_png_place_pass(
 /// Rebuild an Adam7-interlaced IDAT stream as the non-interlaced IDAT
 /// stream for the same image.
 fn pdf_png_deinterlace(
-  width : Int,
-  height : Int,
-  bit_depth : Int,
-  color_type : Int,
+  width : Int32,
+  height : Int32,
+  bit_depth : Int32,
+  color_type : Int32,
   idat : @core.PdfBytes,
 ) -> @core.PdfBytes raise @core.PdfError {
   if width <= 0 || height <= 0 {

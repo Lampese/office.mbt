@@ -13,7 +13,7 @@ fn escape_xml_attr(value : StringView) -> String {
 }
 
 ///|
-fn is_valid_xml_char_reference(value : Int) -> Bool {
+fn is_valid_xml_char_reference(value : Int32) -> Bool {
   value == 0x09 ||
   value == 0x0a ||
   value == 0x0d ||
@@ -23,7 +23,7 @@ fn is_valid_xml_char_reference(value : Int) -> Bool {
 }
 
 ///|
-fn xml_entity_digits_are_valid(digits : StringView, base : Int) -> Bool {
+fn xml_entity_digits_are_valid(digits : StringView, base : Int32) -> Bool {
   if digits == "" {
     return false
   }
@@ -31,7 +31,7 @@ fn xml_entity_digits_are_valid(digits : StringView, base : Int) -> Bool {
     let valid = if base == 10 {
       digit.is_ascii_digit()
     } else {
-      digit.is_ascii_digit() || digit is ('a'..='f') || digit is ('A'..='F')
+      digit.is_ascii_digit() || digit is ('a'..<='f') || digit is ('A'..<='F')
     }
     if !valid {
       return false

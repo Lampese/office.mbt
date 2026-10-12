@@ -7,7 +7,7 @@
 /// content-type, and relationship parts are added or updated as needed.
 
 ///|
-let office_annotation_max_script_bytes : Int = 4 * 1024 * 1024
+let office_annotation_max_script_bytes : Int32 = 4 * 1024 * 1024
 
 ///|
 /// The office.docx.annotation-batch/1 result record.

@@ -1,12 +1,12 @@
 ///|
-fn write_u16(bytes : Array[Byte], offset : Int, value : Int) -> Unit {
+fn write_u16(bytes : Array[Byte], offset : Int32, value : Int32) -> Unit {
   let raw = value.reinterpret_as_uint()
   bytes[offset] = (raw & 0xFF).to_byte()
   bytes[offset + 1] = ((raw >> 8) & 0xFF).to_byte()
 }
 
 ///|
-fn write_u32(bytes : Array[Byte], offset : Int, value : UInt) -> Unit {
+fn write_u32(bytes : Array[Byte], offset : Int32, value : UInt32) -> Unit {
   bytes[offset] = (value & 0xFF).to_byte()
   bytes[offset + 1] = ((value >> 8) & 0xFF).to_byte()
   bytes[offset + 2] = ((value >> 16) & 0xFF).to_byte()
@@ -14,12 +14,12 @@ fn write_u32(bytes : Array[Byte], offset : Int, value : UInt) -> Unit {
 }
 
 ///|
-fn find_classic_eocd(bytes : BytesView) -> Int raise {
+fn find_classic_eocd(bytes : BytesView) -> Int32 raise {
   if bytes.length() < 22 {
     fail("ZIP fixture is too short to contain EOCD")
   }
   for offset in (bytes.length() - 22)>=..0 {
-    if bytes.unsafe_read_uint32_le(offset) == (0x06054B50 : UInt) &&
+    if bytes.unsafe_read_uint32_le(offset) == (0x06054B50 : UInt32) &&
       offset + 22 + bytes.unsafe_read_uint16_le(offset + 20).to_int() ==
       bytes.length() {
       return offset
@@ -31,7 +31,7 @@ fn find_classic_eocd(bytes : BytesView) -> Int raise {
 ///|
 /// Returns the byte offset of a classic, single-disk ZIP central directory.
 /// This is intentionally a narrow test-fixture accessor, not a ZIP parser.
-pub fn classic_central_directory_offset(data : BytesView) -> Int raise {
+pub fn classic_central_directory_offset(data : BytesView) -> Int32 raise {
   let eocd = find_classic_eocd(data)
   let central_offset = data
     .unsafe_read_uint32_le(eocd + 16)
@@ -48,8 +48,8 @@ pub fn classic_central_directory_offset(data : BytesView) -> Int raise {
 ///|
 fn name_matches(
   bytes : BytesView,
-  offset : Int,
-  length : Int,
+  offset : Int32,
+  length : Int32,
   expected : BytesView,
 ) -> Bool {
   if length != expected.length() {
@@ -75,7 +75,7 @@ fn name_matches(
 pub fn with_central_header_size(
   data : BytesView,
   target_name : String,
-  desired_size : Int,
+  desired_size : Int32,
 ) -> Bytes raise {
   let source = data.to_owned().to_array()
   let eocd = find_classic_eocd(data)
@@ -96,7 +96,7 @@ pub fn with_central_header_size(
   let mut match_comment_length = 0
   while cursor < eocd {
     if cursor + 46 > eocd ||
-      data.unsafe_read_uint32_le(cursor) != (0x02014B50 : UInt) {
+      data.unsafe_read_uint32_le(cursor) != (0x02014B50 : UInt32) {
       fail("ZIP fixture has a malformed central directory")
     }
     let name_length = data.unsafe_read_uint16_le(cursor + 28).to_int()

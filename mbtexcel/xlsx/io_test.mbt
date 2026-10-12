@@ -12,9 +12,9 @@ fn MemWriter::new() -> MemWriter {
 fn MemWriter::write_once_sync(
   self : MemWriter,
   bytes : Bytes,
-  offset~ : Int,
-  len~ : Int,
-) -> Int {
+  offset~ : Int32,
+  len~ : Int32,
+) -> Int32 {
   let start = if offset < 0 { 0 } else { offset }
   let end = start + len
   let safe_end = if end > bytes.length() { bytes.length() } else { end }
@@ -56,8 +56,8 @@ async fn MemWriter::write_reader(
 impl @async/io.Writer for MemWriter with fn write_once(
   self : MemWriter,
   bytes : Bytes,
-  offset~ : Int,
-  len~ : Int,
+  offset~ : Int32,
+  len~ : Int32,
 ) {
   self.write_once_sync(bytes, offset~, len~)
 }

@@ -5,36 +5,36 @@ let xml_namespace_uri = "http://www.w3.org/XML/1998/namespace"
 let xmlns_namespace_uri = "http://www.w3.org/2000/xmlns/"
 
 ///|
-let max_xml_start_tag_chars : Int = 16 * 1024 * 1024
+let max_xml_start_tag_chars : Int32 = 16 * 1024 * 1024
 
 ///|
-let max_xml_qname_chars : Int = 1024
+let max_xml_qname_chars : Int32 = 1024
 
 ///|
-let max_xml_start_tag_attributes : Int = 4096
+let max_xml_start_tag_attributes : Int32 = 4096
 
 ///|
-let max_xml_namespace_bindings : Int = 4096
+let max_xml_namespace_bindings : Int32 = 4096
 
 ///|
-let max_xml_element_depth : Int = 256
+let max_xml_element_depth : Int32 = 256
 
 ///|
 priv struct XmlNamespaceBinding {
   prefix : String
   uri : String
-  namespace_id : Int
-  depth : Int
-  previous_index : Int?
+  namespace_id : Int32
+  depth : Int32
+  previous_index : Int32?
 }
 
 ///|
 priv struct XmlAttributeSpan {
-  name_start : Int
-  name_end : Int
-  value_start : Int
-  value_end : Int
-  next : Int
+  name_start : Int32
+  name_end : Int32
+  value_start : Int32
+  value_end : Int32
+  next : Int32
 }
 
 ///|
@@ -44,18 +44,18 @@ priv struct XmlAttributeSpan {
 pub struct XmlStartTagScanner {
   priv xml : StringView
   priv cancelled : () -> Bool
-  priv mut index : Int
-  priv mut depth : Int
+  priv mut index : Int32
+  priv mut depth : Int32
   priv namespace_bindings : Array[XmlNamespaceBinding]
-  priv namespace_prefix_indices : Map[String, Int]
-  priv namespace_ids : Map[String, Int]
-  priv namespace_ref_counts : Map[Int, Int]
-  priv mut next_namespace_id : Int
-  priv open_name_starts : Array[Int]
-  priv open_name_ends : Array[Int]
+  priv namespace_prefix_indices : Map[String, Int32]
+  priv namespace_ids : Map[String, Int32]
+  priv namespace_ref_counts : Map[Int32, Int32]
+  priv mut next_namespace_id : Int32
+  priv open_name_starts : Array[Int32]
+  priv open_name_ends : Array[Int32]
   priv open_name_replacements : Array[String?]
-  priv open_local_name_starts : Array[Int]
-  priv open_local_name_ends : Array[Int]
+  priv open_local_name_starts : Array[Int32]
+  priv open_local_name_ends : Array[Int32]
   priv open_namespace_uris : Array[String]
   priv open_remove_end_tags : Array[Bool]
   priv rewrite_element_prefixes : Map[String, String]
@@ -64,28 +64,28 @@ pub struct XmlStartTagScanner {
   priv reserved_attribute_prefixes : Map[String, String]
   priv rewrite_output : StringBuilder
   priv canonicalize_markup : Bool
-  priv rewrite_output_limit : Int
-  priv mut rewrite_output_chars : Int
-  priv mut rewrite_cursor : Int
-  priv mut rewrite_count : Int
-  priv mut pending_namespace_pop : Int?
+  priv rewrite_output_limit : Int32
+  priv mut rewrite_output_chars : Int32
+  priv mut rewrite_cursor : Int32
+  priv mut rewrite_count : Int32
+  priv mut pending_namespace_pop : Int32?
   priv mut root_seen : Bool
   priv mut root_closed : Bool
-  priv mut current_name_start : Int
-  priv mut current_name_end : Int
-  priv mut current_tag_start : Int
-  priv mut current_tag_end : Int
-  priv mut current_attribute_insert : Int
+  priv mut current_name_start : Int32
+  priv mut current_name_end : Int32
+  priv mut current_tag_start : Int32
+  priv mut current_tag_end : Int32
+  priv mut current_attribute_insert : Int32
   priv mut current_self_closing : Bool
-  priv mut current_depth : Int
+  priv mut current_depth : Int32
   priv mut current_namespace_uri : String
-  priv mut current_namespace_id : Int
+  priv mut current_namespace_id : Int32
   priv mut intervening_character_data_is_whitespace : Bool
   priv capture_element_namespaces : Array[String]
   priv capture_element_local_name : String
   priv retain_element_namespaces : Array[String]
-  priv mut capture_start : Int?
-  priv mut capture_depth : Int
+  priv mut capture_start : Int32?
+  priv mut capture_depth : Int32
 }
 
 ///|
@@ -96,7 +96,11 @@ fn check_xml_cancelled(cancelled : () -> Bool) -> Unit raise ParseXmlError {
 }
 
 ///|
-fn xml_name_scalar_at(xml : StringView, index : Int, end : Int) -> (Int, Int)? {
+fn xml_name_scalar_at(
+  xml : StringView,
+  index : Int32,
+  end : Int32,
+) -> (Int32, Int32)? {
   if index >= end {
     return None
   }
@@ -118,7 +122,7 @@ fn xml_name_scalar_at(xml : StringView, index : Int, end : Int) -> (Int, Int)? {
 }
 
 ///|
-fn is_xml_name_start_scalar(code : Int) -> Bool {
+fn is_xml_name_start_scalar(code : Int32) -> Bool {
   (code >= 'A'.to_int() && code <= 'Z'.to_int()) ||
   (code >= 'a'.to_int() && code <= 'z'.to_int()) ||
   code == '_'.to_int() ||
@@ -137,7 +141,7 @@ fn is_xml_name_start_scalar(code : Int) -> Bool {
 }
 
 ///|
-fn is_xml_name_scalar(code : Int) -> Bool {
+fn is_xml_name_scalar(code : Int32) -> Bool {
   is_xml_name_start_scalar(code) ||
   (code >= '0'.to_int() && code <= '9'.to_int()) ||
   code == '-'.to_int() ||
@@ -175,16 +179,16 @@ fn is_xml_ncname(value : StringView) -> Bool {
 ///|
 fn validate_xml_qname(
   xml : StringView,
-  start : Int,
-  end : Int,
-) -> Int? raise ParseXmlError {
+  start : Int32,
+  end : Int32,
+) -> Int32? raise ParseXmlError {
   if start >= end {
     raise InvalidXml(msg="XML qualified name is empty")
   }
   if end - start > max_xml_qname_chars {
     raise InvalidXml(msg="XML qualified name is too long")
   }
-  let mut colon : Int? = None
+  let mut colon : Int32? = None
   let mut index = start
   while index < end {
     let unit = xml[index]
@@ -235,8 +239,8 @@ fn xml_string_equals_view(value : String, expected : StringView) -> Bool {
 ///|
 fn xml_span_equals(
   xml : StringView,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
   expected : StringView,
 ) -> Bool {
   if end - start != expected.length() {
@@ -253,10 +257,10 @@ fn xml_span_equals(
 ///|
 fn xml_spans_equal(
   xml : StringView,
-  first_start : Int,
-  first_end : Int,
-  second_start : Int,
-  second_end : Int,
+  first_start : Int32,
+  first_end : Int32,
+  second_start : Int32,
+  second_end : Int32,
 ) -> Bool {
   if first_end - first_start != second_end - second_start {
     return false
@@ -272,10 +276,10 @@ fn xml_spans_equal(
 ///|
 fn find_xml_sequence(
   xml : StringView,
-  start : Int,
+  start : Int32,
   sequence : StringView,
-  cancelled? : () -> Bool = () => false,
-) -> Int? raise ParseXmlError {
+  cancelled~ : () -> Bool = () => false,
+) -> Int32? raise ParseXmlError {
   check_xml_cancelled(cancelled)
   if sequence.length() == 0 {
     return Some(start)
@@ -299,8 +303,8 @@ fn find_xml_sequence(
 ///|
 fn xml_span_equals_ascii_case_insensitive(
   xml : StringView,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
   expected : StringView,
 ) -> Bool {
   if end - start != expected.length() {
@@ -331,8 +335,8 @@ fn xml_span_equals_ascii_case_insensitive(
 ///|
 fn validate_xml_character_span_and_check_whitespace(
   xml : StringView,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
   cancelled : () -> Bool,
 ) -> Bool raise ParseXmlError {
   let mut index = start
@@ -372,8 +376,8 @@ fn validate_xml_character_span_and_check_whitespace(
 ///|
 fn validate_xml_character_span(
   xml : StringView,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
   cancelled : () -> Bool,
 ) -> Unit raise ParseXmlError {
   ignore(
@@ -405,8 +409,8 @@ fn validate_xml_encoding_name(value : StringView) -> Bool {
 ///|
 fn validate_xml_declaration(
   xml : StringView,
-  attributes_start : Int,
-  end : Int,
+  attributes_start : Int32,
+  end : Int32,
   cancelled : () -> Bool,
 ) -> Unit raise ParseXmlError {
   if attributes_start >= end || !is_attr_space(xml[attributes_start]) {
@@ -505,8 +509,8 @@ fn validate_xml_declaration(
 ///|
 fn XmlStartTagScanner::validate_processing_instruction(
   self : XmlStartTagScanner,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> Unit raise ParseXmlError {
   let target_start = start + 2
   let mut target_end = target_start
@@ -537,8 +541,8 @@ fn XmlStartTagScanner::validate_processing_instruction(
 ///|
 fn XmlStartTagScanner::validate_comment(
   self : XmlStartTagScanner,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> Unit raise ParseXmlError {
   let content_start = start + 4
   validate_xml_character_span(self.xml, content_start, end, self.cancelled)
@@ -553,10 +557,10 @@ fn XmlStartTagScanner::validate_comment(
 ///|
 fn find_xml_tag_end(
   xml : StringView,
-  search_start : Int,
-  markup_start : Int,
-  cancelled? : () -> Bool = () => false,
-) -> Int raise ParseXmlError {
+  search_start : Int32,
+  markup_start : Int32,
+  cancelled~ : () -> Bool = () => false,
+) -> Int32 raise ParseXmlError {
   check_xml_cancelled(cancelled)
   let mut index = search_start
   let mut next_checkpoint = search_start
@@ -596,9 +600,9 @@ fn find_xml_tag_end(
 ///|
 fn next_xml_attribute(
   xml : StringView,
-  start : Int,
-  tag_end : Int,
-  cancelled? : () -> Bool = () => false,
+  start : Int32,
+  tag_end : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> XmlAttributeSpan? raise ParseXmlError {
   check_xml_cancelled(cancelled)
   let mut index = start
@@ -681,7 +685,7 @@ fn next_xml_attribute(
 }
 
 ///|
-fn is_valid_xml_char_reference(value : Int) -> Bool {
+fn is_valid_xml_char_reference(value : Int32) -> Bool {
   value == 0x09 ||
   value == 0x0a ||
   value == 0x0d ||
@@ -738,7 +742,7 @@ fn xml_entity_value(entity : StringView) -> Char? {
 /// second time by a downstream path resolver.
 pub fn decode_xml_attribute(
   value : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String raise ParseXmlError {
   check_xml_cancelled(cancelled)
   validate_xml_character_span(value, 0, value.length(), cancelled)
@@ -856,7 +860,7 @@ fn validate_xml_attribute_value(
 fn XmlStartTagScanner::namespace_identity(
   self : XmlStartTagScanner,
   uri : String,
-) -> Int {
+) -> Int32 {
   if uri == "" {
     return 0
   }
@@ -905,7 +909,7 @@ fn XmlStartTagScanner::release_namespace_identity(
 ///|
 fn XmlStartTagScanner::pop_namespace_depth(
   self : XmlStartTagScanner,
-  depth : Int,
+  depth : Int32,
 ) -> Unit {
   while self.namespace_bindings.length() > 0 {
     let last = self.namespace_bindings.length() - 1
@@ -927,7 +931,7 @@ fn XmlStartTagScanner::resolve_prefix_identity(
   self : XmlStartTagScanner,
   prefix : StringView,
   attribute : Bool,
-) -> (String, Int) raise ParseXmlError {
+) -> (String, Int32) raise ParseXmlError {
   if prefix == "xml" {
     return (xml_namespace_uri, 1)
   }
@@ -980,9 +984,9 @@ fn xml_namespace_declaration_prefix(
 ///|
 fn XmlStartTagScanner::add_namespace_declarations(
   self : XmlStartTagScanner,
-  attributes_start : Int,
-  tag_end : Int,
-  scope_depth : Int,
+  attributes_start : Int32,
+  tag_end : Int32,
+  scope_depth : Int32,
 ) -> Unit raise ParseXmlError {
   let declared : Set[String] = Set([])
   let mut next = attributes_start
@@ -1037,10 +1041,10 @@ fn XmlStartTagScanner::add_namespace_declarations(
 ///|
 fn XmlStartTagScanner::validate_attributes(
   self : XmlStartTagScanner,
-  attributes_start : Int,
-  tag_end : Int,
+  attributes_start : Int32,
+  tag_end : Int32,
 ) -> Unit raise ParseXmlError {
-  let expanded_names : Map[Int, Set[String]] = Map([])
+  let expanded_names : Map[Int32, Set[String]] = Map([])
   let canonical_names : Set[String] = Set([])
   let mut next = attributes_start
   let mut count = 0
@@ -1121,8 +1125,8 @@ fn XmlStartTagScanner::validate_attributes(
 ///|
 fn XmlStartTagScanner::record_rewrite(
   self : XmlStartTagScanner,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
   replacement : String,
 ) -> Unit raise ParseXmlError {
   if start < self.rewrite_cursor || end < start {
@@ -1140,8 +1144,8 @@ fn XmlStartTagScanner::record_rewrite(
 ///|
 fn XmlStartTagScanner::write_rewrite_source(
   self : XmlStartTagScanner,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> Unit raise ParseXmlError {
   let mut index = start
   while index < end {
@@ -1156,7 +1160,7 @@ fn XmlStartTagScanner::write_rewrite_source(
 ///|
 fn XmlStartTagScanner::charge_rewrite_output(
   self : XmlStartTagScanner,
-  count : Int,
+  count : Int32,
 ) -> Unit raise ParseXmlError {
   if count < 0 || count > self.rewrite_output_limit - self.rewrite_output_chars {
     raise InvalidXml(msg="XML canonical output limit exceeded")
@@ -1167,9 +1171,9 @@ fn XmlStartTagScanner::charge_rewrite_output(
 ///|
 fn XmlStartTagScanner::escaped_character_data(
   self : XmlStartTagScanner,
-  rewrite_start : Int,
-  value_start : Int,
-  end : Int,
+  rewrite_start : Int32,
+  value_start : Int32,
+  end : Int32,
 ) -> String raise ParseXmlError {
   let unchanged = rewrite_start - self.rewrite_cursor
   if unchanged < 0 ||
@@ -1234,11 +1238,11 @@ fn xml_start_tag_scanner_with_rewrites(
   attribute_prefixes : Map[String, String],
   reserved_attribute_prefixes : Map[String, String],
   canonicalize_markup : Bool,
-  rewrite_output_limit : Int,
-  capture_element_namespaces? : Array[String] = [],
-  capture_element_local_name? : String = "",
-  retain_element_namespaces? : Array[String] = [],
-  cancelled? : () -> Bool = () => false,
+  rewrite_output_limit : Int32,
+  capture_element_namespaces~ : Array[String] = [],
+  capture_element_local_name~ : String = "",
+  retain_element_namespaces~ : Array[String] = [],
+  cancelled~ : () -> Bool = () => false,
 ) -> XmlStartTagScanner {
   {
     xml,
@@ -1293,7 +1297,7 @@ fn xml_start_tag_scanner_with_rewrites(
 /// copy of the full XML part is made.
 pub fn XmlStartTagScanner::new(
   xml : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> XmlStartTagScanner {
   xml_start_tag_scanner_with_rewrites(
     xml,
@@ -1310,7 +1314,7 @@ pub fn XmlStartTagScanner::new(
 ///|
 fn XmlStartTagScanner::consume_end_tag(
   self : XmlStartTagScanner,
-  start : Int,
+  start : Int32,
 ) -> Unit raise ParseXmlError {
   check_xml_cancelled(self.cancelled)
   if self.depth <= 0 || self.open_name_starts.length() == 0 {
@@ -1694,13 +1698,13 @@ pub fn XmlStartTagScanner::namespace_uri(
 /// namespace binding and avoids copying long namespace URIs into parser keys.
 fn XmlStartTagScanner::current_namespace_identity(
   self : XmlStartTagScanner,
-) -> Int {
+) -> Int32 {
   self.current_namespace_id
 }
 
 ///|
 /// Returns the one-based nesting depth of the current start tag.
-pub fn XmlStartTagScanner::depth(self : XmlStartTagScanner) -> Int {
+pub fn XmlStartTagScanner::depth(self : XmlStartTagScanner) -> Int32 {
   self.current_depth
 }
 
@@ -1754,7 +1758,7 @@ pub fn remove_xml_expanded_name_subtrees(
   xml : StringView,
   element_namespaces : ArrayView[String],
   local_name : String,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String? raise ParseXmlError {
   check_xml_cancelled(cancelled)
   if local_name == "" {
@@ -1793,7 +1797,7 @@ pub fn remove_xml_expanded_name_subtrees(
 pub fn remove_xml_foreign_namespace_subtrees(
   xml : StringView,
   element_namespaces : ArrayView[String],
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String? raise ParseXmlError {
   check_xml_cancelled(cancelled)
   if element_namespaces.length() == 0 {
@@ -1851,9 +1855,9 @@ pub fn canonicalize_xml_expanded_names(
   xml : StringView,
   element_namespaces : ArrayView[String],
   attribute_prefixes : ArrayView[(String, String)],
-  max_output_chars? : Int = max_xml_start_tag_chars,
-  cancelled? : () -> Bool = () => false,
-  element_prefixes? : ArrayView[(String, String)] = [],
+  max_output_chars~ : Int32 = max_xml_start_tag_chars,
+  cancelled~ : () -> Bool = () => false,
+  element_prefixes~ : ArrayView[(String, String)] = [],
 ) -> String raise ParseXmlError {
   check_xml_cancelled(cancelled)
   if max_output_chars < 0 {
@@ -2016,13 +2020,13 @@ pub fn XmlStartTagScanner::exact_attribute_values(
   self : XmlStartTagScanner,
   expected : ArrayView[(String, String)],
 ) -> Array[String]? raise ParseXmlError {
-  let expected_indices : Map[String, Map[String, Int]] = Map([])
+  let expected_indices : Map[String, Map[String, Int32]] = Map([])
   for index, entry in expected {
     let (namespace_uri, local_name) = entry
     let namespace_indices = match expected_indices.get(namespace_uri) {
       Some(indices) => indices
       None => {
-        let indices : Map[String, Int] = Map([])
+        let indices : Map[String, Int32] = Map([])
         expected_indices[namespace_uri] = indices
         indices
       }
@@ -2081,7 +2085,7 @@ pub fn XmlStartTagScanner::exact_attribute_values(
 ///|
 priv struct XmlExpandedAttributeName {
   namespace_uri : String
-  namespace_id : Int
+  namespace_id : Int32
   local_name : String
 }
 

@@ -48,7 +48,7 @@ pub struct PictureFinal {
 /// `Picture::of_image` (a stretched fit inside a `prst="rect"`
 /// boundary); `embed_id` is the `r:embed` of the image media part.
 pub fn Picture::builder(
-  id~ : Int,
+  id~ : Int32,
   name~ : String,
   embed_id : String,
   x~ : @units.Emu,
@@ -65,10 +65,10 @@ pub fn Picture::builder(
 /// it can only be called once (the result has no `with_crop`).
 pub fn PictureUncropped::with_crop(
   self : PictureUncropped,
-  left? : @units.Percentage = Percentage(0.0),
-  top? : @units.Percentage = Percentage(0.0),
-  right? : @units.Percentage = Percentage(0.0),
-  bottom? : @units.Percentage = Percentage(0.0),
+  left~ : @units.Percentage = Percentage(0.0),
+  top~ : @units.Percentage = Percentage(0.0),
+  right~ : @units.Percentage = Percentage(0.0),
+  bottom~ : @units.Percentage = Percentage(0.0),
 ) -> PictureCropped {
   { pic: self.pic.with_crop(left~, top~, right~, bottom~), }
 }

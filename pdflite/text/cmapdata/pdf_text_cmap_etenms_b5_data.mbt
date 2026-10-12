@@ -3,7 +3,7 @@
 
 ///|
 /// Generated predefined CMap lookup data.
-let pdf_text_etenms_b5_cid_ranges_flat : ReadOnlyArray[Int] = [
+let pdf_text_etenms_b5_cid_ranges_flat : ReadOnlyArray[Int32] = [
   0x0020, 0x007E, 1, 0xA140, 0xA158, 99, 0xA159, 0xA15C, 13743, 0xA15D, 0xA17E, 128,
   0xA1A1, 0xA1F5, 162, 0xA1F6, 0xA1F6, 248, 0xA1F7, 0xA1F7, 247, 0xA1F8, 0xA1FE,
   249, 0xA240, 0xA27E, 256, 0xA2A1, 0xA2FE, 319, 0xA340, 0xA37E, 413, 0xA3A1, 0xA3BB,
@@ -77,6 +77,6 @@ let pdf_text_etenms_b5_cid_ranges_flat : ReadOnlyArray[Int] = [
 
 ///|
 /// Predefined CMap lookup table, unpacked at load from the flat static data above.
-pub let pdf_text_etenms_b5_cid_ranges : Array[(Int, Int, Int)] = pdf_cmap_unpack3(
+pub let pdf_text_etenms_b5_cid_ranges : Array[(Int32, Int32, Int32)] = pdf_cmap_unpack3(
   pdf_text_etenms_b5_cid_ranges_flat,
 )

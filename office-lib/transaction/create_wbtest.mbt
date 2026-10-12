@@ -7,10 +7,10 @@ fn wb_fresh_xlsx(sheet : String) -> Bytes raise {
 
 ///|
 fn wb_create_faults(
-  fail_write? : Bool = false,
-  fail_write_after_bytes? : Int,
-  fail_rename? : Bool = false,
-  stall_write_after_bytes? : Int,
+  fail_write~ : Bool = false,
+  fail_write_after_bytes? : Int32,
+  fail_rename~ : Bool = false,
+  stall_write_after_bytes? : Int32,
   concurrent_destination? : Bytes,
 ) -> TransactionFaults {
   {

@@ -220,7 +220,7 @@ test "parser-hostile values residualize and the ops still parse" {
   assert_true(codes.contains("docx.highlight_dropped"))
   // spans beyond the writer's bounds drop to residuals
   let spans : Array[DumpResidual] = []
-  let cell = (col : Int, row : Int) => {
+  let cell = (col : Int32, row : Int32) => {
     @document.TableCell(
       children=[@document.paragraph([@document.run([@document.text("c")])])],
       col_span=col,
@@ -603,7 +603,7 @@ test "unsniffable image payloads residualize via the writer oracle" {
 /// widths residualize the table — the writer would reject both, and a
 /// dump must never emit what its own replay cannot write.
 test "table grid geometry the writer rejects residualizes" {
-  let cell = (span : Int) => {
+  let cell = (span : Int32) => {
     @document.TableCell(
       children=[@document.paragraph([@document.run([@document.text("c")])])],
       col_span=span,
@@ -662,7 +662,7 @@ test "table grid geometry the writer rejects residualizes" {
 /// emit, while a row the reader left empty under an active merge is
 /// inexpressible and must residualize the table.
 test "vmerge tables gate by placement, not raw widths" {
-  let cell = (col : Int, row : Int) => {
+  let cell = (col : Int32, row : Int32) => {
     @document.TableCell(
       children=[@document.paragraph([@document.run([@document.text("c")])])],
       col_span=col,

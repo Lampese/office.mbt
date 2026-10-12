@@ -15,14 +15,14 @@ priv struct WriteContext {
   mut uses_lists : Bool
   // Dynamically allocated document relationships (hyperlinks, images);
   // rId1/rId2 are reserved for styles/numbering.
-  mut next_relationship : Int
+  mut next_relationship : Int32
   document_relationships : Array[(String, String, String, Bool)]
   // (part name under word/, extension, content type, bytes) per image.
   media : Array[(String, String, String, Bytes)]
   // How many footnotes/endnotes this write supplies: a NoteReference in
   // a run must name one of them (0-based index), else it would dangle.
-  footnote_count : Int
-  endnote_count : Int
+  footnote_count : Int32
+  endnote_count : Int32
 }
 
 ///|
@@ -220,8 +220,8 @@ fn write_paragraph(
   children : Array[DocumentElement],
   properties : ParagraphProperties,
   ctx : WriteContext,
-  leading? : Array[XmlNode] = [],
-  trailing? : Array[XmlNode] = [],
+  leading~ : Array[XmlNode] = [],
+  trailing~ : Array[XmlNode] = [],
 ) -> XmlElement raise DocxError {
   let nodes : Array[XmlNode] = []
   let ppr_children : Array[XmlNode] = []
@@ -420,7 +420,7 @@ fn write_inline(
 
 ///|
 /// Word caps font size at 1638pt (ST_HpsMeasure half-points max 3276).
-const MAX_FONT_SIZE_POINTS : Int = 1638
+const MAX_FONT_SIZE_POINTS : Int32 = 1638
 
 ///|
 /// The closed ST_HighlightColor enum (WML §17.18.40).
@@ -678,7 +678,7 @@ fn write_run(
 
 ///|
 /// Strict non-negative decimal parse of a note-reference index.
-fn parse_note_index(text : String) -> Int? {
+fn parse_note_index(text : String) -> Int32? {
   if text.length() == 0 || text.length() > 9 {
     return None
   }
@@ -701,8 +701,8 @@ fn parse_note_index(text : String) -> Int? {
 /// Word honour a distinct first-page header/footer). With no references the
 /// output is byte-identical to the reference-free writer.
 fn blank_section_properties(
-  references? : Array[XmlNode] = [],
-  title_page? : Bool = false,
+  references~ : Array[XmlNode] = [],
+  title_page~ : Bool = false,
 ) -> XmlElement {
   let children : Array[XmlNode] = []
   for reference in references {
@@ -739,7 +739,7 @@ fn is_writable_style_id(style_id : String) -> Bool {
   }
   style_id.has_prefix("Heading") &&
   style_id.length() == 8 &&
-  style_id[7] is ('1'..='6')
+  style_id[7] is ('1'..<='6')
 }
 
 ///|

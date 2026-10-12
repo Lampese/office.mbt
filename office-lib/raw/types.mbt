@@ -4,7 +4,7 @@ let raw_max_error_message = 512
 ///|
 /// Checks a text boundary in Unicode scalar values without allocating an
 /// intermediate character array. Isolated UTF-16 surrogates fail closed.
-fn raw_text_within_scalar_limit(value : String, limit : Int) -> Bool {
+fn raw_text_within_scalar_limit(value : String, limit : Int32) -> Bool {
   if limit < 0 {
     return false
   }
@@ -52,7 +52,7 @@ pub impl Show for RawError with fn output(self, logger) {
 }
 
 ///|
-fn bounded_raw_text(value : String, limit : Int) -> String {
+fn bounded_raw_text(value : String, limit : Int32) -> String {
   if limit <= 0 {
     return ""
   }
@@ -112,7 +112,7 @@ pub struct RawPartInfo {
   name : String
   content_type : String
   xml : Bool
-  size : Int
+  size : Int32
   aliases : ReadOnlyArray[String]
 }
 
@@ -136,7 +136,7 @@ pub fn RawPartInfo::is_xml(self : RawPartInfo) -> Bool {
 
 ///|
 /// Returns the uncompressed payload size in bytes.
-pub fn RawPartInfo::byte_size(self : RawPartInfo) -> Int {
+pub fn RawPartInfo::byte_size(self : RawPartInfo) -> Int32 {
   self.size
 }
 
@@ -317,7 +317,7 @@ pub struct RawMutation {
   priv result : RawPackageResult
   priv part : String
   priv action : String
-  priv match_count : Int
+  priv match_count : Int32
 }
 
 ///|
@@ -353,7 +353,7 @@ pub fn RawMutation::action_name(self : RawMutation) -> String {
 
 ///|
 /// Returns the number of selected elements, or one for a whole-part replace.
-pub fn RawMutation::selected_count(self : RawMutation) -> Int {
+pub fn RawMutation::selected_count(self : RawMutation) -> Int32 {
   self.match_count
 }
 

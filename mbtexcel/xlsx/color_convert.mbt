@@ -1,5 +1,5 @@
 ///|
-fn clamp_byte(value : Int) -> Byte {
+fn clamp_byte(value : Int32) -> Byte {
   let clamped = if value < 0 { 0 } else if value > 255 { 255 } else { value }
   clamped.to_byte()
 }
@@ -17,7 +17,7 @@ fn hex_byte(value : Byte) -> String {
 }
 
 ///|
-fn parse_hex_byte(text : StringView, start : Int) -> Int {
+fn parse_hex_byte(text : StringView, start : Int32) -> Int32 {
   let end = start + 2
   if start < 0 || text.length() < end {
     return 0

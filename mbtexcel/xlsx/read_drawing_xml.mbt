@@ -3,7 +3,7 @@ fn parse_xml_int_tag(
   xml : StringView,
   tag_name : StringView,
   msg : String,
-) -> Int raise XlsxError {
+) -> Int32 raise XlsxError {
   let body = match extract_tag_body_from(xml, tag_name) {
     Some(value) => value
     None => raise InvalidXml(msg~)
@@ -16,8 +16,8 @@ fn parse_xml_int_tag(
 ///|
 fn validate_drawing_axis_marker_for_read(
   axis : StringView,
-  idx0 : Int,
-  off_emu : Int,
+  idx0 : Int32,
+  off_emu : Int32,
   allow_end_boundary : Bool,
 ) -> Unit raise XlsxError {
   let limit = if axis == "col" {
@@ -37,10 +37,10 @@ fn validate_drawing_axis_marker_for_read(
 
 ///|
 fn drawing_reference_for_read(
-  row_idx0 : Int,
-  col_idx0 : Int,
-  row_off_emu : Int,
-  col_off_emu : Int,
+  row_idx0 : Int32,
+  col_idx0 : Int32,
+  row_off_emu : Int32,
+  col_off_emu : Int32,
 ) -> String raise XlsxError {
   validate_drawing_axis_marker_for_read("row", row_idx0, row_off_emu, false)
   validate_drawing_axis_marker_for_read("col", col_idx0, col_off_emu, false)
@@ -49,9 +49,9 @@ fn drawing_reference_for_read(
 
 ///|
 fn validate_drawing_extent_for_read(
-  value : Int,
+  value : Int32,
   field : StringView,
-) -> Int raise XlsxError {
+) -> Int32 raise XlsxError {
   if value < 0 {
     raise InvalidXml(msg=field.to_owned() + " invalid")
   }
@@ -61,8 +61,8 @@ fn validate_drawing_extent_for_read(
 ///|
 fn drawing_axis_position_emu_for_read(
   metrics : DrawingAxisMetrics,
-  idx0 : Int,
-  off_emu : Int,
+  idx0 : Int32,
+  off_emu : Int32,
 ) -> Int64 raise XlsxError {
   let pixels = metrics.pixel_span(0, idx0)
   let emu_per_pixel = Int64::from_int(picture_emu_per_pixel)
@@ -76,11 +76,11 @@ fn drawing_axis_position_emu_for_read(
 ///|
 fn drawing_axis_span_emu(
   metrics : DrawingAxisMetrics,
-  from_idx0 : Int,
-  from_off_emu : Int,
-  to_idx0 : Int,
-  to_off_emu : Int,
-) -> Int raise XlsxError {
+  from_idx0 : Int32,
+  from_off_emu : Int32,
+  to_idx0 : Int32,
+  to_off_emu : Int32,
+) -> Int32 raise XlsxError {
   validate_drawing_axis_marker_for_read(
     metrics.axis,
     from_idx0,
@@ -135,17 +135,17 @@ priv struct DrawingAnchor {
   xml : String
   positioning : PicturePositioning
   form : DrawingAnchorForm
-  order : Int
+  order : Int32
   unsupported : Bool
 }
 
 ///|
 priv struct DrawingAnchorOrigin {
   reference : String
-  col_idx0 : Int
-  row_idx0 : Int
-  col_off_emu : Int
-  row_off_emu : Int
+  col_idx0 : Int32
+  row_idx0 : Int32
+  col_off_emu : Int32
+  row_off_emu : Int32
 }
 
 ///|
@@ -154,7 +154,7 @@ fn parse_drawing_int_attr(
   name : StringView,
   invalid_message : String,
   missing_message : String,
-) -> Int raise XlsxError {
+) -> Int32 raise XlsxError {
   match attr_value(tag, name) {
     Some(value) =>
       @string.parse_int(value, base=10) catch {
@@ -228,8 +228,8 @@ fn DrawingAnchor::extent_for_read(
   self : DrawingAnchor,
   metrics : DrawingMetrics,
   origin : DrawingAnchorOrigin,
-  object_name? : String = "",
-) -> (Int, Int) raise XlsxError {
+  object_name~ : String = "",
+) -> (Int32, Int32) raise XlsxError {
   let prefix = if object_name == "" {
     "drawing"
   } else {
@@ -322,7 +322,7 @@ fn parse_drawing_anchors(
   let mut cursor = 0
   let mut scanned = 0
   for ;; {
-    let mut next_start : Int? = None
+    let mut next_start : Int32? = None
     let mut next_name = ""
     for candidate in anchor_names {
       match find_xml_open_tag_start_from(xml_str, candidate, cursor) {
@@ -397,7 +397,7 @@ fn parse_drawing_anchors(
 ///|
 fn charge_drawing_work(
   budget : ReadBudget?,
-  units : Int,
+  units : Int32,
 ) -> Unit raise XlsxError {
   match budget {
     Some(value) => {
@@ -587,7 +587,7 @@ fn parse_drawing_shape_text_runs(
   let container_names : ReadOnlyArray[String] = ["a:r", "a:fld", "a:br"]
   let mut cursor = 0
   for ;; {
-    let mut next_start : Int? = None
+    let mut next_start : Int32? = None
     let mut next_name = ""
     for candidate in container_names {
       match find_xml_open_tag_start_from(source, candidate, cursor) {
@@ -651,7 +651,7 @@ fn parse_drawing_images(
   archive : @zip.Archive,
   media_cache? : Map[String, Bytes],
   budget? : ReadBudget,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Array[Image] raise XlsxError {
   let images : Array[Image] = []
   let retained_media = media_cache.unwrap_or(Map([]))
@@ -833,7 +833,7 @@ fn parse_drawing_charts(
   archive : @zip.Archive,
   decode : (BytesView) -> String raise XlsxError,
   budget? : ReadBudget,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Array[Chart] raise XlsxError {
   let charts : Array[Chart] = []
   let chart_targets = if drawing_rels_xml is "" {
@@ -937,12 +937,12 @@ fn parse_drawing_charts(
 /// text, or transforms instead of accepting the first familiar descendant.
 fn drawing_chart_frame_is_canonical(
   anchor_xml : StringView,
-  width_emu : Int,
-  height_emu : Int,
+  width_emu : Int32,
+  height_emu : Int32,
   locked : Bool,
   print_object : Bool,
   budget? : ReadBudget,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Bool raise XlsxError {
   if cancelled() {
     raise ReadCancelled
@@ -1320,20 +1320,20 @@ fn parse_drawing_shapes(
 ///|
 priv struct SlicerAnchorInfo {
   cell : String
-  offset_x : Int
-  offset_y : Int
-  width : Int
-  height : Int
+  offset_x : Int32
+  offset_y : Int32
+  width : Int32
+  height : Int32
   positioning : PicturePositioning
   macro_name : String
   alt_text : String
   locked : Bool
   print_object : Bool
-  offset_x_emu : Int
-  offset_y_emu : Int
-  width_emu : Int
-  height_emu : Int
-  order : Int
+  offset_x_emu : Int32
+  offset_y_emu : Int32
+  width_emu : Int32
+  height_emu : Int32
+  order : Int32
 }
 
 ///|
@@ -1917,7 +1917,7 @@ test "chart frame fidelity scan rejects extra content and charges its work" {
 ///|
 test "read_drawing_xml wb: parse_xml_int_tag missing/invalid errors" {
   let missing_tag = "<xdr:from><xdr:row>1</xdr:row></xdr:from>"
-  let missing_result : Result[Int, Error] = Ok(
+  let missing_result : Result[Int32, Error] = Ok(
     parse_xml_int_tag(missing_tag, "xdr:col", "drawing col invalid"),
   ) catch {
     e => Err(e)
@@ -1929,7 +1929,7 @@ test "read_drawing_xml wb: parse_xml_int_tag missing/invalid errors" {
   }
 
   let invalid_value = "<xdr:from><xdr:col>abc</xdr:col></xdr:from>"
-  let invalid_result : Result[Int, Error] = Ok(
+  let invalid_result : Result[Int32, Error] = Ok(
     parse_xml_int_tag(invalid_value, "xdr:col", "drawing col invalid"),
   ) catch {
     e => Err(e)
@@ -1972,7 +1972,7 @@ test "read_drawing_xml wb: drawing spans use sparse dimensions and grid boundary
 test "read_drawing_xml wb: drawing spans reject invalid markers and overflow" {
   let sheet = Worksheet::new("Sheet1")
   let metrics = drawing_metrics_for_sheet(sheet)
-  let invalid_marker : Result[Int, Error] = Ok(
+  let invalid_marker : Result[Int32, Error] = Ok(
     drawing_axis_span_emu(metrics.cols, 0, 0, 0x7fff_ffff, 0),
   ) catch {
     error => Err(error)
@@ -1982,7 +1982,7 @@ test "read_drawing_xml wb: drawing spans reject invalid markers and overflow" {
       inspect(msg, content="drawing col invalid")
     _ => fail("expected invalid drawing column")
   }
-  let overflow : Result[Int, Error] = Ok(
+  let overflow : Result[Int32, Error] = Ok(
     drawing_axis_span_emu(metrics.rows, 0, 0, cell_ref_max_rows, 0),
   ) catch {
     error => Err(error)

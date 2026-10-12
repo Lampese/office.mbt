@@ -8,7 +8,7 @@ test "object stream number offsets parse header pairs" {
 
 ///|
 test "object stream number offsets reject malformed headers" {
-  let bad_first : Result[Array[(Int, Int)], Error] = try
+  let bad_first : Result[Array[(Int32, Int32)], Error] = try
     @reader.pdf_object_stream_number_offsets(b"1 0", 4, 1)
   catch {
     err => Err(err)
@@ -19,7 +19,7 @@ test "object stream number offsets reject malformed headers" {
     fail("expected StreamDataExpected")
   }
 
-  let short_header : Result[Array[(Int, Int)], Error] = try
+  let short_header : Result[Array[(Int32, Int32)], Error] = try
     @reader.pdf_object_stream_number_offsets(b"2 ", 2, 1)
   catch {
     err => Err(err)
@@ -30,7 +30,7 @@ test "object stream number offsets reject malformed headers" {
     fail("expected XRefEntryExpected")
   }
 
-  let malformed_pair : Result[Array[(Int, Int)], Error] = try
+  let malformed_pair : Result[Array[(Int32, Int32)], Error] = try
     @reader.pdf_object_stream_number_offsets(b"/Name 0 ", 8, 1)
   catch {
     err => Err(err)
@@ -60,10 +60,10 @@ test "object stream end offsets preserve duplicate starts" {
 
 ///|
 fn reader_object_stream_xref_for_test(
-  object_number : Int,
-  object_stream_number : Int,
-  index : Int,
-  in_use? : Bool = true,
+  object_number : Int32,
+  object_stream_number : Int32,
+  index : Int32,
+  in_use~ : Bool = true,
 ) -> @reader.PdfClassicXRefEntry {
   {
     object_number,
@@ -106,7 +106,7 @@ test "object stream groups keep active compressed entries by stream" {
 test "object stream number offsets reject overflowing declared counts" {
   // `count * 2` overflows Int for huge `/N` values; the guard must reject the
   // count instead of bypassing the length check and allocating gigabytes.
-  let overflow : Result[Array[(Int, Int)], Error] = try
+  let overflow : Result[Array[(Int32, Int32)], Error] = try
     @reader.pdf_object_stream_number_offsets(b"2 0 ", 4, 0x40000000)
   catch {
     err => Err(err)

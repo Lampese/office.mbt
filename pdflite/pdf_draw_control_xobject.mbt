@@ -68,7 +68,7 @@ pub fn pdf_addjpeg(
   control : PdfDrawControl,
   name : String,
   data : BytesView,
-  path_to_im? : String = "",
+  path_to_im~ : String = "",
 ) -> Unit raise @core.PdfError {
   ignore(path_to_im)
   control.add_jpeg_data(name, data)

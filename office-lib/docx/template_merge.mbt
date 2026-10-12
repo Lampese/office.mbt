@@ -16,20 +16,20 @@ pub(all) struct DocxTemplateFinding {
 
 ///|
 pub(all) struct DocxTemplateReport {
-  mut placeholders_found : Int
-  mut replaced : Int
-  mut escapes_applied : Int
-  mut distinct_keys_used : Int
+  mut placeholders_found : Int32
+  mut replaced : Int32
+  mut escapes_applied : Int32
+  mut distinct_keys_used : Int32
   missing : Array[DocxTemplateFinding]
   unused : Array[String]
   malformed : Array[DocxTemplateFinding]
   unsupported : Array[DocxTemplateFinding]
   locations : Array[DocxTemplateFinding]
   mut locations_truncated : Bool
-  mut missing_total : Int
-  mut malformed_total : Int
-  mut unsupported_total : Int
-  mut unused_total : Int
+  mut missing_total : Int32
+  mut malformed_total : Int32
+  mut unsupported_total : Int32
+  mut unused_total : Int32
   stories_scanned : Array[String]
   mut changed : Bool
 } derive(Eq, @debug.Debug)
@@ -41,10 +41,10 @@ pub suberror DocxTemplateRefused {
 } derive(@debug.Debug)
 
 ///|
-let docx_template_finding_limit : Int = 64
+let docx_template_finding_limit : Int32 = 64
 
 ///|
-let docx_template_scan_budget : Int = 4 * 1024 * 1024
+let docx_template_scan_budget : Int32 = 4 * 1024 * 1024
 
 ///|
 /// Decodes a run's content byte region as a sequence of `<w:t>` elements
@@ -117,7 +117,7 @@ fn docx_decode_text_region(region : String) -> String? {
 }
 
 ///|
-fn find_unit(text : String, from : Int, wanted : Int) -> Int? {
+fn find_unit(text : String, from : Int32, wanted : Int32) -> Int32? {
   let mut index = from
   while index < text.length() {
     if text[index].to_int() == wanted {
@@ -242,7 +242,7 @@ priv struct DocxMergeState {
   report : DocxTemplateReport
   values : Map[String, @template.TemplateValue]
   used_keys : Set[String]
-  budget : Ref[Int]
+  budget : Ref[Int32]
   edits : Array[DocxRunEdit]
   // every run a match or escape touches — including interior zero-width
   // runs a span crosses (the reader drops in-run pictures, leaving an

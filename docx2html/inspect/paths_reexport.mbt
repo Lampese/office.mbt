@@ -12,8 +12,8 @@ pub using @paths {type PathError}
 pub fn resolve_path(
   document : @document.DocumentElement,
   path : String,
-  headers? : Array[@document.HeaderFooterPart] = [],
-  footers? : Array[@document.HeaderFooterPart] = [],
+  headers~ : Array[@document.HeaderFooterPart] = [],
+  footers~ : Array[@document.HeaderFooterPart] = [],
 ) -> @document.DocumentElement raise PathError {
   @paths.resolve_path(document, path, headers~, footers~)
 }

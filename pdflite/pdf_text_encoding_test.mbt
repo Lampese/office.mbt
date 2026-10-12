@@ -4,22 +4,22 @@ fn text_encoding_name_for_test(text : String) -> @core.PdfName {
 }
 
 ///|
-fn text_encoding_bytes_for_test(values : ArrayView[Int]) -> @core.PdfBytes {
+fn text_encoding_bytes_for_test(values : ArrayView[Int32]) -> @core.PdfBytes {
   try! @core.pdf_bytes_of_int_array(values)
 }
 
 ///|
 fn text_encoding_difference_for_test(
   name : String,
-  code : Int,
+  code : Int32,
 ) -> @pdflite.PdfEncodingDifference {
   { name: text_encoding_name_for_test(name), code, }
 }
 
 ///|
 fn text_encoding_table_lookup_helper_for_test(
-  table : ArrayView[(Int, @core.PdfName)],
-  code : Int,
+  table : ArrayView[(Int32, @core.PdfName)],
+  code : Int32,
 ) -> @core.PdfName? {
   for entry in table {
     if entry.0 == code {
@@ -32,9 +32,9 @@ fn text_encoding_table_lookup_helper_for_test(
 
 ///|
 fn text_encoding_reverse_table_lookup_for_test(
-  table : ArrayView[(@core.PdfName, Int)],
+  table : ArrayView[(@core.PdfName, Int32)],
   name : @core.PdfName,
-) -> Int? {
+) -> Int32? {
   for entry in table {
     if entry.0 == name {
       break Some(entry.1)

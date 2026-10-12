@@ -39,7 +39,7 @@ fn texttopdf_lookup_indirect_object_for_test(
   document : @pdflite.PdfDocument,
   object : @syntax.PdfObject,
   key : String,
-) -> (Int, @syntax.PdfObject) raise {
+) -> (Int32, @syntax.PdfObject) raise {
   let reference = try! texttopdf_lookup_for_test(object, key)
   guard reference is PdfIndirect(number) else {
     fail("expected dictionary key " + key + " to be indirect")

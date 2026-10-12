@@ -99,7 +99,7 @@ fn PdfDocument::pdf_ua_matterhorn_read_struct_tree_inner(
   self : PdfDocument,
   node : @syntax.PdfObject,
   rolemap : PdfUAStructTreeRoleMap,
-  depth : Int,
+  depth : Int32,
 ) -> PdfUAMatterhornStructNode raise @core.PdfError {
   if depth > 10000 {
     raise SoftError("malformed st node")

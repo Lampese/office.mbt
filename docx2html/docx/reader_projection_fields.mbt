@@ -12,9 +12,9 @@
 /// the legacy walker's flow-level contributions do.
 fn reader_projection_owning_paragraph(
   elements : Array[ScannedElement],
-  source_identity : Int,
+  source_identity : Int32,
   budget : ReaderFieldBudget,
-) -> Int raise DocxError {
+) -> Int32 raise DocxError {
   let mut current = elements[source_identity].parent_index
   while current >= 0 {
     budget.charge_work()

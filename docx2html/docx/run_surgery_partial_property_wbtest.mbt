@@ -23,7 +23,7 @@
 /// entity edge, numeric-reference edge), because a planner can reject one
 /// ordered pair while every marginal endpoint total stays green.
 priv struct PartialBatchPlan {
-  paragraph_index : Int
+  paragraph_index : Int32
   edits : Array[ParagraphTextEdit]
   pairs : Array[String]
 }
@@ -35,7 +35,7 @@ priv struct PartialBatchPlan {
 fn partial_offset_classes(
   paragraph : ReaderProjectionParagraph,
   elements : Array[ScannedElement],
-  offset : Int,
+  offset : Int32,
 ) -> Array[String] {
   let classes : Array[String] = []
   for contribution in paragraph.contributions {
@@ -141,12 +141,12 @@ fn partial_primary_class(classes : Array[String]) -> String {
 fn partial_exhaustive_batches_for(
   projection : ReaderProjection,
   elements : Array[ScannedElement],
-  paragraph_index : Int,
+  paragraph_index : Int32,
 ) -> Array[PartialBatchPlan] {
   let paragraph = projection.paragraphs[paragraph_index]
   let width = paragraph.projection_end - paragraph.projection_start
   let batches : Array[PartialBatchPlan] = []
-  fn build(requested : Array[(Int, Int, String)]) -> Unit {
+  fn build(requested : Array[(Int32, Int32, String)]) -> Unit {
     let edits : Array[ParagraphTextEdit] = []
     let pairs : Array[String] = []
     for entry in requested {
@@ -206,12 +206,12 @@ fn partial_exhaustive_batches_for(
 fn partial_batches_for(
   projection : ReaderProjection,
   elements : Array[ScannedElement],
-  paragraph_index : Int,
+  paragraph_index : Int32,
 ) -> Array[PartialBatchPlan] {
   let paragraph = projection.paragraphs[paragraph_index]
   let width = paragraph.projection_end - paragraph.projection_start
   let batches : Array[PartialBatchPlan] = []
-  fn build(requested : Array[(Int, Int, String)]) -> Unit {
+  fn build(requested : Array[(Int32, Int32, String)]) -> Unit {
     let edits : Array[ParagraphTextEdit] = []
     let pairs : Array[String] = []
     for entry in requested {
@@ -270,7 +270,7 @@ fn partial_batches_for(
 fn partial_space_declaration_span(
   source : BytesView,
   element : ScannedElement,
-) -> (Int, Int)? {
+) -> (Int32, Int32)? {
   // `xml:space = '...'` inside an open tag, located by the test. Quote
   // style and spacing around `=` both vary in real documents, and a scan
   // that only knew one spelling would reject correct plans over the
@@ -480,7 +480,7 @@ fn partial_synthesised_element(
 /// the test rather than borrowed from production.
 fn partial_space_value_is_preserve(
   source : BytesView,
-  span : (Int, Int),
+  span : (Int32, Int32),
 ) -> Bool {
   let (from, to) = span
   let mut at = from
@@ -549,7 +549,7 @@ fn partial_space_value_is_preserve(
 ///|
 /// A numeric character reference's value, or `None` if any digit is not
 /// one the base admits.
-fn partial_reference_code(digits : String, base : Int) -> Char? {
+fn partial_reference_code(digits : String, base : Int32) -> Char? {
   if digits.length() == 0 {
     return None
   }
@@ -605,7 +605,7 @@ fn partial_expected_licenses(
   paragraph : ReaderProjectionParagraph,
   elements : Array[ScannedElement],
   requested : Array[ParagraphTextEdit],
-) -> Array[(Int, Int, Bool, String)] raise {
+) -> Array[(Int32, Int32, Bool, String)] raise {
   // (from, to, exact, payload). Binding the PAYLOAD is what stops a plan
   // from spending the right permissions on the wrong writes: deleting one
   // host and writing the replacement into the next consumes exactly the
@@ -613,19 +613,19 @@ fn partial_expected_licenses(
   // violates first-consumed placement and changes which run's formatting
   // the text inherits. Synthesis payloads are the EXACT element the plan
   // must write, modelled below from the run's own prefix and namespace.
-  let licenses : Array[(Int, Int, Bool, String)] = []
+  let licenses : Array[(Int32, Int32, Bool, String)] = []
   // Insertion sites, and where each one's license sits, so several
   // requests at one site accumulate into the single coalesced payload
   // production emits there.
-  let insertion_sites : Array[Int] = []
+  let insertion_sites : Array[Int32] = []
   // Sites accumulate the RAW text of every request that lands there, and
   // the payload is composed once at the end: production coalesces the
   // requests and then escapes (or synthesizes) the combined text, so
   // concatenating already-composed payloads would predict the wrong
   // bytes.
   let insertion_raw : Array[String] = []
-  let insertion_synth : Array[Int] = []
-  fn note_insertion(site : Int, text : String, synth_run : Int) -> Unit {
+  let insertion_synth : Array[Int32] = []
+  fn note_insertion(site : Int32, text : String, synth_run : Int32) -> Unit {
     for index, existing in insertion_sites {
       if existing == site {
         insertion_raw[index] = insertion_raw[index] + text
@@ -638,7 +638,7 @@ fn partial_expected_licenses(
   }
 
   // Ordered projecting contributions, so "first consumed" is well defined.
-  let projecting : Array[(ReaderProjectionContribution, Int, Int)] = []
+  let projecting : Array[(ReaderProjectionContribution, Int32, Int32)] = []
   for contribution in paragraph.contributions {
     if contribution.kind is ProjectedText(_) {
       projecting.push(
@@ -901,7 +901,7 @@ fn assert_partial_batch(
   source : String,
   projection : ReaderProjection,
   batch : PartialBatchPlan,
-) -> (Array[String], String, Int) raise {
+) -> (Array[String], String, Int32) raise {
   let bytes = @utf8.encode(source)
   let elements = projection.scan.elements()
   let paragraph = projection.paragraphs[batch.paragraph_index]
@@ -1020,9 +1020,9 @@ fn assert_partial_batch(
 
 ///|
 test "generated documents compose partial edits over every boundary pair" {
-  let pairs : Map[String, Int] = Map([])
-  let refusals : Map[String, Int] = Map([])
-  let cases : Array[Array[Int]] = @quickcheck.samples(48)
+  let pairs : Map[String, Int32] = Map([])
+  let refusals : Map[String, Int32] = Map([])
+  let cases : Array[Array[Int32]] = @quickcheck.samples(48)
   let mut planned = 0
   for case in cases {
     let source = hostile_document(case)
@@ -1217,12 +1217,12 @@ let partial_lexical_bodies : Array[(String, String)] = [
 
 ///|
 test "the lexical matrix the grammar does not reach is proved the same way" {
-  let pairs : Map[String, Int] = Map([])
-  let refusals : Map[String, Int] = Map([])
+  let pairs : Map[String, Int32] = Map([])
+  let refusals : Map[String, Int32] = Map([])
   let mut planned = 0
   let mut multi_carrier = 0
   let dispositions : Array[String] = []
-  let case_keys : Map[String, Int] = Map([])
+  let case_keys : Map[String, Int32] = Map([])
   for entry in partial_lexical_bodies {
     let (label, body) = entry
     let source = "<w:document xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:v=\"urn:schemas-microsoft-com:vml\"><w:body>\{body}</w:body></w:document>"
@@ -1455,7 +1455,7 @@ test "the source allowlist rejects a plan that widens beyond the request" {
   }
   guard host is Some(element) else { fail("expected a text host") }
   guard element.text_map is Some(map) else { fail("expected a token map") }
-  let mut entity_span : (Int, Int)? = None
+  let mut entity_span : (Int32, Int32)? = None
   for token in map.tokens {
     if token.kind is EntityRef && token.projection_start == 3 {
       entity_span = Some((token.byte_start, token.byte_end))
@@ -1612,7 +1612,7 @@ test "partial: a multi-edit batch across two runs plans" {
 /// every fixture — so this is the permitted set over those bodies, not a
 /// sample of it, and it is held as an identity set: a planner that starts
 /// refusing any single pair fails with that pair's key.
-let partial_expected_pair_counts : Array[(String, Int)] = [
+let partial_expected_pair_counts : Array[(String, Int32)] = [
   ("delete:atom-end-edge>raw-edge", 3),
   ("delete:atom-end-edge>raw-interior", 4),
   ("delete:atom-start-edge>atom-end-edge", 6),

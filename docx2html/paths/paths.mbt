@@ -36,7 +36,7 @@ pub impl Show for PathError with fn output(self, logger) {
 /// not contain `]` or `=` (an id spelled with those is unaddressable by
 /// id and is emitted as an ordinal path plus a diagnostic).
 pub enum StepSelector {
-  Ordinal(Int)
+  Ordinal(Int32)
   ById(String)
 }
 
@@ -53,8 +53,8 @@ pub struct PathStep {
 /// (Phase-2 J2 — previously reserved).
 pub enum PathRoot {
   Body
-  Header(Int)
-  Footer(Int)
+  Header(Int32)
+  Footer(Int32)
   Footnotes
   Endnotes
   Comments
@@ -160,7 +160,7 @@ fn parse_root_index(
   segment : String,
   kind : String,
   path : String,
-) -> Int raise PathError {
+) -> Int32 raise PathError {
   guard segment.find("[") is Some(open) &&
     segment.has_suffix("]") &&
     segment[:open].to_owned() == kind else {
@@ -236,13 +236,13 @@ priv suberror NotAPositiveInt {
 }
 
 ///|
-fn parse_positive_int(digits : String) -> Int raise NotAPositiveInt {
+fn parse_positive_int(digits : String) -> Int32 raise NotAPositiveInt {
   if digits.length() == 0 || digits.length() > 9 {
     raise NotAPositiveInt
   }
   let mut value = 0
   for unit in digits {
-    if unit is ('0'..='9') {
+    if unit is ('0'..<='9') {
       value = value * 10 + (unit.to_int() - 0x30)
     } else {
       raise NotAPositiveInt
@@ -262,7 +262,7 @@ pub fn resolve_steps(
   document : @document.DocumentElement,
   steps : Array[PathStep],
   path : String,
-  root_prefix? : String = "/body",
+  root_prefix~ : String = "/body",
 ) -> @document.DocumentElement raise PathError {
   let mut current = match document {
     Document(..) => document
@@ -341,9 +341,9 @@ pub fn root_container(
 /// selector rules).
 pub fn resolve_annotation_path(
   path : String,
-  footnotes? : Array[(String, Array[@document.DocumentElement])] = [],
-  endnotes? : Array[(String, Array[@document.DocumentElement])] = [],
-  comments? : Array[(String, Array[@document.DocumentElement])] = [],
+  footnotes~ : Array[(String, Array[@document.DocumentElement])] = [],
+  endnotes~ : Array[(String, Array[@document.DocumentElement])] = [],
+  comments~ : Array[(String, Array[@document.DocumentElement])] = [],
 ) -> @document.DocumentElement raise PathError {
   let parsed = parse_path(path)
   let (entries, container_kind, story) = match parsed.root {
@@ -376,7 +376,7 @@ pub fn resolve_annotation_path(
       (index - 1, "\{story}/\{container_kind}[\{index}]")
     }
     ById(token) => {
-      let matches : Array[Int] = []
+      let matches : Array[Int32] = []
       for at, entry in entries {
         let (id, _) = entry
         if id == token {
@@ -417,7 +417,7 @@ pub fn resolve_annotation_path(
 ///|
 fn part_container(
   parts : Array[@document.HeaderFooterPart],
-  index : Int,
+  index : Int32,
   kind : String,
   path : String,
 ) -> @document.DocumentElement raise PathError {
@@ -435,8 +435,8 @@ fn part_container(
 pub fn resolve_path(
   document : @document.DocumentElement,
   path : String,
-  headers? : Array[@document.HeaderFooterPart] = [],
-  footers? : Array[@document.HeaderFooterPart] = [],
+  headers~ : Array[@document.HeaderFooterPart] = [],
+  footers~ : Array[@document.HeaderFooterPart] = [],
 ) -> @document.DocumentElement raise PathError {
   let parsed = parse_path(path)
   let (container, prefix) = root_container(

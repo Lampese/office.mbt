@@ -3,9 +3,9 @@
 /// of the per-entry ceiling and the aggregate archive space still available;
 /// the other fields retain the policy-level error reported when it is crossed.
 priv struct WritePartBudget {
-  maximum : Int
+  maximum : Int32
   resource_kind : String
-  resource_limit : Int
+  resource_limit : Int32
 }
 
 ///|
@@ -16,7 +16,7 @@ priv struct WritePartBudget {
 priv struct LimitedXmlBuilder {
   builder : StringBuilder
   budget : WritePartBudget?
-  mut encoded_bytes : Int
+  mut encoded_bytes : Int32
 }
 
 ///|
@@ -25,7 +25,7 @@ fn LimitedXmlBuilder::new(budget : WritePartBudget?) -> LimitedXmlBuilder {
 }
 
 ///|
-fn xml_utf8_length_within(value : StringView, maximum : Int) -> Int? {
+fn xml_utf8_length_within(value : StringView, maximum : Int32) -> Int32? {
   let mut length = 0
   for character in value {
     let scalar = character.to_int()
@@ -378,7 +378,7 @@ fn LimitedXmlBuilder::remaining_budget(
 /// beyond the parent part's remaining budget.
 priv struct WritePartBudgetTracker {
   budget : WritePartBudget?
-  mut encoded_bytes : Int
+  mut encoded_bytes : Int32
 }
 
 ///|
@@ -433,8 +433,8 @@ fn WritePartBudgetTracker::consume(
 /// bytes debit the aggregate space left after already-archived parts.
 priv struct WriteCompositionBudgetTracker {
   limits : WriteLimits?
-  archived_bytes : Int
-  mut retained_bytes : Int
+  archived_bytes : Int32
+  mut retained_bytes : Int32
 }
 
 ///|
@@ -524,7 +524,7 @@ fn write_workbook_protection_xml(
 ///|
 fn write_shared_strings_xml(
   values : Array[SharedStringEntry],
-  total_count : Int,
+  total_count : Int32,
   budget? : WritePartBudget,
 ) -> String raise XlsxError {
   let sb = LimitedXmlBuilder::new(budget)
@@ -555,8 +555,8 @@ fn write_shared_strings_xml(
 }
 
 ///|
-fn collect_formula_cells(workbook : Workbook) -> Array[(Int, String)] {
-  let formula_cells : Array[(Int, String)] = []
+fn collect_formula_cells(workbook : Workbook) -> Array[(Int32, String)] {
+  let formula_cells : Array[(Int32, String)] = []
   for i, sheet in workbook.sheets() {
     let sheet_id = i + 1
     for cell in sheet.cells() {
@@ -574,7 +574,7 @@ fn collect_formula_cells(workbook : Workbook) -> Array[(Int, String)] {
 
 ///|
 fn write_calc_chain_xml(
-  cells : Array[(Int, String)],
+  cells : Array[(Int32, String)],
   budget? : WritePartBudget,
 ) -> String raise XlsxError {
   let sb = LimitedXmlBuilder::new(budget)
@@ -595,31 +595,31 @@ fn write_calc_chain_xml(
 ///|
 priv struct DrawingImage {
   image : Image
-  rel_id : Int
-  hyperlink_rel_id : Int?
+  rel_id : Int32
+  hyperlink_rel_id : Int32?
 }
 
 ///|
 priv struct DrawingChart {
   reference : String
-  offset_x : Int
-  offset_y : Int
-  width_emu : Int
-  height_emu : Int
+  offset_x : Int32
+  offset_y : Int32
+  width_emu : Int32
+  height_emu : Int32
   print_object : Bool
   locked : Bool
   positioning : PicturePositioning
-  rel_id : Int
-  drawing_offset_x_emu : Int?
-  drawing_offset_y_emu : Int?
-  drawing_width_emu : Int?
-  drawing_height_emu : Int?
-  drawing_order : Int?
+  rel_id : Int32
+  drawing_offset_x_emu : Int32?
+  drawing_offset_y_emu : Int32?
+  drawing_width_emu : Int32?
+  drawing_height_emu : Int32?
+  drawing_order : Int32?
 }
 
 ///|
 priv struct DrawingHyperlink {
-  rel_id : Int
+  rel_id : Int32
   target : String
   link_type : HyperlinkType
 }
@@ -633,13 +633,13 @@ priv struct DrawingSlicer {
 ///|
 priv struct OrderedDrawingAnchor {
   xml : String
-  order : Int?
-  fallback_order : Int
+  order : Int32?
+  fallback_order : Int32
 }
 
 ///|
 priv struct ResolvedSlicerCache {
-  cache_id : Int
+  cache_id : Int32
   cache_name : String
   source_name : String
   item_desc : Bool
@@ -648,8 +648,8 @@ priv struct ResolvedSlicerCache {
 
 ///|
 priv enum ResolvedSlicerCacheSource {
-  Table(Int, Int)
-  Pivot(Int, Int, String)
+  Table(Int32, Int32)
+  Pivot(Int32, Int32, String)
 }
 
 ///|
@@ -659,7 +659,7 @@ let emu_per_pixel = 9525
 fn drawing_int64_to_int_for_write(
   value : Int64,
   field : StringView,
-) -> Int raise XlsxError {
+) -> Int32 raise XlsxError {
   let min_int = -0x7fff_ffffL - 1L
   if value < min_int || value > 0x7fff_ffffL {
     raise InvalidSheetOperation(msg=field.to_owned() + " out of range")
@@ -669,9 +669,9 @@ fn drawing_int64_to_int_for_write(
 
 ///|
 fn drawing_pixel_offset_for_write(
-  value : Int,
+  value : Int32,
   field : StringView,
-) -> Int raise XlsxError {
+) -> Int32 raise XlsxError {
   drawing_int64_to_int_for_write(
     Int64::from_int(value) * Int64::from_int(emu_per_pixel),
     field,
@@ -680,9 +680,9 @@ fn drawing_pixel_offset_for_write(
 
 ///|
 fn drawing_extent_for_write(
-  value : Int,
+  value : Int32,
   field : StringView,
-) -> Int raise XlsxError {
+) -> Int32 raise XlsxError {
   if value < 0 {
     raise InvalidSheetOperation(msg=field.to_owned() + " must be >= 0")
   }
@@ -694,7 +694,7 @@ fn drawing_scaled_extent_for_write(
   pixels : Double,
   scale : Double,
   field : StringView,
-) -> Int raise XlsxError {
+) -> Int32 raise XlsxError {
   let value = (pixels * scale * emu_per_pixel.to_double()).round()
   if Double::is_nan(value) ||
     Double::is_inf(value) ||
@@ -708,7 +708,7 @@ fn drawing_scaled_extent_for_write(
 ///|
 fn drawing_axis_boundary_emu_for_write(
   metrics : DrawingAxisMetrics,
-  idx0 : Int,
+  idx0 : Int32,
 ) -> Int64 raise XlsxError {
   let pixels = metrics.pixel_span(0, idx0)
   let factor = Int64::from_int(emu_per_pixel)
@@ -722,10 +722,10 @@ fn drawing_axis_boundary_emu_for_write(
 ///|
 fn two_cell_axis_to(
   metrics : DrawingAxisMetrics,
-  start_idx0 : Int,
-  start_off_emu : Int,
-  size_emu : Int,
-) -> (Int, Int) raise XlsxError {
+  start_idx0 : Int32,
+  start_off_emu : Int32,
+  size_emu : Int32,
+) -> (Int32, Int32) raise XlsxError {
   if start_idx0 < 0 || start_idx0 >= metrics.limit {
     raise InvalidSheetOperation(msg="drawing " + metrics.axis + " invalid")
   }
@@ -772,9 +772,9 @@ fn write_drawing_open(sb : LimitedXmlBuilder) -> Unit raise XlsxError {
 
 ///|
 fn allocate_drawing_numeric_id(
-  next : Int,
+  next : Int32,
   reserved : Set[String],
-) -> (Int, Int) raise XlsxError {
+) -> (Int32, Int32) raise XlsxError {
   let mut candidate = next
   while reserved.contains("\{candidate}") {
     if candidate == 0x7fff_ffff {
@@ -790,9 +790,9 @@ fn allocate_drawing_numeric_id(
 
 ///|
 fn allocate_drawing_relationship_id(
-  next : Int,
+  next : Int32,
   reserved : Set[String],
-) -> (Int, Int) raise XlsxError {
+) -> (Int32, Int32) raise XlsxError {
   let mut candidate = next
   while reserved.contains("rId\{candidate}") {
     if candidate == 0x7fff_ffff {
@@ -810,7 +810,7 @@ fn allocate_drawing_relationship_id(
 fn compare_ordered_drawing_anchor(
   left : OrderedDrawingAnchor,
   right : OrderedDrawingAnchor,
-) -> Int {
+) -> Int32 {
   match (left.order, right.order) {
     (Some(a), Some(b)) =>
       if a < b {
@@ -844,8 +844,8 @@ fn write_drawing_xml(
   charts : Array[DrawingChart],
   shapes : Array[Shape],
   slicers : Array[DrawingSlicer],
-  preserved_anchors? : ArrayView[PreservedDrawingAnchor] = [],
-  reserved_object_ids? : ArrayView[String] = [],
+  preserved_anchors~ : ArrayView[PreservedDrawingAnchor] = [],
+  reserved_object_ids~ : ArrayView[String] = [],
   budget? : WritePartBudget,
 ) -> String raise XlsxError {
   let drawing_metrics = match sheet {
@@ -1664,7 +1664,7 @@ fn write_drawing_xml(
   }
   sb.write_view("</xdr:wsDr>")
   let grouped_xml = sb.to_string()
-  let known_orders : Array[Int?] = []
+  let known_orders : Array[Int32?] = []
   let mut needs_ordering = preserved_anchors.length() > 0
   for item in images {
     known_orders.push(item.image.drawing_order)
@@ -1978,7 +1978,7 @@ fn write_sheet_views_xml(
 
 ///|
 fn write_chartsheet_xml(
-  drawing_rel_id : Int,
+  drawing_rel_id : Int32,
   budget? : WritePartBudget,
 ) -> String raise XlsxError {
   let sb = LimitedXmlBuilder::new(budget)
@@ -2114,24 +2114,24 @@ fn worksheet_dimension(sheet : Worksheet) -> String? raise XlsxError {
 ///|
 fn write_worksheet_xml(
   sheet : Worksheet,
-  string_map : Map[String, Int],
-  rich_text_map : Map[String, Int],
-  hyperlink_rel_ids : Map[String, Int],
+  string_map : Map[String, Int32],
+  rich_text_map : Map[String, Int32],
+  hyperlink_rel_ids : Map[String, Int32],
   hyperlinks : ArrayView[Hyperlink],
-  drawing_rel_id : Int?,
-  picture_rel_id : Int?,
-  table_rel_ids : ArrayView[Int],
-  _pivot_rel_ids : ArrayView[Int],
-  slicer_rel_ids_x14 : ArrayView[Int],
-  slicer_rel_ids_x15 : ArrayView[Int],
-  legacy_drawing_rel_id : Int?,
-  legacy_drawing_hf_rel_id : Int?,
-  control_ids? : (Int, Int),
+  drawing_rel_id : Int32?,
+  picture_rel_id : Int32?,
+  table_rel_ids : ArrayView[Int32],
+  _pivot_rel_ids : ArrayView[Int32],
+  slicer_rel_ids_x14 : ArrayView[Int32],
+  slicer_rel_ids_x15 : ArrayView[Int32],
+  legacy_drawing_rel_id : Int32?,
+  legacy_drawing_hf_rel_id : Int32?,
+  control_ids? : (Int32, Int32),
   budget? : WritePartBudget,
 ) -> String raise XlsxError {
   fn write_worksheet_ext_lst_xml(
-    slicer_rel_ids_x14 : ArrayView[Int],
-    slicer_rel_ids_x15 : ArrayView[Int],
+    slicer_rel_ids_x14 : ArrayView[Int32],
+    slicer_rel_ids_x15 : ArrayView[Int32],
     sparkline_groups : ArrayView[SparklineGroup],
     x14_data_bars : Map[String, X14DataBarProps],
     unknown_ext_blocks : ArrayView[String],
@@ -2360,7 +2360,7 @@ fn write_worksheet_xml(
     None => ()
   }
   if sheet.col_dimensions.length() > 0 {
-    let cols : Array[Int] = []
+    let cols : Array[Int32] = []
     for col, _ in sheet.col_dimensions {
       cols.push(col)
     }
@@ -2381,7 +2381,7 @@ fn write_worksheet_xml(
   }
   sb.write_view("  <sheetData>\n")
   let cells = sheet.sorted_cells()
-  let row_cells : Map[Int, Array[Cell]] = Map([])
+  let row_cells : Map[Int32, Array[Cell]] = Map([])
   for cell in cells {
     let entries = match row_cells.get(cell.row) {
       Some(value) => value
@@ -2390,8 +2390,8 @@ fn write_worksheet_xml(
     entries.push(cell)
     row_cells[cell.row] = entries
   }
-  let row_keys : Array[Int] = []
-  let row_present : Map[Int, Bool] = Map([])
+  let row_keys : Array[Int32] = []
+  let row_present : Map[Int32, Bool] = Map([])
   for row, _ in row_cells {
     row_keys.push(row)
     row_present[row] = true
@@ -2920,8 +2920,8 @@ fn write_theme_xml(
 priv struct WriteArchiveBuilder {
   archive : @zip.Archive
   limits : WriteLimits?
-  mut entry_count : Int
-  mut total_uncompressed_bytes : Int
+  mut entry_count : Int32
+  mut total_uncompressed_bytes : Int32
 }
 
 ///|
@@ -3129,7 +3129,7 @@ fn write_with_io(
     None => manifest.root_rels_xml()
   }
   archive.add_text(root_rels_part_path, root_rels_xml)
-  let tables_by_sheet : Array[Array[(Int, Table)]] = []
+  let tables_by_sheet : Array[Array[(Int32, Table)]] = []
   let mut next_table_id = 1
   for sheet in workbook.sheets() {
     for table in sheet.tables() {
@@ -3139,7 +3139,7 @@ fn write_with_io(
     }
   }
   for sheet in workbook.sheets() {
-    let sheet_tables : Array[(Int, Table)] = []
+    let sheet_tables : Array[(Int32, Table)] = []
     for table in sheet.tables() {
       let table_id = if table.id > 0 {
         table.id
@@ -3152,7 +3152,7 @@ fn write_with_io(
     }
     tables_by_sheet.push(sheet_tables)
   }
-  let pivots_by_sheet : Array[Array[(Int, Int, PivotTable)]] = []
+  let pivots_by_sheet : Array[Array[(Int32, Int32, PivotTable)]] = []
   let mut next_pivot_table_id = 1
   let mut next_cache_id = 1
   for sheet in workbook.sheets() {
@@ -3166,7 +3166,7 @@ fn write_with_io(
     }
   }
   for sheet in workbook.sheets() {
-    let sheet_pivots : Array[(Int, Int, PivotTable)] = []
+    let sheet_pivots : Array[(Int32, Int32, PivotTable)] = []
     for pivot in sheet.pivot_tables() {
       let table_id = if pivot.table_id > 0 {
         pivot.table_id
@@ -3186,7 +3186,7 @@ fn write_with_io(
     }
     pivots_by_sheet.push(sheet_pivots)
   }
-  let table_lookup : Map[String, (Int, Table)] = Map([])
+  let table_lookup : Map[String, (Int32, Table)] = Map([])
   for i, sheet in workbook.sheets() {
     let sheet_key = normalize_sheet_name(sheet.name())
     for entry in tables_by_sheet[i] {
@@ -3194,7 +3194,7 @@ fn write_with_io(
       table_lookup["\{sheet_key}|\{table.name.to_lower()}"] = (table_id, table)
     }
   }
-  let pivot_lookup : Map[String, (Int, Int, PivotTable)] = Map([])
+  let pivot_lookup : Map[String, (Int32, Int32, PivotTable)] = Map([])
   for i, sheet in workbook.sheets() {
     let sheet_key = normalize_sheet_name(sheet.name())
     let sheet_id = i + 1
@@ -3207,7 +3207,7 @@ fn write_with_io(
       }
     }
   }
-  let pivot_cache_slicer_id_by_cache_id : Map[Int, Int] = Map([])
+  let pivot_cache_slicer_id_by_cache_id : Map[Int32, Int32] = Map([])
   let mut next_pivot_cache_slicer_id = 1
   for sheet_pivots in pivots_by_sheet {
     for entry in sheet_pivots {
@@ -3223,7 +3223,7 @@ fn write_with_io(
       }
     }
   }
-  let slicer_cache_id_by_name : Map[String, Int] = Map([])
+  let slicer_cache_id_by_name : Map[String, Int32] = Map([])
   let slicer_cache_rel_id_by_name : Map[String, String] = Map([])
   let resolved_slicer_caches : Array[ResolvedSlicerCache] = []
   let workbook_slicer_cache_rel_ids_x14 : Array[String] = []
@@ -3242,7 +3242,7 @@ fn write_with_io(
       let source_key = "\{source_sheet_key}|\{slicer.table_name.to_lower()}"
       match table_lookup.get(source_key) {
         Some((table_id, table)) => {
-          let mut column : Int? = None
+          let mut column : Int32? = None
           for i, col_name in table.columns {
             if col_name.to_lower() == slicer.source_name.to_lower() {
               column = Some(i + 1)
@@ -3300,8 +3300,8 @@ fn write_with_io(
       }
     }
   }
-  let workbook_pivot_cache_rel_entries : Array[(Int, String)] = []
-  let pivot_cache_rel_written : Map[Int, Bool] = Map([])
+  let workbook_pivot_cache_rel_entries : Array[(Int32, String)] = []
+  let pivot_cache_rel_written : Map[Int32, Bool] = Map([])
   for sheet_pivots in pivots_by_sheet {
     for entry in sheet_pivots {
       let (_pivot_id, cache_id, _pivot) = entry
@@ -3369,7 +3369,7 @@ fn write_with_io(
     } else {
       None
     }
-    let table_rel_ids : Array[Int] = []
+    let table_rel_ids : Array[Int32] = []
     let table_targets : Array[String] = []
     for entry in sheet_tables {
       let (table_id, _table) = entry
@@ -3377,7 +3377,7 @@ fn write_with_io(
       table_targets.push(table_rel_target(table_id))
       rel_id = rel_id + 1
     }
-    let pivot_rel_ids : Array[Int] = []
+    let pivot_rel_ids : Array[Int32] = []
     let pivot_targets : Array[String] = []
     for entry in sheet_pivots {
       let (pivot_id, _cache_id, _pivot) = entry
@@ -3386,8 +3386,8 @@ fn write_with_io(
       rel_id = rel_id + 1
     }
     let slicer_targets : Array[String] = []
-    let slicer_rel_ids_x14 : Array[Int] = []
-    let slicer_rel_ids_x15 : Array[Int] = []
+    let slicer_rel_ids_x14 : Array[Int32] = []
+    let slicer_rel_ids_x15 : Array[Int32] = []
     let pivot_slicers : Array[Slicer] = []
     let table_slicers : Array[Slicer] = []
     for slicer in sheet.slicers() {
@@ -3399,8 +3399,8 @@ fn write_with_io(
         pivot_slicers.push(slicer)
       }
     }
-    let mut pivot_slicer_part_id : Int? = None
-    let mut table_slicer_part_id : Int? = None
+    let mut pivot_slicer_part_id : Int32? = None
+    let mut table_slicer_part_id : Int32? = None
     if pivot_slicers.length() > 0 {
       let part_id = slicer_part_index
       slicer_part_index = slicer_part_index + 1
@@ -3418,7 +3418,7 @@ fn write_with_io(
       rel_id = rel_id + 1
     }
     let hyperlink_targets : Array[String] = []
-    let hyperlink_rel_ids : Map[String, Int] = Map([])
+    let hyperlink_rel_ids : Map[String, Int32] = Map([])
     for link in sheet.hyperlinks() {
       if link.link_type == External {
         hyperlink_targets.push(link.target)
@@ -3656,7 +3656,7 @@ fn write_with_io(
         }
       None => header_footer_vml
     }
-    let legacy_drawing_hf_ids : (Int, Int)? = match legacy_drawing_hf_xml {
+    let legacy_drawing_hf_ids : (Int32, Int32)? = match legacy_drawing_hf_xml {
       Some(xml) => {
         let id = rel_id
         rel_id = rel_id + 1
@@ -3877,8 +3877,8 @@ fn write_with_io(
     if !has_drawing {
       continue
     }
-    let image_targets : Array[(Int, String)] = []
-    let chart_targets : Array[(Int, String)] = []
+    let image_targets : Array[(Int32, String)] = []
+    let chart_targets : Array[(Int32, String)] = []
     let drawing_images : Array[DrawingImage] = []
     let drawing_hyperlinks : Array[DrawingHyperlink] = []
     let drawing_charts : Array[DrawingChart] = []
@@ -3897,7 +3897,7 @@ fn write_with_io(
         rel_id, reserved_relationship_ids,
       )
       rel_id = next_rel_id
-      let mut hyperlink_rel_id : Int? = None
+      let mut hyperlink_rel_id : Int32? = None
       if image.hyperlink != "" && image.hyperlink_type != Unset {
         let (link_rel_id, next_rel_id) = allocate_drawing_relationship_id(
           rel_id, reserved_relationship_ids,
@@ -4052,7 +4052,7 @@ fn write_with_io(
       budget?=archive.next_part_budget(),
     )
     archive.add_text(drawing_part_path(drawing_id), drawing_xml)
-    let chart_targets : Array[(Int, String)] = [
+    let chart_targets : Array[(Int32, String)] = [
       (1, chart_rel_target(chart_name)),
     ]
     let drawing_rels_xml = write_drawing_rels_xml(
@@ -4245,7 +4245,7 @@ pub fn write_with_password(
 }
 
 ///|
-fn wb_count_substr(text : StringView, needle : StringView) -> Int {
+fn wb_count_substr(text : StringView, needle : StringView) -> Int32 {
   let mut count = 0
   let mut rest = text.to_owned()
   let target = needle.to_owned()
@@ -4268,7 +4268,7 @@ fn wb_count_substr(text : StringView, needle : StringView) -> Int {
 ///|
 fn wb_drawing_image_with_offset(
   positioning : PicturePositioning,
-  offset_x : Int,
+  offset_x : Int32,
 ) -> DrawingImage {
   let image : Image = {
     reference: "B3",
@@ -4651,7 +4651,7 @@ test "write hardening wb: drawing arithmetic rejects overflow" {
     _ => fail("expected drawing offset overflow")
   }
 
-  let extent_result : Result[Int, Error] = Ok(
+  let extent_result : Result[Int32, Error] = Ok(
     drawing_scaled_extent_for_write(2147483647.0, 2.0, "drawing shape width"),
   ) catch {
     error => Err(error)

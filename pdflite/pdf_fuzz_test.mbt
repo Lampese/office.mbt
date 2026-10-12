@@ -19,7 +19,7 @@ fn pdf_fuzz_rng(label : Bytes) -> @random.Rand {
 }
 
 ///|
-fn pdf_fuzz_bytes(rng : @random.Rand, len : Int) -> Bytes {
+fn pdf_fuzz_bytes(rng : @random.Rand, len : Int32) -> Bytes {
   Bytes::from_array(Array::makei(len, fn(_) { rng.int(limit=256).to_byte() }))
 }
 

@@ -1,17 +1,18 @@
 ///|
-let raw_max_package_bytes : Int = 128 * 1024 * 1024
+let raw_max_package_bytes : Int32 = 128 * 1024 * 1024
 
 ///|
-let raw_max_total_preserved_source_bytes : Int = raw_max_package_bytes + 65_535
+let raw_max_total_preserved_source_bytes : Int32 = raw_max_package_bytes +
+  65_535
 
 ///|
-let raw_max_archive_entries : Int = 8192
+let raw_max_archive_entries : Int32 = 8192
 
 ///|
-let raw_max_entry_bytes : Int = 64 * 1024 * 1024
+let raw_max_entry_bytes : Int32 = 64 * 1024 * 1024
 
 ///|
-let raw_max_total_uncompressed_bytes : Int = 256 * 1024 * 1024
+let raw_max_total_uncompressed_bytes : Int32 = 256 * 1024 * 1024
 
 ///|
 let raw_max_alias_length = 1024
@@ -41,7 +42,7 @@ let raw_max_relationship_type_length = 2048
 let raw_max_relationship_target_length = 4096
 
 ///|
-let raw_max_inventory_serialization_bytes : Int = 16 * 1024 * 1024
+let raw_max_inventory_serialization_bytes : Int32 = 16 * 1024 * 1024
 
 ///|
 let raw_max_aliases_total = 16_384
@@ -53,7 +54,7 @@ let raw_max_aliases_per_part = 4096
 let raw_max_alias_targets = 64
 
 ///|
-let raw_max_alias_text_bytes : Int = 8 * 1024 * 1024
+let raw_max_alias_text_bytes : Int32 = 8 * 1024 * 1024
 
 ///|
 let content_types_root = "{http://schemas.openxmlformats.org/package/2006/content-types}Types"
@@ -116,8 +117,8 @@ priv struct RawPackage {
   part_aliases : StableStringMap[Array[String]]
   alias_membership : StableStringMap[StableStringSet]
   part_alias_membership : StableStringMap[StableStringSet]
-  mut alias_count : Int
-  mut alias_text_bytes : Int
+  mut alias_count : Int32
+  mut alias_text_bytes : Int32
   mut main_part : String
   mut relationship_prefix : String
 }
@@ -778,7 +779,7 @@ fn raw_xml_element_has_child_element(element : @xml.XmlElement) -> Bool {
 
 ///|
 fn raw_is_ascii_hex_unit(unit : UInt16) -> Bool {
-  unit is ('0'..='9' | 'a'..='f' | 'A'..='F')
+  unit is ('0'..<='9' | 'a'..<='f' | 'A'..<='F')
 }
 
 ///|
@@ -1641,9 +1642,9 @@ fn read_bounded_archive(data : BytesView) -> @zip.Archive raise RawError {
 ///|
 fn check_raw_archive_materialization_limits(
   archive : @zip.Archive,
-  max_entries : Int,
-  max_entry_bytes : Int,
-  max_total_bytes : Int,
+  max_entries : Int32,
+  max_entry_bytes : Int32,
+  max_total_bytes : Int32,
 ) -> Unit raise RawError {
   let entries = archive.entries()
   if entries.length() > max_entries {
@@ -1698,11 +1699,11 @@ fn check_raw_archive_materialization(
 ///|
 fn check_bounded_raw_archive_limits(
   archive : @zip.Archive,
-  _max_package_bytes : Int,
-  max_entries : Int,
-  max_entry_bytes : Int,
-  max_total_bytes : Int,
-  _max_total_preserved_source_bytes : Int,
+  _max_package_bytes : Int32,
+  max_entries : Int32,
+  max_entry_bytes : Int32,
+  max_total_bytes : Int32,
+  _max_total_preserved_source_bytes : Int32,
 ) -> Unit raise RawError {
   check_raw_archive_materialization_limits(
     archive, max_entries, max_entry_bytes, max_total_bytes,
@@ -1966,7 +1967,7 @@ fn RawPackage::part_info(
 }
 
 ///|
-fn raw_json_string_size_bound(value : String) -> Int {
+fn raw_json_string_size_bound(value : String) -> Int32 {
   let mut size = 2
   for character in value {
     let code = character.to_int()

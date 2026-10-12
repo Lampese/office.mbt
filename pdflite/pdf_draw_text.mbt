@@ -11,7 +11,7 @@ fn PdfDrawRenderState::text_ops(
 ///|
 priv struct PdfDrawFontWidthCache {
   font_size : Double
-  entries : Array[(Int, Array[Double])]
+  entries : Array[(Int32, Array[Double])]
 }
 
 ///|
@@ -22,7 +22,7 @@ fn pdf_draw_font_width_cache_new(font_size : Double) -> PdfDrawFontWidthCache {
 ///|
 fn PdfDrawFontWidthCache::widths(
   self : PdfDrawFontWidthCache,
-  font_index : Int,
+  font_index : Int32,
   font : PdfFont,
 ) -> Array[Double] raise @core.PdfError {
   for entry in self.entries {
@@ -45,7 +45,9 @@ fn PdfDrawRenderState::text_ops_and_width_with_cache(
     raise SoftError("FontPack not selected")
   }
   let codepoints = pdf_codepoints_of_utf8(@utf8.encode(text))
-  let triples : Array[(Int, Int, PdfFont)] = Array(capacity=codepoints.length())
+  let triples : Array[(Int32, Int32, PdfFont)] = Array(
+    capacity=codepoints.length(),
+  )
   let mut width = 0.0
   for codepoint in codepoints {
     match self.current_fontpack.get_char(codepoint) {

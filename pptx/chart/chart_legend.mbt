@@ -145,7 +145,7 @@ pub fn LegendPos::to_xml(self : LegendPos) -> String {
 ///   entry.
 /// - `tx_pr` — `<c:txPr>` (CT_TextBody) — per-entry text override. Captured.
 pub(all) struct LegendEntry {
-  idx : Int
+  idx : Int32
   delete : Bool?
   tx_pr : @xml.XmlElement?
   extension : Array[@xml.XmlElement]
@@ -203,7 +203,7 @@ fn parse_chart_legend(el : @xml.XmlElement) -> ChartLegend raise ChartError {
 
 ///|
 fn parse_legend_entry(el : @xml.XmlElement) -> LegendEntry raise ChartError {
-  let mut idx : Int? = None
+  let mut idx : Int32? = None
   let mut delete : Bool? = None
   let mut tx_pr : @xml.XmlElement? = None
   let extension : Array[@xml.XmlElement] = []

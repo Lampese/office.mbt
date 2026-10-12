@@ -23,11 +23,11 @@ fn page_scale_stream_for_test(
 ///|
 fn page_scale_page_for_test(
   ops : ArrayView[@content.PdfContentOp],
-  resources? : @syntax.PdfObject = PdfDictionary([]),
-  rest? : @syntax.PdfObject = PdfDictionary([]),
-  width? : Double = 100.0,
-  height? : Double = 100.0,
-  rotate? : @page.PdfPageRotation = Rotate0,
+  resources~ : @syntax.PdfObject = PdfDictionary([]),
+  rest~ : @syntax.PdfObject = PdfDictionary([]),
+  width~ : Double = 100.0,
+  height~ : Double = 100.0,
+  rotate~ : @page.PdfPageRotation = Rotate0,
 ) -> @page.PdfPage {
   {
     content: [page_scale_stream_for_test(ops)],

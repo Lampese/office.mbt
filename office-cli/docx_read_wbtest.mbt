@@ -55,7 +55,7 @@ fn docx_read_test_bytes() -> Bytes raise {
 async fn open_docx_projection(
   file : String,
   data : BytesView,
-  max_elements : Int,
+  max_elements : Int32,
 ) -> DocxProjection {
   let archive = @zip.read(
     data,

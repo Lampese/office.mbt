@@ -1,5 +1,5 @@
 ///|
-fn content_page_json_number_for_test(value : Int) -> Json {
+fn content_page_json_number_for_test(value : Int32) -> Json {
   Json::number(value.to_double(), repr=value.to_string())
 }
 

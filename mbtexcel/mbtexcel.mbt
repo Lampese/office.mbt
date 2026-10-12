@@ -10,7 +10,7 @@
 /// let sheet = wb.add_sheet("Data")
 /// ```
 pub fn new_workbook(
-  options? : @xlsx.Options = @xlsx.Options::new(),
+  options~ : @xlsx.Options = @xlsx.Options::new(),
 ) -> @xlsx.Workbook {
   @xlsx.Workbook::new(options~)
 }
@@ -27,7 +27,7 @@ pub fn new_workbook(
 /// wb.set_cell("Sheet1", "A1", "Hello")
 /// ```
 pub fn new_file(
-  options? : @xlsx.Options = @xlsx.Options::new(),
+  options~ : @xlsx.Options = @xlsx.Options::new(),
 ) -> @xlsx.Workbook {
   let workbook = @xlsx.Workbook::new(options~)
   ignore(try! workbook.add_sheet("Sheet1"))
@@ -69,7 +69,7 @@ pub fn new_data_validation(allow_blank : Bool) -> @xlsx.DataValidation {
 /// ```
 pub fn split_cell_name(
   cell : StringView,
-) -> (String, Int) raise @xlsx.XlsxError {
+) -> (String, Int32) raise @xlsx.XlsxError {
   @xlsx.split_cell_name(cell)
 }
 
@@ -90,7 +90,7 @@ pub fn split_cell_name(
 /// ```
 pub fn join_cell_name(
   col : StringView,
-  row : Int,
+  row : Int32,
 ) -> String raise @xlsx.XlsxError {
   @xlsx.join_cell_name(col, row)
 }
@@ -111,7 +111,7 @@ pub fn join_cell_name(
 /// ```
 pub fn cell_name_to_coordinates(
   cell : StringView,
-) -> (Int, Int) raise @xlsx.XlsxError {
+) -> (Int32, Int32) raise @xlsx.XlsxError {
   @xlsx.cell_name_to_coordinates(cell)
 }
 
@@ -135,9 +135,9 @@ pub fn cell_name_to_coordinates(
 /// // abs_ref = "$B$3"
 /// ```
 pub fn coordinates_to_cell_name(
-  col : Int,
-  row : Int,
-  abs? : Bool = false,
+  col : Int32,
+  row : Int32,
+  abs~ : Bool = false,
 ) -> String raise @xlsx.XlsxError {
   @xlsx.coordinates_to_cell_name(col, row, abs~)
 }
@@ -156,7 +156,7 @@ pub fn coordinates_to_cell_name(
 /// let num = column_name_to_number("AA")
 /// // num = 27
 /// ```
-pub fn column_name_to_number(name : StringView) -> Int raise @xlsx.XlsxError {
+pub fn column_name_to_number(name : StringView) -> Int32 raise @xlsx.XlsxError {
   @xlsx.column_name_to_number(name)
 }
 
@@ -174,7 +174,7 @@ pub fn column_name_to_number(name : StringView) -> Int raise @xlsx.XlsxError {
 /// let name = column_number_to_name(27)
 /// // name = "AA"
 /// ```
-pub fn column_number_to_name(col : Int) -> String raise @xlsx.XlsxError {
+pub fn column_number_to_name(col : Int32) -> String raise @xlsx.XlsxError {
   @xlsx.column_number_to_name(col)
 }
 
@@ -200,8 +200,8 @@ pub fn column_number_to_name(col : Int) -> String raise @xlsx.XlsxError {
 /// ```
 pub fn read(
   bytes : BytesView,
-  options? : @xlsx.Options = @xlsx.Options::new(),
-  limits? : @xlsx.ReadLimits = @xlsx.ReadLimits::new(),
+  options~ : @xlsx.Options = @xlsx.Options::new(),
+  limits~ : @xlsx.ReadLimits = @xlsx.ReadLimits::new(),
   transcoder? : (String, Bytes) -> String raise @xlsx.XlsxError,
 ) -> @xlsx.Workbook raise @xlsx.XlsxError {
   match transcoder {
@@ -216,8 +216,8 @@ pub fn read(
 /// compatibility-read, mutated, or more loosely bounded archives are rejected.
 pub fn read_bounded_archive(
   archive : @zip.Archive,
-  options? : @xlsx.Options = @xlsx.Options::new(),
-  limits? : @xlsx.ReadLimits = @xlsx.ReadLimits::new(),
+  options~ : @xlsx.Options = @xlsx.Options::new(),
+  limits~ : @xlsx.ReadLimits = @xlsx.ReadLimits::new(),
   transcoder? : (String, Bytes) -> String raise @xlsx.XlsxError,
 ) -> @xlsx.Workbook raise @xlsx.XlsxError {
   match transcoder {
@@ -253,8 +253,8 @@ pub fn read_bounded_archive(
 pub fn read_with_password(
   bytes : BytesView,
   password : String,
-  options? : @xlsx.Options = @xlsx.Options::new(),
-  limits? : @xlsx.ReadLimits = @xlsx.ReadLimits::new(),
+  options~ : @xlsx.Options = @xlsx.Options::new(),
+  limits~ : @xlsx.ReadLimits = @xlsx.ReadLimits::new(),
   transcoder? : (String, Bytes) -> String raise @xlsx.XlsxError,
 ) -> @xlsx.Workbook raise @xlsx.XlsxError {
   match transcoder {
@@ -326,7 +326,7 @@ pub fn write_with_password(
 /// Encrypted file content
 pub fn encrypt(
   raw : BytesView,
-  options? : @xlsx.Options = @xlsx.Options::new(),
+  options~ : @xlsx.Options = @xlsx.Options::new(),
 ) -> Bytes raise @xlsx.XlsxError {
   @xlsx.encrypt(raw, options~)
 }
@@ -343,8 +343,8 @@ pub fn encrypt(
 /// Decrypted XLSX file content
 pub fn decrypt(
   raw : BytesView,
-  options? : @xlsx.Options = @xlsx.Options::new(),
-  limits? : @xlsx.ReadLimits = @xlsx.ReadLimits::new(),
+  options~ : @xlsx.Options = @xlsx.Options::new(),
+  limits~ : @xlsx.ReadLimits = @xlsx.ReadLimits::new(),
 ) -> Bytes raise @xlsx.XlsxError {
   @xlsx.decrypt(raw, options~, limits~)
 }
@@ -435,7 +435,7 @@ pub fn theme_color(base_color : String, tint : Double) -> String {
 /// ```
 pub fn excel_date_to_time(
   excel_date : Double,
-  use_1904_format? : Bool = false,
+  use_1904_format~ : Bool = false,
 ) -> @time.ZonedDateTime raise @xlsx.XlsxError {
   @xlsx.excel_date_to_time(excel_date, use_1904_format~)
 }
@@ -456,7 +456,7 @@ pub fn excel_date_to_time(
 /// ```
 pub fn time_to_excel_date(
   value : @time.ZonedDateTime,
-  use_1904_format? : Bool = false,
+  use_1904_format~ : Bool = false,
 ) -> Double {
   @xlsx.time_to_excel_date(value, use_1904_format~)
 }
@@ -483,9 +483,9 @@ pub fn time_to_excel_date(
 #cfg(any(target="native", target="wasm"))
 pub async fn open_file(
   path : String,
-  password? : String = "",
-  options? : @xlsx.Options = @xlsx.Options::new(),
-  limits? : @xlsx.ReadLimits = @xlsx.ReadLimits::new(),
+  password~ : String = "",
+  options~ : @xlsx.Options = @xlsx.Options::new(),
+  limits~ : @xlsx.ReadLimits = @xlsx.ReadLimits::new(),
   transcoder? : (String, Bytes) -> String raise @xlsx.XlsxError,
 ) -> @xlsx.Workbook {
   match transcoder {
@@ -509,9 +509,9 @@ pub async fn open_file(
 /// Parsed Workbook object
 pub async fn[R : @async/io.Reader] open_reader(
   reader : R,
-  password? : String = "",
-  options? : @xlsx.Options = @xlsx.Options::new(),
-  limits? : @xlsx.ReadLimits = @xlsx.ReadLimits::new(),
+  password~ : String = "",
+  options~ : @xlsx.Options = @xlsx.Options::new(),
+  limits~ : @xlsx.ReadLimits = @xlsx.ReadLimits::new(),
   transcoder? : (String, Bytes) -> String raise @xlsx.XlsxError,
 ) -> @xlsx.Workbook {
   match transcoder {
@@ -538,9 +538,9 @@ pub async fn[R : @async/io.Reader] open_reader(
 /// Parsed Workbook object
 pub async fn[R : @async/io.Reader] read_zip_reader(
   reader : R,
-  password? : String = "",
-  options? : @xlsx.Options = @xlsx.Options::new(),
-  limits? : @xlsx.ReadLimits = @xlsx.ReadLimits::new(),
+  password~ : String = "",
+  options~ : @xlsx.Options = @xlsx.Options::new(),
+  limits~ : @xlsx.ReadLimits = @xlsx.ReadLimits::new(),
   transcoder? : (String, Bytes) -> String raise @xlsx.XlsxError,
 ) -> @xlsx.Workbook {
   match transcoder {

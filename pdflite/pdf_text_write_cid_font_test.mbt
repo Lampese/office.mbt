@@ -21,7 +21,7 @@ fn cid_descriptor() -> @pdflite.PdfFontDescriptor {
 /// A composite font over Adobe-Japan1, of the shape a CJK document uses:
 /// Identity-H encoding, a per-CID width list, and no embedded program so
 /// the consumer substitutes an installed face.
-fn cid_font(widths : Array[(Int, Double)]) -> @pdflite.PdfFont {
+fn cid_font(widths : Array[(Int32, Double)]) -> @pdflite.PdfFont {
   PdfFontCIDKeyed({
     basefont: @core.pdf_name_of_bytes(b"/NotoSansSC"),
     composite: {
@@ -108,7 +108,7 @@ test "a font with no widths omits the W array rather than writing an empty one" 
 ///|
 /// A composite font whose descriptor carries a ToUnicode map.
 fn cid_font_with_tounicode(
-  tounicode : Array[(Int, @core.PdfBytes)],
+  tounicode : Array[(Int32, @core.PdfBytes)],
 ) -> @pdflite.PdfFont {
   let descriptor = { ..cid_descriptor(), tounicode: Some(tounicode), }
   PdfFontCIDKeyed({

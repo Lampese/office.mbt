@@ -318,7 +318,7 @@ test "docx comments anchor, thread, and survive the fixpoint" {
 
 ///|
 test "docx vertically merged tables survive the fixpoint" {
-  let cell = (text : String, row_span : Int) => {
+  let cell = (text : String, row_span : Int32) => {
     @document.TableCell(
       children=[@document.paragraph([@document.run([@document.text(text)])])],
       col_span=1,

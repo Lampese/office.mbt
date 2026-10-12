@@ -1,6 +1,6 @@
 ///|
 fn pdf_text_push_cmap_cidchar_entries(
-  entries : Array[(Int, Int)],
+  entries : Array[(Int32, Int32)],
   line : BytesView,
 ) -> Unit {
   for index = 0; index < line.length(); {
@@ -19,7 +19,7 @@ fn pdf_text_push_cmap_cidchar_entries(
 
 ///|
 fn pdf_text_push_cmap_cidrange_entries(
-  entries : Array[(Int, Int)],
+  entries : Array[(Int32, Int32)],
   line : BytesView,
 ) -> Unit {
   for index = 0; index < line.length(); {
@@ -107,7 +107,7 @@ fn[E] pdf_text_parse_cmap_sections_with(
 }
 
 ///|
-fn pdf_text_parse_cmap_cid_sections(data : BytesView) -> Array[(Int, Int)]? {
+fn pdf_text_parse_cmap_cid_sections(data : BytesView) -> Array[(Int32, Int32)]? {
   pdf_text_parse_cmap_sections_with(data, [
     ("begincidchar", "endcidchar", pdf_text_push_cmap_cidchar_entries),
     ("begincidrange", "endcidrange", pdf_text_push_cmap_cidrange_entries),
@@ -115,7 +115,9 @@ fn pdf_text_parse_cmap_cid_sections(data : BytesView) -> Array[(Int, Int)]? {
 }
 
 ///|
-fn pdf_text_parse_cmap_notdef_sections(data : BytesView) -> Array[(Int, Int)]? {
+fn pdf_text_parse_cmap_notdef_sections(
+  data : BytesView,
+) -> Array[(Int32, Int32)]? {
   pdf_text_parse_cmap_sections_with(data, [
     ("beginnotdefchar", "endnotdefchar", pdf_text_push_cmap_cidchar_entries),
     ("beginnotdefrange", "endnotdefrange", pdf_text_push_cmap_cidrange_entries),
@@ -153,14 +155,14 @@ fn[E] pdf_text_parse_cmap_with_compact_fallback(
 }
 
 ///|
-fn pdf_text_parse_cmap_cids(data : BytesView) -> Array[(Int, Int)]? {
+fn pdf_text_parse_cmap_cids(data : BytesView) -> Array[(Int32, Int32)]? {
   pdf_text_parse_cmap_with_compact_fallback(
     data, pdf_text_parse_cmap_cid_sections,
   )
 }
 
 ///|
-fn pdf_text_parse_cmap_notdefs(data : BytesView) -> Array[(Int, Int)]? {
+fn pdf_text_parse_cmap_notdefs(data : BytesView) -> Array[(Int32, Int32)]? {
   pdf_text_parse_cmap_with_compact_fallback(
     data, pdf_text_parse_cmap_notdef_sections,
   )

@@ -86,7 +86,7 @@ fn unicode_main_docx_session_fixture() -> Bytes raise {
 }
 
 ///|
-fn padded_entity_docx_session_fixture(token_units : Int) -> Bytes raise {
+fn padded_entity_docx_session_fixture(token_units : Int32) -> Bytes raise {
   if token_units <= 5 {
     fail("padded entity token must include at least one leading zero")
   }

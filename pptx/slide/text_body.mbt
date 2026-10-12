@@ -168,7 +168,7 @@ pub extend RunProperties with Eq::{not_equal, equal}
 ///   relationship type `rt_slide` pointing at the target slide part.
 pub(all) enum HyperlinkTarget {
   ExternalUrl(String)
-  InternalSlide(Int)
+  InternalSlide(Int32)
 } derive(Eq, Debug)
 
 ///|
@@ -431,7 +431,7 @@ pub fn AutoNumType::from_xml(s : String) -> AutoNumType? {
 pub(all) enum Bullet {
   BulNone
   Char(String)
-  AutoNum(AutoNumType, Int)
+  AutoNum(AutoNumType, Int32)
   Picture(String)
 } derive(Eq, Debug)
 
@@ -460,7 +460,7 @@ pub extend Bullet with Eq::{not_equal, equal}
 /// - `rtl` — right-to-left paragraph direction. `None` inherits from the list
 ///   style / master rather than meaning left-to-right.
 pub(all) struct ParagraphProperties {
-  level : Int
+  level : Int32
   alignment : TextAlignment?
   margin_left : @units.Emu?
   indent : @units.Emu?

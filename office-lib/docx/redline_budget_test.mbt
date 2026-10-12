@@ -10,7 +10,7 @@
 /// is made of and the densest markup the strict parser meets in practice —
 /// every `w:ins`/`w:del` carries `w:id`, `w:author`, and `w:date`, so the
 /// token charge per byte is far higher than for ordinary prose.
-fn redline_paragraph(index : Int) -> String {
+fn redline_paragraph(index : Int32) -> String {
   let deletion_id = index * 2 + 1
   let insertion_id = deletion_id + 1
   "<w:r><w:t xml:space=\"preserve\">Item \{index} baseline </w:t></w:r>" +
@@ -23,7 +23,7 @@ fn redline_paragraph(index : Int) -> String {
 ///|
 /// Body markup for `count` redlined paragraphs, spliced into the one-paragraph
 /// fixture by closing and reopening `w:p` between blocks.
-fn redline_runs(count : Int) -> String {
+fn redline_runs(count : Int32) -> String {
   let markup = StringBuilder()
   for index in 0..<count {
     if index > 0 {
@@ -35,7 +35,7 @@ fn redline_runs(count : Int) -> String {
 }
 
 ///|
-fn count_occurrences(haystack : String, needle : String) -> Int {
+fn count_occurrences(haystack : String, needle : String) -> Int32 {
   let mut found = 0
   let mut rest = haystack[:]
   while rest.find(needle) is Some(at) {

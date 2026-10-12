@@ -416,7 +416,7 @@ fn check_cf_color(param : String, value : String) -> Unit raise BatchError {
 
 ///|
 /// Maps a `style` op's border-style name to its OOXML style code.
-fn border_style_of(name : String) -> Int raise BatchError {
+fn border_style_of(name : String) -> Int32 raise BatchError {
   match name {
     "thin" => 1
     "medium" => 2

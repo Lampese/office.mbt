@@ -26,7 +26,7 @@
 // `Eq` is production-used (`reader_projection_adapter.mbt`); `Debug` only by
 // whitebox snapshots, which the library build does not compile.
 #warnings("-unused_value")
-priv struct SourceElementId(Int) derive(Debug, Eq)
+priv struct SourceElementId(Int32) derive(Debug, Eq)
 
 ///|
 /// A joined story: the reader-input tree whose every node carries its
@@ -56,8 +56,8 @@ priv enum ReaderInputJoinRefusal {
   StageRefused(stage~ : ReaderInputJoinStage, cause~ : DocxError)
   ChildCountMismatch(
     parent~ : SourceElementId,
-    dom_count~ : Int,
-    cooked_source_count~ : Int
+    dom_count~ : Int32,
+    cooked_source_count~ : Int32
   )
   NameMismatch(
     source~ : SourceElementId,
@@ -185,7 +185,7 @@ fn validate_scanned_element_table(scan : StoryScan) -> String? {
   // (An iterative stack: synthetic tables are not bounded by the scanner's
   // depth cap.)
   let mut visited = 0
-  let stack : Array[Int] = [0]
+  let stack : Array[Int32] = [0]
   while stack.length() > 0 {
     let index = stack.unsafe_pop()
     if index != visited {
@@ -229,9 +229,12 @@ fn validate_scanned_element_table(scan : StoryScan) -> String? {
 /// its first MC `Fallback`'s cooked children (nothing when it has no
 /// fallback); everything else contributes itself. The rule matches on the
 /// namespace URI, exactly like the parser's canonicalize-then-splice.
-fn cooked_scanned_children(scan : StoryScan, parent_index : Int) -> Array[Int] {
+fn cooked_scanned_children(
+  scan : StoryScan,
+  parent_index : Int32,
+) -> Array[Int32] {
   let elements = scan.elements()
-  let cooked : Array[Int] = []
+  let cooked : Array[Int32] = []
   let mut child = elements[parent_index].first_child_index
   while child != -1 {
     let element = elements[child]
@@ -253,8 +256,8 @@ fn cooked_scanned_children(scan : StoryScan, parent_index : Int) -> Array[Int] {
 /// chosen fallback's own cooked children, or nothing.
 fn cooked_alternate_content_selection(
   scan : StoryScan,
-  alternate_index : Int,
-) -> Array[Int] {
+  alternate_index : Int32,
+) -> Array[Int32] {
   let elements = scan.elements()
   for candidate in cooked_scanned_children(scan, alternate_index) {
     let element = elements[candidate]
@@ -284,7 +287,7 @@ fn join_reader_dom(
 ///|
 fn join_reader_element(
   element : XmlElement,
-  source_index : Int,
+  source_index : Int32,
   scan : StoryScan,
   namespace_map : Map[String, String],
 ) -> ReaderInputJoinResult {

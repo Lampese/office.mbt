@@ -13,7 +13,7 @@ pub(all) struct PdfContentTextLayout {
 ///|
 /// Geometry emitted for one glyph by cpdfcontent-style text placement.
 pub(all) struct PdfContentTextGlyphPlacement {
-  charcode : Int
+  charcode : Int32
   text_matrix : @geometry.TransformMatrix
   width : Double
   pvx : Double
@@ -84,7 +84,7 @@ fn pdf_content_text_bounding_box(
 ///|
 fn pdf_content_text_advance(
   vertical : Bool,
-  charcode : Int,
+  charcode : Int32,
   width : Double,
   layout : PdfContentTextLayout,
 ) -> (Double, Double) {

@@ -22,8 +22,8 @@
 /// `[start, end)` are replaced by `replacement`. A pure insertion has
 /// `start == end`; a pure deletion has empty `replacement`.
 pub struct SpanEdit {
-  priv start : Int
-  priv end : Int
+  priv start : Int32
+  priv end : Int32
   priv replacement : Bytes
 }
 
@@ -31,8 +31,8 @@ pub struct SpanEdit {
 /// Validates and builds a `SpanEdit` (0 <= start <= end; range bounds
 /// against the part are checked at splice time).
 pub fn span_edit(
-  start~ : Int,
-  end~ : Int,
+  start~ : Int32,
+  end~ : Int32,
   replacement : Bytes,
 ) -> SpanEdit raise @core.DocxError {
   if start < 0 {
@@ -64,13 +64,13 @@ pub struct SplicePlan {
 /// or serialized package bytes. The type is opaque so callers must construct a
 /// complete, internally consistent limit set.
 pub struct SpliceLimits {
-  priv max_archive_entries : Int
-  priv max_changed_parts : Int
-  priv max_part_name_chars : Int
-  priv max_entry_uncompressed_bytes : Int
-  priv max_total_uncompressed_bytes : Int
-  priv max_materialized_bytes : Int
-  priv max_xml_tokens : Int
+  priv max_archive_entries : Int32
+  priv max_changed_parts : Int32
+  priv max_part_name_chars : Int32
+  priv max_entry_uncompressed_bytes : Int32
+  priv max_total_uncompressed_bytes : Int32
+  priv max_materialized_bytes : Int32
+  priv max_xml_tokens : Int32
 }
 
 ///|
@@ -83,13 +83,13 @@ let lower_level_xml_materialization_scale : Int64 = 64L
 ///|
 /// Builds the fail-closed resource contract for a preservation splice.
 pub fn splice_limits(
-  max_archive_entries~ : Int,
-  max_changed_parts~ : Int,
-  max_part_name_chars~ : Int,
-  max_entry_uncompressed_bytes~ : Int,
-  max_total_uncompressed_bytes~ : Int,
-  max_materialized_bytes~ : Int,
-  max_xml_tokens~ : Int,
+  max_archive_entries~ : Int32,
+  max_changed_parts~ : Int32,
+  max_part_name_chars~ : Int32,
+  max_entry_uncompressed_bytes~ : Int32,
+  max_total_uncompressed_bytes~ : Int32,
+  max_materialized_bytes~ : Int32,
+  max_xml_tokens~ : Int32,
 ) -> SpliceLimits raise @core.DocxError {
   if max_archive_entries <= 0 ||
     max_changed_parts <= 0 ||
@@ -414,7 +414,7 @@ fn SplicePlan::add_checked_part(
 pub fn SplicePlan::check_against(
   self : SplicePlan,
   archive : @mbtzip.Archive,
-  require_pins? : Bool = false,
+  require_pins~ : Bool = false,
   limits? : SpliceLimits,
 ) -> Unit raise @core.DocxError {
   let _ = build_spliced_archive(archive, self, require_pins, limits)
@@ -452,8 +452,8 @@ pub fn splice_docx(
 pub fn splice_docx_archive(
   original : @mbtzip.Archive,
   plan : SplicePlan,
-  max_output_bytes~ : Int,
-  require_pins? : Bool = false,
+  max_output_bytes~ : Int32,
+  require_pins~ : Bool = false,
   limits? : SpliceLimits,
 ) -> Bytes raise @core.DocxError {
   if max_output_bytes < 0 {
@@ -477,7 +477,7 @@ pub fn splice_docx_archive(
 /// (an all-consumed budget); a negative value is refused.
 pub fn SpliceLimits::with_max_materialized_bytes(
   self : SpliceLimits,
-  bytes : Int,
+  bytes : Int32,
 ) -> SpliceLimits raise @core.DocxError {
   if bytes < 0 {
     raise Unsupported(
@@ -496,7 +496,7 @@ pub fn SpliceLimits::with_max_materialized_bytes(
 pub fn stage_spliced_archive(
   original : @mbtzip.Archive,
   plan : SplicePlan,
-  require_pins? : Bool = false,
+  require_pins~ : Bool = false,
   limits? : SpliceLimits,
 ) -> @mbtzip.Archive raise @core.DocxError {
   build_spliced_archive(original, plan, require_pins, limits)
@@ -510,7 +510,7 @@ priv struct PreparedPartSplice {
   name : String
   source : BytesView
   edits : Array[SpanEdit]
-  result_length : Int
+  result_length : Int32
   replacement_bytes : Int64
   markup_tokens : Int64
 }
@@ -862,7 +862,7 @@ fn check_plan_part_name(name : String) -> Unit raise @core.DocxError {
 /// and rejects malformed UTF-16 before any diagnostic copies the name.
 fn check_plan_part_name_limit(
   name : String,
-  max_chars : Int,
+  max_chars : Int32,
 ) -> Unit raise @core.DocxError {
   let mut offset = 0
   let mut scalars = 0
@@ -920,7 +920,7 @@ fn prepare_span_edits(
   // still tie keep their PLAN order (Array::sort_by is unstable, so the
   // plan ordinal is part of the key) — two markers inserted at the same
   // offset of an empty paragraph must splice in the order planned.
-  let decorated : Array[(Int, Int, Int, SpanEdit)] = []
+  let decorated : Array[(Int32, Int32, Int32, SpanEdit)] = []
   for ordinal, edit in edits {
     let consuming = if edit.end > edit.start { 1 } else { 0 }
     decorated.push((edit.start, consuming, ordinal, edit))
@@ -1162,8 +1162,8 @@ priv enum EncodingDeclaration {
 /// materializing attacker-controlled declaration names or values.
 fn declaration_range_equals(
   bytes : BytesView,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
   expected : BytesView,
 ) -> Bool {
   if end - start != expected.length() {
@@ -1181,12 +1181,16 @@ fn declaration_range_equals(
 /// XML encoding names are ASCII case-insensitive. Only the two UTF-8
 /// spellings accepted by the previous gate need to be recognized, so
 /// comparison stays constant-space and bounded to five bytes.
-fn declaration_value_is_utf8(bytes : BytesView, start : Int, end : Int) -> Bool {
+fn declaration_value_is_utf8(
+  bytes : BytesView,
+  start : Int32,
+  end : Int32,
+) -> Bool {
   let length = end - start
   if length != 4 && length != 5 {
     return false
   }
-  fn folded(byte : Byte) -> Int {
+  fn folded(byte : Byte) -> Int32 {
     if byte >= b'A' && byte <= b'Z' {
       byte.to_int() + 32
     } else {

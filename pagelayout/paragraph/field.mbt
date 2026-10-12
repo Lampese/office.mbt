@@ -45,8 +45,8 @@ pub fn field_kind(instruction : String) -> FieldKind {
 /// unchanged.
 pub fn RunInput::evaluate(
   self : RunInput,
-  page_number : Int,
-  page_count : Int,
+  page_number : Int32,
+  page_count : Int32,
 ) -> RunInput {
   match self.field {
     NotAField => self

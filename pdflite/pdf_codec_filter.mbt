@@ -62,8 +62,8 @@ pub(all) enum PdfStreamEncoding {
   PdfStreamASCII85
   PdfStreamRunLength
   PdfStreamFlate
-  PdfStreamCCITT(Int, Int)
-  PdfStreamCCITTG4(Int, Int)
+  PdfStreamCCITT(Int32, Int32)
+  PdfStreamCCITTG4(Int32, Int32)
 } derive(Debug, Eq, ToJson)
 
 ///|
@@ -97,7 +97,7 @@ pub fn PdfStreamEncoding::filter_name(
 
 ///|
 /// Return the PDF `/Predictor` number for this predictor.
-pub fn PdfStreamPredictor::number(self : PdfStreamPredictor) -> Int {
+pub fn PdfStreamPredictor::number(self : PdfStreamPredictor) -> Int32 {
   match self {
     PdfStreamPredictorTIFF2 => 2
     PdfStreamPredictorPNGNone => 10
@@ -112,8 +112,8 @@ pub fn PdfStreamPredictor::number(self : PdfStreamPredictor) -> Int {
 ///|
 /// Encode 1-bit image data as CCITT Group 3 one-dimensional fax data.
 pub fn pdf_ccitt_encode_view(
-  columns : Int,
-  rows : Int,
+  columns : Int32,
+  rows : Int32,
   data : BytesView,
 ) -> @core.PdfBytes raise @core.PdfError {
   pdf_ccitt_encode_g3_1d_view(data, columns, rows)
@@ -122,8 +122,8 @@ pub fn pdf_ccitt_encode_view(
 ///|
 /// Owned-byte wrapper for `pdf_ccitt_encode_view`.
 pub fn pdf_ccitt_encode(
-  columns : Int,
-  rows : Int,
+  columns : Int32,
+  rows : Int32,
   data : @core.PdfBytes,
 ) -> @core.PdfBytes raise @core.PdfError {
   pdf_ccitt_encode_view(columns, rows, data)
@@ -132,8 +132,8 @@ pub fn pdf_ccitt_encode(
 ///|
 /// Encode 1-bit image data as CCITT Group 4 fax data.
 pub fn pdf_ccitt_g4_encode_view(
-  columns : Int,
-  rows : Int,
+  columns : Int32,
+  rows : Int32,
   data : BytesView,
 ) -> @core.PdfBytes raise @core.PdfError {
   pdf_ccitt_encode_g4_view(data, columns, rows)
@@ -142,8 +142,8 @@ pub fn pdf_ccitt_g4_encode_view(
 ///|
 /// Owned-byte wrapper for `pdf_ccitt_g4_encode_view`.
 pub fn pdf_ccitt_g4_encode(
-  columns : Int,
-  rows : Int,
+  columns : Int32,
+  rows : Int32,
   data : @core.PdfBytes,
 ) -> @core.PdfBytes raise @core.PdfError {
   pdf_ccitt_g4_encode_view(columns, rows, data)
@@ -239,7 +239,7 @@ pub fn pdf_encode_filter_view(
 pub fn pdf_encode_filter_view_with_flate_level(
   filter : @core.PdfName,
   data : BytesView,
-  flate_level : Int,
+  flate_level : Int32,
 ) -> @core.PdfBytes raise @core.PdfError {
   pdf_encode_filter_view_with_optional_flate_level(
     filter,
@@ -252,7 +252,7 @@ pub fn pdf_encode_filter_view_with_flate_level(
 fn pdf_encode_filter_view_with_optional_flate_level(
   filter : @core.PdfName,
   data : BytesView,
-  flate_level : Int?,
+  flate_level : Int32?,
 ) -> @core.PdfBytes raise @core.PdfError {
   if pdf_filter_is_name(filter, pdf_filter_crypt_name) {
     data.to_owned()
@@ -294,7 +294,7 @@ pub fn pdf_encode_filter_bytes(
 pub fn pdf_encode_filter_bytes_with_flate_level(
   filter : @core.PdfName,
   data : @core.PdfBytes,
-  flate_level : Int,
+  flate_level : Int32,
 ) -> @core.PdfBytes raise @core.PdfError {
   pdf_encode_filter_bytes_with_optional_flate_level(
     filter,
@@ -307,7 +307,7 @@ pub fn pdf_encode_filter_bytes_with_flate_level(
 fn pdf_encode_filter_bytes_with_optional_flate_level(
   filter : @core.PdfName,
   data : @core.PdfBytes,
-  flate_level : Int?,
+  flate_level : Int32?,
 ) -> @core.PdfBytes raise @core.PdfError {
   if pdf_filter_is_name(filter, pdf_filter_crypt_name) {
     data

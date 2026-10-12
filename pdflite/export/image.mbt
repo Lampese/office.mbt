@@ -11,7 +11,7 @@ pub(all) enum ImageColorspace {
 } derive(Eq, Debug)
 
 ///|
-fn ImageColorspace::components(self : ImageColorspace) -> Int {
+fn ImageColorspace::components(self : ImageColorspace) -> Int32 {
   match self {
     Luma => 1
     Rgb => 3
@@ -46,7 +46,7 @@ pub(all) enum ImageData {
   /// 2, 4 or 8 bits; 1 to 256 RGB palette entries, at most `2^bits`). Other
   /// combinations make `Document::finish` raise an `ImageError`, as do 16-bit
   /// samples before PDF 1.5.
-  Png(Bytes, Int, Int, Bytes?)
+  Png(Bytes, Int32, Int32, Bytes?)
   /// The samples of `Samples`, compressed: the zlib stream of the colour
   /// samples and, if the image has an alpha channel, the zlib stream of its
   /// alpha samples, each written as it is with `/FlateDecode`. This is the
@@ -66,8 +66,8 @@ pub(all) enum ImageData {
 pub(all) struct Image {
   /// A key identifying the image, used to embed equal images only once.
   key : String
-  width : Int
-  height : Int
+  width : Int32
+  height : Int32
   colorspace : ImageColorspace
   data : ImageData
   /// An ICC profile for the color channels.
@@ -123,7 +123,7 @@ pub fn Image::deflated(self : Image) -> Image {
 /// streams already ([ImageData::Deflated]).
 fn SerializeContext::put_sampled_image(
   self : SerializeContext,
-  ref_ : Int,
+  ref_ : Int32,
   d : DictBuilder,
   image : Image,
   color : Bytes,
@@ -161,7 +161,7 @@ fn SerializeContext::put_sampled_image(
 fn SerializeContext::register_image(
   self : SerializeContext,
   image : Image,
-) -> Int {
+) -> Int32 {
   let key = "image:\{image.key}:\{image.interpolate}"
   self.cached(key, r => {
     if image.data is Png(data, colors, bit_depth, palette) {
@@ -299,8 +299,8 @@ fn is_zlib_stream(data : Bytes) -> Bool {
 fn png_error(
   image : Image,
   data : Bytes,
-  colors : Int,
-  bit_depth : Int,
+  colors : Int32,
+  bit_depth : Int32,
   palette : Bytes?,
 ) -> String? {
   if data.is_empty() {

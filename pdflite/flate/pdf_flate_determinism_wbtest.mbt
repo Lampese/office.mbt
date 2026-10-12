@@ -23,7 +23,7 @@ fn compressed_fingerprint(data : BytesView) -> String {
 
 ///|
 /// `count` bytes of the repeating pattern `unit`.
-fn repeating(unit : Bytes, count : Int) -> Bytes {
+fn repeating(unit : Bytes, count : Int32) -> Bytes {
   let out = Array::make(count, b'\x00')
   for i in 0..<count {
     out[i] = unit[i % unit.length()]
@@ -36,7 +36,7 @@ fn repeating(unit : Bytes, count : Int) -> Bytes {
 /// for incompressible input. A linear congruential generator is enough: the
 /// point is that the matcher finds nothing, not that the bytes are good
 /// randomness.
-fn incompressible(count : Int) -> Bytes {
+fn incompressible(count : Int32) -> Bytes {
   let out = Array::make(count, b'\x00')
   let mut state = 0x2545F491
   for i in 0..<count {
@@ -55,7 +55,7 @@ fn incompressible(count : Int) -> Bytes {
 /// It places that match deliberately; it does not make it the only one. The
 /// filler is pseudorandom, and incidental three-byte matches do occur inside
 /// it.
-fn match_at_distance(prefix : Int, match_len : Int) -> Bytes {
+fn match_at_distance(prefix : Int32, match_len : Int32) -> Bytes {
   let head = incompressible(prefix)
   let out = Array::make(prefix + match_len, b'\x00')
   for i in 0..<prefix {
@@ -99,7 +99,7 @@ fn determinism_corpus() -> Array[(String, Bytes)] {
 ///|
 /// The levels worth pinning. 1, 6 and 9 cover fast, default and high
 /// compression. Stored blocks at level 0 are covered by the round-trip tests.
-fn determinism_levels() -> Array[Int] {
+fn determinism_levels() -> Array[Int32] {
   [1, 6, 9]
 }
 
@@ -130,7 +130,7 @@ test "the shipping encoder round trips every corpus input at every level" {
 /// Shrinking would be worth having here and is worth revisiting when the pin
 /// moves.
 test "the shipping encoder round trips generated input at every level" {
-  let cases : Array[Array[Int]] = @quickcheck.samples(24)
+  let cases : Array[Array[Int32]] = @quickcheck.samples(24)
   let mut checked = 0
   for case in cases {
     let bytes = Array::make(case.length(), b'\x00')

@@ -14,7 +14,7 @@ let hex_digits : FixedArray[Char] = [
 
 ///|
 /// Lowercase-free zero-padded hex of `n` to `width` digits.
-fn hex_pad(n : Int, width : Int) -> String {
+fn hex_pad(n : Int32, width : Int32) -> String {
   let chars = Array::make(width, '0')
   let mut v = n
   for i in (width - 1)>=..0 {
@@ -27,7 +27,7 @@ fn hex_pad(n : Int, width : Int) -> String {
 ///|
 /// A GUID-shaped id `{CCCCCCCC-0000-0000-0000-IIIIIIIIIIII}` from a category
 /// tag and an index. Distinct categories never collide.
-fn guid(category : Int, index : Int) -> String {
+fn guid(category : Int32, index : Int32) -> String {
   "{" + hex_pad(category, 8) + "-0000-0000-0000-" + hex_pad(index, 12) + "}"
 }
 
@@ -37,24 +37,24 @@ let doc_id : String = "0"
 
 ///|
 /// Model id of the i-th top-level node point.
-fn node_id(i : Int) -> String {
+fn node_id(i : Int32) -> String {
   guid(0x10, i)
 }
 
 ///|
 /// Model id of the i-th node's parent-transition point.
-fn par_trans_id(i : Int) -> String {
+fn par_trans_id(i : Int32) -> String {
   guid(0x20, i)
 }
 
 ///|
 /// Model id of the i-th node's sibling-transition point.
-fn sib_trans_id(i : Int) -> String {
+fn sib_trans_id(i : Int32) -> String {
   guid(0x30, i)
 }
 
 ///|
 /// Model id of the doc→node connection for the i-th node.
-fn cxn_id(i : Int) -> String {
+fn cxn_id(i : Int32) -> String {
   guid(0x40, i)
 }

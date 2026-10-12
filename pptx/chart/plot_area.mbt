@@ -17,7 +17,7 @@ pub(all) struct AreaChartBody {
   series : Array[ChartSeriesCore]
   d_lbls : DLbls?
   drop_lines : @xml.XmlElement?
-  ax_ids : Array[Int]
+  ax_ids : Array[Int32]
   extension : Array[@xml.XmlElement]
 } derive(Eq, Debug)
 
@@ -49,8 +49,8 @@ pub(all) struct Area3DChartBody {
   series : Array[ChartSeriesCore]
   d_lbls : DLbls?
   drop_lines : @xml.XmlElement?
-  gap_depth : Int?
-  ax_ids : Array[Int]
+  gap_depth : Int32?
+  ax_ids : Array[Int32]
   extension : Array[@xml.XmlElement]
 } derive(Eq, Debug)
 

@@ -135,8 +135,8 @@ fn dump_dimension_residuals(
   sheet : String,
   axis : String,
   at : String,
-  outline_level : Int,
-  style_id : Int?,
+  outline_level : Int32,
+  style_id : Int32?,
   residual : Array[DumpResidual],
 ) -> Unit {
   let location = Json::object({
@@ -359,7 +359,7 @@ fn dump_sheet_merges(
   residual : Array[DumpResidual],
 ) -> Unit raise {
   let merges = workbook.get_merge_cells(sheet).copy()
-  let keyed : Array[(Int, Int, String)] = []
+  let keyed : Array[(Int32, Int32, String)] = []
   for range in merges {
     let start = match range.find(":") {
       Some(colon) => range[0:colon].to_owned()
@@ -506,11 +506,11 @@ fn dump_sheet_filter(
 
 ///|
 /// Ceiling on one captured asset's payload.
-let dump_max_asset_bytes : Int = 8 * 1024 * 1024
+let dump_max_asset_bytes : Int32 = 8 * 1024 * 1024
 
 ///|
 /// Ceiling on the total captured asset payload per dump.
-let dump_max_total_asset_bytes : Int = 32 * 1024 * 1024
+let dump_max_total_asset_bytes : Int32 = 32 * 1024 * 1024
 
 ///|
 /// Captures anchored pictures as content-addressed assets. No batch op can
@@ -522,7 +522,7 @@ fn dump_sheet_images(
   worksheet : @xlsx.Worksheet,
   sheet : String,
   assets : Map[String, DumpAsset],
-  total_asset_bytes : Ref[Int],
+  total_asset_bytes : Ref[Int32],
   residual : Array[DumpResidual],
 ) -> Unit {
   for image in worksheet.images {
@@ -703,7 +703,7 @@ fn dump_sheet_charts(
   worksheet : @xlsx.Worksheet,
   sheet : String,
   ops : Array[Json],
-) -> Int {
+) -> Int32 {
   let mut unsupported = 0
   for chart in worksheet.charts() {
     match batch_chart_dump_op(chart, sheet) {
@@ -722,10 +722,10 @@ fn dump_sheet_coverage_residuals(
   workbook : @xlsx.Workbook,
   worksheet : @xlsx.Worksheet,
   sheet : String,
-  unsupported_charts : Int,
+  unsupported_charts : Int32,
   residual : Array[DumpResidual],
 ) -> Unit {
-  let counts : Array[(String, Int)] = [
+  let counts : Array[(String, Int32)] = [
     ("xlsx.charts_not_dumped", unsupported_charts),
     ("xlsx.hyperlinks_not_dumped", worksheet.hyperlinks.length()),
     ("xlsx.sparklines_not_dumped", worksheet.sparkline_groups.length()),
@@ -1003,14 +1003,14 @@ fn self_check_ops(ops : Array[Json]) -> Unit raise {
 pub fn dump_xlsx_workbook(
   workbook : @xlsx.Workbook,
   source_file~ : String,
-  source_bytes~ : Int,
-  source_sha256? : String? = None,
-  cancelled? : () -> Bool = () => false,
+  source_bytes~ : Int32,
+  source_sha256~ : String? = None,
+  cancelled~ : () -> Bool = () => false,
 ) -> DumpEnvelope raise {
   let ops : Array[Json] = []
   let table_candidates : Array[TableCandidate] = []
   let assets : Map[String, DumpAsset] = Map([])
-  let total_asset_bytes : Ref[Int] = Ref(0)
+  let total_asset_bytes : Ref[Int32] = Ref(0)
   let residual : Array[DumpResidual] = []
   let warnings : Array[DumpWarning] = []
   let sheet_names = workbook.get_sheet_list()

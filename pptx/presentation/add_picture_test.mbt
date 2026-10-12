@@ -9,7 +9,7 @@ fn fake_png() -> FixedArray[Byte] {
   // The exact body doesn't matter — we only need the leading magic
   // bytes for the detector, and arbitrary trailing bytes for round-
   // trip preservation.
-  let raw : Array[Int] = [
+  let raw : Array[Int32] = [
     0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
      0x00, 0x00, 0x00, 0x0D, // IHDR length
      0x49, 0x48, 0x44, 0x52, // "IHDR"
@@ -33,7 +33,7 @@ fn jpeg_signature_bytes() -> FixedArray[Byte] {
   // Just the leading SOI + APP0 marker — enough for the detector
   // to recognise the format. Real PowerPoint won't render this as
   // an image but our test stops at "did we plumb the OPC parts".
-  let raw : Array[Int] = [
+  let raw : Array[Int32] = [
     0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46,
   ]
   let out = FixedArray::make(raw.length(), b'\x00')
@@ -190,7 +190,7 @@ test "add_picture_mut: rejects out-of-range slide index" {
 ///|
 /// 96×192 PNG, no pHYs → defaults to 96 DPI, so EMU = 914_400 × 1_828_800.
 fn png_96x192() -> FixedArray[Byte] {
-  let raw : Array[Int] = [
+  let raw : Array[Int32] = [
     0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // signature
      0x00, 0x00, 0x00, 0x0D, // IHDR length
      0x49, 0x48, 0x44, 0x52, // "IHDR"
@@ -376,7 +376,7 @@ test "add_svg_picture_mut: rejects an unrecognised fallback image" {
 ///|
 /// Minimal MP4 (ISO-BMFF) header: "ftyp" box with an "isom" brand.
 fn fake_mp4() -> FixedArray[Byte] {
-  let raw : Array[Int] = [
+  let raw : Array[Int32] = [
     0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, // …ftyp
      0x69, 0x73, 0x6F, 0x6D, // "isom" brand
      0x00, 0x00, 0x02, 0x00,
@@ -391,7 +391,7 @@ fn fake_mp4() -> FixedArray[Byte] {
 ///|
 /// Minimal MP3: an "ID3" tag header.
 fn fake_mp3() -> FixedArray[Byte] {
-  let raw : Array[Int] = [0x49, 0x44, 0x33, 0x03, 0x00, 0x00, 0x00, 0x00]
+  let raw : Array[Int32] = [0x49, 0x44, 0x33, 0x03, 0x00, 0x00, 0x00, 0x00]
   let out = FixedArray::make(raw.length(), b'\x00')
   for i in 0..<raw.length() {
     out[i] = raw[i].to_byte()

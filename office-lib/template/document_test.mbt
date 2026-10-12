@@ -8,10 +8,10 @@
 fn expect_document_error(
   text : String,
   expected : String,
-  max_keys? : Int = 4096,
-  max_regions? : Int = 64,
-  max_region_records? : Int = 4096,
-  max_total_region_rows? : Int = 10000,
+  max_keys~ : Int32 = 4096,
+  max_regions~ : Int32 = 64,
+  max_region_records~ : Int32 = 4096,
+  max_total_region_rows~ : Int32 = 10000,
 ) -> Unit raise {
   try
     @template.parse_template_document(

@@ -8,7 +8,10 @@ fn tiny_package() -> Bytes raise {
 }
 
 ///|
-fn splice_hash_clustered_names(count : Int, bucket_mask : Int) -> Array[String] {
+fn splice_hash_clustered_names(
+  count : Int32,
+  bucket_mask : Int32,
+) -> Array[String] {
   let names : Array[String] = []
   let mut candidate = 0
   while names.length() < count {
@@ -22,7 +25,10 @@ fn splice_hash_clustered_names(count : Int, bucket_mask : Int) -> Array[String] 
 }
 
 ///|
-fn reused_namespace_splice_source(uri_chars : Int, child_count : Int) -> String {
+fn reused_namespace_splice_source(
+  uri_chars : Int32,
+  child_count : Int32,
+) -> String {
   let source = StringBuilder()
   source.write_string("<root xmlns:n=\"")
   source.write_string("u".repeat(uri_chars))
@@ -35,7 +41,10 @@ fn reused_namespace_splice_source(uri_chars : Int, child_count : Int) -> String 
 }
 
 ///|
-fn unique_namespace_splice_source(uri_chars : Int, child_count : Int) -> String {
+fn unique_namespace_splice_source(
+  uri_chars : Int32,
+  child_count : Int32,
+) -> String {
   let source = StringBuilder()
   source.write_string("<root xmlns:n=\"")
   source.write_string("u".repeat(uri_chars))

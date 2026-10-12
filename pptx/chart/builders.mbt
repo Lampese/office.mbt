@@ -302,7 +302,7 @@ pub extend ChartPlot with Eq::{not_equal, equal}
 pub fn Chart::of_combo(
   primary : ChartPlot,
   secondary : ChartPlot,
-  secondary_axis? : Bool = false,
+  secondary_axis~ : Bool = false,
 ) -> Chart {
   let primary_series = chart_plot_series_count(primary)
   let secondary_ax_ids = if secondary_axis { [3, 4] } else { [1, 2] }
@@ -345,7 +345,7 @@ pub fn Chart::of_combo(
 ///|
 /// Number of series a `ChartPlot` contributes — used to offset the second
 /// plot's series indices so they stay unique across the chart.
-fn chart_plot_series_count(plot : ChartPlot) -> Int {
+fn chart_plot_series_count(plot : ChartPlot) -> Int32 {
   match plot {
     Bar(d) | Line(d) | Area(d) => d.series.length()
   }
@@ -356,8 +356,8 @@ fn chart_plot_series_count(plot : ChartPlot) -> Int {
 /// its series from `series_start`.
 fn build_combo_plot(
   plot : ChartPlot,
-  ax_ids : Array[Int],
-  series_start : Int,
+  ax_ids : Array[Int32],
+  series_start : Int32,
 ) -> Plot {
   match plot {
     Bar(d) =>
@@ -404,7 +404,7 @@ fn build_combo_plot(
 /// second plot's series don't collide with the first's.
 fn synthesize_series_from(
   data : ChartData,
-  start : Int,
+  start : Int32,
 ) -> Array[ChartSeriesCore] {
   let out : Array[ChartSeriesCore] = []
   for i, s in data.series {
@@ -423,8 +423,8 @@ fn synthesize_series_from(
 /// defaults to `Clustered`.
 pub fn Chart::of_bar(
   data : ChartData,
-  bar_dir? : BarDir = Col,
-  grouping? : BarGrouping = Clustered,
+  bar_dir~ : BarDir = Col,
+  grouping~ : BarGrouping = Clustered,
 ) -> Chart {
   let series_xml = synthesize_series(data)
   let bar : BarChartBody = {
@@ -457,7 +457,7 @@ pub fn Chart::of_bar(
 /// two-axis convention as `of_bar`. `grouping` defaults to `Standard`.
 pub fn Chart::of_line(
   data : ChartData,
-  grouping? : Grouping = Standard,
+  grouping~ : Grouping = Standard,
 ) -> Chart {
   let series_xml = synthesize_series(data)
   let line : LineChartBody = {
@@ -493,7 +493,7 @@ pub fn Chart::of_line(
 /// `grouping` defaults to `Standard`.
 pub fn Chart::of_area(
   data : ChartData,
-  grouping? : Grouping = Standard,
+  grouping~ : Grouping = Standard,
 ) -> Chart {
   let series_xml = synthesize_series(data)
   let area : AreaChartBody = {
@@ -526,7 +526,7 @@ pub fn Chart::of_area(
 /// `radar_style` defaults to `Marker`.
 pub fn Chart::of_radar(
   data : ChartData,
-  radar_style? : RadarStyle = Marker,
+  radar_style~ : RadarStyle = Marker,
 ) -> Chart {
   let series_xml = synthesize_series(data)
   let radar : RadarChartBody = {
@@ -559,7 +559,7 @@ pub fn Chart::of_radar(
 /// "scatter with straight lines and markers").
 pub fn Chart::of_scatter(
   data : ScatterData,
-  scatter_style? : ScatterStyle = LineMarker,
+  scatter_style~ : ScatterStyle = LineMarker,
 ) -> Chart {
   let series_xml : Array[ScatterSeriesCore] = []
   for i, s in data.series {
@@ -626,7 +626,7 @@ pub fn Chart::of_bubble(data : BubbleData) -> Chart {
 /// Construct a complete doughnut chart from a `ChartData` value.
 /// Like pie but with an interior hole; `hole_size` is the percentage
 /// (10..90 typical) of the outer diameter occupied by the gap.
-pub fn Chart::of_doughnut(data : ChartData, hole_size? : Int = 50) -> Chart {
+pub fn Chart::of_doughnut(data : ChartData, hole_size~ : Int32 = 50) -> Chart {
   let series_xml = synthesize_series(data)
   let doughnut : DoughnutChartBody = {
     vary_colors: Some(true),
@@ -653,8 +653,8 @@ pub fn Chart::of_doughnut(data : ChartData, hole_size? : Int = 50) -> Chart {
 /// bar-of-pie. The split rule defaults to `Auto`.
 pub fn Chart::of_of_pie(
   data : ChartData,
-  of_pie_type? : OfPieType = Pie,
-  split_type? : SplitType = Auto,
+  of_pie_type~ : OfPieType = Pie,
+  split_type~ : SplitType = Auto,
 ) -> Chart {
   let series_xml = synthesize_series(data)
   // PowerPoint Online normalises `<c:splitType val="auto"/>` away
@@ -695,9 +695,9 @@ pub fn Chart::of_of_pie(
 /// `Clustered`, `shape` to `Box`.
 pub fn Chart::of_bar_3d(
   data : ChartData,
-  bar_dir? : BarDir = Col,
-  grouping? : BarGrouping = Clustered,
-  shape? : BarShape = Box,
+  bar_dir~ : BarDir = Col,
+  grouping~ : BarGrouping = Clustered,
+  shape~ : BarShape = Box,
 ) -> Chart {
   let series_xml = synthesize_series(data)
   let body : Bar3DChartBody = {
@@ -720,7 +720,7 @@ pub fn Chart::of_bar_3d(
 /// `Standard`.
 pub fn Chart::of_line_3d(
   data : ChartData,
-  grouping? : Grouping = Standard,
+  grouping~ : Grouping = Standard,
 ) -> Chart {
   let series_xml = synthesize_series(data)
   let body : Line3DChartBody = {
@@ -761,7 +761,7 @@ pub fn Chart::of_pie_3d(data : ChartData) -> Chart {
 ///|
 /// 2-D surface chart from a `ChartData` value. `wireframe` toggles
 /// between filled and wireframe rendering. Two-axis layout.
-pub fn Chart::of_surface(data : ChartData, wireframe? : Bool = false) -> Chart {
+pub fn Chart::of_surface(data : ChartData, wireframe~ : Bool = false) -> Chart {
   let series_xml = synthesize_series(data)
   let body : SurfaceChartBody = {
     wireframe: Some(wireframe),
@@ -788,7 +788,7 @@ pub fn Chart::of_surface(data : ChartData, wireframe? : Bool = false) -> Chart {
 /// 3-D surface chart from a `ChartData` value. Three-axis layout.
 pub fn Chart::of_surface_3d(
   data : ChartData,
-  wireframe? : Bool = false,
+  wireframe~ : Bool = false,
 ) -> Chart {
   let series_xml = synthesize_series(data)
   let body : Surface3DChartBody = {
@@ -806,7 +806,7 @@ pub fn Chart::of_surface_3d(
 /// high-low-close or `kind = OHLC` for 4-series open-high-low-close.
 /// Each series in `data` is one of the H / L / C (or O / H / L / C)
 /// arrays, in that schema-required order.
-pub fn Chart::of_stock(data : ChartData, kind? : StockKind = HLC) -> Chart {
+pub fn Chart::of_stock(data : ChartData, kind~ : StockKind = HLC) -> Chart {
   let required = match kind {
     HLC => 3
     OHLC => 4
@@ -872,7 +872,7 @@ pub impl Show for StockKind with fn output(self, logger) {
 ///|
 /// Force a `ChartData` to have exactly `required` series, by
 /// truncating excess or padding with empty series.
-fn normalize_stock_series(data : ChartData, required : Int) -> ChartData {
+fn normalize_stock_series(data : ChartData, required : Int32) -> ChartData {
   let s : Array[ChartSeries] = []
   let cur = data.series.length()
   if cur >= required {
@@ -1055,7 +1055,7 @@ fn synthesize_series(data : ChartData) -> Array[ChartSeriesCore] {
 
 ///|
 fn synthesize_one_series(
-  index : Int,
+  index : Int32,
   s : ChartSeries,
   categories : Array[String],
 ) -> ChartSeriesCore {
@@ -1079,7 +1079,7 @@ fn synthesize_one_series(
 /// Build a `ScatterSeriesCore` from a `ScatterSeries`. Body:
 /// idx / order / tx / xVal / yVal.
 fn synthesize_scatter_series(
-  index : Int,
+  index : Int32,
   s : ScatterSeries,
 ) -> ScatterSeriesCore {
   let tx = c_elem("tx", [], [Element(c_elem("v", [], [Text(s.label)]))])
@@ -1105,7 +1105,10 @@ fn synthesize_scatter_series(
 ///|
 /// Build a `BubbleSeriesCore` from a `BubbleSeries`. Body:
 /// idx / order / tx / xVal / yVal / bubbleSize.
-fn synthesize_bubble_series(index : Int, s : BubbleSeries) -> BubbleSeriesCore {
+fn synthesize_bubble_series(
+  index : Int32,
+  s : BubbleSeries,
+) -> BubbleSeriesCore {
   let tx = c_elem("tx", [], [Element(c_elem("v", [], [Text(s.label)]))])
   let count = max3(s.x.length(), s.y.length(), s.size.length())
   let x_val = numeric_data_lit("xVal", s.x, count)
@@ -1125,7 +1128,7 @@ fn synthesize_bubble_series(index : Int, s : BubbleSeries) -> BubbleSeriesCore {
 }
 
 ///|
-fn max3(a : Int, b : Int, c : Int) -> Int {
+fn max3(a : Int32, b : Int32, c : Int32) -> Int32 {
   let ab = if a > b { a } else { b }
   if ab > c {
     ab
@@ -1155,7 +1158,7 @@ fn category_axis_data_lit(categories : Array[String]) -> @xml.XmlElement {
 fn numeric_data_lit(
   parent_local_name : String,
   values : Array[Double],
-  count : Int,
+  count : Int32,
 ) -> @xml.XmlElement {
   let pts : Array[@xml.XmlNode] = []
   pts.push(Element(val_leaf("ptCount", count.to_string())))
@@ -1170,7 +1173,7 @@ fn numeric_data_lit(
 ///|
 /// `<c:pt idx="…"><c:v>…</c:v></c:pt>` — one indexed data point
 /// inside a `<c:strLit>` or `<c:numLit>`.
-fn pt_leaf(index : Int, text : String) -> @xml.XmlElement {
+fn pt_leaf(index : Int32, text : String) -> @xml.XmlElement {
   c_elem("pt", [(@xml.QName::unqualified("idx"), index.to_string())], [
     Element(c_elem("v", [], [Text(text)])),
   ])
@@ -1190,8 +1193,8 @@ fn val_leaf(local_name : String, val : String) -> @xml.XmlElement {
 /// Other styling fields stay at defaults.
 fn simple_axis_core(
   local_name : String,
-  self_id : Int,
-  cross_id : Int,
+  self_id : Int32,
+  cross_id : Int32,
 ) -> AxisCore {
   // ECMA-376 §21.2.2.6 (CT_CatAx) / §21.2.2.182 (CT_ValAx) make
   // `<c:crosses>` (or `<c:crossesAt>`) required on every axis kind,

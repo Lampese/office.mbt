@@ -1,6 +1,6 @@
 ///|
 // Vendored from .repos/mammoth/node_modules/dingbat-to-unicode/dist/dingbats.js.
-fn dingbat_to_unicode(font : String, code : Int) -> String? {
+fn dingbat_to_unicode(font : String, code : Int32) -> String? {
   match font.to_upper() {
     "SYMBOL" => symbol_dingbat_to_unicode(code)
     "WEBDINGS" => webdings_to_unicode(code)
@@ -12,7 +12,7 @@ fn dingbat_to_unicode(font : String, code : Int) -> String? {
 }
 
 ///|
-fn symbol_dingbat_to_unicode(code : Int) -> String? {
+fn symbol_dingbat_to_unicode(code : Int32) -> String? {
   match code {
     100 => Some("\u{3B4}")
     101 => Some("\u{3B5}")
@@ -209,7 +209,7 @@ fn symbol_dingbat_to_unicode(code : Int) -> String? {
 }
 
 ///|
-fn webdings_to_unicode(code : Int) -> String? {
+fn webdings_to_unicode(code : Int32) -> String? {
   match code {
     100 => Some("\u{1F6E1}")
     101 => Some("\u{1F4E6}")
@@ -439,7 +439,7 @@ fn webdings_to_unicode(code : Int) -> String? {
 }
 
 ///|
-fn wingdings_2_to_unicode(code : Int) -> String? {
+fn wingdings_2_to_unicode(code : Int32) -> String? {
   match code {
     100 => Some("\u{1F667}")
     101 => Some("\u{1F65A}")
@@ -663,7 +663,7 @@ fn wingdings_2_to_unicode(code : Int) -> String? {
 }
 
 ///|
-fn wingdings_3_to_unicode(code : Int) -> String? {
+fn wingdings_3_to_unicode(code : Int32) -> String? {
   match code {
     100 => Some("\u{1F8AA}")
     101 => Some("\u{1F8AB}")
@@ -878,7 +878,7 @@ fn wingdings_3_to_unicode(code : Int) -> String? {
 }
 
 ///|
-fn wingdings_to_unicode(code : Int) -> String? {
+fn wingdings_to_unicode(code : Int32) -> String? {
   match code {
     100 => Some("\u{264E}")
     101 => Some("\u{264F}")

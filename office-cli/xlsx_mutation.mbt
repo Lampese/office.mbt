@@ -50,7 +50,7 @@ fn transaction_warnings(
 }
 
 ///|
-fn xlsx_operation_count_text(count : Int) -> String {
+fn xlsx_operation_count_text(count : Int32) -> String {
   if count == 1 {
     "1 operation"
   } else {

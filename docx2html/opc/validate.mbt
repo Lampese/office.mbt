@@ -60,13 +60,13 @@ const STRICT_DOCUMENT_ROOT : String = "{http://purl.oclc.org/ooxml/wordprocessin
 const DOCX_MAIN_CONTENT_TYPE : String = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"
 
 ///|
-const DEFAULT_MAX_FINDINGS : Int = 1024
+const DEFAULT_MAX_FINDINGS : Int32 = 1024
 
 ///|
-const DEFAULT_MAX_FINDING_CHARS : Int = 2048
+const DEFAULT_MAX_FINDING_CHARS : Int32 = 2048
 
 ///|
-const DEFAULT_MAX_XML_SOURCE_UNITS : Int = 16 * 1024 * 1024
+const DEFAULT_MAX_XML_SOURCE_UNITS : Int32 = 16 * 1024 * 1024
 
 ///|
 /// One markup token per four source units. Post name-interning the corpus
@@ -74,46 +74,46 @@ const DEFAULT_MAX_XML_SOURCE_UNITS : Int = 16 * 1024 * 1024
 /// (docx2html/tests/corpus, #438), so this guard never binds before the
 /// source ceiling on real documents while still capping allocation count for
 /// pathological short-name markup.
-const DEFAULT_MAX_XML_TOKENS : Int = DEFAULT_MAX_XML_SOURCE_UNITS / 4
+const DEFAULT_MAX_XML_TOKENS : Int32 = DEFAULT_MAX_XML_SOURCE_UNITS / 4
 
 ///|
 /// Materialization is capped at the source allowance itself: with resolved
 /// names interned per parse, the corpus measures at most 0.85 materialized
 /// chars per source unit (#438), so real documents sit under this with
 /// headroom while amplified unique-name markup is still refused.
-const DEFAULT_MAX_XML_MATERIALIZED_CHARS : Int = DEFAULT_MAX_XML_SOURCE_UNITS
+const DEFAULT_MAX_XML_MATERIALIZED_CHARS : Int32 = DEFAULT_MAX_XML_SOURCE_UNITS
 
 ///|
-const DEFAULT_MAX_XML_TOKEN_CHARS : Int = 4 * 1024 * 1024
+const DEFAULT_MAX_XML_TOKEN_CHARS : Int32 = 4 * 1024 * 1024
 
 ///|
-const DEFAULT_MAX_ZIP_ENTRIES : Int = 4096
+const DEFAULT_MAX_ZIP_ENTRIES : Int32 = 4096
 
 ///|
-const DEFAULT_MAX_ZIP_PACKAGE_BYTES : Int = 64 * 1024 * 1024
+const DEFAULT_MAX_ZIP_PACKAGE_BYTES : Int32 = 64 * 1024 * 1024
 
 ///|
-const DEFAULT_MAX_ZIP_ENTRY_UNCOMPRESSED_BYTES : Int = 32 * 1024 * 1024
+const DEFAULT_MAX_ZIP_ENTRY_UNCOMPRESSED_BYTES : Int32 = 32 * 1024 * 1024
 
 ///|
-const DEFAULT_MAX_ZIP_TOTAL_UNCOMPRESSED_BYTES : Int = 128 * 1024 * 1024
+const DEFAULT_MAX_ZIP_TOTAL_UNCOMPRESSED_BYTES : Int32 = 128 * 1024 * 1024
 
 ///|
-const DEFAULT_MAX_ZIP_TOTAL_PRESERVED_SOURCE_BYTES : Int = 64 * 1024 * 1024 +
+const DEFAULT_MAX_ZIP_TOTAL_PRESERVED_SOURCE_BYTES : Int32 = 64 * 1024 * 1024 +
   65_535
 
 ///|
-const DEFAULT_MAX_ZIP_ENTRY_NAME_CHARS : Int = 65_535
+const DEFAULT_MAX_ZIP_ENTRY_NAME_CHARS : Int32 = 65_535
 
 ///|
-const DEFAULT_MAX_ZIP_TOTAL_ENTRY_NAME_CHARS : Int = 4 * 1024 * 1024
+const DEFAULT_MAX_ZIP_TOTAL_ENTRY_NAME_CHARS : Int32 = 4 * 1024 * 1024
 
 ///|
 /// ECMA-376 Part 2 §7.3.6 caps the Central Directory File Header—not merely
 /// its File Name field. The four-byte ZIP signature is outside that size; the
 /// remaining fixed fields consume 42 bytes before File Name, Extra, and File
 /// Comment data.
-const MAX_OPC_CENTRAL_DIRECTORY_FILE_HEADER_BYTES : Int = 65_535
+const MAX_OPC_CENTRAL_DIRECTORY_FILE_HEADER_BYTES : Int32 = 65_535
 
 ///|
 fn zip_limit_kind_name(kind : @mbtzip.LimitKind) -> String {
@@ -128,7 +128,7 @@ fn zip_limit_kind_name(kind : @mbtzip.LimitKind) -> String {
 }
 
 ///|
-const MAX_OPC_ZIP_ENTRY_NAME_BYTES_WITHOUT_METADATA : Int = 65_493
+const MAX_OPC_ZIP_ENTRY_NAME_BYTES_WITHOUT_METADATA : Int32 = 65_493
 
 ///|
 /// The resource guard that stopped structural validation. This status is kept
@@ -218,19 +218,19 @@ pub fn DocxValidationReport::main_document_part(
 ///|
 priv struct FindingCollector {
   findings : Array[String]
-  max_findings : Int
-  max_message_chars : Int
-  max_zip_entry_name_chars : Int
-  max_zip_total_entry_name_chars : Int
-  mut zip_entry_name_chars : Int
+  max_findings : Int32
+  max_message_chars : Int32
+  max_zip_entry_name_chars : Int32
+  max_zip_total_entry_name_chars : Int32
+  mut zip_entry_name_chars : Int32
   xml_budget : @xml.XmlReadBudget
   // The caller-configured XML ceilings are retained alongside the budget so a
   // refusal can quote the exact number it hit. `XmlReadBudget` only tracks what
   // is left, and a spent budget cannot say what it started with.
-  max_xml_source_units : Int
-  max_xml_tokens : Int
-  max_xml_materialized_chars : Int
-  max_xml_token_chars : Int
+  max_xml_source_units : Int32
+  max_xml_tokens : Int32
+  max_xml_materialized_chars : Int32
+  max_xml_token_chars : Int32
   cancelled : () -> Bool
   mut truncated : Bool
   mut resource_limit : DocxValidationResourceLimit?
@@ -239,17 +239,17 @@ priv struct FindingCollector {
 
 ///|
 fn FindingCollector::new_with_xml_limits(
-  max_findings : Int,
-  max_message_chars : Int,
-  max_zip_entry_name_chars : Int,
-  max_zip_total_entry_name_chars : Int,
-  max_xml_source_units : Int,
-  max_xml_tokens : Int,
-  max_xml_materialized_chars : Int,
-  max_xml_token_chars : Int,
+  max_findings : Int32,
+  max_message_chars : Int32,
+  max_zip_entry_name_chars : Int32,
+  max_zip_total_entry_name_chars : Int32,
+  max_xml_source_units : Int32,
+  max_xml_tokens : Int32,
+  max_xml_materialized_chars : Int32,
+  max_xml_token_chars : Int32,
   cancelled : () -> Bool,
 ) -> FindingCollector {
-  fn clamp(value : Int) -> Int {
+  fn clamp(value : Int32) -> Int32 {
     if value > 0 {
       value
     } else {
@@ -392,7 +392,7 @@ fn FindingCollector::mark_resource_limit(
 fn FindingCollector::xml_limit_value(
   self : FindingCollector,
   limit : DocxValidationResourceLimit,
-) -> Int? {
+) -> Int32? {
   match limit {
     XmlSourceUnits => Some(self.max_xml_source_units)
     XmlTokens => Some(self.max_xml_tokens)
@@ -465,7 +465,7 @@ fn FindingCollector::report(self : FindingCollector) -> DocxValidationReport {
 }
 
 ///|
-fn valid_finding_text(text : String, limit : Int) -> Bool {
+fn valid_finding_text(text : String, limit : Int32) -> Bool {
   let mut offset = 0
   let mut scalars = 0
   while offset < text.length() {
@@ -490,7 +490,7 @@ fn valid_finding_text(text : String, limit : Int) -> Bool {
 }
 
 ///|
-fn bounded_finding_text(text : String, limit : Int) -> String {
+fn bounded_finding_text(text : String, limit : Int32) -> String {
   if limit <= 0 {
     return ""
   }
@@ -581,19 +581,19 @@ pub fn validate_docx_package(data : BytesView) -> Array[String] {
 /// `truncated=true` means validation stopped after filling the caller's cap.
 pub fn validate_docx_package_limited(
   data : BytesView,
-  max_findings~ : Int,
-  max_message_chars~ : Int,
-  max_zip_package_bytes? : Int = DEFAULT_MAX_ZIP_PACKAGE_BYTES,
-  max_zip_entries? : Int = DEFAULT_MAX_ZIP_ENTRIES,
-  max_zip_entry_uncompressed_bytes? : Int = DEFAULT_MAX_ZIP_ENTRY_UNCOMPRESSED_BYTES,
-  max_zip_total_uncompressed_bytes? : Int = DEFAULT_MAX_ZIP_TOTAL_UNCOMPRESSED_BYTES,
-  max_zip_total_preserved_source_bytes? : Int = DEFAULT_MAX_ZIP_TOTAL_PRESERVED_SOURCE_BYTES,
-  max_zip_entry_name_chars? : Int = DEFAULT_MAX_ZIP_ENTRY_NAME_CHARS,
-  max_zip_total_entry_name_chars? : Int = DEFAULT_MAX_ZIP_TOTAL_ENTRY_NAME_CHARS,
-  max_xml_source_units? : Int = DEFAULT_MAX_XML_SOURCE_UNITS,
-  max_xml_tokens? : Int = DEFAULT_MAX_XML_TOKENS,
-  max_xml_materialized_chars? : Int = DEFAULT_MAX_XML_MATERIALIZED_CHARS,
-  max_xml_token_chars? : Int = DEFAULT_MAX_XML_TOKEN_CHARS,
+  max_findings~ : Int32,
+  max_message_chars~ : Int32,
+  max_zip_package_bytes~ : Int32 = DEFAULT_MAX_ZIP_PACKAGE_BYTES,
+  max_zip_entries~ : Int32 = DEFAULT_MAX_ZIP_ENTRIES,
+  max_zip_entry_uncompressed_bytes~ : Int32 = DEFAULT_MAX_ZIP_ENTRY_UNCOMPRESSED_BYTES,
+  max_zip_total_uncompressed_bytes~ : Int32 = DEFAULT_MAX_ZIP_TOTAL_UNCOMPRESSED_BYTES,
+  max_zip_total_preserved_source_bytes~ : Int32 = DEFAULT_MAX_ZIP_TOTAL_PRESERVED_SOURCE_BYTES,
+  max_zip_entry_name_chars~ : Int32 = DEFAULT_MAX_ZIP_ENTRY_NAME_CHARS,
+  max_zip_total_entry_name_chars~ : Int32 = DEFAULT_MAX_ZIP_TOTAL_ENTRY_NAME_CHARS,
+  max_xml_source_units~ : Int32 = DEFAULT_MAX_XML_SOURCE_UNITS,
+  max_xml_tokens~ : Int32 = DEFAULT_MAX_XML_TOKENS,
+  max_xml_materialized_chars~ : Int32 = DEFAULT_MAX_XML_MATERIALIZED_CHARS,
+  max_xml_token_chars~ : Int32 = DEFAULT_MAX_XML_TOKEN_CHARS,
 ) -> (Array[String], Bool) {
   let report = validate_docx_package_report_limited(
     data,
@@ -620,19 +620,19 @@ pub fn validate_docx_package_limited(
 /// interpolated or truncated into a finding.
 pub fn validate_docx_package_report_limited(
   data : BytesView,
-  max_findings~ : Int,
-  max_message_chars~ : Int,
-  max_zip_package_bytes? : Int = DEFAULT_MAX_ZIP_PACKAGE_BYTES,
-  max_zip_entries? : Int = DEFAULT_MAX_ZIP_ENTRIES,
-  max_zip_entry_uncompressed_bytes? : Int = DEFAULT_MAX_ZIP_ENTRY_UNCOMPRESSED_BYTES,
-  max_zip_total_uncompressed_bytes? : Int = DEFAULT_MAX_ZIP_TOTAL_UNCOMPRESSED_BYTES,
-  max_zip_total_preserved_source_bytes? : Int = DEFAULT_MAX_ZIP_TOTAL_PRESERVED_SOURCE_BYTES,
-  max_zip_entry_name_chars? : Int = DEFAULT_MAX_ZIP_ENTRY_NAME_CHARS,
-  max_zip_total_entry_name_chars? : Int = DEFAULT_MAX_ZIP_TOTAL_ENTRY_NAME_CHARS,
-  max_xml_source_units? : Int = DEFAULT_MAX_XML_SOURCE_UNITS,
-  max_xml_tokens? : Int = DEFAULT_MAX_XML_TOKENS,
-  max_xml_materialized_chars? : Int = DEFAULT_MAX_XML_MATERIALIZED_CHARS,
-  max_xml_token_chars? : Int = DEFAULT_MAX_XML_TOKEN_CHARS,
+  max_findings~ : Int32,
+  max_message_chars~ : Int32,
+  max_zip_package_bytes~ : Int32 = DEFAULT_MAX_ZIP_PACKAGE_BYTES,
+  max_zip_entries~ : Int32 = DEFAULT_MAX_ZIP_ENTRIES,
+  max_zip_entry_uncompressed_bytes~ : Int32 = DEFAULT_MAX_ZIP_ENTRY_UNCOMPRESSED_BYTES,
+  max_zip_total_uncompressed_bytes~ : Int32 = DEFAULT_MAX_ZIP_TOTAL_UNCOMPRESSED_BYTES,
+  max_zip_total_preserved_source_bytes~ : Int32 = DEFAULT_MAX_ZIP_TOTAL_PRESERVED_SOURCE_BYTES,
+  max_zip_entry_name_chars~ : Int32 = DEFAULT_MAX_ZIP_ENTRY_NAME_CHARS,
+  max_zip_total_entry_name_chars~ : Int32 = DEFAULT_MAX_ZIP_TOTAL_ENTRY_NAME_CHARS,
+  max_xml_source_units~ : Int32 = DEFAULT_MAX_XML_SOURCE_UNITS,
+  max_xml_tokens~ : Int32 = DEFAULT_MAX_XML_TOKENS,
+  max_xml_materialized_chars~ : Int32 = DEFAULT_MAX_XML_MATERIALIZED_CHARS,
+  max_xml_token_chars~ : Int32 = DEFAULT_MAX_XML_TOKEN_CHARS,
 ) -> DocxValidationReport {
   let findings = FindingCollector::new_with_xml_limits(
     max_findings,
@@ -720,15 +720,15 @@ pub fn validate_docx_archive(archive : @mbtzip.Archive) -> Array[String] {
 /// Original ZIP header layout is checked only by the package-byte entry points.
 pub fn validate_docx_archive_limited(
   archive : @mbtzip.Archive,
-  max_findings~ : Int,
-  max_message_chars~ : Int,
-  max_zip_entry_name_chars? : Int = DEFAULT_MAX_ZIP_ENTRY_NAME_CHARS,
-  max_zip_total_entry_name_chars? : Int = DEFAULT_MAX_ZIP_TOTAL_ENTRY_NAME_CHARS,
-  max_xml_source_units? : Int = DEFAULT_MAX_XML_SOURCE_UNITS,
-  max_xml_tokens? : Int = DEFAULT_MAX_XML_TOKENS,
-  max_xml_materialized_chars? : Int = DEFAULT_MAX_XML_MATERIALIZED_CHARS,
-  max_xml_token_chars? : Int = DEFAULT_MAX_XML_TOKEN_CHARS,
-  cancelled? : () -> Bool = () => false,
+  max_findings~ : Int32,
+  max_message_chars~ : Int32,
+  max_zip_entry_name_chars~ : Int32 = DEFAULT_MAX_ZIP_ENTRY_NAME_CHARS,
+  max_zip_total_entry_name_chars~ : Int32 = DEFAULT_MAX_ZIP_TOTAL_ENTRY_NAME_CHARS,
+  max_xml_source_units~ : Int32 = DEFAULT_MAX_XML_SOURCE_UNITS,
+  max_xml_tokens~ : Int32 = DEFAULT_MAX_XML_TOKENS,
+  max_xml_materialized_chars~ : Int32 = DEFAULT_MAX_XML_MATERIALIZED_CHARS,
+  max_xml_token_chars~ : Int32 = DEFAULT_MAX_XML_TOKEN_CHARS,
+  cancelled~ : () -> Bool = () => false,
 ) -> (Array[String], Bool) {
   let report = validate_docx_archive_report_limited(
     archive,
@@ -751,15 +751,15 @@ pub fn validate_docx_archive_limited(
 /// Original ZIP header layout is checked only by the package-byte entry points.
 pub fn validate_docx_archive_report_limited(
   archive : @mbtzip.Archive,
-  max_findings~ : Int,
-  max_message_chars~ : Int,
-  max_zip_entry_name_chars? : Int = DEFAULT_MAX_ZIP_ENTRY_NAME_CHARS,
-  max_zip_total_entry_name_chars? : Int = DEFAULT_MAX_ZIP_TOTAL_ENTRY_NAME_CHARS,
-  max_xml_source_units? : Int = DEFAULT_MAX_XML_SOURCE_UNITS,
-  max_xml_tokens? : Int = DEFAULT_MAX_XML_TOKENS,
-  max_xml_materialized_chars? : Int = DEFAULT_MAX_XML_MATERIALIZED_CHARS,
-  max_xml_token_chars? : Int = DEFAULT_MAX_XML_TOKEN_CHARS,
-  cancelled? : () -> Bool = () => false,
+  max_findings~ : Int32,
+  max_message_chars~ : Int32,
+  max_zip_entry_name_chars~ : Int32 = DEFAULT_MAX_ZIP_ENTRY_NAME_CHARS,
+  max_zip_total_entry_name_chars~ : Int32 = DEFAULT_MAX_ZIP_TOTAL_ENTRY_NAME_CHARS,
+  max_xml_source_units~ : Int32 = DEFAULT_MAX_XML_SOURCE_UNITS,
+  max_xml_tokens~ : Int32 = DEFAULT_MAX_XML_TOKENS,
+  max_xml_materialized_chars~ : Int32 = DEFAULT_MAX_XML_MATERIALIZED_CHARS,
+  max_xml_token_chars~ : Int32 = DEFAULT_MAX_XML_TOKEN_CHARS,
+  cancelled~ : () -> Bool = () => false,
 ) -> DocxValidationReport {
   let findings = FindingCollector::new_with_xml_limits(
     max_findings, max_message_chars, max_zip_entry_name_chars, max_zip_total_entry_name_chars,

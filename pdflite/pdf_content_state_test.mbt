@@ -1,5 +1,5 @@
 ///|
-fn content_state_json_int_for_test(value : Int) -> Json {
+fn content_state_json_int_for_test(value : Int32) -> Json {
   Json::number(value.to_double(), repr=value.to_string())
 }
 

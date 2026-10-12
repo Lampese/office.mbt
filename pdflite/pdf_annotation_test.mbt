@@ -48,12 +48,12 @@ fn annotation_cpdf_helper_document_for_test() -> @pdflite.PdfDocument raise {
 }
 
 ///|
-fn annotation_json_int_for_test(value : Int) -> Json {
+fn annotation_json_int_for_test(value : Int32) -> Json {
   Json::number(value.to_double(), repr=value.to_string())
 }
 
 ///|
-fn annotation_json_pdf_int_for_test(value : Int) -> Json {
+fn annotation_json_pdf_int_for_test(value : Int32) -> Json {
   Json::object(Map([("I", annotation_json_int_for_test(value))]))
 }
 

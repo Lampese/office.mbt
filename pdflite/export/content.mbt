@@ -5,7 +5,7 @@
 /// A content stream writer.
 priv struct Content {
   buf : @buffer.Buffer
-  mut depth : Int
+  mut depth : Int32
 }
 
 ///|
@@ -100,9 +100,9 @@ priv struct ContentBuilder {
   mut active_marked_content : Bool
   /// For the content stream of a layer (a form XObject) with tagged content:
   /// its stream ID (see `Identifier::StreamContent`).
-  mut tag_stream : Int?
+  mut tag_stream : Int32?
   /// The number of marked content IDs in the stream.
-  mut tag_mcids : Int
+  mut tag_mcids : Int32
 }
 
 ///|
@@ -176,7 +176,7 @@ fn ContentBuilder::start_marked_content(
 fn ContentBuilder::start_marked_content_with_properties(
   self : ContentBuilder,
   sc : SerializeContext,
-  mcid : Int?,
+  mcid : Int32?,
   tag : ContentTag,
 ) -> Unit {
   if self.active_marked_content {
@@ -495,7 +495,7 @@ fn ContentBuilder::draw_xobject_by_reference(
   self : ContentBuilder,
   sc : SerializeContext,
   bbox : Rect,
-  r : Int,
+  r : Int32,
 ) -> Unit {
   self.apply_isolated_op(sc, sb => sb.expand_bbox(bbox), sb => {
     let name = sb.rd.register(XObject, r)

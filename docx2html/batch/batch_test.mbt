@@ -513,7 +513,7 @@ test "review round 3: row_span is bounded by the remaining rows, like the writer
 
 ///|
 test "review round 2: the ops cap is enforced at 10000" {
-  fn script_with_ops(count : Int) -> String {
+  fn script_with_ops(count : Int32) -> String {
     let builder = StringBuilder()
     builder.write_string(
       (

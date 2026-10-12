@@ -7,8 +7,8 @@
 /// their bytes.
 pub(all) struct ToGet {
   input : @core.ByteCursor
-  position : Int
-  length : Int
+  position : Int32
+  length : Int32
   crypt : PdfStreamDataCrypt
 } derive(Debug, Eq, ToJson)
 
@@ -31,8 +31,8 @@ pub(all) enum PdfStreamData {
 /// and key length; AES-V3 stores the already derived file key.
 pub(all) enum PdfStreamDataCrypt {
   PdfStreamDataNoCrypt
-  PdfStreamDataArc4Decrypt(Int, Int, @core.PdfBytes, Int)
-  PdfStreamDataAesV2Decrypt(Int, Int, @core.PdfBytes, Int)
+  PdfStreamDataArc4Decrypt(Int32, Int32, @core.PdfBytes, Int32)
+  PdfStreamDataAesV2Decrypt(Int32, Int32, @core.PdfBytes, Int32)
   PdfStreamDataAesV3Decrypt(@core.PdfBytes)
 } derive(Debug, Eq, ToJson)
 
@@ -63,7 +63,7 @@ pub(all) struct PdfStream {
 pub(all) enum PdfObject {
   PdfNull
   PdfBoolean(Bool)
-  PdfInteger(Int)
+  PdfInteger(Int32)
   PdfReal(Double)
   PdfExactReal(Double)
   PdfString(@core.PdfBytes)
@@ -71,5 +71,5 @@ pub(all) enum PdfObject {
   PdfArray(Array[PdfObject])
   PdfDictionary(Array[(@core.PdfName, PdfObject)])
   PdfStreamObject(PdfStream)
-  PdfIndirect(Int)
+  PdfIndirect(Int32)
 } derive(Debug, Eq, ToJson)

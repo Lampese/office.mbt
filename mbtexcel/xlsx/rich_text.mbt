@@ -10,11 +10,11 @@ pub(all) struct RichTextFont {
   underline : String?
   size : Double?
   color : String?
-  color_theme : Int?
-  color_indexed : Int?
+  color_theme : Int32?
+  color_indexed : Int32?
   color_tint : Double?
-  charset : Int?
-  family_number : Int?
+  charset : Int32?
+  family_number : Int32?
   scheme : String?
   vert_align : String?
   family : String?
@@ -30,7 +30,7 @@ pub(all) struct RichTextRun {
 let max_cell_chars = 32767
 
 ///|
-fn count_utf16_units(text : StringView) -> Int {
+fn count_utf16_units(text : StringView) -> Int32 {
   let mut count = 0
   for c in text {
     let units = if c.to_int() > 0xffff { 2 } else { 1 }
@@ -40,7 +40,7 @@ fn count_utf16_units(text : StringView) -> Int {
 }
 
 ///|
-fn truncate_utf16_units(text : StringView, limit : Int) -> String {
+fn truncate_utf16_units(text : StringView, limit : Int32) -> String {
   if limit <= 0 {
     return ""
   }
@@ -67,7 +67,7 @@ fn rich_text_plain_text(runs : ArrayView[RichTextRun]) -> String {
 }
 
 ///|
-fn rich_text_total_units(runs : ArrayView[RichTextRun]) -> Int {
+fn rich_text_total_units(runs : ArrayView[RichTextRun]) -> Int32 {
   let mut total = 0
   for run in runs {
     total = total + count_utf16_units(run.text)
@@ -78,7 +78,7 @@ fn rich_text_total_units(runs : ArrayView[RichTextRun]) -> Int {
 ///|
 fn rich_text_truncate_runs(
   runs : ArrayView[RichTextRun],
-  limit : Int,
+  limit : Int32,
 ) -> Array[RichTextRun] {
   let truncated : Array[RichTextRun] = []
   let mut remaining = limit

@@ -39,7 +39,7 @@ priv struct FlatRun {
   face : @fonts.FaceMetrics
   /// The face characters `face` lacks are measured, sized and drawn in.
   fallback_face : @fonts.FaceMetrics
-  end : Int // global code-unit offset one past this run's text
+  end : Int32 // global code-unit offset one past this run's text
 }
 
 ///|
@@ -251,8 +251,8 @@ fn resolve_tabs(
   advances : Array[Double],
   ruler : TabRuler,
   origin : Double,
-  from : Int,
-  to : Int,
+  from : Int32,
+  to : Int32,
 ) -> Unit {
   let mut pen = origin
   for i in from..<to {
@@ -306,7 +306,7 @@ fn resolve_tabs(
 ///|
 /// Whether `[from, to)` holds a tab, so lines without one skip the
 /// re-resolve entirely.
-fn has_tab(text : String, from : Int, to : Int) -> Bool {
+fn has_tab(text : String, from : Int32, to : Int32) -> Bool {
   for i in from..<to {
     if text[i].to_int() == 0x09 {
       return true
@@ -321,8 +321,8 @@ priv struct Segment {
   face : @fonts.FaceMetrics
   fallback_face : @fonts.FaceMetrics
   used_fallback : Bool
-  start : Int
-  end : Int
+  start : Int32
+  end : Int32
 }
 
 ///|
@@ -380,7 +380,7 @@ fn split_segments(
 ///|
 /// Code units of `line` that are actually rendered: its range minus the
 /// trailing hanging-space run.
-fn visible_length(text : String, line : @linebreak.LineRange) -> Int {
+fn visible_length(text : String, line : @linebreak.LineRange) -> Int32 {
   let mut end = line.end
   while end > line.start && text[end - 1].to_int() == 0x20 {
     end -= 1
@@ -389,7 +389,7 @@ fn visible_length(text : String, line : @linebreak.LineRange) -> Int {
 }
 
 ///|
-fn count_spaces(text : String, start : Int, end : Int) -> Int {
+fn count_spaces(text : String, start : Int32, end : Int32) -> Int32 {
   let mut n = 0
   for i in start..<end {
     if text[i].to_int() == 0x20 {

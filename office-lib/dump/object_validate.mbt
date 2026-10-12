@@ -6,8 +6,8 @@
 /// the failing op.
 priv enum ReplayOutcome {
   Replayed(@xlsx.Workbook)
-  FailedAt(Int, String)
-  ChunkParseFailed(Int, Int, String)
+  FailedAt(Int32, String)
+  ChunkParseFailed(Int32, Int32, String)
 }
 
 ///|

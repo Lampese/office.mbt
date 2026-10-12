@@ -3,7 +3,7 @@
 /// tag text without the leading `<` and without the closing `>`.
 ///
 /// Example: `<a b="c">` -> `a b="c"`.
-fn xml_open_tag_end_from(xml : StringView, start : Int) -> Int? {
+fn xml_open_tag_end_from(xml : StringView, start : Int32) -> Int32? {
   let mut index = start
   let mut quote : UInt16? = None
   while index < xml.length() {
@@ -33,8 +33,8 @@ fn is_xml_open_tag_boundary(unit : UInt16) -> Bool {
 fn find_xml_open_tag_start_from(
   xml : StringView,
   tag_name : StringView,
-  start_at : Int,
-) -> Int? {
+  start_at : Int32,
+) -> Int32? {
   let mut start = start_at.max(0)
   let name_length = tag_name.length()
   while start + 1 + name_length <= xml.length() {
@@ -58,7 +58,7 @@ fn find_xml_open_tag_start_from(
 }
 
 ///|
-fn find_xml_open_tag_start(xml : StringView, tag_name : StringView) -> Int? {
+fn find_xml_open_tag_start(xml : StringView, tag_name : StringView) -> Int32? {
   find_xml_open_tag_start_from(xml, tag_name, 0)
 }
 
@@ -68,8 +68,8 @@ fn find_xml_open_tag_start(xml : StringView, tag_name : StringView) -> Int? {
 fn find_xml_close_tag_from(
   xml : StringView,
   tag_name : StringView,
-  start_at : Int,
-) -> (Int, Int)? {
+  start_at : Int32,
+) -> (Int32, Int32)? {
   let mut start = start_at.max(0)
   let name_length = tag_name.length()
   while start + 2 + name_length <= xml.length() {

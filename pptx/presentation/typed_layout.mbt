@@ -34,7 +34,7 @@
 /// slide-side placeholder the accessor appends (which inherits it).
 pub struct PlaceholderSpec {
   kind : @slide.PlaceholderType
-  idx : Int
+  idx : Int32
   position : @slide.Transform
 }
 

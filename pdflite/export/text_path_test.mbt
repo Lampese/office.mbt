@@ -474,7 +474,7 @@ test "Type 3 codes beyond 255 go on in a second font" {
 ///|
 test "a font that is given another color glyph hook asks it about every glyph again" {
   let font = test_font()
-  let hook = (a : Int) => @export.ColorGlyphs::{
+  let hook = (a : Int32) => @export.ColorGlyphs::{
     is_color: g => g == a,
     draw: (_, _, _) => false,
   }

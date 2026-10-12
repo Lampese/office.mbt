@@ -22,8 +22,8 @@ fn run_query(
   workbook : @xlsx.Workbook,
   sheet : String,
   selector : String,
-  range? : String = "",
-) -> (Int, Array[String]) raise {
+  range~ : String = "",
+) -> (Int32, Array[String]) raise {
   let payload = @inspect.query(workbook, sheet, selector, file="t.xlsx", range~)
   let map = match payload {
     Object(map) => map

@@ -459,7 +459,7 @@ fn parse_connector(r : @xml.XmlReader) -> Connector raise SlideError {
 fn parse_nv_cxn_sp_pr(
   r : @xml.XmlReader,
   parent_extension : Array[@xml.XmlElement],
-) -> (Int, String, ConnectionEnd?, ConnectionEnd?) raise SlideError {
+) -> (Int32, String, ConnectionEnd?, ConnectionEnd?) raise SlideError {
   let mut id = 0
   let mut name = ""
   let mut start : ConnectionEnd? = None
@@ -958,7 +958,7 @@ fn collect_text_until_end(
 fn parse_nv_sp_pr(
   r : @xml.XmlReader,
   parent_extension : Array[@xml.XmlElement],
-) -> (Int, String, Placeholder?) raise SlideError {
+) -> (Int32, String, Placeholder?) raise SlideError {
   let mut id = 0
   let mut name = ""
   let mut placeholder : Placeholder? = None
@@ -1289,7 +1289,7 @@ fn optional_attr(attrs : Array[(@xml.QName, String)], name : String) -> String {
 fn parse_int_attr(
   attrs : Array[(@xml.QName, String)],
   name : String,
-) -> Int raise SlideError {
+) -> Int32 raise SlideError {
   let raw = require_attr(attrs, name)
   match @oxml.parse_signed_int(raw) {
     Some(n) => n
@@ -1301,8 +1301,8 @@ fn parse_int_attr(
 fn parse_int_attr_default(
   attrs : Array[(@xml.QName, String)],
   name : String,
-  default : Int,
-) -> Int {
+  default : Int32,
+) -> Int32 {
   for kv in attrs {
     if kv.0.local_name == name && kv.0.uri == "" {
       return @oxml.parse_signed_int(kv.1).unwrap_or(default)

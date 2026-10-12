@@ -77,7 +77,7 @@ fn pdflite_cmd_metadata_command() -> @argparse.Command {
 ///|
 async fn pdflite_cmd_metadata_execute(
   options : @argparse.Matches,
-  passwords? : PdflitePasswords = { user: None, owner: None, },
+  passwords~ : PdflitePasswords = { user: None, owner: None, },
 ) -> Unit {
   let (action, args) = pdflite_cmd_action(options)
   let input = pdflite_cmd_single_value(args, "input")
@@ -156,8 +156,8 @@ async fn pdflite_cmd_metadata_execute(
 ///|
 async fn pdflite_cmd_metadata_run(
   options : @argparse.Matches,
-  passwords? : PdflitePasswords = { user: None, owner: None, },
-) -> Int {
+  passwords~ : PdflitePasswords = { user: None, owner: None, },
+) -> Int32 {
   pdflite_cmd_metadata_execute(options, passwords~) catch {
     err => return pdflite_cmd_operation_error(err)
   }

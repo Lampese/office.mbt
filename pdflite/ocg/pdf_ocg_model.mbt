@@ -58,7 +58,7 @@ pub(all) enum PdfOcgEvent {
 /// `category` stores the PDF usage-category names for the application.
 pub(all) struct PdfOcgAppDict {
   event : PdfOcgEvent
-  ocgs : Array[Int]
+  ocgs : Array[Int32]
   category : Array[PdfName]
 } derive(Debug, Eq, ToJson)
 
@@ -72,14 +72,14 @@ pub(all) struct PdfOcgConfig {
   name : PdfBytes?
   creator : PdfBytes?
   base_state : PdfOcgState
-  on : Array[Int]
-  off : Array[Int]
+  on : Array[Int32]
+  off : Array[Int32]
   intent : Array[PdfName]
   usage_applications : Array[PdfOcgAppDict]
-  order : Array[(PdfBytes?, Array[Int])]?
+  order : Array[(PdfBytes?, Array[Int32])]?
   list_mode : PdfOcgListMode
-  radio_button_groups : Array[Array[Int]]?
-  locked : Array[Int]
+  radio_button_groups : Array[Array[Int32]]?
+  locked : Array[Int32]
 } derive(Debug, Eq, ToJson)
 
 ///|
@@ -89,7 +89,7 @@ pub(all) struct PdfOcgConfig {
 /// group dictionary. `default_config` maps `/D`; `configs` maps alternate
 /// entries from `/Configs`.
 pub(all) struct PdfOptionalContent {
-  ocgs : Array[(Int, PdfOcg)]
+  ocgs : Array[(Int32, PdfOcg)]
   default_config : PdfOcgConfig
   configs : Array[PdfOcgConfig]
 } derive(Debug, Eq, ToJson)

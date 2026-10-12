@@ -50,10 +50,10 @@ fn pdf_image_model(
 fn pdf_image_item(
   data : Bytes,
   mime : String,
-  x_pt? : Double = 10,
-  y_pt? : Double = 20,
-  w_pt? : Double = 200,
-  h_pt? : Double = 50,
+  x_pt~ : Double = 10,
+  y_pt~ : Double = 20,
+  w_pt~ : Double = 200,
+  h_pt~ : Double = 50,
 ) -> @pagelayout.PageItem {
   Image({ x_pt, y_pt, w_pt, h_pt, data, mime, })
 }

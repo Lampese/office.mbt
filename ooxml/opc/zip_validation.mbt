@@ -1,12 +1,12 @@
 ///|
 // These field readers are used only after their enclosing fixed-size header
 // has been checked against the input bounds.
-fn zip_header_u16(data : BytesView, offset : Int) -> Int {
+fn zip_header_u16(data : BytesView, offset : Int32) -> Int32 {
   data[offset].to_int() | (data[offset + 1].to_int() << 8)
 }
 
 ///|
-fn zip_header_u32(data : BytesView, offset : Int) -> UInt {
+fn zip_header_u32(data : BytesView, offset : Int32) -> UInt32 {
   data[offset].to_uint() |
   (data[offset + 1].to_uint() << 8) |
   (data[offset + 2].to_uint() << 16) |
@@ -14,7 +14,7 @@ fn zip_header_u32(data : BytesView, offset : Int) -> UInt {
 }
 
 ///|
-fn zip_header_index(value : UInt) -> Int raise OpcError {
+fn zip_header_index(value : UInt32) -> Int32 raise OpcError {
   guard value <= 0x7fffffffU else {
     raise MalformedPackage("ZIP directory value exceeds the supported range")
   }
@@ -22,7 +22,10 @@ fn zip_header_index(value : UInt) -> Int raise OpcError {
 }
 
 ///|
-fn zip_header_u64_index(data : BytesView, offset : Int) -> Int raise OpcError {
+fn zip_header_u64_index(
+  data : BytesView,
+  offset : Int32,
+) -> Int32 raise OpcError {
   guard zip_header_u32(data, offset + 4) == 0U else {
     raise MalformedPackage("ZIP64 directory value exceeds the supported range")
   }
@@ -30,7 +33,7 @@ fn zip_header_u64_index(data : BytesView, offset : Int) -> Int raise OpcError {
 }
 
 ///|
-fn zip_header_end(data : BytesView) -> Int raise OpcError {
+fn zip_header_end(data : BytesView) -> Int32 raise OpcError {
   guard data.length() >= 22 else {
     raise MalformedPackage("ZIP end of central directory is missing")
   }
@@ -48,7 +51,7 @@ fn zip_header_end(data : BytesView) -> Int raise OpcError {
 // Return (entry count, directory size, directory offset, directory end).
 fn zip_header_directory(
   data : BytesView,
-) -> (Int, Int, Int, Int) raise OpcError {
+) -> (Int32, Int32, Int32, Int32) raise OpcError {
   let end = zip_header_end(data)
   guard zip_header_u16(data, end + 4) == 0 && zip_header_u16(data, end + 6) == 0 else {
     raise MalformedPackage("multi-disk ZIP packages are not supported")
@@ -122,7 +125,7 @@ fn zip_header_directory(
 /// scan, for every entry, and after the scan; its errors propagate unchanged.
 pub fn validate_zip_headers(
   data : BytesView,
-  checkpoint? : () -> Unit raise = () => (),
+  checkpoint~ : () -> Unit raise = () => (),
 ) -> Unit raise {
   checkpoint()
   let (entries, size, offset, boundary) = zip_header_directory(data)

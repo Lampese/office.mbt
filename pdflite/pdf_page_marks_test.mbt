@@ -23,7 +23,7 @@ fn page_marks_stream_for_test(
 ///|
 fn page_marks_page_for_test(
   ops : ArrayView[@content.PdfContentOp],
-  rest? : @syntax.PdfObject = PdfDictionary([]),
+  rest~ : @syntax.PdfObject = PdfDictionary([]),
 ) -> @page.PdfPage {
   {
     content: [page_marks_stream_for_test(ops)],

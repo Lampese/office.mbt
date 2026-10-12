@@ -1,6 +1,6 @@
 ///|
 pub fn demo_secure_bytes(
-  password? : String = "moonbit",
+  password~ : String = "moonbit",
 ) -> Bytes raise @xlsx.XlsxError {
   let workbook = @excel.new_workbook()
   let sheet = workbook.add_sheet("Secure")

@@ -242,7 +242,7 @@ fn one_graphic(
 
 ///|
 /// How often `needle` occurs in `haystack`.
-fn occurrences(haystack : String, needle : String) -> Int {
+fn occurrences(haystack : String, needle : String) -> Int32 {
   let mut n = 0
   let mut rest = haystack[:]
   while rest.find(needle) is Some(i) {
@@ -658,7 +658,7 @@ test "a gradient's pattern matrix survives a small transformation" {
 /// A 100 by 60 rectangle filled with `gradient`, red to blue.
 fn gradient_rectangle(
   shape : @pagelayout.GradientShape,
-  transform? : @pagelayout.Matrix = @pagelayout.identity,
+  transform~ : @pagelayout.Matrix = @pagelayout.identity,
 ) -> @pagelayout.PageModel {
   graphic_model([
     Path({

@@ -1,9 +1,9 @@
 ///|
 fn rgb_image(
-  key? : String = "rgb",
-  alpha? : Bytes? = None,
-  interpolate? : Bool = false,
-  icc? : Bytes? = None,
+  key~ : String = "rgb",
+  alpha~ : Bytes? = None,
+  interpolate~ : Bool = false,
+  icc~ : Bytes? = None,
 ) -> @export.Image {
   {
     key,
@@ -238,13 +238,13 @@ test "image validation" {
 ///|
 /// A PNG passthrough image from unfiltered scanlines (filter type 0).
 fn png_image(
-  width : Int,
-  rows : Array[Array[Int]],
+  width : Int32,
+  rows : Array[Array[Int32]],
   colorspace : @export.ImageColorspace,
-  colors : Int,
-  bit_depth : Int,
-  palette? : Bytes? = None,
-  icc? : Bytes? = None,
+  colors : Int32,
+  bit_depth : Int32,
+  palette~ : Bytes? = None,
+  icc~ : Bytes? = None,
 ) -> @export.Image {
   let raw : Array[Byte] = []
   for row in rows {

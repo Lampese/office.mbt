@@ -177,8 +177,8 @@ priv struct FormulaCriteria {
 ///|
 priv struct CalcContext {
   visiting : Map[String, Bool]
-  mut depth : Int
-  max_depth : Int
+  mut depth : Int32
+  max_depth : Int32
   mut current_sheet : String
   mut current_ref : String
   use_1904_dates : Bool
@@ -188,8 +188,8 @@ priv struct CalcContext {
 ///|
 priv struct RangeValues {
   values : Array[FormulaValue]
-  rows : Int
-  cols : Int
+  rows : Int32
+  cols : Int32
 }
 
 ///|
@@ -200,6 +200,6 @@ priv struct RomanNumeral {
 
 ///|
 priv struct CellIndex {
-  row : Int
-  col : Int
+  row : Int32
+  col : Int32
 }

@@ -10,38 +10,38 @@
 /// (`FloatingDecimal32`).
 #valtype
 priv struct FloatingDecimal32 {
-  mantissa : UInt
+  mantissa : UInt32
   /// The decimal exponent's range is -45 to 38 inclusive.
-  exponent : Int
+  exponent : Int32
 }
 
 ///|
 /// `FLOAT_POW5_INV_BITCOUNT` and `FLOAT_POW5_BITCOUNT`: the bit counts of
 /// the double tables less the 64 bits that are not kept.
-const RYU_FLOAT_POW5_BITCOUNT : Int = 61
+const RYU_FLOAT_POW5_BITCOUNT : Int32 = 61
 
 ///|
 /// `e == 0 ? 1 : ceil(log_2(5^e))`. In signed arithmetic, which holds for
 /// what `ryu_f2d` asks (`0 <= e <= 47`; the crate's unsigned version up to
 /// 3528).
-fn ryu_pow5bits(e : Int) -> Int {
+fn ryu_pow5bits(e : Int32) -> Int32 {
   ((e * 1217359) >> 19) + 1
 }
 
 ///|
 /// `floor(log_10(2^e))`, for what `ryu_f2d` asks (`0 <= e <= 102`).
-fn ryu_log10_pow2(e : Int) -> Int {
+fn ryu_log10_pow2(e : Int32) -> Int32 {
   (e * 78913) >> 18
 }
 
 ///|
 /// `floor(log_10(5^e))`, for what `ryu_f2d` asks (`0 <= e <= 151`).
-fn ryu_log10_pow5(e : Int) -> Int {
+fn ryu_log10_pow5(e : Int32) -> Int32 {
   (e * 732923) >> 20
 }
 
 ///|
-fn ryu_multiple_of_power_of_5_32(value : UInt, p : Int) -> Bool {
+fn ryu_multiple_of_power_of_5_32(value : UInt32, p : Int32) -> Bool {
   // `pow5factor_32(value) >= p`
   let mut value = value
   let mut count = 0
@@ -53,12 +53,12 @@ fn ryu_multiple_of_power_of_5_32(value : UInt, p : Int) -> Bool {
 }
 
 ///|
-fn ryu_multiple_of_power_of_2_32(value : UInt, p : Int) -> Bool {
+fn ryu_multiple_of_power_of_2_32(value : UInt32, p : Int32) -> Bool {
   (value & ((1U << p) - 1U)) == 0U
 }
 
 ///|
-fn ryu_mul_shift_32(m : UInt, factor : UInt64, shift : Int) -> UInt {
+fn ryu_mul_shift_32(m : UInt32, factor : UInt64, shift : Int32) -> UInt32 {
   let factor_lo = factor & 0xFFFFFFFFUL
   let factor_hi = factor >> 32
   let m = UInt64::extend_uint(m)
@@ -69,7 +69,7 @@ fn ryu_mul_shift_32(m : UInt, factor : UInt64, shift : Int) -> UInt {
 }
 
 ///|
-fn ryu_mul_pow5_inv_div_pow2(m : UInt, q : Int, j : Int) -> UInt {
+fn ryu_mul_pow5_inv_div_pow2(m : UInt32, q : Int32, j : Int32) -> UInt32 {
   // The inverse multipliers are defined as [2^x / 5^y] + 1; the upper 64
   // bits from the double lookup table are the correct bits for [2^x / 5^y],
   // so we have to add 1 here.
@@ -77,14 +77,14 @@ fn ryu_mul_pow5_inv_div_pow2(m : UInt, q : Int, j : Int) -> UInt {
 }
 
 ///|
-fn ryu_mul_pow5_div_pow2(m : UInt, i : Int, j : Int) -> UInt {
+fn ryu_mul_pow5_div_pow2(m : UInt32, i : Int32, j : Int32) -> UInt32 {
   ryu_mul_shift_32(m, ryu_pow5_split_hi[i], j)
 }
 
 ///|
 /// The shortest decimal of the finite, non-zero `f32` with the mantissa and
 /// exponent fields `ieee_mantissa` and `ieee_exponent` (`f2d`).
-fn ryu_f2d(ieee_mantissa : UInt, ieee_exponent : UInt) -> FloatingDecimal32 {
+fn ryu_f2d(ieee_mantissa : UInt32, ieee_exponent : UInt32) -> FloatingDecimal32 {
   // We subtract 2 so that the bounds computation has 2 additional bits.
   let e2 = if ieee_exponent == 0U {
     1 - 127 - 23 - 2
@@ -102,7 +102,7 @@ fn ryu_f2d(ieee_mantissa : UInt, ieee_exponent : UInt) -> FloatingDecimal32 {
   // Step 2: Determine the interval of valid decimal representations.
   let mv = 4U * m2
   let mp = 4U * m2 + 2U
-  let mm_shift : UInt = if ieee_mantissa != 0U || ieee_exponent <= 1U {
+  let mm_shift : UInt32 = if ieee_mantissa != 0U || ieee_exponent <= 1U {
     1U
   } else {
     0U

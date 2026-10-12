@@ -5,13 +5,13 @@
 // `office batch FILE SCRIPT --out OUT` mutation path is unchanged.
 
 ///|
-let office_docx_author_max_script_bytes : Int = 4 * 1024 * 1024
+let office_docx_author_max_script_bytes : Int32 = 4 * 1024 * 1024
 
 ///|
-let office_docx_author_max_image_bytes : Int = 8 * 1024 * 1024
+let office_docx_author_max_image_bytes : Int32 = 8 * 1024 * 1024
 
 ///|
-let office_docx_author_max_total_image_bytes : Int = 32 * 1024 * 1024
+let office_docx_author_max_total_image_bytes : Int32 = 32 * 1024 * 1024
 
 ///|
 fn docx_create_result_json(

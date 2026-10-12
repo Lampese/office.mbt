@@ -60,8 +60,8 @@ fn load_outlines() -> Unit {
 /// `italic` of the `@fonts.FaceMetrics` that `@fonts.face` returned.
 pub fn outline_sfnt(
   family : String,
-  bold? : Bool = false,
-  italic? : Bool = false,
+  bold~ : Bool = false,
+  italic~ : Bool = false,
 ) -> Bytes? {
   load_outlines()
   match outline_cache.get(outline_key(family, bold, italic)) {

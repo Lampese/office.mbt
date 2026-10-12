@@ -51,9 +51,9 @@ fn addtext_layout_bounds_for_test() -> @geometry.PdfRectangle {
 
 ///|
 fn addtext_layout_bookmark_for_test(
-  level : Int,
+  level : Int32,
   text : String,
-  page_object : Int,
+  page_object : Int32,
 ) -> @bookmark.PdfBookmark {
   {
     level,

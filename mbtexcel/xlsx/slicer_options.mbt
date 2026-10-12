@@ -6,8 +6,8 @@ struct SlicerOptions {
   table_name : String
   mut caption : String
   mut macro_name : String
-  mut width : Int
-  mut height : Int
+  mut width : Int32
+  mut height : Int32
   mut display_header : Bool?
   mut item_desc : Bool
   mut format : GraphicOptions
@@ -58,8 +58,8 @@ pub fn SlicerOptions::set_macro_name(
 ///|
 pub fn SlicerOptions::set_size(
   self : SlicerOptions,
-  width : Int,
-  height : Int,
+  width : Int32,
+  height : Int32,
 ) -> Unit raise XlsxError {
   if width <= 0 || height <= 0 {
     raise InvalidSheetOperation(msg="slicer size must be > 0")

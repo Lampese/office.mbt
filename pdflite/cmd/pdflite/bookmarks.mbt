@@ -44,7 +44,7 @@ fn pdflite_cmd_bookmarks_command() -> @argparse.Command {
 ///|
 async fn pdflite_cmd_bookmarks_execute(
   options : @argparse.Matches,
-  passwords? : PdflitePasswords = { user: None, owner: None, },
+  passwords~ : PdflitePasswords = { user: None, owner: None, },
 ) -> Unit {
   let (action, args) = pdflite_cmd_action(options)
   let document = pdflite_cmd_load(
@@ -84,8 +84,8 @@ async fn pdflite_cmd_bookmarks_execute(
 ///|
 async fn pdflite_cmd_bookmarks_run(
   options : @argparse.Matches,
-  passwords? : PdflitePasswords = { user: None, owner: None, },
-) -> Int {
+  passwords~ : PdflitePasswords = { user: None, owner: None, },
+) -> Int32 {
   pdflite_cmd_bookmarks_execute(options, passwords~) catch {
     err => return pdflite_cmd_operation_error(err)
   }

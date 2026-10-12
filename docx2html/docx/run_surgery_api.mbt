@@ -15,7 +15,7 @@ pub struct RunTextReceipt {
   priv at_relative : String
   priv replaced_text : String
   priv result_text : String
-  priv edit_count : Int
+  priv edit_count : Int32
 }
 
 ///|
@@ -65,7 +65,7 @@ pub fn RunTextReceipt::result_text(self : RunTextReceipt) -> String {
 /// means the replacement was the run's own text: the address, the
 /// expectation and the run's writability were all still checked, and the
 /// plan edits nothing rather than re-encoding bytes that already say it.
-pub fn RunTextReceipt::edit_count(self : RunTextReceipt) -> Int {
+pub fn RunTextReceipt::edit_count(self : RunTextReceipt) -> Int32 {
   self.edit_count
 }
 
@@ -126,7 +126,7 @@ pub fn plan_run_text_replacement(
   // planner re-checks cross-paragraph reuse; refusing here keeps the
   // boundary's own contract total.
   let elements = projection.scan.elements()
-  let mut located : (Int, Int)? = None
+  let mut located : (Int32, Int32)? = None
   for paragraph_index, paragraph in projection.paragraphs {
     for run_index, run in paragraph.runs {
       let SourceElementId(identity) = run.source

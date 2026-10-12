@@ -39,7 +39,7 @@ fn PdfDocument::pdf_page_branch_children(
   self : PdfDocument,
   node : @syntax.PdfObject,
   inherited : PdfPageInherited,
-) -> (Int, Array[@syntax.PdfObject], PdfPageInherited) raise @core.PdfError {
+) -> (Int32, Array[@syntax.PdfObject], PdfPageInherited) raise @core.PdfError {
   let passed = PdfPageInherited::{
     resources: pdf_page_inherited_object(
       self.lookup_direct(pdf_page_resources_key(), node),
@@ -168,7 +168,7 @@ fn PdfDocument::pdf_pages_of_node(
   inherited_cropbox : @syntax.PdfObject?,
   inherited_rotate : @page.PdfPageRotation,
   last_mediabox : Ref[@syntax.PdfObject],
-  depth : Int,
+  depth : Int32,
 ) -> Array[@page.PdfPage] raise @core.PdfError {
   let pages : Array[@page.PdfPage] = []
   let inherited = PdfPageInherited::{

@@ -16,8 +16,8 @@ pub(all) enum PdfDrawOp {
   PdfDrawSetFill(@colour.PdfDrawColour)
   PdfDrawSetStroke(@colour.PdfDrawColour)
   PdfDrawSetLineThickness(Double)
-  PdfDrawSetLineCap(Int)
-  PdfDrawSetLineJoin(Int)
+  PdfDrawSetLineCap(Int32)
+  PdfDrawSetLineJoin(Int32)
   PdfDrawSetMiterLimit(Double)
   PdfDrawSetDashPattern(Array[Double], Double)
   PdfDrawMatrix(@geometry.TransformMatrix)
@@ -36,7 +36,7 @@ pub(all) enum PdfDrawOp {
   PdfDrawNewPage
   PdfDrawOpacity(Double)
   PdfDrawSOpacity(Double)
-  PdfDrawFontPack(String, PdfFontPack, Array[Int])
+  PdfDrawFontPack(String, PdfFontPack, Array[Int32])
   PdfDrawFont(String, Double)
   PdfDrawTextSection(Array[PdfDrawOp])
   PdfDrawText(String)
@@ -47,7 +47,7 @@ pub(all) enum PdfDrawOp {
   PdfDrawCharSpace(Double)
   PdfDrawWordSpace(Double)
   PdfDrawTextScale(Double)
-  PdfDrawRenderMode(Int)
+  PdfDrawRenderMode(Int32)
   PdfDrawRise(Double)
   PdfDrawTag(String)
   PdfDrawEndTag

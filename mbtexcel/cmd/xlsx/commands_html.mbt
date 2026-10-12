@@ -114,8 +114,8 @@ fn lexical_normalize(path : String) -> String {
 fn parse_positive_int(
   m : @argparse.Matches,
   name : String,
-  default : Int,
-) -> Int raise CliError {
+  default : Int32,
+) -> Int32 raise CliError {
   let text = arg(m, name)
   if text == "" {
     return default

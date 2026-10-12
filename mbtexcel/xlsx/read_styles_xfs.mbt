@@ -4,8 +4,8 @@
 fn attr_int_or(
   tag : StringView,
   name : StringView,
-  default : Int,
-) -> Int raise XlsxError {
+  default : Int32,
+) -> Int32 raise XlsxError {
   match attr_value(tag, name) {
     Some(value) =>
       @string.parse_int(value, base=10) catch {
@@ -16,8 +16,8 @@ fn attr_int_or(
 }
 
 ///|
-fn parse_num_fmts(xml : StringView) -> Map[Int, String] raise XlsxError {
-  let num_fmts : Map[Int, String] = Map([])
+fn parse_num_fmts(xml : StringView) -> Map[Int32, String] raise XlsxError {
+  let num_fmts : Map[Int32, String] = Map([])
   let body = match extract_tag_body(xml, "numFmts") {
     Some(value) => value
     None => return num_fmts
@@ -57,7 +57,7 @@ fn parse_num_fmts(xml : StringView) -> Map[Int, String] raise XlsxError {
 ///|
 fn parse_cell_xfs(
   xml : StringView,
-  num_fmts : Map[Int, String],
+  num_fmts : Map[Int32, String],
   fonts : ArrayView[Font],
   fills : ArrayView[Fill],
   borders : ArrayView[Array[Border]],
@@ -144,7 +144,7 @@ fn parse_cell_xfs(
 ///|
 fn parse_dxfs(
   xml : StringView,
-  num_fmts : Map[Int, String],
+  num_fmts : Map[Int32, String],
   fonts : ArrayView[Font],
 ) -> Array[Style] raise XlsxError {
   let styles : Array[Style] = []

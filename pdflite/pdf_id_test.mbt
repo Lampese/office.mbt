@@ -12,7 +12,7 @@ fn id_restore_env_for_test(previous : String?) -> Unit {
 }
 
 ///|
-fn id_bytes_for_test(values : ArrayView[Int]) -> @core.PdfBytes {
+fn id_bytes_for_test(values : ArrayView[Int32]) -> @core.PdfBytes {
   try! @core.pdf_bytes_of_int_array(values)
 }
 

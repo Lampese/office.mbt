@@ -35,7 +35,7 @@ pub fn pdf_page_label_coalesce(
 /// source document's page-label tree cannot be read.
 pub fn pdf_page_label_merge(
   pdfs : ArrayView[PdfDocument],
-  ranges : ArrayView[Array[Int]],
+  ranges : ArrayView[Array[Int32]],
 ) -> Array[@label.PdfPageLabel] raise @core.PdfError {
   if pdfs.length() != ranges.length() {
     raise PageTreeExpected

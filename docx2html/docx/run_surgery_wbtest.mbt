@@ -67,8 +67,8 @@ fn surgery_native_projection(source : String) -> ReaderProjection raise {
 /// Replace `p[paragraph]/r[run]`'s text and require the reader to agree.
 fn assert_whole_run_replacement(
   body : String,
-  paragraph~ : Int,
-  run~ : Int,
+  paragraph~ : Int32,
+  run~ : Int32,
   text : String,
   expected~ : String,
 ) -> Unit raise {
@@ -140,12 +140,12 @@ fn assert_whole_run_replacement(
 fn assert_edits_touch_only_editable_bytes(
   projection : ReaderProjection,
   edits : Array[RunSurgeryEdit],
-  paragraph : Int,
-  run : Int,
+  paragraph : Int32,
+  run : Int32,
 ) -> Unit raise {
   let elements = projection.scan.elements()
   let target = projection.paragraphs[paragraph].runs[run].source
-  let allowed : Array[(Int, Int)] = []
+  let allowed : Array[(Int32, Int32)] = []
   for contribution in projection.paragraphs[paragraph].contributions {
     if contribution.run_source == Some(target) {
       let SourceElementId(source_identity) = contribution.source
@@ -1088,7 +1088,7 @@ test "a checkbox-consumed flow run no longer shifts addresses" {
   // the tab run -- and EACH refuses by checkbox ancestry specifically.
   // document=0 body=1 sdt=2 sdtPr=3 checkbox=4 sdtContent=5 r=6 t=7
   // p=8 r=9 tab=10 p=11 r=12 t=13
-  let run_ids : Array[Int] = []
+  let run_ids : Array[Int32] = []
   for run in projection.paragraphs[0].runs {
     let SourceElementId(id) = run.source
     run_ids.push(id)

@@ -56,19 +56,19 @@ pub fn pdf_standard14_afm_data(font : PdfStandardFont) -> @afm.PdfAfmData {
 
 ///|
 /// Returns the baseline adjustment used by CamlPDF for this standard font.
-pub fn pdf_standard14_baseline_adjustment(font : PdfStandardFont) -> Int {
+pub fn pdf_standard14_baseline_adjustment(font : PdfStandardFont) -> Int32 {
   font.baseline_adjustment()
 }
 
 ///|
 /// Returns the `/StemV` value used when writing this standard font.
-pub fn pdf_standard14_stemv_of_standard_font(font : PdfStandardFont) -> Int {
+pub fn pdf_standard14_stemv_of_standard_font(font : PdfStandardFont) -> Int32 {
   font.stemv()
 }
 
 ///|
 /// Returns the PDF font descriptor flags for this standard font.
-pub fn pdf_standard14_flags_of_standard_font(font : PdfStandardFont) -> Int {
+pub fn pdf_standard14_flags_of_standard_font(font : PdfStandardFont) -> Int32 {
   font.flags()
 }
 
@@ -99,6 +99,6 @@ pub fn pdf_standard_font_substitute_font_name(font : PdfStandardFont) -> String 
 /// included (see `@standard14.PdfStandardFont::kern_pairs_by_name`).
 pub fn PdfStandardFont::kern_pairs_by_name(
   self : PdfStandardFont,
-) -> Array[(String, String, Int)] {
+) -> Array[(String, String, Int32)] {
   self.to_standard14_data_font().kern_pairs_by_name()
 }

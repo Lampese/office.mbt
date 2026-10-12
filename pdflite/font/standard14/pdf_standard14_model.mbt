@@ -78,7 +78,7 @@ pub fn pdf_standard_font_of_name(name : String) -> PdfStandardFont? {
 
 ///|
 /// Return a synthetic baseline adjustment for simple standard-font placement.
-pub fn PdfStandardFont::baseline_adjustment(self : PdfStandardFont) -> Int {
+pub fn PdfStandardFont::baseline_adjustment(self : PdfStandardFont) -> Int32 {
   match self {
     PdfTimesRoman => 662 / 2
     PdfTimesBold => 676 / 2
@@ -97,7 +97,7 @@ pub fn PdfStandardFont::baseline_adjustment(self : PdfStandardFont) -> Int {
 
 ///|
 /// Return the standard-font `StemV` descriptor value used when writing fonts.
-pub fn PdfStandardFont::stemv(self : PdfStandardFont) -> Int {
+pub fn PdfStandardFont::stemv(self : PdfStandardFont) -> Int32 {
   match self {
     PdfTimesRoman => 116
     PdfTimesBold => 122
@@ -121,7 +121,7 @@ pub fn PdfStandardFont::stemv(self : PdfStandardFont) -> Int {
 ///
 /// The flags distinguish symbolic fonts, fixed-pitch Courier faces, and the
 /// nonsymbolic roman faces according to the PDF font descriptor bit layout.
-pub fn PdfStandardFont::flags(self : PdfStandardFont) -> Int {
+pub fn PdfStandardFont::flags(self : PdfStandardFont) -> Int32 {
   match self {
     PdfSymbol => 65541
     PdfZapfDingbats => 4
@@ -152,8 +152,8 @@ pub fn pdf_standard14_afm_data(font : PdfStandardFont) -> PdfAfmData {
 /// Symbol and ZapfDingbats have none.
 pub fn PdfStandardFont::kern_pairs_by_name(
   self : PdfStandardFont,
-) -> Array[(String, String, Int)] {
-  let pairs : Array[(String, String, Int)] = []
+) -> Array[(String, String, Int32)] {
+  let pairs : Array[(String, String, Int32)] = []
   for line in pdf_standard14_kern_pairs_table(self).split("\n") {
     let tokens = line.split(" ").map(t => t.to_owned()).to_array()
     guard tokens.length() >= 3 else { continue }
@@ -169,13 +169,13 @@ pub fn PdfStandardFont::kern_pairs_by_name(
 
 ///|
 /// A generated table's integer (an optional minus sign, then digits).
-fn pdf_standard14_parse_int(text : String) -> Int {
+fn pdf_standard14_parse_int(text : String) -> Int32 {
   let mut value = 0
   let mut negative = false
   for c in text {
     match c {
       '-' => negative = true
-      '0'..='9' => value = value * 10 + (c.to_int() - '0'.to_int())
+      '0'..<='9' => value = value * 10 + (c.to_int() - '0'.to_int())
       _ => ()
     }
   }

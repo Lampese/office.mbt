@@ -72,7 +72,7 @@ fn image_part_identity(
   content_types : @ooxml.PackageContentTypes,
   part_name : StringView,
   role : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> ImagePartIdentity raise XlsxError {
   let declared = declared_part_content_type(
     content_types,
@@ -103,7 +103,7 @@ fn load_image_part(
   content_types : @ooxml.PackageContentTypes,
   path : StringView,
   role : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> (BytesView, ImagePartIdentity) raise XlsxError {
   let bytes = match archive.get(path) {
     Some(value) => value

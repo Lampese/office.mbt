@@ -4,16 +4,16 @@
 /// The offsets of an INDEX (upstream `VarOffsets`).
 priv struct VarOffsets {
   data : BytesView
-  offset_size : Int
+  offset_size : Int32
 }
 
 ///|
-fn VarOffsets::len(self : VarOffsets) -> Int {
+fn VarOffsets::len(self : VarOffsets) -> Int32 {
   self.data.length() / self.offset_size
 }
 
 ///|
-fn VarOffsets::get(self : VarOffsets, index : Int) -> Int? {
+fn VarOffsets::get(self : VarOffsets, index : Int32) -> Int32? {
   if index < 0 || index >= self.len() {
     return None
   }
@@ -36,7 +36,7 @@ fn VarOffsets::get(self : VarOffsets, index : Int) -> Int? {
 }
 
 ///|
-fn VarOffsets::last(self : VarOffsets) -> Int? {
+fn VarOffsets::last(self : VarOffsets) -> Int32? {
   if self.len() > 0 {
     self.get(self.len() - 1)
   } else {
@@ -57,7 +57,7 @@ fn Index::default() -> Index {
 }
 
 ///|
-fn Index::len(self : Index) -> Int {
+fn Index::len(self : Index) -> Int32 {
   let n = self.offsets.len()
   if n > 0 {
     n - 1
@@ -67,7 +67,7 @@ fn Index::len(self : Index) -> Int {
 }
 
 ///|
-fn Index::get(self : Index, index : Int) -> BytesView? {
+fn Index::get(self : Index, index : Int32) -> BytesView? {
   guard self.offsets.get(index) is Some(start) else { return None }
   guard self.offsets.get(index + 1) is Some(end) else { return None }
   if start <= end && end <= self.data.length() {
@@ -90,7 +90,7 @@ fn Index::items(self : Index) -> Array[BytesView] {
 }
 
 ///|
-fn read_offset_size(r : Reader) -> Int? {
+fn read_offset_size(r : Reader) -> Int32? {
   match r.read_u8() {
     Some(v) if v >= 1 && v <= 4 => Some(v)
     _ => None
@@ -105,7 +105,7 @@ fn parse_index(r : Reader) -> Index? {
 }
 
 ///|
-fn parse_index_impl(count : Int, r : Reader) -> Index? {
+fn parse_index_impl(count : Int32, r : Reader) -> Index? {
   if count == 0 {
     return Some(Index::default())
   }
@@ -143,7 +143,7 @@ fn skip_index(r : Reader) -> Unit? {
 /// An index that owns its data.
 priv struct OwnedIndex {
   data : Bytes
-  header_size : Int
+  header_size : Int32
 }
 
 ///|
@@ -181,7 +181,7 @@ fn create_index(data : Array[BytesView]) -> OwnedIndex raise SubsetError {
   w.write_u16(count)
   w.write_u8(offset_size)
   let mut cur_offset = 0L
-  let write_offset = (len : Int) => {
+  let write_offset = (len : Int32) => {
     cur_offset += len.to_int64()
     match offset_size {
       1 => w.write_u8(cur_offset.to_int())

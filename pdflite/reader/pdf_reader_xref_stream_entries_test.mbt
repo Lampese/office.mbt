@@ -6,7 +6,7 @@ test "xref stream field reader handles zero-width and bounds" {
     (24930, 2),
   )
 
-  let short_field : Result[(Int, Int), Error] = try
+  let short_field : Result[(Int32, Int32), Error] = try
     @reader.pdf_xref_stream_read_field(b"a", 0, 2)
   catch {
     err => Err(err)
@@ -17,7 +17,7 @@ test "xref stream field reader handles zero-width and bounds" {
     fail("expected XRefEntryExpected")
   }
 
-  let negative_width : Result[(Int, Int), Error] = try
+  let negative_width : Result[(Int32, Int32), Error] = try
     @reader.pdf_xref_stream_read_field(b"a", 0, -1)
   catch {
     err => Err(err)

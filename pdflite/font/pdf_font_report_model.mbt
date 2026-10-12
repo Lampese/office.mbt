@@ -5,7 +5,7 @@
 /// names rendered with their leading slash; missing non-name fields are empty
 /// strings to match cpdf's text listing and JSON-null conversion.
 pub(all) struct PdfFontListEntry {
-  page : Int
+  page : Int32
   name : String
   subtype : String
   basefont : String
@@ -19,7 +19,7 @@ pub(all) struct PdfFontListEntry {
 /// `encoding == "Built-in"` records cpdf's fallback when a missing font does
 /// not have a named `/Encoding`.
 pub(all) struct PdfMissingFontEntry {
-  page : Int
+  page : Int32
   name : String
   subtype : String
   basefont : String
@@ -32,7 +32,7 @@ pub(all) struct PdfMissingFontEntry {
 /// `unicode_name` is empty when this port has no Unicode character-name table
 /// entry for the codepoint. `utf8` is `<nonprintable>` for C0/C1 controls.
 pub(all) struct PdfFontTableEntry {
-  code : Int
+  code : Int32
   unicode : String
   utf8 : String
   unicode_name : String

@@ -24,8 +24,8 @@ fn raw_test_archive(entries : Array[(String, Bytes)]) -> Bytes raise {
 
 ///|
 fn raw_hash_clustered_part_names(
-  count : Int,
-  bucket_mask : Int,
+  count : Int32,
+  bucket_mask : Int32,
 ) -> Array[String] {
   let names : Array[String] = []
   let mut candidate = 0
@@ -42,7 +42,7 @@ fn raw_hash_clustered_part_names(
 ///|
 fn raw_test_add_hash_clustered_parts(
   data : BytesView,
-  count : Int,
+  count : Int32,
 ) -> Bytes raise {
   let source = @zip.read(data)
   let output = @zip.Archive()
@@ -149,8 +149,8 @@ fn raw_test_add_entry(
 ///|
 fn overwrite_raw_test_u32(
   bytes : Array[Byte],
-  offset : Int,
-  value : Int,
+  offset : Int32,
+  value : Int32,
 ) -> Unit {
   let raw = value.reinterpret_as_uint()
   bytes[offset] = (raw & 0xff).to_byte()
@@ -162,8 +162,8 @@ fn overwrite_raw_test_u32(
 ///|
 fn forge_raw_test_central_uncompressed_sizes(
   source : Bytes,
-  declared : Int,
-) -> (Bytes, Int) {
+  declared : Int32,
+) -> (Bytes, Int32) {
   let bytes = source.to_array()
   let mut count = 0
   for offset in 0..<(bytes.length() - 27) {
@@ -1684,7 +1684,7 @@ test "raw metadata preflight bounds namespace expansion and scope work" {
 }
 
 ///|
-fn raw_large_document_docx(paragraphs : Int) -> Bytes raise {
+fn raw_large_document_docx(paragraphs : Int32) -> Bytes raise {
   let document = StringBuilder()
   document.write_string("<w:document xmlns:w=\"\{word_namespace}\"><w:body>")
   |> ignore
@@ -1839,7 +1839,10 @@ test "raw root probe reports malformed main parts as malformed" {
 }
 
 ///|
-fn raw_large_workbook_xlsx(defined_names : Int, compact : Bool) -> Bytes raise {
+fn raw_large_workbook_xlsx(
+  defined_names : Int32,
+  compact : Bool,
+) -> Bytes raise {
   let workbook = StringBuilder()
   workbook.write_string(
     "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><sheets><sheet name=\"Moved\" sheetId=\"1\" r:id=\"rId1\"/></sheets><definedNames>",

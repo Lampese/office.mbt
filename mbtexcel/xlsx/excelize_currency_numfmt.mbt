@@ -1,5 +1,5 @@
 ///|
-let excelize_currency_num_fmt : Map[Int, String] = {
+let excelize_currency_num_fmt : Map[Int32, String] = {
   164: "\"¥\"#,##0.00",
   165: "[$$-409]#,##0.00",
   166: "[$$-45C]#,##0.00",
@@ -474,6 +474,6 @@ let excelize_currency_num_fmt : Map[Int, String] = {
 }
 
 ///|
-fn excelize_currency_num_fmt_code(num_fmt : Int) -> String? {
+fn excelize_currency_num_fmt_code(num_fmt : Int32) -> String? {
   excelize_currency_num_fmt.get(num_fmt)
 }

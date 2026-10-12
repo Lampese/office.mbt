@@ -94,7 +94,7 @@ fn is_run_container(name : String) -> Bool {
 fn collect_runs(
   el : @xml.XmlElement,
   out : Array[(@xml.XmlElement, String?)],
-  simple_field? : String? = None,
+  simple_field~ : String? = None,
 ) -> Unit {
   for child in el.children {
     guard child is XmlElement(node) else { continue }
@@ -163,9 +163,9 @@ fn read_paragraph(
   para : @xml.XmlElement,
   sheet : StyleSheet,
   theme : ThemeFonts,
-  numbering? : @numbering.Numbering = @numbering.Numbering::empty(),
-  counters? : @numbering.Counters = @numbering.Counters::new(),
-  default_tab_pt? : Double = 36.0,
+  numbering~ : @numbering.Numbering = @numbering.Numbering::empty(),
+  counters~ : @numbering.Counters = @numbering.Counters::new(),
+  default_tab_pt~ : Double = 36.0,
 ) -> (@paginate.Block, Bool, Bool) {
   let (direct_para, style_id) = match para.first("w:pPr") {
     Some(ppr) => read_para_props(ppr)
@@ -351,13 +351,13 @@ fn read_paragraph(
 pub fn read_document(
   document : @xml.XmlElement,
   sheet : StyleSheet,
-  theme? : ThemeFonts = ThemeFonts::empty(),
-  numbering? : @numbering.Numbering = @numbering.Numbering::empty(),
-  resolve_image? : (String) -> (Bytes, String)? = _ => None,
+  theme~ : ThemeFonts = ThemeFonts::empty(),
+  numbering~ : @numbering.Numbering = @numbering.Numbering::empty(),
+  resolve_image~ : (String) -> (Bytes, String)? = _ => None,
   // Why `resolve_image` declined, for the unsupported record. Default
   // keeps callers that do not resolve images at all compiling.
-  image_reason? : (String) -> String = _ => "image",
-  default_tab_pt? : Double = 36.0,
+  image_reason~ : (String) -> String = _ => "image",
+  default_tab_pt~ : Double = 36.0,
 ) -> DocxDocument {
   // list counters run for the whole document, in reading order
   let counters = @numbering.Counters::new()

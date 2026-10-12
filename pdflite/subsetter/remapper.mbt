@@ -6,19 +6,19 @@
 /// `limit` is the number of values `C` can count).
 priv struct Remapper {
   /// The counter that keeps track of the next number to be assigned.
-  mut counter : Int
+  mut counter : Int32
   /// The map that maps numbers from their old value to their new value,
   /// stored densely by old value (`-1` = not remapped). Old values are
   /// glyph IDs or font DICT indices, so the table stays small.
-  mut forward : FixedArray[Int]
+  mut forward : FixedArray[Int32]
   /// The vector that stores the "reverse" mapping, i.e. given a new number,
   /// it allows to map back to the old one.
-  backward : Array[Int]
-  limit : Int
+  backward : Array[Int32]
+  limit : Int32
 }
 
 ///|
-fn Remapper::new(limit : Int) -> Remapper {
+fn Remapper::new(limit : Int32) -> Remapper {
   { counter: 0, forward: [], backward: [], limit, }
 }
 
@@ -34,7 +34,7 @@ fn Remapper::copy(self : Remapper) -> Remapper {
 
 ///|
 /// Get the new mapping of a value that has been remapped before.
-fn Remapper::get(self : Remapper, old : Int) -> Int? {
+fn Remapper::get(self : Remapper, old : Int32) -> Int32? {
   guard old >= 0 && old < self.forward.length() else { return None }
   let value = self.forward[old]
   if value < 0 {
@@ -48,7 +48,7 @@ fn Remapper::get(self : Remapper, old : Int) -> Int? {
 /// Remap a new value, either returning the previously assigned number if it
 /// already has been remapped, and assigning a new number if it has not been
 /// remapped.
-fn Remapper::remap(self : Remapper, old : Int) -> Int {
+fn Remapper::remap(self : Remapper, old : Int32) -> Int32 {
   // Old values are glyph IDs (checked by `GlyphRemapper::remap`) or font
   // DICT indices, so they are never negative.
   guard old >= 0 else { abort("remapper value out of range") }
@@ -75,13 +75,13 @@ fn Remapper::remap(self : Remapper, old : Int) -> Int {
 
 ///|
 /// Get the number of elements that have been remapped.
-fn Remapper::len(self : Remapper) -> Int {
+fn Remapper::len(self : Remapper) -> Int32 {
   self.counter
 }
 
 ///|
 /// The old values in the order defined by the remapping.
-fn Remapper::sorted_iter(self : Remapper) -> Array[Int] {
+fn Remapper::sorted_iter(self : Remapper) -> Array[Int32] {
   self.backward
 }
 
@@ -115,7 +115,9 @@ pub fn GlyphRemapper::new() -> GlyphRemapper {
 
 ///|
 /// Create a remapper from an existing set of glyphs.
-pub fn GlyphRemapper::new_from_glyphs(glyphs : ArrayView[Int]) -> GlyphRemapper {
+pub fn GlyphRemapper::new_from_glyphs(
+  glyphs : ArrayView[Int32],
+) -> GlyphRemapper {
   let map = GlyphRemapper::new()
   for glyph in glyphs {
     map.remap(glyph) |> ignore
@@ -127,7 +129,7 @@ pub fn GlyphRemapper::new_from_glyphs(glyphs : ArrayView[Int]) -> GlyphRemapper 
 /// Create a remapper from an existing set of glyphs. The method will ensure
 /// that the mapping is monotonically increasing.
 pub fn GlyphRemapper::new_from_glyphs_sorted(
-  glyphs : ArrayView[Int],
+  glyphs : ArrayView[Int32],
 ) -> GlyphRemapper {
   let sorted = glyphs.to_owned()
   sorted.sort()
@@ -148,7 +150,7 @@ pub fn GlyphRemapper::copy(self : GlyphRemapper) -> GlyphRemapper {
 
 ///|
 /// Get the number of gids that have been remapped.
-pub fn GlyphRemapper::num_gids(self : GlyphRemapper) -> Int {
+pub fn GlyphRemapper::num_gids(self : GlyphRemapper) -> Int32 {
   // (A `u16` counter: 65536 glyphs would have overflowed.)
   self.inner.len()
 }
@@ -159,7 +161,7 @@ pub fn GlyphRemapper::num_gids(self : GlyphRemapper) -> Int {
 ///
 /// Glyph IDs are `u16`s: other values abort, like remapping more than 65535
 /// glyphs (the Rust crate panics).
-pub fn GlyphRemapper::remap(self : GlyphRemapper, old : Int) -> Int {
+pub fn GlyphRemapper::remap(self : GlyphRemapper, old : Int32) -> Int32 {
   if old < 0 || old > 0xFFFF {
     abort("glyph ID out of range")
   }
@@ -168,7 +170,7 @@ pub fn GlyphRemapper::remap(self : GlyphRemapper, old : Int) -> Int {
 
 ///|
 /// Get the mapping of a glyph ID, if it has been remapped before.
-pub fn GlyphRemapper::get(self : GlyphRemapper, old : Int) -> Int? {
+pub fn GlyphRemapper::get(self : GlyphRemapper, old : Int32) -> Int32? {
   self.inner.get(old)
 }
 
@@ -180,6 +182,6 @@ pub fn GlyphRemapper::get(self : GlyphRemapper, old : Int) -> Int? {
 /// also implicitly defines the glyph IDs in the new mapping:
 ///
 /// 0 (0), 3 (1), 39 (2), 8 (3), 10 (4), 2 (5)
-pub fn GlyphRemapper::remapped_gids(self : GlyphRemapper) -> ArrayView[Int] {
+pub fn GlyphRemapper::remapped_gids(self : GlyphRemapper) -> ArrayView[Int32] {
   self.inner.backward
 }

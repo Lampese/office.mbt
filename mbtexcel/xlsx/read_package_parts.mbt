@@ -13,7 +13,7 @@ fn workbook_part_from_root_relationships(
   content_types : @ooxml.PackageContentTypes,
   decode : (BytesView) -> String raise XlsxError,
   budget? : ReadBudget,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String raise XlsxError {
   let root_rels_path = actual_archive_part_path(part_names, root_rels_part_path)
   let root_rels_xml = decode(
@@ -63,7 +63,7 @@ fn require_part_content_type(
   part_name : StringView,
   expected : ArrayView[String],
   role : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Unit raise XlsxError {
   let declared = declared_part_content_type(
     content_types,
@@ -87,7 +87,7 @@ fn declared_part_content_type(
   content_types : @ooxml.PackageContentTypes,
   part_name : StringView,
   role : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String raise XlsxError {
   let declared = content_types.content_type_for(part_name, cancelled~) catch {
     InvalidXml(msg~) => raise InvalidXml(msg~)
@@ -109,7 +109,7 @@ fn load_typed_part(
   path : StringView,
   expected : ArrayView[String],
   role : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> BytesView raise XlsxError {
   let bytes = match archive.get(path) {
     Some(value) => value
@@ -133,7 +133,7 @@ fn load_relationship_part(
   content_types : @ooxml.PackageContentTypes,
   path : StringView,
   role : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> BytesView raise XlsxError {
   load_typed_part(
     archive,
@@ -153,7 +153,7 @@ fn load_optional_relationship_part(
   content_types : @ooxml.PackageContentTypes,
   path : StringView,
   role : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> BytesView? raise XlsxError {
   match archive.get(path) {
     Some(_) =>
@@ -222,7 +222,7 @@ fn resolve_workbook_xml_part_path(
   part_names : Map[String, String],
   decode : (BytesView) -> String raise XlsxError,
   budget? : ReadBudget,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> (String, @ooxml.PackageContentTypes) raise XlsxError {
   // The content-type manifest authenticates every consumed package part,
   // including the root relationship part, so it must be parsed first.

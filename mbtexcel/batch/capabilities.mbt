@@ -53,7 +53,7 @@ fn constraint(
 fn req(
   name : String,
   kind : String,
-  introduced_in? : String = @inspect.SCHEMA_BATCH,
+  introduced_in~ : String = @inspect.SCHEMA_BATCH,
 ) -> ParamSpec {
   {
     name,
@@ -70,7 +70,7 @@ fn req(
 fn opt(
   name : String,
   kind : String,
-  introduced_in? : String = @inspect.SCHEMA_BATCH,
+  introduced_in~ : String = @inspect.SCHEMA_BATCH,
 ) -> ParamSpec {
   let default_when_omitted = match kind {
     "string" => Json::string("")
@@ -93,7 +93,7 @@ fn opt(
 fn req_choice(
   name : String,
   allowed_values : Array[String],
-  introduced_in? : String = @inspect.SCHEMA_BATCH,
+  introduced_in~ : String = @inspect.SCHEMA_BATCH,
 ) -> ParamSpec {
   {
     name,
@@ -110,7 +110,7 @@ fn req_choice(
 fn opt_choice(
   name : String,
   allowed_values : Array[String],
-  introduced_in? : String = @inspect.SCHEMA_BATCH,
+  introduced_in~ : String = @inspect.SCHEMA_BATCH,
 ) -> ParamSpec {
   {
     name,
@@ -128,7 +128,7 @@ fn opt_choice_default(
   name : String,
   allowed_values : Array[String],
   default : String,
-  introduced_in? : String = @inspect.SCHEMA_BATCH,
+  introduced_in~ : String = @inspect.SCHEMA_BATCH,
 ) -> ParamSpec {
   {
     name,
@@ -145,7 +145,7 @@ fn opt_choice_default(
 fn opt_bool_default(
   name : String,
   default : Bool,
-  introduced_in? : String = @inspect.SCHEMA_BATCH,
+  introduced_in~ : String = @inspect.SCHEMA_BATCH,
 ) -> ParamSpec {
   {
     name,
@@ -161,8 +161,8 @@ fn opt_bool_default(
 ///|
 fn opt_number_default(
   name : String,
-  default : Int,
-  introduced_in? : String = @inspect.SCHEMA_BATCH,
+  default : Int32,
+  introduced_in~ : String = @inspect.SCHEMA_BATCH,
 ) -> ParamSpec {
   {
     name,

@@ -4,7 +4,7 @@ fn draw_name_for_test(text : String) -> @core.PdfName {
 }
 
 ///|
-fn draw_bytes_for_test(values : ArrayView[Int]) -> @core.PdfBytes {
+fn draw_bytes_for_test(values : ArrayView[Int32]) -> @core.PdfBytes {
   let output : Array[Byte] = []
   for value in values {
     output.push(try! @core.pdf_byte_of_int(value))
@@ -50,7 +50,7 @@ fn draw_fresh_structure_document_for_test() -> @pdflite.PdfDocument {
 ///|
 fn draw_page_ops_for_test(
   document : @pdflite.PdfDocument,
-  page_number : Int,
+  page_number : Int32,
 ) -> Array[@content.PdfContentOp] raise Error {
   let pages = try! document.pages_of_pagetree()
   let page = pages[page_number - 1]

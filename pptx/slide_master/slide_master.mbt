@@ -205,7 +205,7 @@ fn parse_uint64_decimal(s : String) -> Int64? {
   }
   let mut acc : Int64 = 0L
   for c in s {
-    guard c is ('0'..='9') else { return None }
+    guard c is ('0'..<='9') else { return None }
     acc = acc * 10L + (c.to_int() - '0'.to_int()).to_int64()
   }
   Some(acc)

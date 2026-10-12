@@ -2,7 +2,7 @@
 // Public text behavior belongs in `_test.mbt` files.
 
 ///|
-fn wbtest_text_bytes(values : ArrayView[Int]) -> @core.PdfBytes {
+fn wbtest_text_bytes(values : ArrayView[Int32]) -> @core.PdfBytes {
   try! @core.pdf_bytes_of_int_array(values)
 }
 

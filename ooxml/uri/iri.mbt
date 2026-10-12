@@ -78,8 +78,8 @@ fn relationship_iri_reg_name_char(character : Char) -> Bool {
 ///|
 fn relationship_identifier_chars_valid(
   characters : ArrayView[Char],
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
   allowed : (Char) -> Bool,
 ) -> Bool {
   let mut index = start
@@ -104,8 +104,8 @@ fn relationship_identifier_chars_valid(
 ///|
 fn relationship_ipv4_literal_valid(
   characters : ArrayView[Char],
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> Bool {
   let mut index = start
   let mut components = 0
@@ -143,8 +143,8 @@ fn relationship_ipv4_literal_valid(
 // one 16-bit group; an IPv4 tail occupies the final two groups.
 fn relationship_ipv6_literal_valid(
   characters : ArrayView[Char],
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> Bool {
   if start >= end {
     return false
@@ -218,8 +218,8 @@ fn relationship_ipv6_literal_valid(
 ///|
 fn relationship_ipv_future_literal_valid(
   characters : ArrayView[Char],
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> Bool {
   if start >= end || (characters[start] != 'v' && characters[start] != 'V') {
     return false
@@ -248,8 +248,8 @@ fn relationship_ipv_future_literal_valid(
 ///|
 fn relationship_uri_authority_valid(
   characters : ArrayView[Char],
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
   allow_iri_characters : Bool,
 ) -> Bool {
   let mut host_start = start
@@ -346,8 +346,8 @@ fn relationship_uri_authority_valid(
 ///|
 fn relationship_uri_scheme_valid(
   characters : ArrayView[Char],
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> Bool {
   if start >= end || !characters[start].is_ascii_alphabetic() {
     return false
@@ -504,8 +504,8 @@ fn relationship_has_uri_scheme(value : StringView) -> Bool {
 ///|
 fn office_file_path_characters_valid(
   characters : ArrayView[Char],
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> Bool {
   relationship_identifier_chars_valid(characters, start, end, fn(character) {
     relationship_iri_pchar(character) || character == '/' || character == '\\'

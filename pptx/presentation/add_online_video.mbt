@@ -20,7 +20,7 @@
 /// the URL to the embeddable `/embed/<id>` form PowerPoint expects.
 pub fn Presentation::add_online_video_mut(
   self : Presentation,
-  slide_idx : Int,
+  slide_idx : Int32,
   video_url : String,
   poster_bytes : FixedArray[Byte],
   x~ : @units.Emu,
@@ -130,7 +130,7 @@ pub fn Presentation::add_online_video_mut(
 /// be extracted, or the poster isn't a recognised image.
 pub fn Presentation::add_youtube_video_mut(
   self : Presentation,
-  slide_idx : Int,
+  slide_idx : Int32,
   youtube_url : String,
   poster_bytes : FixedArray[Byte],
   x~ : @units.Emu,

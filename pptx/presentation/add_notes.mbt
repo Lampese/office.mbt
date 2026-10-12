@@ -21,7 +21,7 @@
 /// range.
 pub fn Presentation::set_notes_mut(
   self : Presentation,
-  slide_idx : Int,
+  slide_idx : Int32,
   text : String,
 ) -> Unit raise PptxError {
   let slide_parts = self.ordered_slide_parts()

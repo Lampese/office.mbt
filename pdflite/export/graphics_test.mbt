@@ -7,7 +7,7 @@ fn fill_of(paint : @export.Paint) -> @export.Fill {
 fn stops2(
   a : @export.Color,
   b : @export.Color,
-  opacity_b? : Double = 1.0,
+  opacity_b~ : Double = 1.0,
 ) -> Array[@export.Stop] {
   [
     { offset: 0.0, color: a, opacity: 1.0, },

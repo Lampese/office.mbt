@@ -1,10 +1,10 @@
 // Port of subsetter 0.2.6 `src/cff/number.rs`.
 
 ///|
-const FLOAT_STACK_LEN : Int = 64
+const FLOAT_STACK_LEN : Int32 = 64
 
 ///|
-const END_OF_FLOAT_FLAG : Int = 0xf
+const END_OF_FLOAT_FLAG : Int32 = 0xf
 
 ///|
 /// A number in a CFF DICT or charstring.
@@ -12,13 +12,13 @@ priv enum Number {
   /// A real number (`RealNumber`, an `f32`).
   Real(Float)
   /// An integer (`IntegerNumber`).
-  Integer(Int)
+  Integer(Int32)
   /// A 16.16 fixed-point number (`FixedNumber`, charstrings only).
-  Fixed(Int)
+  Fixed(Int32)
 }
 
 ///|
-fn Number::from_i32(num : Int) -> Number {
+fn Number::from_i32(num : Int32) -> Number {
   Integer(num)
 }
 
@@ -75,7 +75,7 @@ fn parse_number(r : Reader, charstring_num : Bool) -> Number? {
 }
 
 ///|
-fn parse_fixed(r : Reader) -> Int? {
+fn parse_fixed(r : Reader) -> Int32? {
   guard r.read_u8() is Some(b0) else { return None }
   if b0 != 255 {
     return None
@@ -84,17 +84,17 @@ fn parse_fixed(r : Reader) -> Int? {
 }
 
 ///|
-fn parse_integer(r : Reader) -> Int? {
+fn parse_integer(r : Reader) -> Int32? {
   guard r.read_u8() is Some(b0) else { return None }
   match b0 {
     28 => r.read_i16()
     29 => r.read_i32()
-    32..=246 => Some(b0 - 139)
-    247..=250 => {
+    32..<=246 => Some(b0 - 139)
+    247..<=250 => {
       guard r.read_u8() is Some(b1) else { return None }
       Some((b0 - 247) * 256 + b1 + 108)
     }
-    251..=254 => {
+    251..<=254 => {
       guard r.read_u8() is Some(b1) else { return None }
       Some(-(b0 - 251) * 256 - b1 - 108)
     }
@@ -134,13 +134,17 @@ fn parse_real(r : Reader) -> Float? {
 }
 
 ///|
-fn parse_float_nibble(nibble : Int, idx : Int, data : FixedArray[Byte]) -> Int? {
+fn parse_float_nibble(
+  nibble : Int32,
+  idx : Int32,
+  data : FixedArray[Byte],
+) -> Int32? {
   let mut idx = idx
   if idx == FLOAT_STACK_LEN {
     return None
   }
   match nibble {
-    0..=9 => data[idx] = (48 + nibble).to_byte()
+    0..<=9 => data[idx] = (48 + nibble).to_byte()
     10 => data[idx] = b'.'
     11 => data[idx] = b'E'
     12 => {
@@ -180,7 +184,7 @@ fn write_real(n : Float, w : Writer) -> Unit {
   let string_form = rust_display_f32(n)
   for c in string_form {
     match c {
-      '0'..='9' => nibbles.push(c.to_int() - 48)
+      '0'..<='9' => nibbles.push(c.to_int() - 48)
       '.' => nibbles.push(0xA)
       '-' => nibbles.push(0xE)
       // (Upstream panics: `inf` or `NaN`.)
@@ -205,7 +209,7 @@ fn write_real(n : Float, w : Writer) -> Unit {
 }
 
 ///|
-fn write_integer(n : Int, w : Writer) -> Unit {
+fn write_integer(n : Int32, w : Writer) -> Unit {
   if n >= -107 && n <= 107 {
     w.write_u8(n + 139)
   } else if n >= 108 && n <= 1131 {
@@ -228,13 +232,13 @@ fn write_integer(n : Int, w : Writer) -> Unit {
 /// Write the number as a 5 byte sequence. This is necessary when writing
 /// offsets, because we need to the length of the number to stay stable,
 /// since it would otherwise shift everything.
-fn write_integer_5_bytes(n : Int, w : Writer) -> Unit {
+fn write_integer_5_bytes(n : Int32, w : Writer) -> Unit {
   w.write_u8(29)
   w.write_i32(n)
 }
 
 ///|
-fn fixed_as_f32(n : Int) -> Float {
+fn fixed_as_f32(n : Int32) -> Float {
   Float::from_int(n) / 65536.0
 }
 
@@ -249,7 +253,7 @@ fn Number::as_f64(self : Number) -> Double {
 
 ///|
 /// Rust's `f32::fract() == 0.0` followed by a saturating `as i32`.
-fn f32_as_i32_if_integral(n : Float) -> Int? {
+fn f32_as_i32_if_integral(n : Float) -> Int32? {
   let d = n.to_double()
   if d - d.trunc() == 0.0 {
     Some(saturating_i32(d))
@@ -260,7 +264,7 @@ fn f32_as_i32_if_integral(n : Float) -> Int? {
 
 ///|
 /// Rust's saturating `as i32` cast of a float (NaN is 0).
-fn saturating_i32(d : Double) -> Int {
+fn saturating_i32(d : Double) -> Int32 {
   if d.is_nan() {
     0
   } else if d >= 2147483647.0 {
@@ -273,7 +277,7 @@ fn saturating_i32(d : Double) -> Int {
 }
 
 ///|
-fn Number::as_i32(self : Number) -> Int? {
+fn Number::as_i32(self : Number) -> Int32? {
   match self {
     Integer(n) => Some(n)
     Real(n) => f32_as_i32_if_integral(n)
@@ -282,7 +286,7 @@ fn Number::as_i32(self : Number) -> Int? {
 }
 
 ///|
-fn Number::as_u32(self : Number) -> Int? {
+fn Number::as_u32(self : Number) -> Int32? {
   guard self.as_i32() is Some(n) else { return None }
   if n < 0 {
     None
@@ -294,8 +298,8 @@ fn Number::as_u32(self : Number) -> Int? {
 ///|
 /// Adapted from ttf_parser's Transform::combine.
 fn Number::combine(t1 : Array[Number], t2 : Array[Number]) -> Array[Number] {
-  let a = (i : Int) => t1[i].as_f64()
-  let b = (i : Int) => t2[i].as_f64()
+  let a = (i : Int32) => t1[i].as_f64()
+  let b = (i : Int32) => t2[i].as_f64()
   [
     Real(Float::from_double(a(0) * b(0) + a(2) * b(1))),
     Real(Float::from_double(a(1) * b(0) + a(3) * b(1))),
@@ -308,9 +312,9 @@ fn Number::combine(t1 : Array[Number], t2 : Array[Number]) -> Array[Number] {
 
 ///|
 /// A CFF string ID.
-const STANDARD_STRING_LEN : Int = 391
+const STANDARD_STRING_LEN : Int32 = 391
 
 ///|
-fn is_standard_string(sid : Int) -> Bool {
+fn is_standard_string(sid : Int32) -> Bool {
   sid < STANDARD_STRING_LEN
 }

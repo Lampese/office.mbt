@@ -1,13 +1,13 @@
 ///|
 priv struct PdfDuplicateStreamCandidate {
-  number : Int
+  number : Int32
   dictionary : @syntax.PdfObject
   data : BytesView
 }
 
 ///|
 fn pdf_duplicate_stream_candidate(
-  number : Int,
+  number : Int32,
   object : @syntax.PdfObject,
 ) -> PdfDuplicateStreamCandidate? {
   match object {
@@ -32,13 +32,13 @@ fn PdfDuplicateStreamCandidate::equals(
 ///|
 fn PdfDocument::pdf_duplicate_stream_changes(
   self : PdfDocument,
-) -> Array[(Int, Int)] {
+) -> Array[(Int32, Int32)] {
   let unique_streams_by_length : @hashmap.HashMap[
-    Int,
+    Int32,
     Array[PdfDuplicateStreamCandidate],
   ] = HashMap([])
   let object_numbers = self.object_numbers()
-  let changes : Array[(Int, Int)] = Array(capacity=object_numbers.length())
+  let changes : Array[(Int32, Int32)] = Array(capacity=object_numbers.length())
   for number in object_numbers {
     let object = self.lookup_object_or_null(number)
     match pdf_duplicate_stream_candidate(number, object) {

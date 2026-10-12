@@ -2,9 +2,9 @@
 async fn atomic_write_new_with_faults(
   output_path : String,
   data : BytesView,
-  permission : Int,
-  fail_after_bytes? : Int,
-  stall_after_bytes? : Int,
+  permission : Int32,
+  fail_after_bytes? : Int32,
+  stall_after_bytes? : Int32,
   post_rename_release? : String,
 ) -> Unit {
   checked_path(output_path, "output_path")
@@ -121,7 +121,7 @@ async fn atomic_write_new_with_faults(
 pub async fn atomic_write_new(
   output_path : String,
   data : BytesView,
-  permission? : Int = 0o600,
+  permission~ : Int32 = 0o600,
 ) -> Unit {
   atomic_write_new_with_faults(output_path, data, permission)
 }

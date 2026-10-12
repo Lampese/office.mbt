@@ -1,20 +1,20 @@
 ///|
 /// Ceiling on findings carried by one validate/issues response, matching the
 /// bounded-report style of the transaction validators feeding it.
-let office_finding_report_limit : Int = 128
+let office_finding_report_limit : Int32 = 128
 
 ///|
 /// Ceiling on message characters retained per finding.
-let office_finding_message_chars : Int = 512
+let office_finding_message_chars : Int32 = 512
 
 ///|
 /// Ceiling on stored cells scanned per workbook while deriving XLSX formula
 /// findings; reuses the shared parser-item allowance.
-let office_issues_max_scanned_cells : Int = office_read_max_parser_items
+let office_issues_max_scanned_cells : Int32 = office_read_max_parser_items
 
 ///|
 /// Ceiling on cached formula-error findings reported per workbook.
-let office_issues_max_formula_findings : Int = 64
+let office_issues_max_formula_findings : Int32 = 64
 
 ///|
 /// One normalized validate/issues finding in the office.finding/1 shape.
@@ -119,7 +119,7 @@ fn office_package_gate_findings(
 fn office_xlsx_formula_findings(
   source : OfficeReadPackage,
   findings : Array[OfficeFinding],
-  cancelled? : () -> Bool = office_async_cancelled,
+  cancelled~ : () -> Bool = office_async_cancelled,
 ) -> Unit raise {
   let workbook = open_xlsx_read_package(source, cancelled~)
   let mut scanned = 0
@@ -179,7 +179,7 @@ fn office_xlsx_formula_findings(
 ///|
 fn office_push_formula_omission(
   findings : Array[OfficeFinding],
-  omitted : Int,
+  omitted : Int32,
   scanned~ : Bool,
 ) -> Unit {
   if omitted > 0 {
@@ -255,7 +255,7 @@ fn office_docx_reader_findings(
 }
 
 ///|
-fn office_finding_counts(findings : Array[OfficeFinding]) -> (Int, Int) {
+fn office_finding_counts(findings : Array[OfficeFinding]) -> (Int32, Int32) {
   let mut errors = 0
   let mut warnings = 0
   for finding in findings {
@@ -341,7 +341,7 @@ async fn run_validate(matches : @argparse.Matches) -> Unit {
 /// office.validate/1 record in the failure envelope's details.
 fn office_validation_failure(
   source : OfficeReadPackage,
-  errors : Int,
+  errors : Int32,
   data : Json,
 ) -> CliFailure {
   CliFailure(

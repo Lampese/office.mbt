@@ -105,7 +105,7 @@ async fn main {
 }
 
 ///|
-async fn run(args : ArrayView[String]) -> Int {
+async fn run(args : ArrayView[String]) -> Int32 {
   let cmd = parse_args(args) catch {
     err => {
       @stdio.stderr.write(err.to_string() + "\n")
@@ -155,7 +155,7 @@ async fn read_model(
 ///|
 /// Page N of a multi-page render goes to `<stem>-<n>.svg`; a single page
 /// goes to `output` verbatim.
-fn page_path(output : String, index : Int, total : Int) -> String {
+fn page_path(output : String, index : Int32, total : Int32) -> String {
   if total <= 1 {
     return output
   }
@@ -229,8 +229,8 @@ async fn info(input : String, json : Bool) -> Result[Unit, String] {
       // asked per run, because the fallback chain depends on the face the
       // run is set in — a glyph some other bundled family happens to have
       // is still dropped here
-      let dropped_counts : Map[Int, Int] = Map([])
-      let dropped_order : Array[Int] = []
+      let dropped_counts : Map[Int32, Int32] = Map([])
+      let dropped_order : Array[Int32] = []
       for page in model.pages {
         for item in page.items {
           guard item is Text(run) else { continue }

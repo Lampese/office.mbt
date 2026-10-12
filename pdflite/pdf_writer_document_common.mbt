@@ -1,8 +1,8 @@
 ///|
 fn pdf_writer_push_padded_decimal(
   output : Array[Byte],
-  value : Int,
-  width : Int,
+  value : Int32,
+  width : Int32,
 ) -> Unit {
   let text = value.to_string()
   if text.length() < width {
@@ -16,8 +16,8 @@ fn pdf_writer_push_padded_decimal(
 ///|
 fn pdf_writer_push_header(
   output : Array[Byte],
-  major : Int,
-  minor : Int,
+  major : Int32,
+  minor : Int32,
 ) -> Unit {
   pdf_writer_push_ascii(output, "%PDF-")
   pdf_writer_push_ascii(output, major.to_string())
@@ -34,9 +34,11 @@ fn pdf_writer_push_header(
 fn pdf_writer_write_document_objects(
   output : Array[Byte],
   document : PdfDocument,
-) -> Array[(Int, Int, Int)] raise @core.PdfError {
+) -> Array[(Int32, Int32, Int32)] raise @core.PdfError {
   let object_numbers = document.object_numbers()
-  let xrefs : Array[(Int, Int, Int)] = Array(capacity=object_numbers.length())
+  let xrefs : Array[(Int32, Int32, Int32)] = Array(
+    capacity=object_numbers.length(),
+  )
   for number in object_numbers {
     match document.objects.get_entry(number).unwrap() {
       { data: ObjectParsed(object), generation, }

@@ -9,6 +9,6 @@
 /// package that both `reader` and the document core can depend on without a
 /// cycle.
 pub(all) struct ObjectStreamReference {
-  object_stream_number : Int
-  index : Int
+  object_stream_number : Int32
+  index : Int32
 } derive(Debug, Eq)

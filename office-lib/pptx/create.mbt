@@ -4,7 +4,7 @@
 /// creates a fresh package; it does not rewrite an existing presentation.
 pub async fn create_presentation(
   options : @transaction.CreateTransactionOptions,
-  title? : String = "",
+  title~ : String = "",
 ) -> @transaction.TransactionReport {
   guard options.output_path.to_lower().has_suffix(".pptx") else {
     raise @transaction.transaction_failure(

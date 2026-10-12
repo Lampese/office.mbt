@@ -47,7 +47,7 @@ fn warnings_to_json(warnings : Array[ProtocolWarning]) -> Json {
 /// envelope. The `warnings` member is omitted when there are no warnings.
 pub fn output_success(
   data : Json,
-  warnings? : Array[ProtocolWarning] = [],
+  warnings~ : Array[ProtocolWarning] = [],
 ) -> Json {
   let fields : Map[String, Json] = {
     "schema": Json::string("office.output/1"),
@@ -65,7 +65,7 @@ pub fn output_success(
 /// The `warnings` member is omitted when there are no warnings.
 pub fn output_failure(
   error : ProtocolError,
-  warnings? : Array[ProtocolWarning] = [],
+  warnings~ : Array[ProtocolWarning] = [],
 ) -> Json {
   let error_fields : Map[String, Json] = {
     "code": Json::string(error.code),

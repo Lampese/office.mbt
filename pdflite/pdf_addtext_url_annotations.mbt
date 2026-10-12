@@ -112,7 +112,7 @@ pub fn pdf_addtext_url_annotation_geometry(
 ///|
 fn pdf_addtext_url_annotation_prefix(
   text : String,
-  position : Int,
+  position : Int32,
 ) -> String raise @core.PdfError {
   let bytes = @utf8.encode(text)
   if position < 0 || position > bytes.length() {

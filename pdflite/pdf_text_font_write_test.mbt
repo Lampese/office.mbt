@@ -4,14 +4,14 @@ fn text_font_write_name_for_test(text : String) -> @core.PdfName {
 }
 
 ///|
-fn text_font_write_bytes_for_test(values : ArrayView[Int]) -> @core.PdfBytes {
+fn text_font_write_bytes_for_test(values : ArrayView[Int32]) -> @core.PdfBytes {
   try! @core.pdf_bytes_of_int_array(values)
 }
 
 ///|
 fn text_font_write_difference_for_test(
   name : String,
-  code : Int,
+  code : Int32,
 ) -> @pdflite.PdfEncodingDifference {
   { name: text_font_write_name_for_test(name), code, }
 }

@@ -28,8 +28,8 @@ fn unexpected_cli_failure(
 fn format_resource_failure(
   format : String,
   resource : String,
-  limit : Int,
-  actual? : Int,
+  limit : Int32,
+  actual? : Int32,
 ) -> CliFailure {
   let fields : Map[String, Json] = {
     "resource": Json::string(resource),
@@ -49,7 +49,7 @@ fn format_resource_failure(
 }
 
 ///|
-fn terminal_hex_digit(value : Int) -> Char {
+fn terminal_hex_digit(value : Int32) -> Char {
   match value {
     0 => '0'
     1 => '1'
@@ -99,7 +99,7 @@ fn output_mode_from_args(args : Array[String]) -> OutputMode {
 }
 
 ///|
-fn bounded_text(value : String, maximum_chars : Int) -> String {
+fn bounded_text(value : String, maximum_chars : Int32) -> String {
   let output = StringBuilder()
   let mut count = 0
   let mut truncated = false
@@ -143,7 +143,7 @@ fn terminal_safe_text(value : String) -> String {
 }
 
 ///|
-fn human_text(value : String, maximum : Int) -> String {
+fn human_text(value : String, maximum : Int32) -> String {
   terminal_safe_text(bounded_text(value, maximum))
 }
 

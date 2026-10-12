@@ -13,13 +13,13 @@ let kinsoku_no_start : String = "、。，．：；！？）」』】〉》〕�
 let kinsoku_no_end : String = "（「『【〈《〔‘“([{‹«"
 
 ///|
-let no_start_set : Map[Int, Unit] = Map([])
+let no_start_set : Map[Int32, Unit] = Map([])
 
 ///|
-let no_end_set : Map[Int, Unit] = Map([])
+let no_end_set : Map[Int32, Unit] = Map([])
 
 ///|
-fn kinsoku_sets() -> (Map[Int, Unit], Map[Int, Unit]) {
+fn kinsoku_sets() -> (Map[Int32, Unit], Map[Int32, Unit]) {
   if no_start_set.is_empty() {
     for c in kinsoku_no_start {
       no_start_set[c.to_int()] = ()
@@ -34,7 +34,7 @@ fn kinsoku_sets() -> (Map[Int, Unit], Map[Int, Unit]) {
 ///|
 /// Whether `codepoint` belongs to a script that permits breaking between
 /// adjacent characters (CJK ideographs, kana, hangul, fullwidth forms).
-pub fn is_cjk(codepoint : Int) -> Bool {
+pub fn is_cjk(codepoint : Int32) -> Bool {
   (codepoint >= 0x2E80 && codepoint <= 0x9FFF) || // radicals … kana … han
   (codepoint >= 0xAC00 && codepoint <= 0xD7AF) || // hangul syllables
   (codepoint >= 0xF900 && codepoint <= 0xFAFF) || // compat ideographs
@@ -47,20 +47,20 @@ pub fn is_cjk(codepoint : Int) -> Bool {
 /// Characters that hang at a line end and never trigger overflow. A tab
 /// is *not* one: its width is a computed advance to a stop, so trimming
 /// it would move the text that follows it.
-fn is_space(code_unit : Int) -> Bool {
+fn is_space(code_unit : Int32) -> Bool {
   code_unit == 0x20
 }
 
 ///|
 /// A tab is a break opportunity, like a space, but keeps its width.
-fn is_tab(code_unit : Int) -> Bool {
+fn is_tab(code_unit : Int32) -> Bool {
   code_unit == 0x09
 }
 
 ///|
 /// The codepoint at UTF-16 index `i` (combining a surrogate pair when `i`
 /// is its lead), or the raw code unit for an unpaired surrogate.
-fn codepoint_at(text : String, i : Int) -> Int {
+fn codepoint_at(text : String, i : Int32) -> Int32 {
   let unit = text[i].to_int()
   if unit >= 0xD800 && unit <= 0xDBFF && i + 1 < text.length() {
     let low = text[i + 1].to_int()
@@ -74,7 +74,7 @@ fn codepoint_at(text : String, i : Int) -> Int {
 ///|
 /// The codepoint ENDING at UTF-16 index `i` inclusive (looking back across
 /// a surrogate pair).
-fn codepoint_before(text : String, i : Int) -> Int {
+fn codepoint_before(text : String, i : Int32) -> Int32 {
   let unit = text[i].to_int()
   if unit >= 0xDC00 && unit <= 0xDFFF && i > 0 {
     let high = text[i - 1].to_int()
@@ -90,7 +90,7 @@ fn codepoint_before(text : String, i : Int) -> Int {
 /// after a space, after a hyphen-minus, or at a CJK boundary — unless a
 /// kinsoku rule forbids the surrounding characters from ending/starting a
 /// line. Index 0 (and the trail half of a surrogate pair) never breaks.
-pub fn can_break_at(text : String, i : Int) -> Bool {
+pub fn can_break_at(text : String, i : Int32) -> Bool {
   if i <= 0 || i >= text.length() {
     return false
   }

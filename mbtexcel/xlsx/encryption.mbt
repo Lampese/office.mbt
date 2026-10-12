@@ -27,10 +27,10 @@ let max_password_length = 255
 
 ///|
 priv struct KeyData {
-  salt_size : Int
-  block_size : Int
-  key_bits : Int
-  hash_size : Int
+  salt_size : Int32
+  block_size : Int32
+  key_bits : Int32
+  hash_size : Int32
   cipher_algorithm : String
   cipher_chaining : String
   hash_algorithm : String
@@ -45,7 +45,7 @@ priv struct DataIntegrity {
 
 ///|
 priv struct EncryptedKey {
-  spin_count : Int
+  spin_count : Int32
   key_data : KeyData
   encrypted_verifier_hash_input : Bytes
   encrypted_verifier_hash_value : Bytes
@@ -146,7 +146,7 @@ fn byte_xor(a : Byte, b : Byte) -> Byte {
 }
 
 ///|
-fn u32_le_bytes(value : Int) -> Bytes {
+fn u32_le_bytes(value : Int32) -> Bytes {
   let out = @buffer.Buffer(size_hint=4)
   out.write_uint_le(value.reinterpret_as_uint())
   out.to_bytes()
@@ -160,7 +160,7 @@ fn u64_le_bytes(value : UInt64) -> Bytes {
 }
 
 ///|
-fn pad_zero(data : BytesView, block_size : Int) -> Bytes {
+fn pad_zero(data : BytesView, block_size : Int32) -> Bytes {
   let len = data.length()
   let remainder = len % block_size
   if remainder == 0 {
@@ -182,7 +182,7 @@ let random_bytes_rng : Ref[@random.Rand?] = { val: None, }
 
 ///|
 /// Optional user-supplied source of cryptographically secure bytes.
-let random_bytes_override : Ref[((Int) -> Bytes)?] = { val: None, }
+let random_bytes_override : Ref[((Int32) -> Bytes)?] = { val: None, }
 
 ///|
 /// Installs a custom source for the random bytes used in workbook
@@ -196,7 +196,7 @@ let random_bytes_override : Ref[((Int) -> Bytes)?] = { val: None, }
 /// SHA-256: best-effort unique per process (millisecond clock
 /// resolution means simultaneous process starts can collide), and not
 /// a CSPRNG.
-pub fn set_random_source(source : (Int) -> Bytes) -> Unit {
+pub fn set_random_source(source : (Int32) -> Bytes) -> Unit {
   random_bytes_override.val = Some(source)
 }
 
@@ -216,7 +216,7 @@ fn seeded_random_rng() -> @random.Rand {
 }
 
 ///|
-fn random_bytes(count : Int) -> Bytes {
+fn random_bytes(count : Int32) -> Bytes {
   match random_bytes_override.val {
     Some(source) => {
       let bytes = source(count)
@@ -247,7 +247,7 @@ fn parse_required_attr(
 }
 
 ///|
-fn parse_int_attr(tag : StringView, name : String) -> Int raise XlsxError {
+fn parse_int_attr(tag : StringView, name : String) -> Int32 raise XlsxError {
   let text = parse_required_attr(tag, name)
   @string.parse_int(text, base=10) catch {
     _ => raise InvalidEncryptionInfo(msg="invalid \{name} value")
@@ -362,7 +362,7 @@ fn validate_key_data(key_data : KeyData) -> Unit raise XlsxError {
 ///|
 fn validate_encryption_info(
   encryption : EncryptionInfo,
-  limits? : ReadLimits = ReadLimits::new(),
+  limits~ : ReadLimits = ReadLimits::new(),
 ) -> Unit raise XlsxError {
   validate_key_data(encryption.key_data)
   validate_key_data(encryption.encrypted_key.key_data)
@@ -436,7 +436,7 @@ fn encryption_mechanism(
 fn derive_password_hash(
   password : String,
   encryption : EncryptionInfo,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Bytes raise XlsxError {
   let key_data = encryption.encrypted_key.key_data
   let salt_value = key_data.salt_value
@@ -537,7 +537,7 @@ fn create_iv_from_block(
 
 ///|
 fn create_iv(
-  block_index : Int,
+  block_index : Int32,
   encryption : EncryptionInfo,
 ) -> Bytes raise XlsxError {
   let block_bytes = u32_le_bytes(block_index)
@@ -549,7 +549,7 @@ fn decrypt_package(
   package_key : BytesView,
   input : BytesView,
   encryption : EncryptionInfo,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Bytes raise XlsxError {
   check_read_cancelled(cancelled)
   let block_size = encryption.key_data.block_size
@@ -591,7 +591,7 @@ fn agile_decrypt(
   encrypted_package_buf : BytesView,
   password : String,
   limits : ReadLimits,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> DecryptedPackage raise XlsxError {
   check_read_cancelled(cancelled)
   if encryption_info_buf.length() > limits.max_xml_part_bytes {
@@ -630,10 +630,10 @@ fn agile_decrypt(
 
 ///|
 fn standard_convert_password_to_key(
-  key_bits : Int,
+  key_bits : Int32,
   salt : BytesView,
   password : String,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Bytes raise XlsxError {
   let password_bytes = @encoding/utf16.encode(
     password,
@@ -704,8 +704,8 @@ fn standard_decrypt(
   encryption_info_buf : BytesView,
   encrypted_package_buf : BytesView,
   password : String,
-  limits? : ReadLimits = ReadLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  limits~ : ReadLimits = ReadLimits::new(),
+  cancelled~ : () -> Bool = () => false,
 ) -> DecryptedPackage raise XlsxError {
   check_read_cancelled(cancelled)
   if encryption_info_buf.length() < 12 {
@@ -791,8 +791,8 @@ fn is_encrypted_package(bytes : BytesView) -> Bool {
 fn decrypt_encrypted_package_result(
   bytes : BytesView,
   password : String,
-  limits? : ReadLimits = ReadLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  limits~ : ReadLimits = ReadLimits::new(),
+  cancelled~ : () -> Bool = () => false,
 ) -> DecryptedPackage raise XlsxError {
   check_read_cancelled(cancelled)
   check_source_package_size(bytes, limits)
@@ -844,7 +844,7 @@ fn decrypt_encrypted_package_result(
 fn decrypted_package_archive(
   decrypted : DecryptedPackage,
   limits : ReadLimits,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> @zip.Archive raise XlsxError {
   read_limited_archive(decrypted.bytes, limits, cancelled~) catch {
     ResourceLimitExceeded(kind~, limit~, actual~) =>
@@ -863,8 +863,8 @@ fn decrypted_package_archive(
 fn decrypt_encrypted_archive(
   bytes : BytesView,
   password : String,
-  limits? : ReadLimits = ReadLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  limits~ : ReadLimits = ReadLimits::new(),
+  cancelled~ : () -> Bool = () => false,
 ) -> @zip.Archive raise XlsxError {
   decrypted_package_archive(
     decrypt_encrypted_package_result(bytes, password, limits~, cancelled~),
@@ -877,8 +877,8 @@ fn decrypt_encrypted_archive(
 fn decrypt_encrypted_package(
   bytes : BytesView,
   password : String,
-  limits? : ReadLimits = ReadLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  limits~ : ReadLimits = ReadLimits::new(),
+  cancelled~ : () -> Bool = () => false,
 ) -> Bytes raise XlsxError {
   let decrypted = decrypt_encrypted_package_result(
     bytes,
@@ -917,23 +917,23 @@ fn standard_key_encryption(password : String) -> (Bytes, Bytes) raise XlsxError 
   let writer = @buffer.Buffer(size_hint=128)
   writer.write_uint16_le((0x0003 : UInt16))
   writer.write_uint16_le((0x0002 : UInt16))
-  writer.write_uint_le((0x24 : UInt))
-  writer.write_uint_le((0xa4 : UInt))
-  writer.write_uint_le((0x24 : UInt))
-  writer.write_uint_le((0x00 : UInt))
-  writer.write_uint_le((0x660e : UInt))
-  writer.write_uint_le((0x8004 : UInt))
-  writer.write_uint_le((0x80 : UInt))
-  writer.write_uint_le((0x18 : UInt))
+  writer.write_uint_le((0x24 : UInt32))
+  writer.write_uint_le((0xa4 : UInt32))
+  writer.write_uint_le((0x24 : UInt32))
+  writer.write_uint_le((0x00 : UInt32))
+  writer.write_uint_le((0x660e : UInt32))
+  writer.write_uint_le((0x8004 : UInt32))
+  writer.write_uint_le((0x80 : UInt32))
+  writer.write_uint_le((0x18 : UInt32))
   writer.write_uint64_le((0x00 : UInt64))
   writer.write_string_utf16le(
     "Microsoft Enhanced RSA and AES Cryptographic Provider (Prototype)",
   )
   writer.write_uint16_le((0x00 : UInt16))
-  writer.write_uint_le((0x10 : UInt))
+  writer.write_uint_le((0x10 : UInt32))
   writer.write_bytes(salt_value)
   writer.write_bytes(encrypted_verifier_hash_input)
-  writer.write_uint_le((0x14 : UInt))
+  writer.write_uint_le((0x14 : UInt32))
   writer.write_bytes(encrypted_verifier_hash_value)
   (writer.to_bytes(), encrypted_key_value)
 }
@@ -955,7 +955,7 @@ fn encrypt_package(raw : BytesView, password : String) -> Bytes raise XlsxError 
 ///|
 pub fn encrypt(
   raw : BytesView,
-  options? : Options = Options::new(),
+  options~ : Options = Options::new(),
 ) -> Bytes raise XlsxError {
   encrypt_package(raw, options.password)
 }
@@ -963,9 +963,9 @@ pub fn encrypt(
 ///|
 pub fn decrypt(
   raw : BytesView,
-  options? : Options = Options::new(),
-  limits? : ReadLimits = ReadLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  options~ : Options = Options::new(),
+  limits~ : ReadLimits = ReadLimits::new(),
+  cancelled~ : () -> Bool = () => false,
 ) -> Bytes raise XlsxError {
   decrypt_encrypted_package(raw, options.password, limits~, cancelled~)
 }
@@ -985,7 +985,7 @@ fn bytes_to_hex(bytes : BytesView) -> String {
 }
 
 ///|
-fn hex_value(ch : Char) -> Int raise XlsxError {
+fn hex_value(ch : Char) -> Int32 raise XlsxError {
   if ch >= '0' && ch <= '9' {
     ch.to_int() - '0'.to_int()
   } else if ch >= 'a' && ch <= 'f' {
@@ -1000,7 +1000,7 @@ fn hex_value(ch : Char) -> Int raise XlsxError {
 ///|
 fn hex_to_bytes(text : StringView) -> Bytes raise XlsxError {
   let out : Array[Byte] = Array(capacity=text.length() / 2)
-  let mut pending_hi : Int? = None
+  let mut pending_hi : Int32? = None
   for ch in text {
     let v = hex_value(ch)
     match pending_hi {
@@ -1901,23 +1901,23 @@ test "standard decryption accepts RC4-style verifier layout" {
   let info = @buffer.Buffer(size_hint=128)
   info.write_uint16_le((3 : UInt16)) // version major
   info.write_uint16_le((2 : UInt16)) // version minor
-  info.write_uint_le((0x0000_0024 : UInt)) // flags
-  info.write_uint_le((32 : UInt)) // header size
-  info.write_uint_le((0x0000_0024 : UInt)) // header flags
-  info.write_uint_le((0 : UInt)) // size extra
-  info.write_uint_le((0x0000_6801 : UInt)) // AlgID: RC4, not an AES id
-  info.write_uint_le((0x0000_8004 : UInt)) // AlgIDHash: SHA-1
-  info.write_uint_le((128 : UInt)) // key size bits
-  info.write_uint_le((1 : UInt)) // provider type
-  info.write_uint_le((0 : UInt)) // reserved1
-  info.write_uint_le((0 : UInt)) // reserved2
+  info.write_uint_le((0x0000_0024 : UInt32)) // flags
+  info.write_uint_le((32 : UInt32)) // header size
+  info.write_uint_le((0x0000_0024 : UInt32)) // header flags
+  info.write_uint_le((0 : UInt32)) // size extra
+  info.write_uint_le((0x0000_6801 : UInt32)) // AlgID: RC4, not an AES id
+  info.write_uint_le((0x0000_8004 : UInt32)) // AlgIDHash: SHA-1
+  info.write_uint_le((128 : UInt32)) // key size bits
+  info.write_uint_le((1 : UInt32)) // provider type
+  info.write_uint_le((0 : UInt32)) // reserved1
+  info.write_uint_le((0 : UInt32)) // reserved2
   // RC4-style verifier: salt size + salt + verifier(16) + hash size + hash(20)
-  info.write_uint_le((16 : UInt))
+  info.write_uint_le((16 : UInt32))
   info.write_bytes(salt_bytes)
   for _i in 0..<16 {
     info.write_byte((0xaa).to_byte())
   }
-  info.write_uint_le((20 : UInt))
+  info.write_uint_le((20 : UInt32))
   for _i in 0..<20 {
     info.write_byte((0xbb).to_byte())
   }

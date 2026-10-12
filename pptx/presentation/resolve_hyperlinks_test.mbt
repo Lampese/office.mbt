@@ -7,7 +7,7 @@
 /// has `target` attached. Returns the freshly-built (resolved) prs.
 fn build_with_hyperlink(
   target : @slide.HyperlinkTarget,
-  tooltip? : String = "",
+  tooltip~ : String = "",
 ) -> @presentation.Presentation raise @presentation.PptxError {
   let prs = @presentation.Presentation::new()
   let _ = prs.add_slide_mut(0)

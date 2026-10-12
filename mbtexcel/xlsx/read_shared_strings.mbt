@@ -108,11 +108,11 @@ fn parse_rich_text_font(body : StringView) -> RichTextFont? raise XlsxError {
   let mut underline : String? = None
   let mut size : Double? = None
   let mut color : String? = None
-  let mut color_theme : Int? = None
-  let mut color_indexed : Int? = None
+  let mut color_theme : Int32? = None
+  let mut color_indexed : Int32? = None
   let mut color_tint : Double? = None
-  let mut charset : Int? = None
-  let mut family_number : Int? = None
+  let mut charset : Int32? = None
+  let mut family_number : Int32? = None
   let mut scheme : String? = None
   let mut vert_align : String? = None
   let mut family : String? = None

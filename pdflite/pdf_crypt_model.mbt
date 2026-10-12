@@ -154,7 +154,7 @@ fn pdf_crypt_lookup_int(
   pdf : PdfDocument,
   key : @core.PdfName,
   dictionary : @syntax.PdfObject,
-) -> Int? {
+) -> Int32? {
   match pdf.lookup_direct(key, dictionary) {
     Some(PdfInteger(value)) => Some(value)
     _ => None
@@ -190,7 +190,7 @@ fn pdf_crypt_required_int(
   pdf : PdfDocument,
   key : @core.PdfName,
   dictionary : @syntax.PdfObject,
-) -> Int raise @core.PdfError {
+) -> Int32 raise @core.PdfError {
   match pdf_crypt_lookup_int(pdf, key, dictionary) {
     Some(value) => value
     None => raise EncryptionDictionaryEntryExpected(key)
@@ -201,7 +201,7 @@ fn pdf_crypt_required_int(
 fn pdf_crypt_chop_string(
   key : @core.PdfName,
   value : @core.PdfBytes,
-  need : Int,
+  need : Int32,
 ) -> @core.PdfBytes raise @core.PdfError {
   pdf_crypt_chop_view(key, value, need)
 }
@@ -210,7 +210,7 @@ fn pdf_crypt_chop_string(
 fn pdf_crypt_chop_view(
   key : @core.PdfName,
   value : BytesView,
-  need : Int,
+  need : Int32,
 ) -> @core.PdfBytes raise @core.PdfError {
   if value.length() < need {
     raise EncryptionDictionaryEntryTooShort(key)

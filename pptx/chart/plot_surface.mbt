@@ -22,7 +22,7 @@ pub(all) struct SurfaceChartBody {
   wireframe : Bool?
   series : Array[ChartSeriesCore]
   band_fmts : @xml.XmlElement?
-  ax_ids : Array[Int]
+  ax_ids : Array[Int32]
   extension : Array[@xml.XmlElement]
 } derive(Eq, Debug)
 
@@ -48,7 +48,7 @@ pub(all) struct Surface3DChartBody {
   wireframe : Bool?
   series : Array[ChartSeriesCore]
   band_fmts : @xml.XmlElement?
-  ax_ids : Array[Int]
+  ax_ids : Array[Int32]
   extension : Array[@xml.XmlElement]
 } derive(Eq, Debug)
 

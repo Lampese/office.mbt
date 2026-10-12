@@ -162,7 +162,7 @@ test "an id-targeted rename round-trips through serialize" {
 ///|
 /// A group holding one rectangle, so the recursive id walk has something to
 /// descend into. Group children share the slide's `<p:spTree>` id space.
-fn group_with_child(group_id : Int, child_id : Int) -> @slide.Shape {
+fn group_with_child(group_id : Int32, child_id : Int32) -> @slide.Shape {
   let child = @slide.AutoShape::rect(
     id=child_id,
     name="Inner",

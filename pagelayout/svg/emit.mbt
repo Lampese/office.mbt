@@ -93,7 +93,7 @@ fn emit_text(
   model : @pagelayout.PageModel,
   run : @pagelayout.GlyphRun,
   paint? : String,
-  num? : (Double) -> String = fmt_num,
+  num~ : (Double) -> String = fmt_num,
 ) -> Unit {
   if run.text.length() == 0 {
     return
@@ -181,8 +181,8 @@ fn emit_rect(sb : StringBuilder, rect : @pagelayout.RectItem) -> Unit {
 fn emit_image(
   sb : StringBuilder,
   image : @pagelayout.ImageItem,
-  num? : (Double) -> String = fmt_num,
-  fill? : Bool = false,
+  num~ : (Double) -> String = fmt_num,
+  fill~ : Bool = false,
 ) -> Unit {
   sb.write_string("  <image x=\"")
   sb.write_string(num(image.x_pt))
@@ -206,7 +206,7 @@ fn emit_image(
 /// Render one page as a standalone SVG document. Link regions are
 /// non-visual and are emitted as inert metadata-free anchors only when
 /// they enclose no visible artwork — v1 skips them entirely.
-pub fn render_page(model : @pagelayout.PageModel, page_index : Int) -> String {
+pub fn render_page(model : @pagelayout.PageModel, page_index : Int32) -> String {
   let page = model.pages[page_index]
   let sb = StringBuilder()
   sb.write_string(

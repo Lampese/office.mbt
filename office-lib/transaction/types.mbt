@@ -39,7 +39,7 @@ priv enum TextScan {
 }
 
 ///|
-fn scan_text(text : String, limit : Int) -> TextScan {
+fn scan_text(text : String, limit : Int32) -> TextScan {
   let unit_length = text.length()
   let mut unit_offset = 0
   let mut scalar_count = 0
@@ -65,7 +65,7 @@ fn scan_text(text : String, limit : Int) -> TextScan {
 }
 
 ///|
-fn bounded_text(text : String, limit : Int) -> String {
+fn bounded_text(text : String, limit : Int32) -> String {
   if scan_text(text, limit) is Valid {
     return text
   }
@@ -135,8 +135,8 @@ fn is_office_error_code(code : String) -> Bool {
 ///|
 fn bounded_error_details(
   value : Json,
-  depth : Int,
-  remaining : Ref[Int],
+  depth : Int32,
+  remaining : Ref[Int32],
 ) -> Bool {
   if depth > transaction_max_error_detail_depth || remaining.val <= 0 {
     return false
@@ -365,7 +365,7 @@ pub struct TransactionOptions {
   output_path : String?
   dry_run : Bool
   overwrite : Bool
-  permission : Int
+  permission : Int32
 }
 
 ///|
@@ -379,9 +379,9 @@ pub struct TransactionOptions {
 pub fn transaction_options(
   input_path : String,
   output_path? : String,
-  dry_run? : Bool = false,
-  overwrite? : Bool = false,
-  permission? : Int = 0o600,
+  dry_run~ : Bool = false,
+  overwrite~ : Bool = false,
+  permission~ : Int32 = 0o600,
 ) -> TransactionOptions raise TransactionError {
   checked_path(input_path, "input_path")
   match output_path {
@@ -404,8 +404,8 @@ pub fn transaction_options(
 /// been charged to the live-memory envelope. Candidate serializers must apply
 /// this ceiling during their sizing pass, before allocating package bytes.
 pub struct TransactionBudget {
-  priv max_candidate_package_bytes : Int
-  priv max_splice_materialized_bytes : Int
+  priv max_candidate_package_bytes : Int32
+  priv max_splice_materialized_bytes : Int32
 }
 
 ///|
@@ -416,7 +416,7 @@ pub struct TransactionBudget {
 /// consumes this allowance.
 pub fn TransactionBudget::max_candidate_package_bytes(
   self : TransactionBudget,
-) -> Int {
+) -> Int32 {
   self.max_candidate_package_bytes
 }
 
@@ -427,13 +427,15 @@ pub fn TransactionBudget::max_candidate_package_bytes(
 /// serialized candidate allowance.
 pub fn TransactionBudget::max_splice_materialized_bytes(
   self : TransactionBudget,
-) -> Int {
+) -> Int32 {
   self.max_splice_materialized_bytes
 }
 
 ///|
 /// Maximum archive entry count accepted by the transaction boundary.
-pub fn TransactionBudget::max_archive_entries(_self : TransactionBudget) -> Int {
+pub fn TransactionBudget::max_archive_entries(
+  _self : TransactionBudget,
+) -> Int32 {
   transaction_max_archive_entries
 }
 
@@ -441,7 +443,7 @@ pub fn TransactionBudget::max_archive_entries(_self : TransactionBudget) -> Int 
 /// Maximum uncompressed payload bytes for one archive entry.
 pub fn TransactionBudget::max_entry_uncompressed_bytes(
   _self : TransactionBudget,
-) -> Int {
+) -> Int32 {
   transaction_max_entry_uncompressed_bytes
 }
 
@@ -449,7 +451,7 @@ pub fn TransactionBudget::max_entry_uncompressed_bytes(
 /// Maximum aggregate uncompressed payload bytes for one archive.
 pub fn TransactionBudget::max_total_uncompressed_bytes(
   _self : TransactionBudget,
-) -> Int {
+) -> Int32 {
   transaction_max_total_uncompressed_bytes
 }
 
@@ -457,13 +459,15 @@ pub fn TransactionBudget::max_total_uncompressed_bytes(
 /// Maximum number of parts a preservation manifest may declare.
 pub fn TransactionBudget::max_preservation_parts(
   _self : TransactionBudget,
-) -> Int {
+) -> Int32 {
   transaction_max_part_count
 }
 
 ///|
 /// Maximum Unicode scalar count for one declared part name.
-pub fn TransactionBudget::max_part_name_chars(_self : TransactionBudget) -> Int {
+pub fn TransactionBudget::max_part_name_chars(
+  _self : TransactionBudget,
+) -> Int32 {
   transaction_max_part_length
 }
 
@@ -471,7 +475,7 @@ pub fn TransactionBudget::max_part_name_chars(_self : TransactionBudget) -> Int 
 /// Maximum bounded validator findings accepted by the transaction report.
 pub fn TransactionBudget::max_validation_findings(
   _self : TransactionBudget,
-) -> Int {
+) -> Int32 {
   transaction_max_validator_findings
 }
 
@@ -479,7 +483,7 @@ pub fn TransactionBudget::max_validation_findings(
 /// Maximum Unicode scalar count retained for one validator message.
 pub fn TransactionBudget::max_validation_message_chars(
   _self : TransactionBudget,
-) -> Int {
+) -> Int32 {
   transaction_max_message_length
 }
 
@@ -506,7 +510,7 @@ pub fn TransactionBudget::max_validation_message_chars(
 /// still scales down with it.
 pub fn TransactionBudget::max_splice_xml_tokens(
   self : TransactionBudget,
-) -> Int {
+) -> Int32 {
   let tokens = self.max_splice_materialized_bytes / 8
   if tokens > 0 {
     tokens
@@ -738,7 +742,7 @@ fn checked_parts(
 /// package bytes.
 pub fn transaction_mutation(
   bytes : Bytes,
-  warnings? : Array[@office.ProtocolWarning] = [],
+  warnings~ : Array[@office.ProtocolWarning] = [],
 ) -> TransactionMutation raise TransactionError {
   {
     result: Serialized(bytes),
@@ -755,7 +759,7 @@ pub fn transaction_mutation(
 pub fn transaction_mutation_with_manifest(
   bytes : Bytes,
   declared_parts : Array[String],
-  warnings? : Array[@office.ProtocolWarning] = [],
+  warnings~ : Array[@office.ProtocolWarning] = [],
 ) -> TransactionMutation raise TransactionError {
   {
     result: Serialized(bytes),
@@ -769,7 +773,7 @@ pub fn transaction_mutation_with_manifest(
 /// resolves it to the exact current input buffer that it owns, so callers cannot
 /// substitute a stale or separately allocated buffer.
 pub fn transaction_reuse_original(
-  warnings? : Array[@office.ProtocolWarning] = [],
+  warnings~ : Array[@office.ProtocolWarning] = [],
 ) -> TransactionMutation raise TransactionError {
   {
     result: ReuseOriginal,
@@ -785,7 +789,7 @@ pub fn transaction_reuse_original(
 /// during resolve.
 pub fn transaction_reuse_original_with_manifest(
   declared_parts : Array[String],
-  warnings? : Array[@office.ProtocolWarning] = [],
+  warnings~ : Array[@office.ProtocolWarning] = [],
 ) -> TransactionMutation raise TransactionError {
   {
     result: ReuseOriginal,
@@ -815,7 +819,7 @@ pub fn TransactionMode::name(self : TransactionMode) -> String {
 pub struct ValidationSummary {
   name : String
   passed : Bool
-  finding_count : Int
+  finding_count : Int32
 }
 
 ///|
@@ -840,8 +844,8 @@ pub struct TransactionReport {
   dry_run : Bool
   changed : Bool
   committed : Bool
-  original_size : Int?
-  result_size : Int
+  original_size : Int32?
+  result_size : Int32
   replaced_existing : Bool
   overwritten_size : Int64?
   validations : ReadOnlyArray[ValidationSummary]

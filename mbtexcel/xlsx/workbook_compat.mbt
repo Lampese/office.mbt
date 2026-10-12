@@ -1,5 +1,5 @@
 ///|
-pub fn Workbook::get_active_sheet_index(self : Workbook) -> Int {
+pub fn Workbook::get_active_sheet_index(self : Workbook) -> Int32 {
   self.active_sheet_index()
 }
 
@@ -7,7 +7,7 @@ pub fn Workbook::get_active_sheet_index(self : Workbook) -> Int {
 pub fn Workbook::get_sheet_index(
   self : Workbook,
   name : StringView,
-) -> Int raise XlsxError {
+) -> Int32 raise XlsxError {
   check_sheet_name(name)
   match self.sheet_entry_index(name) {
     Some(value) => value
@@ -16,7 +16,7 @@ pub fn Workbook::get_sheet_index(
 }
 
 ///|
-pub fn Workbook::get_sheet_name(self : Workbook, index : Int) -> String? {
+pub fn Workbook::get_sheet_name(self : Workbook, index : Int32) -> String? {
   match self.sheet_name(index) {
     Some(value) => Some(value)
     None => Some("")
@@ -53,8 +53,8 @@ pub fn Workbook::charset_transcoder(
 pub fn Workbook::get_row_outline_level(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
-) -> Int raise XlsxError {
+  row : Int32,
+) -> Int32 raise XlsxError {
   self.row_outline_level(sheet_name, row)
 }
 
@@ -62,8 +62,8 @@ pub fn Workbook::get_row_outline_level(
 pub fn Workbook::get_col_outline_level(
   self : Workbook,
   sheet_name : StringView,
-  col : Int,
-) -> Int raise XlsxError {
+  col : Int32,
+) -> Int32 raise XlsxError {
   self.col_outline_level(sheet_name, col)
 }
 
@@ -71,7 +71,7 @@ pub fn Workbook::get_col_outline_level(
 pub fn Workbook::get_row_visible(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
+  row : Int32,
 ) -> Bool raise XlsxError {
   self.row_visible(sheet_name, row)
 }
@@ -80,7 +80,7 @@ pub fn Workbook::get_row_visible(
 pub fn Workbook::get_col_visible(
   self : Workbook,
   sheet_name : StringView,
-  col : Int,
+  col : Int32,
 ) -> Bool raise XlsxError {
   self.col_visible(sheet_name, col)
 }
@@ -168,7 +168,7 @@ pub fn Workbook::set_sheet_background_from_bytes(
 }
 
 ///|
-fn parse_column_range(columns : StringView) -> (Int, Int) raise XlsxError {
+fn parse_column_range(columns : StringView) -> (Int32, Int32) raise XlsxError {
   let text = columns.to_owned()
   let parts : Array[StringView] = []
   for part in text.split(":") {
@@ -228,7 +228,7 @@ pub fn Workbook::set_col_outline_level_range(
   self : Workbook,
   sheet_name : StringView,
   columns : StringView,
-  level : Int,
+  level : Int32,
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   let (start, end) = parse_column_range(columns)
@@ -242,7 +242,7 @@ pub fn Workbook::set_col_style_range(
   self : Workbook,
   sheet_name : StringView,
   columns : StringView,
-  style_id : Int,
+  style_id : Int32,
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   let (start, end) = parse_column_range(columns)

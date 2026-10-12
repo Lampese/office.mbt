@@ -120,7 +120,7 @@ pub fn MasterDefinition::with_date(
 pub fn Presentation::define_master(
   self : Presentation,
   def : MasterDefinition,
-) -> Int raise PptxError {
+) -> Int32 raise PptxError {
   let pres_name = match self.main_document_part_name() {
     Some(n) => n
     None => raise Malformed("package has no main-document relationship")
@@ -320,9 +320,9 @@ fn hf_rect(x : Int64) -> @slide.Transform {
 ///|
 /// Build a master placeholder `<p:sp>` value with a typed transform.
 fn master_placeholder(
-  id : Int,
+  id : Int32,
   ph_type : String,
-  idx : Int,
+  idx : Int32,
   position : @slide.Transform,
   body : @slide.TextBody?,
 ) -> @slide.AutoShape {
@@ -373,7 +373,7 @@ fn wrap_slide_master_xml(csld : String, layout_id : Int64) -> String {
 /// title / body / footer / date / slide-number geometry.
 fn wrap_slide_layout_xml(
   csld : String,
-  layout_type? : String = "blank",
+  layout_type~ : String = "blank",
 ) -> String {
   "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
   "<p:sldLayout xmlns:p=\"http://schemas.openxmlformats.org/presentationml/2006/main\"" +
@@ -459,7 +459,7 @@ fn Presentation::next_layout_part_name(self : Presentation) -> String {
 /// (slides, layouts, masters, media, images, charts) — it reads the run of
 /// digits immediately after `prefix` up to the next `.`, so a non-matching
 /// tail (e.g. `chartEx…` under the `chart` prefix) is skipped.
-fn Presentation::max_part_index(self : Presentation, prefix : String) -> Int {
+fn Presentation::max_part_index(self : Presentation, prefix : String) -> Int32 {
   let mut max = 0
   for p in self.pkg.parts() {
     // `has_prefix` rather than slicing: the old form allocated a String

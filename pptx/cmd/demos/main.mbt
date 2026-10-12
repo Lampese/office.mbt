@@ -63,7 +63,7 @@ fn bytes_to_hex(bytes : FixedArray[Byte]) -> String {
 }
 
 ///|
-fn hex_digit(n : Int) -> Char {
+fn hex_digit(n : Int32) -> Char {
   if n < 10 {
     (n + '0'.to_int()).unsafe_to_char()
   } else {

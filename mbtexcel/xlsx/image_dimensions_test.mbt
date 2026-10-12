@@ -1,12 +1,12 @@
 ///|
-fn last_image_emu(sheet : @xlsx.Worksheet) -> (Int, Int) {
+fn last_image_emu(sheet : @xlsx.Worksheet) -> (Int32, Int32) {
   let images = sheet.images()
   let last = images[images.length() - 1]
   (last.width_emu, last.height_emu)
 }
 
 ///|
-fn expected_image_emu(w_px : Int, h_px : Int) -> (Int, Int) {
+fn expected_image_emu(w_px : Int32, h_px : Int32) -> (Int32, Int32) {
   (9525 * w_px, 9525 * h_px)
 }
 

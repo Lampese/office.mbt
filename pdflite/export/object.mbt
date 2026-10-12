@@ -12,7 +12,7 @@ pub(all) enum Obj {
   /// A boolean.
   Bool(Bool)
   /// An integer.
-  Int(Int)
+  Int(Int32)
   /// A real number.
   Real(Double)
   /// A name (without the leading slash; escaped on output).
@@ -27,7 +27,7 @@ pub(all) enum Obj {
   /// A dictionary (keys without the leading slash).
   Dict(Array[(String, Obj)])
   /// A reference to an indirect object.
-  Ref(Int)
+  Ref(Int32)
 }
 
 ///|
@@ -179,7 +179,7 @@ let int64_pow10 : ReadOnlyArray[Int64] = [
 
 ///|
 /// The number of decimal digits of a non-negative `n` (1 for 0).
-fn decimal_length(n : Int64) -> Int {
+fn decimal_length(n : Int64) -> Int32 {
   let mut len = 1
   while len < int64_pow10.length() && n >= int64_pow10[len] {
     len += 1
@@ -190,7 +190,7 @@ fn decimal_length(n : Int64) -> Int {
 ///|
 /// Write the decimal digits of a non-negative `n`, with a decimal point
 /// before the digit at index `point` (none if `point` is negative).
-fn write_decimal(buf : @buffer.Buffer, n : Int64, point : Int) -> Unit {
+fn write_decimal(buf : @buffer.Buffer, n : Int64, point : Int32) -> Unit {
   let len = decimal_length(n)
   let mut rest = n
   for i = len - 1; i >= 0; i = i - 1 {
@@ -238,7 +238,7 @@ fn integral_string(v : Double) -> String {
 }
 
 ///|
-fn is_regular_name_byte(b : Int) -> Bool {
+fn is_regular_name_byte(b : Int32) -> Bool {
   b > 0x20 &&
   b < 0x7F &&
   b != '#'.to_int() &&
@@ -258,7 +258,7 @@ fn is_regular_name_byte(b : Int) -> Bool {
 let hex_digits : String = "0123456789ABCDEF"
 
 ///|
-fn write_hex_byte(buf : @buffer.Buffer, b : Int) -> Unit {
+fn write_hex_byte(buf : @buffer.Buffer, b : Int32) -> Unit {
   buf.write_byte(hex_digits[(b >> 4) & 0xF].to_byte())
   buf.write_byte(hex_digits[b & 0xF].to_byte())
 }
@@ -378,7 +378,7 @@ fn write_name(buf : @buffer.Buffer, name : String) -> Unit {
 
 ///|
 #inline
-fn write_name_byte(buf : @buffer.Buffer, b : Int) -> Unit {
+fn write_name_byte(buf : @buffer.Buffer, b : Int32) -> Unit {
   if is_regular_name_byte(b) {
     buf.write_byte(b.to_byte())
   } else {
@@ -428,10 +428,10 @@ fn write_obj(buf : @buffer.Buffer, obj : Obj) -> Unit {
 /// Serialize a whole file from its indirect objects (numbered `1..=count`).
 fn write_file(
   version : String,
-  objects : Map[Int, Indirect],
-  count : Int,
-  root : Int,
-  info : Int?,
+  objects : Map[Int32, Indirect],
+  count : Int32,
+  root : Int32,
+  info : Int32?,
   file_id : (Bytes, Bytes)?,
 ) -> Bytes {
   let buf = Buffer()
@@ -441,7 +441,7 @@ fn write_file(
   buf.write_byte(b'\x80')
   buf.write_byte(b'\x80')
   buf.write_byte(b'\n')
-  let offsets : Array[Int?] = Array::make(count + 1, None)
+  let offsets : Array[Int32?] = Array::make(count + 1, None)
   for i in 1..<=count {
     guard objects.get(i) is Some(object) else { continue }
     offsets[i] = Some(buf.length())

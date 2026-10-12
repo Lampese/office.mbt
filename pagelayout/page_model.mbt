@@ -27,9 +27,9 @@ pub(all) struct FontSpec {
 /// v1: solid colors keep the SVG output inside svgdiff's deterministic
 /// subset and match common document text.
 pub(all) struct Color {
-  r : Int
-  g : Int
-  b : Int
+  r : Int32
+  g : Int32
+  b : Int32
 } derive(Eq, Debug, ToJson)
 
 ///|
@@ -40,8 +40,8 @@ pub let black : Color = { r: 0, g: 0, b: 0, }
 /// Build a color, clamping each channel into 0..=255. Frontends convert
 /// untrusted document values through this so every encoding of the model
 /// (Eq, JSON, hex) agrees.
-pub fn Color::rgb(r : Int, g : Int, b : Int) -> Color {
-  fn clamp(v : Int) -> Int {
+pub fn Color::rgb(r : Int32, g : Int32, b : Int32) -> Color {
+  fn clamp(v : Int32) -> Int32 {
     if v < 0 {
       0
     } else if v > 255 {
@@ -68,7 +68,7 @@ pub fn Color::to_hex(self : Color) -> String {
 /// is the horizontal advance of the char at index `i` of `text` (UTF-16
 /// code units; the trailing surrogate of a pair carries advance 0).
 pub(all) struct GlyphRun {
-  font : Int
+  font : Int32
   size_pt : Double
   x_pt : Double
   baseline_pt : Double
@@ -193,7 +193,7 @@ pub(all) struct PageModel {
 
 ///|
 /// Intern `spec`, returning its index for `GlyphRun::font`.
-pub fn PageModel::add_font(self : PageModel, spec : FontSpec) -> Int {
+pub fn PageModel::add_font(self : PageModel, spec : FontSpec) -> Int32 {
   for i, existing in self.fonts {
     if existing == spec {
       return i

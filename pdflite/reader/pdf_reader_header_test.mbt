@@ -1,5 +1,5 @@
 ///|
-fn reader_bytes_for_header_test(values : ArrayView[Int]) -> @core.PdfBytes {
+fn reader_bytes_for_header_test(values : ArrayView[Int32]) -> @core.PdfBytes {
   try! @core.pdf_bytes_of_int_array(values)
 }
 

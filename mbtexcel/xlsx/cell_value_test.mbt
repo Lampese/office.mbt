@@ -136,7 +136,7 @@ test "formatted dates honor the workbook 1904 date system" {
 test "typed setters and cell type" {
   let workbook = @xlsx.Workbook::new()
   ignore(workbook.add_sheet("Sheet1"))
-  let value_uint : UInt = 7
+  let value_uint : UInt32 = 7
   workbook.set_cell_bool("Sheet1", "A1", true)
   workbook.set_cell_int("Sheet1", "B1", -12)
   workbook.set_cell_uint("Sheet1", "C1", value_uint)

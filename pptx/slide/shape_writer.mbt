@@ -184,7 +184,7 @@ fn write_auto_shape(
 fn write_cnvpr(
   w : @xml.XmlWriter,
   ctx : @oxml.WriteCtx,
-  id : Int,
+  id : Int32,
   name : String,
   media : MediaInfo?,
   hyperlink : ShapeHyperlink?,
@@ -294,7 +294,7 @@ fn write_nv_wrapper(
   ctx : @oxml.WriteCtx,
   wrapper_local : String,
   cnv_kind : String,
-  id : Int,
+  id : Int32,
   name : String,
   placeholder : Placeholder?,
   media : MediaInfo?,

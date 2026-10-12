@@ -3,7 +3,7 @@
 
 ///|
 /// Count non-overlapping occurrences of `needle` in `s`.
-fn count_occurrences(s : String, needle : String) -> Int {
+fn count_occurrences(s : String, needle : String) -> Int32 {
   let mut count = 0
   let mut rest = s
   while rest.find(needle) is Some(off) {

@@ -4,7 +4,7 @@
 
 ///|
 /// Generated predefined CMap lookup data.
-let pdf_text_gb1_unicode_table_flat : ReadOnlyArray[Int] = [
+let pdf_text_gb1_unicode_table_flat : ReadOnlyArray[Int32] = [
   0x0000, 0x0020, 0x0021, 0x0022, 0x0023, 0x0024, 0x0025, 0x0026, 0x0027, 0x0028,
   0x0029, 0x002A, 0x002B, 0x002C, 0x002D, 0x002E, 0x002F, 0x0030, 0x0031, 0x0032,
   0x0033, 0x0034, 0x0035, 0x0036, 0x0037, 0x0038, 0x0039, 0x003A, 0x003B, 0x003C,
@@ -3038,7 +3038,7 @@ let pdf_text_gb1_unicode_table_flat : ReadOnlyArray[Int] = [
 
 ///|
 /// Predefined CMap lookup table, unpacked at load from the flat static data above.
-pub let pdf_text_gb1_unicode_table : Array[Int] = pdf_cmap_unpack1(
+pub let pdf_text_gb1_unicode_table : Array[Int32] = pdf_cmap_unpack1(
   pdf_text_gb1_unicode_table_flat,
 )
 
@@ -3047,7 +3047,7 @@ pub let pdf_text_gb1_unicode_table : Array[Int] = pdf_cmap_unpack1(
 
 ///|
 /// Generated predefined CMap lookup data.
-let pdf_text_gbk2k_cid_ranges_flat : ReadOnlyArray[Int] = [
+let pdf_text_gbk2k_cid_ranges_flat : ReadOnlyArray[Int32] = [
   0x81308436, 0x81308436, 22354, 0x8138FD38, 0x8138FD39, 22428, 0x8138FE30, 0x8138FE39,
   22430, 0x81398130, 0x81398137, 22440, 0x81398139, 0x81398139, 22448, 0x81398230,
   0x81398239, 22449, 0x81398330, 0x81398339, 22459, 0x81398430, 0x81398439, 22469,
@@ -4948,6 +4948,6 @@ let pdf_text_gbk2k_cid_ranges_flat : ReadOnlyArray[Int] = [
 
 ///|
 /// Predefined CMap lookup table, unpacked at load from the flat static data above.
-pub let pdf_text_gbk2k_cid_ranges : Array[(Int, Int, Int)] = pdf_cmap_unpack3(
+pub let pdf_text_gbk2k_cid_ranges : Array[(Int32, Int32, Int32)] = pdf_cmap_unpack3(
   pdf_text_gbk2k_cid_ranges_flat,
 )

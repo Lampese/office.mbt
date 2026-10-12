@@ -1,7 +1,7 @@
 ///|
 /// An external XObject drawing a 10x10 square; `calls` counts how often it
 /// is written.
-fn square_xobject(key : String, calls : Ref[Int]) -> @export.ExternalXObject {
+fn square_xobject(key : String, calls : Ref[Int32]) -> @export.ExternalXObject {
   {
     key,
     bbox: @export.Rect::from_xywh(0.0, 0.0, 10.0, 10.0).unwrap(),

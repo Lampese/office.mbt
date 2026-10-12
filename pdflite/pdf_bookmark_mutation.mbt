@@ -79,7 +79,7 @@ pub fn pdf_add_bookmark_title(
 /// Return a copy of the document whose bookmarks are open below `level`.
 pub fn PdfDocument::bookmarks_open_to_level(
   self : PdfDocument,
-  level : Int,
+  level : Int32,
 ) -> PdfDocument raise @core.PdfError {
   let bookmarks = self.read_bookmarks(preserve_actions=true)
   let updated : Array[@bookmark.PdfBookmark] = []
@@ -92,7 +92,7 @@ pub fn PdfDocument::bookmarks_open_to_level(
 ///|
 /// Compatibility wrapper for `PdfDocument::bookmarks_open_to_level`.
 pub fn pdf_bookmarks_open_to_level(
-  level : Int,
+  level : Int32,
   document : PdfDocument,
 ) -> PdfDocument raise @core.PdfError {
   document.bookmarks_open_to_level(level)
@@ -100,9 +100,9 @@ pub fn pdf_bookmarks_open_to_level(
 
 ///|
 fn pdf_bookmark_replacement_number(
-  changes : ArrayView[(Int, Int)],
-  number : Int,
-) -> Int? {
+  changes : ArrayView[(Int32, Int32)],
+  number : Int32,
+) -> Int32? {
   for change in changes {
     if change.0 == number {
       break Some(change.1)
@@ -114,7 +114,7 @@ fn pdf_bookmark_replacement_number(
 
 ///|
 fn pdf_bookmark_change_target_page(
-  changes : ArrayView[(Int, Int)],
+  changes : ArrayView[(Int32, Int32)],
   target : @destination.PdfTargetPage,
 ) -> @destination.PdfTargetPage? {
   match target {
@@ -129,7 +129,7 @@ fn pdf_bookmark_change_target_page(
 
 ///|
 fn pdf_bookmark_change_destination(
-  changes : ArrayView[(Int, Int)],
+  changes : ArrayView[(Int32, Int32)],
   destination : @destination.PdfDestination,
 ) -> @destination.PdfDestination? {
   match destination {
@@ -183,7 +183,7 @@ fn pdf_bookmark_change_destination(
 /// `changes` contains `(old_object_number, new_object_number)` pairs. Targets
 /// without a matching page-object number are preserved.
 pub fn pdf_change_bookmark(
-  changes : ArrayView[(Int, Int)],
+  changes : ArrayView[(Int32, Int32)],
   bookmark : @bookmark.PdfBookmark,
 ) -> @bookmark.PdfBookmark {
   match pdf_bookmark_change_destination(changes, bookmark.target) {

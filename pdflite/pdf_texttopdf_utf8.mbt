@@ -10,9 +10,9 @@ fn pdf_texttopdf_push_text(
 fn pdf_texttopdf_process_codepoints(
   fontpack : PdfFontPack,
   font_size : Double,
-  current_font : Ref[Int],
+  current_font : Ref[Int32],
   output : Array[PdfTypeElement],
-  codepoints : ArrayView[Int],
+  codepoints : ArrayView[Int32],
 ) -> Unit raise @core.PdfError {
   let mut current_text : Array[Byte] = []
   for codepoint in codepoints {
@@ -50,7 +50,7 @@ pub fn pdf_texttopdf_of_utf8_with_newlines(
   let output : Array[PdfTypeElement] = []
   let current_font = Ref::{ val: -1, }
   let codepoints = pdf_codepoints_of_utf8(text)
-  let mut buffer : Array[Int] = []
+  let mut buffer : Array[Int32] = []
   for codepoint in codepoints {
     match codepoint {
       10 => {

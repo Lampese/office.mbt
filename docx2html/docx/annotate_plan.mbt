@@ -19,7 +19,7 @@ pub fn plan_comment_addition(
   at_relative~ : String,
   to_relative~ : String,
   spec : CommentSpec,
-  max_fragment_bytes? : Int = 8 * 1024 * 1024,
+  max_fragment_bytes~ : Int32 = 8 * 1024 * 1024,
 ) -> (@splice.SplicePlan, String) raise DocxError {
   let xml_budget = default_annotation_planner_xml_budget()
   plan_comment_addition_zip(
@@ -44,7 +44,7 @@ pub fn plan_comment_addition_archive(
   to_relative~ : String,
   spec : CommentSpec,
   xml_budget? : @xml.XmlReadBudget,
-  max_fragment_bytes? : Int = 8 * 1024 * 1024,
+  max_fragment_bytes~ : Int32 = 8 * 1024 * 1024,
 ) -> (@splice.SplicePlan, String) raise DocxError {
   let xml_budget = match xml_budget {
     Some(value) => value
@@ -68,7 +68,7 @@ fn plan_comment_addition_zip(
   at_relative~ : String,
   to_relative~ : String,
   spec : CommentSpec,
-  max_fragment_bytes : Int,
+  max_fragment_bytes : Int32,
   xml_budget : @xml.XmlReadBudget,
 ) -> (@splice.SplicePlan, String) raise DocxError {
   check_mutation_gates(annotated)
@@ -94,7 +94,7 @@ fn plan_comment_addition_zip(
   // not collision-safe. Numeric ids canonicalize (leading zeros
   // stripped); a canonical id beyond nine digits is outside the range
   // this allocator reasons about and fails closed.
-  let used_numeric : Set[Int] = Set([])
+  let used_numeric : Set[Int32] = Set([])
   let mut max_numeric = -1
   for comment in annotated.annotations().comments() {
     match canonical_comment_id(comment.id()) {
@@ -553,7 +553,7 @@ pub fn validate_annotation_identity_state(
 
 ///|
 priv enum CommentIdClass {
-  CanonicalNumeric(Int)
+  CanonicalNumeric(Int32)
   NonNumeric
   OutOfRange
 }
@@ -639,13 +639,13 @@ fn collect_relationship_ids(
 ///|
 priv struct RawXmlRootSpan {
   name : String
-  start : Int
-  end : Int
-  close_start : Int?
+  start : Int32
+  end : Int32
+  close_start : Int32?
 }
 
 ///|
-fn ascii_bytes_start_with(bytes : BytesView, at : Int, text : String) -> Bool {
+fn ascii_bytes_start_with(bytes : BytesView, at : Int32, text : String) -> Bool {
   if at < 0 || at + text.length() > bytes.length() {
     return false
   }
@@ -660,9 +660,9 @@ fn ascii_bytes_start_with(bytes : BytesView, at : Int, text : String) -> Bool {
 ///|
 fn scan_past_ascii_terminator(
   bytes : BytesView,
-  from : Int,
+  from : Int32,
   terminator : String,
-) -> Int raise DocxError {
+) -> Int32 raise DocxError {
   let mut at = from
   while at + terminator.length() <= bytes.length() {
     if ascii_bytes_start_with(bytes, at, terminator) {

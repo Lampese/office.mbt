@@ -112,8 +112,8 @@ fn replace_content_types_fragment(
 
 ///|
 fn format_hash_clustered_relationship_names(
-  count : Int,
-  bucket_mask : Int,
+  count : Int32,
+  bucket_mask : Int32,
 ) -> Array[String] {
   let names : Array[String] = []
   let mut candidate = 0
@@ -128,7 +128,10 @@ fn format_hash_clustered_relationship_names(
 }
 
 ///|
-fn add_relationship_stress_parts(data : BytesView, count : Int) -> Bytes raise {
+fn add_relationship_stress_parts(
+  data : BytesView,
+  count : Int32,
+) -> Bytes raise {
   let source = @zip.read(data)
   let result = @zip.Archive()
   let mut content_types_updated = false

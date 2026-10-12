@@ -275,9 +275,9 @@ priv struct SlicerCacheDef {
   name : String
   source_name : String
   item_desc : Bool
-  table_id : Int?
-  table_column : Int?
-  pivot_tab_id : Int?
+  table_id : Int32?
+  table_column : Int32?
+  pivot_tab_id : Int32?
   pivot_table_name : String?
 }
 
@@ -298,9 +298,9 @@ fn parse_slicer_cache_definition(
     None => ""
   }
   let mut item_desc = false
-  let mut table_id : Int? = None
-  let mut table_column : Int? = None
-  let mut pivot_tab_id : Int? = None
+  let mut table_id : Int32? = None
+  let mut table_column : Int32? = None
+  let mut pivot_tab_id : Int32? = None
   let mut pivot_table_name : String? = None
   match tag_attributes_in(xml, "x15:tableSlicerCache") {
     Some(cache_tag) => {
@@ -385,7 +385,7 @@ fn parse_slicer_cache_definitions(
   archive : @zip.Archive,
   decode : (BytesView) -> String raise XlsxError,
   budget? : ReadBudget,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Map[String, SlicerCacheDef] raise XlsxError {
   let defs : Map[String, SlicerCacheDef] = Map([])
   let targets = parse_internal_relationship_targets(
@@ -426,12 +426,15 @@ fn resolve_slicer_sources_after_read(
   workbook : Workbook,
   slicer_cache_defs : Map[String, SlicerCacheDef],
 ) -> Unit {
-  fn worksheet_name_from_tab_id(workbook : Workbook, tab_id : Int) -> String? {
+  fn worksheet_name_from_tab_id(
+    workbook : Workbook,
+    tab_id : Int32,
+  ) -> String? {
     let count = workbook.sheets.length()
     if count == 0 {
       return None
     }
-    let candidates : Array[Int] = []
+    let candidates : Array[Int32] = []
     candidates.push(tab_id)
     candidates.push(tab_id + 1)
     candidates.push(tab_id - 1)
@@ -443,7 +446,7 @@ fn resolve_slicer_sources_after_read(
     None
   }
 
-  let table_by_id : Map[Int, (String, Table)] = Map([])
+  let table_by_id : Map[Int32, (String, Table)] = Map([])
   for sheet in workbook.sheets {
     for table in sheet.tables() {
       if table.id > 0 {

@@ -5,12 +5,12 @@
 
 ///|
 /// Number of phantom points generated at the end of an outline.
-pub const PHANTOM_POINT_COUNT : Int = 4
+pub const PHANTOM_POINT_COUNT : Int32 = 4
 
 ///|
 /// Maximum number of points we support in a single outline including
 /// composites.
-const MAX_POINTS : Int = 65535
+const MAX_POINTS : Int32 = 65535
 
 ///|
 /// Scaler state for TrueType outlines.
@@ -22,15 +22,15 @@ pub struct GlyfOutlines {
   priv gvar : @read_fonts.Gvar?
   fpgm : BytesView
   prep : BytesView
-  cvt_len : Int
-  max_function_defs : Int
-  max_instruction_defs : Int
-  max_twilight_points : Int
-  max_stack_elements : Int
-  max_storage : Int
-  glyph_count : Int
-  units_per_em : Int
-  os2_vmetrics : (Int, Int)
+  cvt_len : Int32
+  max_function_defs : Int32
+  max_instruction_defs : Int32
+  max_twilight_points : Int32
+  max_stack_elements : Int32
+  max_storage : Int32
+  glyph_count : Int32
+  units_per_em : Int32
+  os2_vmetrics : (Int32, Int32)
   prefer_interpreter : Bool
   fractional_size_hinting : Bool
 }
@@ -115,7 +115,7 @@ pub fn GlyfOutlines::new(font : FontRef) -> GlyfOutlines? {
 }
 
 ///|
-fn sat_u16(v : Int) -> Int {
+fn sat_u16(v : Int32) -> Int32 {
   if v > 0xFFFF {
     0xFFFF
   } else {
@@ -126,13 +126,13 @@ fn sat_u16(v : Int) -> Int {
 ///|
 /// Advance width in font units (`GlyphHMetrics::advance_width` at the
 /// default location).
-fn GlyfOutlines::advance_width(self : GlyfOutlines, gid : GlyphId) -> Int {
+fn GlyfOutlines::advance_width(self : GlyfOutlines, gid : GlyphId) -> Int32 {
   self.hmtx.advance(gid).unwrap_or(0)
 }
 
 ///|
 /// Left side bearing in font units (`GlyphHMetrics::lsb`).
-fn GlyfOutlines::lsb(self : GlyfOutlines, gid : GlyphId) -> Int {
+fn GlyfOutlines::lsb(self : GlyfOutlines, gid : GlyphId) -> Int32 {
   self.hmtx.side_bearing(gid).unwrap_or(0)
 }
 
@@ -143,23 +143,23 @@ pub struct GlyfOutline {
   /// The associated top-level glyph for the outline.
   glyph : @read_fonts.Glyph?
   /// Sum of the point counts of all simple glyphs in an outline.
-  mut points : Int
+  mut points : Int32
   /// Sum of the contour counts of all simple glyphs in an outline.
-  mut contours : Int
+  mut contours : Int32
   /// Maximum number of points in a single simple glyph.
-  mut max_simple_points : Int
+  mut max_simple_points : Int32
   /// "Other" points are the unscaled or original scaled points.
-  mut max_other_points : Int
+  mut max_other_points : Int32
   /// Maximum size of the component delta stack.
-  mut max_component_delta_stack : Int
+  mut max_component_delta_stack : Int32
   /// Number of entries in the hinting value stack.
-  mut max_stack : Int
+  mut max_stack : Int32
   /// Number of CVT entries for copy-on-write support.
-  mut cvt_count : Int
+  mut cvt_count : Int32
   /// Number of storage area entries for copy-on-write support.
-  mut storage_count : Int
+  mut storage_count : Int32
   /// Maximum number of points in the twilight zone for hinting.
-  mut max_twilight_points : Int
+  mut max_twilight_points : Int32
   /// True if any component of a glyph has bytecode instructions.
   mut has_hinting : Bool
   /// True if the glyph requires variation delta processing.
@@ -204,7 +204,7 @@ pub fn GlyfOutlines::outline(
 }
 
 ///|
-fn imax(a : Int, b : Int) -> Int {
+fn imax(a : Int32, b : Int32) -> Int32 {
   if a > b {
     a
   } else {
@@ -217,8 +217,8 @@ fn GlyfOutlines::outline_rec(
   self : GlyfOutlines,
   glyph : @read_fonts.Glyph,
   outline : GlyfOutline,
-  component_depth : Int,
-  recurse_depth : Int,
+  component_depth : Int32,
+  recurse_depth : Int32,
 ) -> Unit raise DrawError {
   if recurse_depth > GLYF_COMPOSITE_RECURSION_LIMIT {
     raise RecursionLimitExceeded(outline.glyph_id)
@@ -318,21 +318,21 @@ pub fn GlyfOutlines::compute_scale(
 /// Buffers used during glyph scaling (structure of arrays; zero
 /// initialized like upstream's temporary memory).
 priv struct FreeTypeOutlineMemory {
-  unscaled_x : FixedArray[Int]
-  unscaled_y : FixedArray[Int]
-  scaled_x : FixedArray[Int]
-  scaled_y : FixedArray[Int]
-  contours : FixedArray[Int]
-  flags : FixedArray[Int]
+  unscaled_x : FixedArray[Int32]
+  unscaled_y : FixedArray[Int32]
+  scaled_x : FixedArray[Int32]
+  scaled_y : FixedArray[Int32]
+  contours : FixedArray[Int32]
+  flags : FixedArray[Int32]
   /// Point deltas (16.16 bits).
-  deltas_x : FixedArray[Int]
-  deltas_y : FixedArray[Int]
+  deltas_x : FixedArray[Int32]
+  deltas_y : FixedArray[Int32]
   /// Interpolation buffer for delta IUP (16.16 bits).
-  iup_x : FixedArray[Int]
-  iup_y : FixedArray[Int]
+  iup_x : FixedArray[Int32]
+  iup_y : FixedArray[Int32]
   /// Delta buffer for composite components (16.16 bits).
-  composite_deltas_x : FixedArray[Int]
-  composite_deltas_y : FixedArray[Int]
+  composite_deltas_x : FixedArray[Int32]
+  composite_deltas_y : FixedArray[Int32]
 }
 
 ///|
@@ -366,7 +366,7 @@ fn FreeTypeOutlineMemory::new(outline : GlyfOutline) -> FreeTypeOutlineMemory {
 fn FreeTypeOutlineMemory::point_regions(
   self : FreeTypeOutlineMemory,
   has_variations : Bool,
-) -> Array[(FixedArray[Int], FixedArray[Int])] {
+) -> Array[(FixedArray[Int32], FixedArray[Int32])] {
   let regions = [
     (self.scaled_x, self.scaled_y),
     (self.unscaled_x, self.unscaled_y),
@@ -380,7 +380,7 @@ fn FreeTypeOutlineMemory::point_regions(
 }
 
 ///|
-fn read_i32_le(image : FixedArray[Byte], at : Int) -> Int {
+fn read_i32_le(image : FixedArray[Byte], at : Int32) -> Int32 {
   if at + 4 > image.length() {
     return 0
   }
@@ -391,7 +391,12 @@ fn read_i32_le(image : FixedArray[Byte], at : Int) -> Int {
 }
 
 ///|
-fn write_le(image : FixedArray[Byte], at : Int, v : Int, size : Int) -> Unit {
+fn write_le(
+  image : FixedArray[Byte],
+  at : Int32,
+  v : Int32,
+  size : Int32,
+) -> Unit {
   for k in 0..<size {
     if at + k < image.length() {
       image[at + k] = ((v >> (8 * k)) & 0xFF).to_byte()
@@ -458,12 +463,12 @@ priv struct FreeTypeScaler {
   outlines : GlyfOutlines
   memory : FreeTypeOutlineMemory
   coords : ArrayView[F2Dot14]
-  mut point_count : Int
-  mut contour_count : Int
-  mut component_delta_count : Int
+  mut point_count : Int32
+  mut contour_count : Int32
+  mut component_delta_count : Int32
   /// Phantom points (26.6 bits, or raw font units while loading).
-  phantom_x : FixedArray[Int]
-  phantom_y : FixedArray[Int]
+  phantom_x : FixedArray[Int32]
+  phantom_y : FixedArray[Int32]
 }
 
 ///|
@@ -488,11 +493,11 @@ fn FreeTypeScaler::unhinted(
 ///|
 /// The result of scaling: points, flags and contours plus phantom points.
 priv struct ScaledOutline {
-  xs : ArrayView[Int]
-  ys : ArrayView[Int]
-  flags : ArrayView[Int]
-  contours : ArrayView[Int]
-  phantom_x : FixedArray[Int]
+  xs : ArrayView[Int32]
+  ys : ArrayView[Int32]
+  flags : ArrayView[Int32]
+  contours : ArrayView[Int32]
+  phantom_x : FixedArray[Int32]
 }
 
 ///|
@@ -520,12 +525,12 @@ fn FreeTypeScaler::scale(
 }
 
 ///|
-fn ScaledOutline::adjusted_lsb(self : ScaledOutline) -> Int {
+fn ScaledOutline::adjusted_lsb(self : ScaledOutline) -> Int32 {
   self.phantom_x[0]
 }
 
 ///|
-fn ScaledOutline::adjusted_advance_width(self : ScaledOutline) -> Int {
+fn ScaledOutline::adjusted_advance_width(self : ScaledOutline) -> Int32 {
   self.phantom_x[1] - self.phantom_x[0]
 }
 
@@ -539,7 +544,7 @@ fn FreeTypeScaler::load(
   self : FreeTypeScaler,
   glyph : @read_fonts.Glyph?,
   glyph_id : GlyphId,
-  recurse_depth : Int,
+  recurse_depth : Int32,
 ) -> Unit raise DrawError {
   if recurse_depth > GLYF_COMPOSITE_RECURSION_LIMIT {
     raise RecursionLimitExceeded(glyph_id)
@@ -709,8 +714,8 @@ fn FreeTypeScaler::load_simple(
 fn read_points_into(
   glyph : @read_fonts.SimpleGlyph,
   mem : FreeTypeOutlineMemory,
-  points_start : Int,
-  point_count : Int,
+  points_start : Int32,
+  point_count : Int32,
 ) -> Unit raise ReadError {
   // Flags are written relative to `points_start` while the unscaled points
   // start at 0, so read into temporaries first.
@@ -738,7 +743,7 @@ fn FreeTypeScaler::load_composite(
   self : FreeTypeScaler,
   glyph : @read_fonts.CompositeGlyph,
   glyph_id : GlyphId,
-  recurse_depth : Int,
+  recurse_depth : Int32,
 ) -> Unit raise DrawError {
   let mem = self.memory
   // The base indices of the points and contours for the current glyph.
@@ -916,9 +921,9 @@ fn simple_glyph_deltas(
   glyph_id : GlyphId,
   coords : ArrayView[F2Dot14],
   mem : FreeTypeOutlineMemory,
-  flags_base : Int,
-  n : Int,
-  contours : FixedArray[Int],
+  flags_base : Int32,
+  n : Int32,
+  contours : FixedArray[Int32],
 ) -> Bool {
   if n < PHANTOM_POINT_COUNT {
     return false
@@ -978,8 +983,8 @@ fn composite_glyph_deltas(
   glyph_id : GlyphId,
   coords : ArrayView[F2Dot14],
   mem : FreeTypeOutlineMemory,
-  base : Int,
-  count : Int,
+  base : Int32,
+  count : Int32,
 ) -> Bool {
   for i in 0..<count {
     mem.composite_deltas_x[base + i] = 0
@@ -1022,11 +1027,11 @@ fn composite_glyph_deltas(
 /// for out of bounds accesses.
 fn interpolate_deltas(
   mem : FreeTypeOutlineMemory,
-  n : Int,
-  flags : FixedArray[Int],
-  contours : FixedArray[Int],
+  n : Int32,
+  flags : FixedArray[Int32],
+  contours : FixedArray[Int32],
 ) -> Bool {
-  let has_delta = (i : Int) => (flags[i] & 0x4) != 0
+  let has_delta = (i : Int32) => (flags[i] & 0x4) != 0
   let mut point_ix = 0
   for end_point_ix in contours {
     let first_point_ix = point_ix
@@ -1108,10 +1113,10 @@ fn interpolate_deltas(
 /// difference given by the point at `ref_ix`.
 fn iup_shift(
   mem : FreeTypeOutlineMemory,
-  n : Int,
-  start : Int,
-  end : Int,
-  ref_ix : Int,
+  n : Int32,
+  start : Int32,
+  end : Int32,
+  ref_ix : Int32,
 ) -> Bool {
   if ref_ix >= n {
     return false
@@ -1142,11 +1147,11 @@ fn iup_shift(
 /// and `ref2` as the reference point indices.
 fn iup_interpolate(
   mem : FreeTypeOutlineMemory,
-  n : Int,
-  start : Int,
-  end : Int,
-  ref1 : Int,
-  ref2 : Int,
+  n : Int32,
+  start : Int32,
+  end : Int32,
+  ref1 : Int32,
+  ref2 : Int32,
 ) -> Bool {
   if start > end {
     return true
@@ -1161,12 +1166,12 @@ fn iup_interpolate(
 
 ///|
 fn interp_coord(
-  points : FixedArray[Int],
-  out_points : FixedArray[Int],
-  start : Int,
-  end : Int,
-  ref1 : Int,
-  ref2 : Int,
+  points : FixedArray[Int32],
+  out_points : FixedArray[Int32],
+  start : Int32,
+  end : Int32,
+  ref1 : Int32,
+  ref2 : Int32,
 ) -> Unit {
   let (ref1, ref2) = if points[ref1] > points[ref2] {
     (ref2, ref1)

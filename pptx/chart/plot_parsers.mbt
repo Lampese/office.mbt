@@ -24,9 +24,9 @@ fn parse_bar_chart(el : @xml.XmlElement) -> BarChartBody raise ChartError {
   let mut vary_colors : Bool? = None
   let series : Array[ChartSeriesCore] = []
   let mut d_lbls : DLbls? = None
-  let mut gap_width : Int? = None
-  let mut overlap : Int? = None
-  let ax_ids : Array[Int] = []
+  let mut gap_width : Int32? = None
+  let mut overlap : Int32? = None
+  let ax_ids : Array[Int32] = []
   let extension : Array[@xml.XmlElement] = []
   for node in el.children {
     match node {
@@ -88,7 +88,7 @@ fn parse_line_chart(el : @xml.XmlElement) -> LineChartBody raise ChartError {
   let mut up_down_bars : @xml.XmlElement? = None
   let mut marker : Bool? = None
   let mut smooth : Bool? = None
-  let ax_ids : Array[Int] = []
+  let ax_ids : Array[Int32] = []
   let extension : Array[@xml.XmlElement] = []
   for node in el.children {
     match node {
@@ -148,7 +148,7 @@ fn parse_pie_chart(el : @xml.XmlElement) -> PieChartBody raise ChartError {
   let mut vary_colors : Bool? = None
   let series : Array[ChartSeriesCore] = []
   let mut d_lbls : DLbls? = None
-  let mut first_slice_ang : Int? = None
+  let mut first_slice_ang : Int32? = None
   let extension : Array[@xml.XmlElement] = []
   for node in el.children {
     match node {
@@ -180,7 +180,7 @@ fn parse_area_chart(el : @xml.XmlElement) -> AreaChartBody raise ChartError {
   let series : Array[ChartSeriesCore] = []
   let mut d_lbls : DLbls? = None
   let mut drop_lines : @xml.XmlElement? = None
-  let ax_ids : Array[Int] = []
+  let ax_ids : Array[Int32] = []
   let extension : Array[@xml.XmlElement] = []
   for node in el.children {
     match node {
@@ -220,8 +220,8 @@ fn parse_area_3d_chart(
   let series : Array[ChartSeriesCore] = []
   let mut d_lbls : DLbls? = None
   let mut drop_lines : @xml.XmlElement? = None
-  let mut gap_depth : Int? = None
-  let ax_ids : Array[Int] = []
+  let mut gap_depth : Int32? = None
+  let ax_ids : Array[Int32] = []
   let extension : Array[@xml.XmlElement] = []
   for node in el.children {
     match node {
@@ -269,10 +269,10 @@ fn parse_bar_3d_chart(el : @xml.XmlElement) -> Bar3DChartBody raise ChartError {
   let mut vary_colors : Bool? = None
   let series : Array[ChartSeriesCore] = []
   let mut d_lbls : DLbls? = None
-  let mut gap_width : Int? = None
-  let mut gap_depth : Int? = None
+  let mut gap_width : Int32? = None
+  let mut gap_depth : Int32? = None
   let mut shape : BarShape? = None
-  let ax_ids : Array[Int] = []
+  let ax_ids : Array[Int32] = []
   let extension : Array[@xml.XmlElement] = []
   for node in el.children {
     match node {
@@ -336,8 +336,8 @@ fn parse_line_3d_chart(
   let series : Array[ChartSeriesCore] = []
   let mut d_lbls : DLbls? = None
   let mut drop_lines : @xml.XmlElement? = None
-  let mut gap_depth : Int? = None
-  let ax_ids : Array[Int] = []
+  let mut gap_depth : Int32? = None
+  let ax_ids : Array[Int32] = []
   let extension : Array[@xml.XmlElement] = []
   for node in el.children {
     match node {
@@ -414,8 +414,8 @@ fn parse_doughnut_chart(
   let mut vary_colors : Bool? = None
   let series : Array[ChartSeriesCore] = []
   let mut d_lbls : DLbls? = None
-  let mut first_slice_ang : Int? = None
-  let mut hole_size : Int? = None
+  let mut first_slice_ang : Int32? = None
+  let mut hole_size : Int32? = None
   let extension : Array[@xml.XmlElement] = []
   for node in el.children {
     match node {
@@ -445,7 +445,7 @@ fn parse_radar_chart(el : @xml.XmlElement) -> RadarChartBody raise ChartError {
   let mut vary_colors : Bool? = None
   let series : Array[ChartSeriesCore] = []
   let mut d_lbls : DLbls? = None
-  let ax_ids : Array[Int] = []
+  let ax_ids : Array[Int32] = []
   let extension : Array[@xml.XmlElement] = []
   for node in el.children {
     match node {
@@ -489,7 +489,7 @@ fn parse_scatter_chart(
   let mut vary_colors : Bool? = None
   let series : Array[ScatterSeriesCore] = []
   let mut d_lbls : DLbls? = None
-  let ax_ids : Array[Int] = []
+  let ax_ids : Array[Int32] = []
   let extension : Array[@xml.XmlElement] = []
   for node in el.children {
     match node {
@@ -530,10 +530,10 @@ fn parse_bubble_chart(el : @xml.XmlElement) -> BubbleChartBody raise ChartError 
   let series : Array[BubbleSeriesCore] = []
   let mut d_lbls : DLbls? = None
   let mut bubble_3d : Bool? = None
-  let mut bubble_scale : Int? = None
+  let mut bubble_scale : Int32? = None
   let mut show_neg_bubbles : Bool? = None
   let mut size_represents : SizeRepresents? = None
-  let ax_ids : Array[Int] = []
+  let ax_ids : Array[Int32] = []
   let extension : Array[@xml.XmlElement] = []
   for node in el.children {
     match node {
@@ -584,7 +584,7 @@ fn parse_stock_chart(el : @xml.XmlElement) -> StockChartBody raise ChartError {
   let mut drop_lines : @xml.XmlElement? = None
   let mut hi_low_lines : @xml.XmlElement? = None
   let mut up_down_bars : @xml.XmlElement? = None
-  let ax_ids : Array[Int] = []
+  let ax_ids : Array[Int32] = []
   let extension : Array[@xml.XmlElement] = []
   for node in el.children {
     match node {
@@ -619,7 +619,7 @@ fn parse_surface_chart(
   let mut wireframe : Bool? = None
   let series : Array[ChartSeriesCore] = []
   let mut band_fmts : @xml.XmlElement? = None
-  let ax_ids : Array[Int] = []
+  let ax_ids : Array[Int32] = []
   let extension : Array[@xml.XmlElement] = []
   for node in el.children {
     match node {
@@ -652,7 +652,7 @@ fn parse_surface_3d_chart(
   let mut wireframe : Bool? = None
   let series : Array[ChartSeriesCore] = []
   let mut band_fmts : @xml.XmlElement? = None
-  let ax_ids : Array[Int] = []
+  let ax_ids : Array[Int32] = []
   let extension : Array[@xml.XmlElement] = []
   for node in el.children {
     match node {
@@ -684,11 +684,11 @@ fn parse_of_pie_chart(el : @xml.XmlElement) -> OfPieChartBody raise ChartError {
   let mut vary_colors : Bool? = None
   let series : Array[ChartSeriesCore] = []
   let mut d_lbls : DLbls? = None
-  let mut gap_width : Int? = None
+  let mut gap_width : Int32? = None
   let mut split_type : SplitType? = None
   let mut split_pos : String? = None
   let mut cust_split : @xml.XmlElement? = None
-  let mut second_pie_size : Int? = None
+  let mut second_pie_size : Int32? = None
   let ser_lines : Array[@xml.XmlElement] = []
   let extension : Array[@xml.XmlElement] = []
   for node in el.children {

@@ -10,8 +10,8 @@ pub struct DefinedName {
 pub fn DefinedName::new(
   name : String,
   refers_to : String,
-  scope? : String = "",
-  comment? : String = "",
+  scope~ : String = "",
+  comment~ : String = "",
 ) -> DefinedName {
   let scope_value = if scope == "" { "Workbook" } else { scope }
   { name, refers_to, scope: scope_value, comment, }
@@ -27,7 +27,7 @@ let built_in_defined_names : Array[String] = [
 ]
 
 ///|
-let supported_defined_name_start_ranges : Array[Int] = [
+let supported_defined_name_start_ranges : Array[Int32] = [
   65, 90, 92, 92, 95, 95, 97, 122, 161, 161, 164, 164, 167, 168, 170, 170, 173, 173,
   175, 186, 188, 696, 699, 705, 711, 711, 713, 715, 717, 717, 720, 721, 728, 731,
   733, 733, 736, 740, 750, 750, 880, 883, 886, 887, 890, 893, 902, 902, 904, 906,
@@ -97,7 +97,7 @@ let supported_defined_name_start_ranges : Array[Int] = [
 ]
 
 ///|
-let supported_defined_name_after_ranges : Array[Int] = [
+let supported_defined_name_after_ranges : Array[Int32] = [
   46, 46, 48, 57, 63, 63, 65, 90, 92, 92, 95, 95, 97, 122, 161, 161, 164, 164, 167,
   168, 170, 170, 173, 173, 175, 186, 188, 887, 890, 893, 900, 902, 904, 906, 908,
   908, 910, 929, 931, 1315, 1329, 1366, 1369, 1369, 1377, 1415, 1425, 1469, 1471,
@@ -165,7 +165,7 @@ let supported_defined_name_after_ranges : Array[Int] = [
 ]
 
 ///|
-fn in_code_range(value : Int, ranges : Array[Int]) -> Bool {
+fn in_code_range(value : Int32, ranges : Array[Int32]) -> Bool {
   let mut i = 0
   while i + 1 < ranges.length() {
     if ranges[i] <= value && value <= ranges[i + 1] {

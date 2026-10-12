@@ -28,7 +28,7 @@ pub(all) struct StockChartBody {
   drop_lines : @xml.XmlElement?
   hi_low_lines : @xml.XmlElement?
   up_down_bars : @xml.XmlElement?
-  ax_ids : Array[Int]
+  ax_ids : Array[Int32]
   extension : Array[@xml.XmlElement]
 } derive(Eq, Debug)
 

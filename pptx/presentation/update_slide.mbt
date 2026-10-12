@@ -23,7 +23,7 @@
 /// index is out of range.
 pub fn Presentation::update_slide_mut(
   self : Presentation,
-  slide_index : Int,
+  slide_index : Int32,
   new_slide : @slide.Slide,
 ) -> Unit raise PptxError {
   // Resolve only the slide being written: materialising every part on

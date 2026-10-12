@@ -4,7 +4,7 @@ fn format_cell_value(
   raw : String,
   style : Style?,
   options : Options,
-  use_1904_format? : Bool = false,
+  use_1904_format~ : Bool = false,
 ) -> String raise XlsxError {
   format_cell_value_limited(value_type, raw, style, options, use_1904_format~)
 }
@@ -19,8 +19,8 @@ fn format_cell_value_limited(
   raw : String,
   style : Style?,
   options : Options,
-  use_1904_format? : Bool = false,
-  max_output_chars? : Int,
+  use_1904_format~ : Bool = false,
+  max_output_chars? : Int32,
 ) -> String raise XlsxError {
   let output = match value_type {
     String =>
@@ -60,12 +60,12 @@ fn format_cell_value_limited(
 // synchronous format program below half of the command's 64-KiB work quantum
 // ensures one cell cannot monopolize the scheduler before the caller reaches
 // its next suspension point.
-let max_bounded_format_program_chars : Int = 32 * 1024
+let max_bounded_format_program_chars : Int32 = 32 * 1024
 
 ///|
 fn check_bounded_format_program(
   program : StringView,
-  maximum : Int?,
+  maximum : Int32?,
 ) -> Unit raise XlsxError {
   match maximum {
     None => ()
@@ -86,11 +86,11 @@ fn check_bounded_format_program(
 // fraction placeholders, and date-token expansion. Callers select a tighter
 // multiplier for the format family they are about to execute.
 fn check_bounded_numeric_output(
-  fallback_chars : Int,
-  program_chars : Int,
-  program_multiplier : Int,
-  fixed_overhead : Int,
-  maximum : Int?,
+  fallback_chars : Int32,
+  program_chars : Int32,
+  program_multiplier : Int32,
+  fixed_overhead : Int32,
+  maximum : Int32?,
 ) -> Unit raise XlsxError {
   match maximum {
     None => ()
@@ -116,7 +116,7 @@ fn check_bounded_numeric_output(
 }
 
 ///|
-fn number_format_ascii_fold(unit : UInt16) -> Int {
+fn number_format_ascii_fold(unit : UInt16) -> Int32 {
   let value = unit.to_int()
   if value >= 65 && value <= 90 {
     value + 32
@@ -192,7 +192,7 @@ fn number_format_elapsed_token(content : StringView) -> String? {
 fn format_text_value(
   raw : String,
   format : NumberFormat,
-  max_output_chars? : Int,
+  max_output_chars? : Int32,
 ) -> String raise XlsxError {
   match format {
     Builtin(_id) => raw
@@ -208,10 +208,10 @@ fn format_text_value(
 
 ///|
 fn checked_formatted_output_growth(
-  current : Int,
-  amount : Int,
-  maximum : Int?,
-) -> Int raise XlsxError {
+  current : Int32,
+  amount : Int32,
+  maximum : Int32?,
+) -> Int32 raise XlsxError {
   match maximum {
     None => current + amount
     Some(limit) => {
@@ -233,7 +233,7 @@ fn checked_formatted_output_growth(
 ///|
 fn check_formatted_output_length(
   output : String,
-  maximum : Int?,
+  maximum : Int32?,
 ) -> Unit raise XlsxError {
   ignore(checked_formatted_output_growth(0, output.length(), maximum))
 }
@@ -244,7 +244,7 @@ fn format_number_with_format(
   format : NumberFormat,
   options : Options,
   use_1904_format : Bool,
-  max_output_chars? : Int,
+  max_output_chars? : Int32,
 ) -> String raise XlsxError {
   match format {
     Builtin(id) =>
@@ -269,10 +269,10 @@ fn format_number_with_format(
 ///|
 fn format_number_builtin(
   raw : String,
-  id : Int,
+  id : Int32,
   options : Options,
   use_1904_format : Bool,
-  max_output_chars? : Int,
+  max_output_chars? : Int32,
 ) -> String raise XlsxError {
   let short_date = options.short_date_pattern
   let long_date = options.long_date_pattern
@@ -355,7 +355,7 @@ fn format_number_builtin(
         )
       }
     // language-glyph builtin IDs resolve through the workbook culture
-    27..=36 | 50..=62 | 67..=81 =>
+    27..<=36 | 50..<=62 | 67..<=81 =>
       match lang_num_fmt_code(options, id) {
         Some(code) =>
           if code == "" {
@@ -380,8 +380,8 @@ fn format_number_code(
   raw : String,
   code : String,
   options : Options,
-  use_1904_format? : Bool = false,
-  max_output_chars? : Int,
+  use_1904_format~ : Bool = false,
+  max_output_chars? : Int32,
 ) -> String raise XlsxError {
   let _ = options
   check_bounded_format_program(code, max_output_chars)
@@ -500,7 +500,7 @@ fn select_format_section(
 }
 
 ///|
-fn number_format_scalar_width_at(text : StringView, at : Int) -> Int {
+fn number_format_scalar_width_at(text : StringView, at : Int32) -> Int32 {
   if text[at].is_leading_surrogate() &&
     at + 1 < text.length() &&
     text[at + 1].is_trailing_surrogate() {
@@ -680,7 +680,7 @@ fn select_text_format_section(sections : ArrayView[String]) -> String? {
 fn format_text_pattern(
   raw : String,
   code : String,
-  max_output_chars? : Int,
+  max_output_chars? : Int32,
 ) -> String raise XlsxError {
   let sections = split_format_sections(code)
   let section = match select_text_format_section(sections) {
@@ -875,7 +875,7 @@ fn format_number_pattern(
 ///|
 fn scale_number_for_percent_format(
   value : Double,
-  percent_count : Int,
+  percent_count : Int32,
 ) -> Double raise XlsxError {
   // Applying the entire power first can overflow even when the final product
   // is representable (for example, 1e-300 * 100^155). Scaling one marker at a
@@ -897,17 +897,17 @@ fn scale_number_for_percent_format(
 
 ///|
 priv struct NumberPatternInfo {
-  min_int_digits : Int
-  required_decimals : Int
-  max_decimals : Int
+  min_int_digits : Int32
+  required_decimals : Int32
+  max_decimals : Int32
   use_group : Bool
-  percent_count : Int
+  percent_count : Int32
   has_scientific : Bool
-  exp_digits : Int
+  exp_digits : Int32
   exp_upper : Bool
   has_fraction : Bool
-  numerator_digits : Int
-  denominator_digits : Int
+  numerator_digits : Int32
+  denominator_digits : Int32
 }
 
 ///|
@@ -917,8 +917,8 @@ fn parse_number_pattern(
   let len = pattern.length()
   let mut in_quote = false
   let mut escape_next = false
-  let mut first_placeholder : Int? = None
-  let mut last_placeholder : Int? = None
+  let mut first_placeholder : Int32? = None
+  let mut last_placeholder : Int32? = None
   let mut percent_count = 0
   let mut has_scientific = false
   let mut exp_digits = 0
@@ -1168,8 +1168,8 @@ fn format_fraction_number(value : Double, info : NumberPatternInfo) -> String {
 ///|
 fn float_to_fraction(
   value : Double,
-  numerator_placeholders : Int,
-  denominator_placeholders : Int,
+  numerator_placeholders : Int32,
+  denominator_placeholders : Int32,
 ) -> String {
   if denominator_placeholders <= 0 {
     return ""
@@ -1260,7 +1260,7 @@ fn float_to_frac_use_continued_fraction(
 }
 
 ///|
-fn pow10_int64(exp : Int) -> Int64 {
+fn pow10_int64(exp : Int32) -> Int64 {
   let mut value : Int64 = 1L
   let mut i = 0
   let limit = if exp > 18 { 18 } else { exp }
@@ -1274,7 +1274,7 @@ fn pow10_int64(exp : Int) -> Int64 {
 ///|
 fn format_number_simple(
   raw : String,
-  decimals : Int,
+  decimals : Int32,
   use_group : Bool,
   percent : Bool,
 ) -> String raise XlsxError {
@@ -1338,7 +1338,7 @@ fn format_decimal_number(value : Double, info : NumberPatternInfo) -> String {
 }
 
 ///|
-fn trim_optional_decimals(text : String, required_decimals : Int) -> String {
+fn trim_optional_decimals(text : String, required_decimals : Int32) -> String {
   let dot = text.find(".")
   match dot {
     None => text
@@ -1395,9 +1395,9 @@ fn nonnegative_double_to_uint64(value : Double) -> UInt64 {
 ///|
 fn format_fixed_number(
   value : Double,
-  decimals : Int,
+  decimals : Int32,
   use_group : Bool,
-  min_int_digits : Int,
+  min_int_digits : Int32,
 ) -> String {
   let negative = value < 0.0
   let abs_value = if negative { -value } else { value }
@@ -1438,7 +1438,7 @@ fn format_fixed_number(
 }
 
 ///|
-fn pow10_int(exp : Int) -> Int {
+fn pow10_int(exp : Int32) -> Int32 {
   let mut value = 1
   let mut i = 0
   let limit = if exp > 9 { 9 } else { exp }
@@ -1450,7 +1450,7 @@ fn pow10_int(exp : Int) -> Int {
 }
 
 ///|
-fn pad_left_int(value : Int, width : Int) -> String {
+fn pad_left_int(value : Int32, width : Int32) -> String {
   let text = value.to_string()
   if text.length() >= width {
     return text
@@ -1464,7 +1464,7 @@ fn pad_left_int(value : Int, width : Int) -> String {
 }
 
 ///|
-fn pad_left_int64(value : Int64, width : Int) -> String {
+fn pad_left_int64(value : Int64, width : Int32) -> String {
   let text = value.to_string()
   if text.length() >= width {
     return text
@@ -1478,7 +1478,7 @@ fn pad_left_int64(value : Int64, width : Int) -> String {
 }
 
 ///|
-fn pad_left_uint64(value : UInt64, width : Int) -> String {
+fn pad_left_uint64(value : UInt64, width : Int32) -> String {
   let text = value.to_string()
   if text.length() >= width {
     return text
@@ -1494,7 +1494,7 @@ fn pad_left_uint64(value : UInt64, width : Int) -> String {
 ///|
 fn format_uint64_padded(
   value : UInt64,
-  min_digits : Int,
+  min_digits : Int32,
   use_group : Bool,
 ) -> String {
   let text = value.to_string()
@@ -1534,8 +1534,8 @@ fn format_int_grouped_string(text : String) -> String {
 fn format_excel_date(
   raw : String,
   pattern : String,
-  use_1904_format? : Bool = false,
-  max_output_chars? : Int,
+  use_1904_format~ : Bool = false,
+  max_output_chars? : Int32,
 ) -> String raise XlsxError {
   check_bounded_format_program(pattern, max_output_chars)
   check_bounded_numeric_output(
@@ -1561,7 +1561,7 @@ fn format_excel_date(
 }
 
 ///|
-fn is_leap_year(year : Int) -> Bool {
+fn is_leap_year(year : Int32) -> Bool {
   if year % 400 == 0 {
     true
   } else if year % 100 == 0 {
@@ -1572,7 +1572,7 @@ fn is_leap_year(year : Int) -> Bool {
 }
 
 ///|
-fn days_in_month(year : Int, month : Int) -> Int {
+fn days_in_month(year : Int32, month : Int32) -> Int32 {
   match month {
     1 | 3 | 5 | 7 | 8 | 10 | 12 => 31
     4 | 6 | 9 | 11 => 30
@@ -1582,7 +1582,7 @@ fn days_in_month(year : Int, month : Int) -> Int {
 }
 
 ///|
-fn weekday_index(year : Int, month : Int, day : Int) -> Int {
+fn weekday_index(year : Int32, month : Int32, day : Int32) -> Int32 {
   if year == 1900 && month == 2 && day == 29 {
     return 4
   }
@@ -1609,12 +1609,12 @@ fn weekday_index(year : Int, month : Int, day : Int) -> Int {
 ///|
 fn format_date_pattern(
   pattern : String,
-  year : Int,
-  month : Int,
-  day : Int,
-  hour : Int,
-  minute : Int,
-  second : Int,
+  year : Int32,
+  month : Int32,
+  day : Int32,
+  hour : Int32,
+  minute : Int32,
+  second : Int32,
   serial_value : Double,
 ) -> String {
   format_date_pattern_tokens(
@@ -1625,16 +1625,16 @@ fn format_date_pattern(
 ///|
 priv enum DateToken {
   Literal(String)
-  Year(Int)
-  Month(Int)
-  Day(Int)
-  Hour(Int)
-  Second(Int)
+  Year(Int32)
+  Month(Int32)
+  Day(Int32)
+  Hour(Int32)
+  Second(Int32)
   AmPm(Bool)
   Ap(Bool)
-  ElapsedHour(Int)
-  ElapsedMinute(Int)
-  ElapsedSecond(Int)
+  ElapsedHour(Int32)
+  ElapsedMinute(Int32)
+  ElapsedSecond(Int32)
 }
 
 ///|
@@ -1782,12 +1782,12 @@ fn tokenize_date_pattern(pattern : String) -> Array[DateToken] {
 ///|
 fn format_date_pattern_tokens(
   pattern : String,
-  year : Int,
-  month : Int,
-  day : Int,
-  hour : Int,
-  minute : Int,
-  second : Int,
+  year : Int32,
+  month : Int32,
+  day : Int32,
+  hour : Int32,
+  minute : Int32,
+  second : Int32,
   serial_value : Double,
 ) -> String {
   let tokens = tokenize_date_pattern(pattern)
@@ -1924,7 +1924,7 @@ fn format_date_pattern_tokens(
 }
 
 ///|
-fn month_short_name(month : Int) -> String {
+fn month_short_name(month : Int32) -> String {
   match month {
     1 => "Jan"
     2 => "Feb"
@@ -1943,7 +1943,7 @@ fn month_short_name(month : Int) -> String {
 }
 
 ///|
-fn month_long_name(month : Int) -> String {
+fn month_long_name(month : Int32) -> String {
   match month {
     1 => "January"
     2 => "February"
@@ -1962,7 +1962,7 @@ fn month_long_name(month : Int) -> String {
 }
 
 ///|
-fn month_initial_name(month : Int) -> String {
+fn month_initial_name(month : Int32) -> String {
   let name = month_short_name(month)
   if name.length() == 0 {
     ""
@@ -1972,7 +1972,7 @@ fn month_initial_name(month : Int) -> String {
 }
 
 ///|
-fn weekday_short_name(index : Int) -> String {
+fn weekday_short_name(index : Int32) -> String {
   match index {
     0 => "Sun"
     1 => "Mon"
@@ -1986,7 +1986,7 @@ fn weekday_short_name(index : Int) -> String {
 }
 
 ///|
-fn weekday_long_name(index : Int) -> String {
+fn weekday_long_name(index : Int32) -> String {
   match index {
     0 => "Sunday"
     1 => "Monday"
@@ -2000,7 +2000,7 @@ fn weekday_long_name(index : Int) -> String {
 }
 
 ///|
-fn hour12(hour : Int) -> Int {
+fn hour12(hour : Int32) -> Int32 {
   let h = hour % 12
   if h == 0 {
     12

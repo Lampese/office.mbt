@@ -46,8 +46,8 @@ pub struct DocxDeleteReceipt {
 pub struct DocxDeleteCutWitness {
   priv part : String
   priv source : BytesView
-  priv cut_start : Int
-  priv cut_end : Int
+  priv cut_start : Int32
+  priv cut_end : Int32
 }
 
 ///|
@@ -60,7 +60,7 @@ pub fn DocxDeleteCutWitness::part(self : DocxDeleteCutWitness) -> String {
 /// The published part's exact byte length once the cut lands.
 pub fn DocxDeleteCutWitness::expected_length(
   self : DocxDeleteCutWitness,
-) -> Int {
+) -> Int32 {
   self.source.length() - (self.cut_end - self.cut_start)
 }
 
@@ -197,7 +197,7 @@ fn is_zero_width_body_marker(element : ScannedElement) -> Bool {
 /// the SAME predicate — a count leg that agreed with the guard it was
 /// meant to check. One nested `<w:body>` could publish a body with no
 /// real paragraph in it.
-fn document_body_index(elements : Array[ScannedElement]) -> Int? {
+fn document_body_index(elements : Array[ScannedElement]) -> Int32? {
   for index, element in elements {
     guard element.local_name == "body" && is_wml_uri(element.uri) else {
       continue
@@ -255,7 +255,7 @@ fn inside_conditional_content(
 /// The path grammar flattens wrappers (`w:sdt`, `w:ins`, `mc:Fallback`…),
 /// so a path alone never proves this — every guard that must not splice
 /// inside a wrapper proves it here, against the ONE body index.
-fn is_direct_body_child(element : ScannedElement, body : Int) -> Bool {
+fn is_direct_body_child(element : ScannedElement, body : Int32) -> Bool {
   element.parent_index == body
 }
 
@@ -312,7 +312,7 @@ fn open_range_across(
 ) -> String? {
   // Open starts per (family, id), and the concrete intervals they close
   // into.
-  let open : Map[(RangeFamily, String), Array[Int]] = Map([])
+  let open : Map[(RangeFamily, String), Array[Int32]] = Map([])
   let caret : Map[(RangeFamily, String), Bool] = Map([])
   let named : Map[(RangeFamily, String), Bool] = Map([])
   let spanning : Array[RangeFamily] = []
@@ -330,7 +330,7 @@ fn open_range_across(
   // strands a range when the span is spliced out. Every arm below is
   // written as three branches, never as `before`/`else if after`, so
   // "inside" cannot fall out of the analysis by omission.
-  fn note_unresolved(family : RangeFamily, from : Int, to : Int) -> Unit {
+  fn note_unresolved(family : RangeFamily, from : Int32, to : Int32) -> Unit {
     if to <= span.byte_start() {
       unresolved_before[family] = true
     } else if from >= span.byte_end() {
@@ -344,8 +344,8 @@ fn open_range_across(
   fn note_interval(
     family : RangeFamily,
     key : (RangeFamily, String),
-    from : Int,
-    to : Int,
+    from : Int32,
+    to : Int32,
   ) -> Unit {
     // Word's caret marks where the cursor was; it anchors nothing.
     // Exempt only when NO named bookmark shares the id.
@@ -492,7 +492,7 @@ fn normalized_decimal_id(id : String) -> String {
   let digits = if signed { id[1:].to_owned() } else { id }
   guard digits.length() > 0 else { return id }
   for ch in digits {
-    guard ch is ('0'..='9') else { return id }
+    guard ch is ('0'..<='9') else { return id }
   }
   let mut first = 0
   while first + 1 < digits.length() && digits[first] == '0' {
@@ -1010,8 +1010,8 @@ pub fn plan_docx_paragraph_deletion(
   // is the `_GoBack` cursor artifact with exactly one end inside, and
   // no marker outside shares an id with one inside — anything else
   // unbalances a range or dangles a reference target.
-  let bookmark_starts : Map[String, Int] = Map([])
-  let bookmark_ends : Map[String, Int] = Map([])
+  let bookmark_starts : Map[String, Int32] = Map([])
+  let bookmark_ends : Map[String, Int32] = Map([])
   // Field boundaries INSIDE the target must pair there: a complete
   // field leaves with its paragraph and dangles nothing, while a
   // begin or end whose partner lies outside is a SPLIT field the
@@ -1308,7 +1308,7 @@ pub fn plan_docx_paragraph_deletion(
 /// tombstoned; the tree does not.
 pub fn docx_direct_body_paragraph_count(
   annotated : DocxAnnotatedResult,
-) -> Int raise DocxError {
+) -> Int32 raise DocxError {
   let part = annotated.main_story_part()
   guard annotated.reader_projections.get(part) is Some(projection) else {
     raise delete_refusal(

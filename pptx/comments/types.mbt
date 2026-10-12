@@ -38,11 +38,11 @@
 /// - `clr_idx` (`clrIdx`) — per-author colour-palette index. Not a theme slot
 ///   (`ST_ColorSchemeIndex`) — just an opaque integer.
 pub(all) struct CommentAuthor {
-  id : Int
+  id : Int32
   name : String
   initials : String
-  last_idx : Int
-  clr_idx : Int
+  last_idx : Int32
+  clr_idx : Int32
   extension : Array[@xml.XmlElement]
 } derive(Eq, Debug)
 
@@ -109,9 +109,9 @@ pub extend CommentPos with Eq::{not_equal, equal}
 /// - `text` — `<p:text>` plain-text body. We extract the text content
 ///   directly; `<p:text>` does not nest any rich-text children in the schema.
 pub(all) struct Comment {
-  author_id : Int
+  author_id : Int32
   dt : String?
-  idx : Int
+  idx : Int32
   pos : CommentPos
   text : String
   extension : Array[@xml.XmlElement]

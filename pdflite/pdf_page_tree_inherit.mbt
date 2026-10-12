@@ -26,7 +26,7 @@ fn PdfDocument::pdf_page_find_inherited_attribute(
   self : PdfDocument,
   object : @syntax.PdfObject,
   key : @core.PdfName,
-  depth : Int,
+  depth : Int32,
 ) -> @syntax.PdfObject? raise @core.PdfError {
   // up the /Parent chain without recursion; a cycle ends at the depth guard
   let mut current = object
@@ -70,7 +70,7 @@ fn PdfDocument::pdf_page_replace_inherited_key(
 /// useful before page extraction or object-level rewriting.
 pub fn PdfDocument::replace_inherit(
   self : PdfDocument,
-  object_numbers : ArrayView[Int],
+  object_numbers : ArrayView[Int32],
 ) -> Unit raise @core.PdfError {
   let keys = [
     pdf_page_mediabox_key(),

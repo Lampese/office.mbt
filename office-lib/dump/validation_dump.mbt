@@ -141,7 +141,7 @@ fn validation_replayed_faithfully(
   sheet : String,
   wanted : @xlsx.DataValidation,
   region : String,
-  ordinal : Int,
+  ordinal : Int32,
 ) -> Bool {
   let replayed_validations = replayed.get_data_validations(sheet) catch {
     _ => []

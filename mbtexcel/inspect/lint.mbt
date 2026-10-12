@@ -21,7 +21,7 @@
 pub fn lint(
   workbook : @xlsx.Workbook,
   file~ : String,
-  sheet? : String = "",
+  sheet~ : String = "",
 ) -> Json raise {
   // Resolve `--sheet` to its CANONICAL name: the engine's sheet lookup is
   // case-insensitive, so `--sheet data` must lint the sheet named `Data`

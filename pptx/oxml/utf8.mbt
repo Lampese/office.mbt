@@ -14,8 +14,8 @@
 /// offsets; malformed UTF-16 is reported separately.
 pub(all) suberror Utf8Error {
   InvalidUtf16
-  StrayContinuation(Int)
-  TruncatedSequence(Int)
+  StrayContinuation(Int32)
+  TruncatedSequence(Int32)
 } derive(Eq, Debug)
 
 ///|

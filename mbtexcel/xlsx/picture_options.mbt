@@ -7,8 +7,8 @@ pub(all) enum PicturePositioning {
 
 ///|
 pub struct GraphicOptions {
-  mut offset_x : Int?
-  mut offset_y : Int?
+  mut offset_x : Int32?
+  mut offset_y : Int32?
   mut scale_x : Double?
   mut scale_y : Double?
   mut hyperlink : String?
@@ -45,8 +45,8 @@ pub fn GraphicOptions::new() -> GraphicOptions {
 
 ///|
 pub fn GraphicOptions::with_values(
-  offset_x? : Int,
-  offset_y? : Int,
+  offset_x? : Int32,
+  offset_y? : Int32,
   scale_x? : Double,
   scale_y? : Double,
   hyperlink? : String,

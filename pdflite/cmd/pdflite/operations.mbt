@@ -8,7 +8,7 @@ priv suberror PdfliteOperationError {
 fn pdflite_cmd_select_pages(
   document : @pdf.PdfDocument,
   spec : String,
-) -> Array[Int] raise {
+) -> Array[Int32] raise {
   let count = document.endpage()
   guard spec != "" else { raise Usage("page specification must not be empty") }
   let pages = @pagespec.pdf_parse_pagespec_for_count(
@@ -30,7 +30,7 @@ fn pdflite_cmd_select_pages(
 ///|
 async fn pdflite_cmd_load(
   input : String,
-  passwords? : PdflitePasswords = { user: None, owner: None, },
+  passwords~ : PdflitePasswords = { user: None, owner: None, },
 ) -> @pdf.PdfDocument {
   match pdflite_cmd_read_document(input, passwords~) {
     Ok(document) => document
@@ -39,7 +39,7 @@ async fn pdflite_cmd_load(
 }
 
 ///|
-async fn pdflite_cmd_operation_error(err : Error) -> Int {
+async fn pdflite_cmd_operation_error(err : Error) -> Int32 {
   let (code, message) = match err {
     PdfliteOperationError::Usage(message) =>
       (pdflite_cmd_exit_usage_error, message)

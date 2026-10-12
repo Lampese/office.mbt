@@ -19,7 +19,7 @@ pub fn FontRef::fvar(self : FontRef) -> Fvar raise ReadError {
 
 ///|
 /// The number of variation axes in the font.
-pub fn Fvar::axis_count(self : Fvar) -> Int {
+pub fn Fvar::axis_count(self : Fvar) -> Int32 {
   self.data.read_u16(8) catch {
     _ => 0
   }
@@ -28,7 +28,7 @@ pub fn Fvar::axis_count(self : Fvar) -> Int {
 ///|
 /// A variation axis record.
 pub(all) struct VariationAxisRecord {
-  axis_tag : UInt
+  axis_tag : UInt32
   min_value : Fixed
   default_value : Fixed
   max_value : Fixed
@@ -100,7 +100,7 @@ pub fn VariationAxisRecord::normalize(
 }
 
 ///|
-fn round_f64_to_i32(value : Double) -> Int {
+fn round_f64_to_i32(value : Double) -> Int32 {
   let v = if value >= 0.0 { value + 0.5 } else { value - 0.5 }
   // Rust's saturating `as i32` (NaN is 0).
   if v.is_nan() {
@@ -128,7 +128,7 @@ fn apply_avar2_delta(coord : Fixed, delta_2dot14 : Double) -> Fixed {
 pub fn Fvar::user_to_normalized(
   self : Fvar,
   avar : Avar?,
-  user_coords : ArrayView[(UInt, Fixed)],
+  user_coords : ArrayView[(UInt32, Fixed)],
   normalized_coords : FixedArray[F2Dot14],
 ) -> Unit {
   normalized_coords.fill(F2Dot14::zero())
@@ -212,14 +212,14 @@ pub fn FontRef::avar(self : FontRef) -> Avar raise ReadError {
 }
 
 ///|
-fn Avar::major_version(self : Avar) -> Int {
+fn Avar::major_version(self : Avar) -> Int32 {
   self.data.read_u16(0) catch {
     _ => 0
   }
 }
 
 ///|
-fn Avar::minor_version(self : Avar) -> Int {
+fn Avar::minor_version(self : Avar) -> Int32 {
   self.data.read_u16(2) catch {
     _ => 0
   }
@@ -230,7 +230,7 @@ fn Avar::minor_version(self : Avar) -> Int {
 ///
 /// Like read-fonts' `axis_segment_maps()`, a `VarLenArray` over all of the
 /// data after the header: the declared axis count does not limit it.
-fn Avar::segment_maps(self : Avar, i : Int) -> SegmentMaps? {
+fn Avar::segment_maps(self : Avar, i : Int32) -> SegmentMaps? {
   if self.data.len() <= 8 {
     return None
   }
@@ -249,7 +249,7 @@ fn Avar::segment_maps(self : Avar, i : Int) -> SegmentMaps? {
 ///|
 /// The end of the segment maps (where version 2 fields start):
 /// `total_len_for_count(axis_count).unwrap_or(0)` after the header.
-fn Avar::segment_maps_end(self : Avar) -> Int {
+fn Avar::segment_maps_end(self : Avar) -> Int32 {
   let axis_count = self.data.read_u16(6) catch { _ => 0 }
   let mut pos = 8
   for _ in 0..<axis_count {
@@ -262,7 +262,7 @@ fn Avar::segment_maps_end(self : Avar) -> Int {
 ///|
 /// The avar2 offset at `delta` bytes after the segment maps (only present in
 /// version 2.x tables).
-fn Avar::v2_offset(self : Avar, delta : Int) -> UInt? {
+fn Avar::v2_offset(self : Avar, delta : Int32) -> UInt32? {
   if self.major_version() != 2 {
     return None
   }
@@ -296,16 +296,16 @@ fn Avar::var_store(self : Avar) -> Result[ItemVariationStore, ReadError]? {
 /// The segment maps of an axis.
 priv struct SegmentMaps {
   maps : FontData
-  len : Int
+  len : Int32
 }
 
 ///|
-fn SegmentMaps::from_(self : SegmentMaps, i : Int) -> Fixed {
+fn SegmentMaps::from_(self : SegmentMaps, i : Int32) -> Fixed {
   F2Dot14::from_bits(self.maps.read_i16(4 * i) catch { _ => 0 }).to_fixed()
 }
 
 ///|
-fn SegmentMaps::to_(self : SegmentMaps, i : Int) -> Fixed {
+fn SegmentMaps::to_(self : SegmentMaps, i : Int32) -> Fixed {
   F2Dot14::from_bits(self.maps.read_i16(4 * i + 2) catch { _ => 0 }).to_fixed()
 }
 
@@ -427,7 +427,10 @@ fn Hvar::item_variation_store(
 }
 
 ///|
-fn Hvar::mapping(self : Hvar, at : Int) -> Result[DeltaSetIndexMap, ReadError]? {
+fn Hvar::mapping(
+  self : Hvar,
+  at : Int32,
+) -> Result[DeltaSetIndexMap, ReadError]? {
   let offset = self.data.read_u32(at) catch { _ => return None }
   if offset == 0 {
     return None

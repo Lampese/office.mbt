@@ -1,7 +1,7 @@
 // @oxml image detection + dimension parsing tests.
 
 ///|
-fn bytes_of(values : Array[Int]) -> FixedArray[Byte] {
+fn bytes_of(values : Array[Int32]) -> FixedArray[Byte] {
   let out = FixedArray::make(values.length(), b'\x00')
   for i in 0..<values.length() {
     out[i] = values[i].to_byte()

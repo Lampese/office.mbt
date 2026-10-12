@@ -81,7 +81,7 @@ pub fn mint_para_id(used : Array[String]) -> String raise DocxError {
 }
 
 ///|
-fn render_para_id(value : Int) -> String {
+fn render_para_id(value : Int32) -> String {
   let digits = "0123456789ABCDEF"
   let units = digits.code_units()
   let builder = StringBuilder(size_hint=8)
@@ -210,7 +210,7 @@ pub fn plan_docx_paragraph_insertion(
 
 ///|
 /// The exact direct-body anchor grammar: `p[N]`, N >= 1.
-fn insert_anchor_ordinal(at : String) -> Int? {
+fn insert_anchor_ordinal(at : String) -> Int32? {
   guard at.has_prefix("p[") && at.has_suffix("]") && at.length() >= 4 else {
     return None
   }
@@ -234,7 +234,7 @@ fn insert_anchor_ordinal(at : String) -> Int? {
 /// The WML prefix of the paragraph tag at `offset` ("<w:p ..." -> "w").
 fn paragraph_tag_prefix(
   bytes : BytesView,
-  offset : Int,
+  offset : Int32,
 ) -> String raise DocxError {
   guard offset >= 0 && offset < bytes.length() && bytes[offset] == b'<' else {
     raise Unsupported(

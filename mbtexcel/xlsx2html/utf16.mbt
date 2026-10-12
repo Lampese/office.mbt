@@ -4,7 +4,7 @@
 /// isolated surrogates when a source file's stored strings decode to them;
 /// UTF-8 encoding of such text traps, so publication paths sanitize first
 /// and report the replacement count instead of crashing.
-pub fn sanitize_utf16_lossy(text : String) -> (String, Int) {
+pub fn sanitize_utf16_lossy(text : String) -> (String, Int32) {
   let mut replaced = 0
   let out = StringBuilder()
   let mut start = 0

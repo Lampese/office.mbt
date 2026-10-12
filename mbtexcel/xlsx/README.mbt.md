@@ -656,7 +656,7 @@ test "error handling" {
   let wb = @xlsx.Workbook::new()
 
   // Try to get non-existent sheet
-  let result : Result[Int, Error] = Ok(wb.get_sheet_index("Missing")) catch {
+  let result : Result[Int32, Error] = Ok(wb.get_sheet_index("Missing")) catch {
     e => Err(e)
   }
   debug_inspect(result, content="Ok(-1)")

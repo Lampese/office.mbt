@@ -1,16 +1,16 @@
 ///|
 /// A parsed indirect object with object number, generation, and payload.
 pub(all) struct PdfParsedIndirectObject {
-  number : Int
-  generation : Int
+  number : Int32
+  generation : Int32
   object : PdfObject
 } derive(Debug, Eq, ToJson)
 
 ///|
 fn pdf_parse_indirect_object_at(
   lexemes : ArrayView[PdfLexeme],
-  index : Int,
-) -> (PdfParsedIndirectObject, Int) raise @core.PdfError {
+  index : Int32,
+) -> (PdfParsedIndirectObject, Int32) raise @core.PdfError {
   let (object, next, complete) = pdf_parse_indirect_object_segment_at(
     lexemes, index,
   )
@@ -22,8 +22,8 @@ fn pdf_parse_indirect_object_at(
 /// Parse an indirect-object segment and report whether `endobj` was consumed.
 pub fn pdf_parse_indirect_object_segment_at(
   lexemes : ArrayView[PdfLexeme],
-  index : Int,
-) -> (PdfParsedIndirectObject, Int, Bool) raise @core.PdfError {
+  index : Int32,
+) -> (PdfParsedIndirectObject, Int32, Bool) raise @core.PdfError {
   let first = pdf_skip_comments(lexemes, index)
   if first + 2 >= lexemes.length() {
     raise ParseIndirectObjectExpected

@@ -7,7 +7,7 @@
 /// subroutines given a biased index.
 priv struct SubroutineHandler {
   subroutines : Array[BytesView]
-  bias : Int
+  bias : Int32
 }
 
 ///|
@@ -21,7 +21,7 @@ fn SubroutineHandler::new(char_strings : Array[BytesView]) -> SubroutineHandler 
 ///|
 fn SubroutineHandler::get_with_biased(
   self : SubroutineHandler,
-  index : Int,
+  index : Int32,
 ) -> BytesView? {
   // `unapply_bias`: `index.checked_add(bias)` and `u32::try_from`.
   let unbiased = index.to_int64() + self.bias.to_int64()
@@ -37,7 +37,7 @@ fn SubroutineHandler::get_with_biased(
 }
 
 ///|
-fn calc_subroutine_bias(len : Int) -> Int {
+fn calc_subroutine_bias(len : Int32) -> Int32 {
   if len < 1240 {
     107
   } else if len < 33900 {
@@ -142,8 +142,8 @@ priv struct Decompiler {
   gsubr_handler : SubroutineHandler
   lsubr_handler : SubroutineHandler
   stack : ArgumentsStack
-  mut hint_count : Int
-  mut hint_mask_bytes : Int
+  mut hint_count : Int32
+  mut hint_mask_bytes : Int32
 }
 
 ///|
@@ -178,7 +178,7 @@ fn Decompiler::decompile_inner(
   self : Decompiler,
   charstring : BytesView,
   program : Array[Instruction],
-  depth : Int,
+  depth : Int32,
 ) -> Bool raise SubsetError {
   if depth > 64 {
     raise CFFError

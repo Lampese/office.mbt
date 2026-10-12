@@ -41,7 +41,7 @@ pub extend ResolvedFonts with Eq::{not_equal, equal}
 pub fn resolve_run_fonts(
   rp : RunProperties,
   scheme : @theme.FontScheme,
-  major? : Bool = false,
+  major~ : Bool = false,
 ) -> ResolvedFonts {
   let collection = if major { scheme.major_font } else { scheme.minor_font }
   fn slot(override_ : String?, theme_value : String) -> String {
@@ -70,7 +70,7 @@ pub fn resolve_run_font_for_script(
   rp : RunProperties,
   scheme : @theme.FontScheme,
   script : String,
-  major? : Bool = false,
+  major~ : Bool = false,
 ) -> String {
   let collection = if major { scheme.major_font } else { scheme.minor_font }
   let override_ = match @theme.ScriptSlot::of_script(script) {

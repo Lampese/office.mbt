@@ -4,22 +4,22 @@
 /// reference-counted until their XML scope ends, but only the current
 /// generation participates in element selection.
 priv struct MceProcessKey {
-  namespace_id : Int
-  generation : Int
+  namespace_id : Int32
+  generation : Int32
   local_name : String
 } derive(Eq, Hash)
 
 ///|
 priv struct MceProcessGenerationReset {
-  namespace_id : Int
-  previous_generation : Int?
+  namespace_id : Int32
+  previous_generation : Int32?
 }
 
 ///|
 priv struct MceProcessTracker {
-  key_counts : Map[MceProcessKey, Int]
-  generations : Map[Int, Int]
-  mut next_generation : Int
+  key_counts : Map[MceProcessKey, Int32]
+  generations : Map[Int32, Int32]
+  mut next_generation : Int32
 }
 
 ///|
@@ -30,7 +30,7 @@ fn MceProcessTracker::new() -> MceProcessTracker {
 ///|
 fn MceProcessTracker::reset(
   self : MceProcessTracker,
-  namespace_id : Int,
+  namespace_id : Int32,
 ) -> MceProcessGenerationReset {
   let reset : MceProcessGenerationReset = {
     namespace_id,
@@ -44,7 +44,7 @@ fn MceProcessTracker::reset(
 ///|
 fn MceProcessTracker::add(
   self : MceProcessTracker,
-  namespace_id : Int,
+  namespace_id : Int32,
   local_name : String,
 ) -> MceProcessKey {
   let key : MceProcessKey = {
@@ -59,7 +59,7 @@ fn MceProcessTracker::add(
 ///|
 fn MceProcessTracker::processes(
   self : MceProcessTracker,
-  namespace_id : Int,
+  namespace_id : Int32,
   local_name : String,
 ) -> Bool {
   let generation = self.generations.get_or_default(namespace_id, 0)

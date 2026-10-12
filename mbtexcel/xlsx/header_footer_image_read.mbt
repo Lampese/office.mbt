@@ -85,7 +85,7 @@ fn parse_header_footer_images_from_vml(
   content_types : @ooxml.PackageContentTypes,
   archive : @zip.Archive,
   budget? : ReadBudget,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Array[HeaderFooterImage] raise XlsxError {
   let shapes = extract_vml_shapes(vml_xml)
   let rel_targets = match vml_rels_xml {
@@ -94,7 +94,7 @@ fn parse_header_footer_images_from_vml(
     None => Map([])
   }
   let images : Array[HeaderFooterImage] = []
-  let index_by_id : Map[String, Int] = Map([])
+  let index_by_id : Map[String, Int32] = Map([])
   for shape in shapes {
     let shape_attrs = match tag_attributes_in(shape, "v:shape") {
       Some(value) => value

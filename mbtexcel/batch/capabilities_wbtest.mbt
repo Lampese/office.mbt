@@ -37,7 +37,7 @@ fn required_samples() -> Map[String, String] {
 fn one_op_script(
   name : String,
   params : String,
-  schema? : String = @inspect.SCHEMA_BATCH,
+  schema~ : String = @inspect.SCHEMA_BATCH,
 ) -> String {
   "{\"schema\":\"\{schema}\",\"ops\":[{\"op\":\"\{name}\",\"params\":\{params}}]}"
 }

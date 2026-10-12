@@ -26,7 +26,7 @@ pub fn ShapeLine::with_values(color? : String, width? : Double) -> ShapeLine {
 ///|
 pub struct ShapeFill {
   mut color : String?
-  mut transparency : Int?
+  mut transparency : Int32?
 } derive(Debug)
 
 ///|
@@ -37,7 +37,7 @@ fn ShapeFill::new() -> ShapeFill {
 ///|
 pub fn ShapeFill::with_values(
   color? : String,
-  transparency? : Int,
+  transparency? : Int32,
 ) -> ShapeFill raise XlsxError {
   let fill = ShapeFill::new()
   match color {
@@ -66,13 +66,13 @@ pub struct Shape {
   format : GraphicOptions
   text : String
   paragraph : Array[RichTextRun]
-  width : Int
-  height : Int
+  width : Int32
+  height : Int32
   scale_x : Double
   scale_y : Double
   fill : ShapeFill
   fill_color : String
-  fill_transparency : Int
+  fill_transparency : Int32
   line : ShapeLine
   line_color : String
   line_width : Double
@@ -81,11 +81,11 @@ pub struct Shape {
   print_object : Bool
   locked : Bool
   positioning : PicturePositioning
-  priv drawing_offset_x_emu : Int?
-  priv drawing_offset_y_emu : Int?
-  priv drawing_width_emu : Int?
-  priv drawing_height_emu : Int?
-  priv drawing_order : Int?
+  priv drawing_offset_x_emu : Int32?
+  priv drawing_offset_y_emu : Int32?
+  priv drawing_width_emu : Int32?
+  priv drawing_height_emu : Int32?
+  priv drawing_order : Int32?
 } derive(Debug)
 
 ///|
@@ -115,7 +115,7 @@ fn shape_graphic_options(
 ///|
 fn shape_fill_from_values(
   fill_color : String,
-  fill_transparency : Int,
+  fill_transparency : Int32,
 ) -> ShapeFill {
   let fill = ShapeFill::new()
   if fill_color != "" {
@@ -142,22 +142,22 @@ fn shape_line_from_values(
 pub fn Shape::new(
   reference : String,
   shape_type : String,
-  macro_name? : String = "",
-  text? : String = "",
-  paragraph? : Array[RichTextRun] = [],
-  width? : Int = default_shape_size,
-  height? : Int = default_shape_size,
-  scale_x? : Double = 1.0,
-  scale_y? : Double = 1.0,
-  fill_color? : String = "",
-  fill_transparency? : Int = 0,
-  line_color? : String = "",
-  line_width? : Double = 1.0,
-  name? : String = "",
-  alt_text? : String = "",
-  print_object? : Bool = true,
-  locked? : Bool = true,
-  positioning? : PicturePositioning = OneCell,
+  macro_name~ : String = "",
+  text~ : String = "",
+  paragraph~ : Array[RichTextRun] = [],
+  width~ : Int32 = default_shape_size,
+  height~ : Int32 = default_shape_size,
+  scale_x~ : Double = 1.0,
+  scale_y~ : Double = 1.0,
+  fill_color~ : String = "",
+  fill_transparency~ : Int32 = 0,
+  line_color~ : String = "",
+  line_width~ : Double = 1.0,
+  name~ : String = "",
+  alt_text~ : String = "",
+  print_object~ : Bool = true,
+  locked~ : Bool = true,
+  positioning~ : PicturePositioning = OneCell,
 ) -> Shape raise XlsxError {
   if reference == "" {
     raise InvalidSheetOperation(msg="shape reference empty")

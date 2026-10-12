@@ -2,9 +2,9 @@
 /// `FaceMetrics::new` with `advances`, `cmap` and `units_per_em` as given
 /// and plausible vertical metrics, or the error it raises as text.
 fn built(
-  advances : Array[Int],
-  cmap : Map[Int, Int],
-  units_per_em? : Int = 1000,
+  advances : Array[Int32],
+  cmap : Map[Int32, Int32],
+  units_per_em~ : Int32 = 1000,
 ) -> Result[@fonts.FaceMetrics, String] {
   Ok(
     @fonts.FaceMetrics::new(
@@ -36,7 +36,7 @@ test "FaceMetrics::new builds a face that measures with what it was given" {
 ///|
 test "FaceMetrics::new copies its tables" {
   let advances = [500, 600]
-  let cmap : Map[Int, Int] = Map([(0x41, 1)])
+  let cmap : Map[Int32, Int32] = Map([(0x41, 1)])
   guard built(advances, cmap) is Ok(face) else { fail("expected a face") }
   advances[1] = 9999
   cmap[0x41] = 0

@@ -4,7 +4,7 @@
 
 ///|
 /// Generated predefined CMap lookup data.
-let pdf_text_kscpc_euc_codepoints_table_keys : ReadOnlyArray[Int] = [
+let pdf_text_kscpc_euc_codepoints_table_keys : ReadOnlyArray[Int32] = [
   0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007, 0x0008, 0x0009,
   0x000A, 0x000B, 0x000C, 0x000D, 0x000E, 0x000F, 0x0010, 0x0011, 0x0012, 0x0013,
   0x0014, 0x0015, 0x0016, 0x0017, 0x0018, 0x0019, 0x001A, 0x001B, 0x001C, 0x001D,
@@ -947,7 +947,7 @@ let pdf_text_kscpc_euc_codepoints_table_keys : ReadOnlyArray[Int] = [
 ]
 
 ///|
-let pdf_text_kscpc_euc_codepoints_table_offsets : ReadOnlyArray[Int] = [
+let pdf_text_kscpc_euc_codepoints_table_offsets : ReadOnlyArray[Int32] = [
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
   23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42,
   43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62,
@@ -1615,7 +1615,7 @@ let pdf_text_kscpc_euc_codepoints_table_offsets : ReadOnlyArray[Int] = [
 ]
 
 ///|
-let pdf_text_kscpc_euc_codepoints_table_pool : ReadOnlyArray[Int] = [
+let pdf_text_kscpc_euc_codepoints_table_pool : ReadOnlyArray[Int32] = [
   0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007, 0x0008, 0x0009,
   0x000A, 0x000B, 0x000C, 0x000D, 0x000E, 0x000F, 0x0010, 0x0011, 0x0012, 0x0013,
   0x0014, 0x0015, 0x0016, 0x0017, 0x0018, 0x0019, 0x001A, 0x001B, 0x001C, 0x001D,
@@ -2636,7 +2636,7 @@ let pdf_text_kscpc_euc_codepoints_table_pool : ReadOnlyArray[Int] = [
 
 ///|
 /// Predefined CMap lookup table, unpacked at load from the flat static data above.
-pub let pdf_text_kscpc_euc_codepoints_table : Array[(Int, Array[Int])] = pdf_cmap_unpack_csr(
+pub let pdf_text_kscpc_euc_codepoints_table : Array[(Int32, Array[Int32])] = pdf_cmap_unpack_csr(
   pdf_text_kscpc_euc_codepoints_table_keys, pdf_text_kscpc_euc_codepoints_table_offsets,
   pdf_text_kscpc_euc_codepoints_table_pool,
 )
@@ -2647,7 +2647,7 @@ pub let pdf_text_kscpc_euc_codepoints_table : Array[(Int, Array[Int])] = pdf_cma
 
 ///|
 /// Generated predefined CMap lookup data.
-let pdf_text_kscpc_euc_charcode_table_flat : ReadOnlyArray[Int] = [
+let pdf_text_kscpc_euc_charcode_table_flat : ReadOnlyArray[Int32] = [
   0x0000, 0x0000, 0x0001, 0x0001, 0x0002, 0x0002, 0x0003, 0x0003, 0x0004, 0x0004,
   0x0005, 0x0005, 0x0006, 0x0006, 0x0007, 0x0007, 0x0008, 0x0008, 0x0009, 0x0009,
   0x000A, 0x000A, 0x000B, 0x000B, 0x000C, 0x000C, 0x000D, 0x000D, 0x000E, 0x000E,
@@ -4367,6 +4367,6 @@ let pdf_text_kscpc_euc_charcode_table_flat : ReadOnlyArray[Int] = [
 
 ///|
 /// Predefined CMap lookup table, unpacked at load from the flat static data above.
-pub let pdf_text_kscpc_euc_charcode_table : Array[(Int, Int)] = pdf_cmap_unpack2(
+pub let pdf_text_kscpc_euc_charcode_table : Array[(Int32, Int32)] = pdf_cmap_unpack2(
   pdf_text_kscpc_euc_charcode_table_flat,
 )

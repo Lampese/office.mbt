@@ -107,8 +107,8 @@ fn replace_report_json(
   needle : String,
   replacement : String,
   within : String?,
-  nth : Int?,
-  expect : Int?,
+  nth : Int32?,
+  expect : Int32?,
   allow_zero : Bool,
   dry_run : Bool,
   report : @office_docx.DocxFindReplaceReport,
@@ -203,7 +203,7 @@ fn replace_report_json(
 /// 4096-character paths escape to ~48 KiB, the changed part path to
 /// ~6 KiB, plus the fixed structure — roughly 56 KiB, inside the
 /// reserve with headroom.
-let replace_report_transaction_slack : Int = 64 * 1024
+let replace_report_transaction_slack : Int32 = 64 * 1024
 
 ///|
 /// Refuse a replace whose JSON report would exceed the output ceiling.
@@ -211,7 +211,7 @@ let replace_report_transaction_slack : Int = 64 * 1024
 /// transaction, before publication — nothing is written on refusal.
 fn ensure_replace_report_budget(
   record : Json,
-  maximum : Int,
+  maximum : Int32,
 ) -> Unit raise @transaction.TransactionError {
   ignore(bounded_docx_payload(record, [], maximum)) catch {
     _ =>

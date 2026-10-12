@@ -10,7 +10,7 @@ test "private PDF number set deduplicates membership and additions" {
   numbers.add(2)
   numbers.add(2)
   @test.assert_eq(numbers.contains(2), true)
-  let output : Array[Int] = []
+  let output : Array[Int32] = []
   @core.pdf_push_unique_number(output, numbers, 2)
   @core.pdf_push_unique_number(output, numbers, 3)
   @core.pdf_push_unique_number(output, numbers, 3)

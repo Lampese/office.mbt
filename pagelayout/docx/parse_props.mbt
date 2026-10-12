@@ -15,7 +15,7 @@ fn attr(el : @xml.XmlElement, name : String) -> String? {
 /// `cm`/`mm`/`in`/`pt`/`pc`/`pi` suffix (ECMA-376 §22.9.2.15). Returns the
 /// value in the attribute's native unit, given how many of that unit make
 /// one inch. Overflow is rejected rather than wrapped.
-fn parse_measure(text : String?, per_inch : Double) -> Int? {
+fn parse_measure(text : String?, per_inch : Double) -> Int32? {
   guard text is Some(s) else { return None }
   let trimmed = s.trim(chars=" \t\r\n")
   if trimmed.length() == 0 {
@@ -49,7 +49,7 @@ fn parse_measure(text : String?, per_inch : Double) -> Int? {
 ///|
 /// Reject values that would not survive the 32-bit `Int` the unit types
 /// carry, rather than wrapping them into arbitrary (often negative) sizes.
-fn clamp_to_int(value : Double) -> Int? {
+fn clamp_to_int(value : Double) -> Int32? {
   if value.is_nan() || value > 2147483000.0 || value < -2147483000.0 {
     None
   } else {
@@ -98,19 +98,19 @@ fn parse_decimal(s : String) -> Double? {
 
 ///|
 /// Twips-valued attributes (indents, spacing, page size and margins).
-fn parse_twips(text : String?) -> Int? {
+fn parse_twips(text : String?) -> Int32? {
   parse_measure(text, 1440.0)
 }
 
 ///|
 /// Half-point-valued attributes (`w:sz`).
-fn parse_half_points(text : String?) -> Int? {
+fn parse_half_points(text : String?) -> Int32? {
   parse_measure(text, 144.0)
 }
 
 ///|
 /// Unitless integer attributes (`w:line`, toggles' numeric forms).
-fn parse_int(text : String?) -> Int? {
+fn parse_int(text : String?) -> Int32? {
   parse_measure(text, 1.0)
 }
 
@@ -138,7 +138,7 @@ fn parse_hex_color(value : String) -> @pagelayout.Color? {
   if value.length() != 6 {
     return None
   }
-  let channels : Array[Int] = []
+  let channels : Array[Int32] = []
   for pair in 0..<3 {
     let mut byte = 0
     for offset in 0..<2 {
@@ -163,7 +163,7 @@ fn parse_hex_color(value : String) -> @pagelayout.Color? {
 /// Read a `w:rPr` element into partial character formatting.
 pub fn read_run_props(
   rpr : @xml.XmlElement,
-  theme? : ThemeFonts = ThemeFonts::empty(),
+  theme~ : ThemeFonts = ThemeFonts::empty(),
 ) -> RunProps {
   let mut props = RunProps::empty()
   for child in rpr.children {

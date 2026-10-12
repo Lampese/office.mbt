@@ -1,5 +1,5 @@
 ///|
-fn bounded_actual_above_limit(limit : Int) -> Int {
+fn bounded_actual_above_limit(limit : Int32) -> Int32 {
   if limit < 0x7fff_ffff {
     limit + 1
   } else {
@@ -8,7 +8,7 @@ fn bounded_actual_above_limit(limit : Int) -> Int {
 }
 
 ///|
-fn bounded_int64_actual(value : Int64, limit : Int) -> Int {
+fn bounded_int64_actual(value : Int64, limit : Int32) -> Int32 {
   if value < 0L {
     bounded_actual_above_limit(limit)
   } else if value > 0x7fff_ffffL {
@@ -30,8 +30,8 @@ test "bounded file-size telemetry saturates instead of truncating" {
 ///|
 async fn[R : @async/io.Reader] read_all_bytes(
   reader : R,
-  maximum? : Int = default_max_package_bytes,
-  resource? : String = "file_bytes",
+  maximum~ : Int32 = default_max_package_bytes,
+  resource~ : String = "file_bytes",
 ) -> Bytes {
   let output : Array[Byte] = []
   while true {
@@ -72,8 +72,8 @@ async fn[R : @async/io.Reader] read_all_bytes(
 #cfg(any(target="native", target="wasm"))
 async fn read_bounded_package_file(
   path : String,
-  maximum? : Int = default_max_package_bytes,
-  resource? : String = "file_bytes",
+  maximum~ : Int32 = default_max_package_bytes,
+  resource~ : String = "file_bytes",
 ) -> Bytes {
   let kind = @async/fs.kind(path) catch {
     error if @async.is_being_cancelled() => raise error
@@ -287,9 +287,9 @@ fn read_workbook_from_bytes(
 /// the subsequent resource-bounded semantic parse is currently synchronous.
 pub async fn[R : @async/io.Reader] open_reader(
   reader : R,
-  password? : String = "",
-  options? : Options = Options::new(),
-  limits? : ReadLimits = ReadLimits::new(),
+  password~ : String = "",
+  options~ : Options = Options::new(),
+  limits~ : ReadLimits = ReadLimits::new(),
   transcoder? : (String, Bytes) -> String raise XlsxError,
 ) -> Workbook {
   let bytes = read_all_bytes(
@@ -313,9 +313,9 @@ pub async fn[R : @async/io.Reader] open_reader(
 /// Alias for `open_reader`, retained as the streaming XLSX read entry point.
 pub async fn[R : @async/io.Reader] read_zip_reader(
   reader : R,
-  password? : String = "",
-  options? : Options = Options::new(),
-  limits? : ReadLimits = ReadLimits::new(),
+  password~ : String = "",
+  options~ : Options = Options::new(),
+  limits~ : ReadLimits = ReadLimits::new(),
   transcoder? : (String, Bytes) -> String raise XlsxError,
 ) -> Workbook {
   match transcoder {
@@ -331,9 +331,9 @@ pub async fn[R : @async/io.Reader] read_zip_reader(
 pub async fn[R : @async/io.Reader] Workbook::read_zip_reader(
   self : Workbook,
   reader : R,
-  password? : String = "",
+  password~ : String = "",
   options? : Options,
-  limits? : ReadLimits = ReadLimits::new(),
+  limits~ : ReadLimits = ReadLimits::new(),
   transcoder? : (String, Bytes) -> String raise XlsxError,
 ) -> Workbook {
   let resolved_options = match options {
@@ -366,9 +366,9 @@ pub async fn[R : @async/io.Reader] Workbook::read_zip_reader(
 /// is rejected.
 pub async fn open_file(
   path : String,
-  password? : String = "",
-  options? : Options = Options::new(),
-  limits? : ReadLimits = ReadLimits::new(),
+  password~ : String = "",
+  options~ : Options = Options::new(),
+  limits~ : ReadLimits = ReadLimits::new(),
   transcoder? : (String, Bytes) -> String raise XlsxError,
 ) -> Workbook {
   let bytes = read_bounded_package_file(
@@ -475,7 +475,7 @@ pub async fn[W : @async/io.Writer] Workbook::write_to(
   self : Workbook,
   writer : W,
   options? : Options,
-) -> Int raise XlsxError {
+) -> Int32 raise XlsxError {
   let bytes = write_bytes(self, options)
   writer.write(bytes) catch {
     err => raise InvalidSheetOperation(msg="writer failed: \{err}")

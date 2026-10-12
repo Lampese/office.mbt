@@ -30,7 +30,7 @@
 ///   debug_inspect(sheet.materialized_row_dimensions(), content="[]")
 ///   workbook.set_row_visible("Sheet1", 7000, false)
 ///   workbook.set_row_height("Sheet1", 2, 24.5)
-///   let summary : Array[(Int, Double?, Bool)] = []
+///   let summary : Array[(Int32, Double?, Bool)] = []
 ///   for entry in sheet.materialized_row_dimensions() {
 ///     let (row, dim) = entry
 ///     summary.push((row, dim.height, dim.hidden))
@@ -40,8 +40,8 @@
 /// ```
 pub fn Worksheet::materialized_row_dimensions(
   self : Worksheet,
-) -> Array[(Int, RowDimension)] {
-  let entries : Array[(Int, RowDimension)] = []
+) -> Array[(Int32, RowDimension)] {
+  let entries : Array[(Int32, RowDimension)] = []
   for row, dim in self.row_dimensions {
     entries.push((row, dim))
   }
@@ -69,7 +69,7 @@ pub fn Worksheet::materialized_row_dimensions(
 ///   debug_inspect(sheet.materialized_col_dimensions(), content="[]")
 ///   workbook.set_col_width("Sheet1", 3, 18.5)
 ///   workbook.set_col_visible("Sheet1", 1, false)
-///   let summary : Array[(Int, Double?, Bool)] = []
+///   let summary : Array[(Int32, Double?, Bool)] = []
 ///   for entry in sheet.materialized_col_dimensions() {
 ///     let (col, dim) = entry
 ///     summary.push((col, dim.width, dim.hidden))
@@ -79,8 +79,8 @@ pub fn Worksheet::materialized_row_dimensions(
 /// ```
 pub fn Worksheet::materialized_col_dimensions(
   self : Worksheet,
-) -> Array[(Int, ColDimension)] {
-  let entries : Array[(Int, ColDimension)] = []
+) -> Array[(Int32, ColDimension)] {
+  let entries : Array[(Int32, ColDimension)] = []
   for col, dim in self.col_dimensions {
     entries.push((col, dim))
   }
@@ -98,7 +98,7 @@ pub fn Worksheet::materialized_col_dimensions(
 pub fn Workbook::get_row_dimensions(
   self : Workbook,
   sheet_name : StringView,
-) -> Array[(Int, RowDimension)] raise XlsxError {
+) -> Array[(Int32, RowDimension)] raise XlsxError {
   self.require_sheet(sheet_name).materialized_row_dimensions()
 }
 
@@ -112,6 +112,6 @@ pub fn Workbook::get_row_dimensions(
 pub fn Workbook::get_col_dimensions(
   self : Workbook,
   sheet_name : StringView,
-) -> Array[(Int, ColDimension)] raise XlsxError {
+) -> Array[(Int32, ColDimension)] raise XlsxError {
   self.require_sheet(sheet_name).materialized_col_dimensions()
 }

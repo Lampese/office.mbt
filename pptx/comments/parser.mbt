@@ -239,7 +239,7 @@ fn optional_attr_some(
 fn parse_int_attr(
   attrs : Array[(@xml.QName, String)],
   name : String,
-) -> Int raise CommentsError {
+) -> Int32 raise CommentsError {
   let raw = require_attr(attrs, name)
   match @oxml.parse_signed_int(raw) {
     Some(n) => n

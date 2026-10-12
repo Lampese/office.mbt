@@ -10,7 +10,7 @@ test "cell ref helpers" {
   @test.assert_raise(() => @xlsx.column_name_to_number("A1"))
   debug_inspect(@xlsx.cell_name_to_coordinates("Z3"), content="(26, 3)")
   debug_inspect(@xlsx.cell_name_to_coordinates("$C$3"), content="(3, 3)")
-  let coords_err : Result[(Int, Int), Error] = Ok(
+  let coords_err : Result[(Int32, Int32), Error] = Ok(
     @xlsx.cell_name_to_coordinates("A1048577"),
   ) catch {
     e => Err(e)
@@ -37,7 +37,7 @@ test "cell ref helpers enforce exact XLSX grid and bounded syntax" {
   inspect(@xlsx.join_cell_name("XFD", 1048576), content="XFD1048576")
   let bad_columns = ["XFE", "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"]
   for name in bad_columns {
-    let result : Result[Int, Error] = Ok(@xlsx.column_name_to_number(name)) catch {
+    let result : Result[Int32, Error] = Ok(@xlsx.column_name_to_number(name)) catch {
       e => Err(e)
     }
     inspect(result is Err(@xlsx.XlsxError::InvalidCellRef(_)), content="true")
@@ -54,7 +54,9 @@ test "cell ref helpers enforce exact XLSX grid and bounded syntax" {
     "$A1$",
   ]
   for cell in bad_cells {
-    let result : Result[(String, Int), Error] = Ok(@xlsx.split_cell_name(cell)) catch {
+    let result : Result[(String, Int32), Error] = Ok(
+      @xlsx.split_cell_name(cell),
+    ) catch {
       e => Err(e)
     }
     inspect(result is Err(@xlsx.XlsxError::InvalidCellRef(_)), content="true")

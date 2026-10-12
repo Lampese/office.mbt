@@ -138,7 +138,7 @@ fn MarkdownWriter::write_list(
   self : MarkdownWriter,
   children : Array[HtmlNode],
   ordered~ : Bool,
-  indent~ : Int,
+  indent~ : Int32,
   nested~ : Bool,
 ) -> Unit {
   if nested {
@@ -171,8 +171,8 @@ fn MarkdownWriter::write_list_item(
   attributes : Map[String, String],
   children : Array[HtmlNode],
   ordered~ : Bool,
-  indent~ : Int,
-  number~ : Int,
+  indent~ : Int32,
+  number~ : Int32,
 ) -> Unit {
   for _ in 0..<indent {
     self.buffer.write_string("\t")
@@ -196,7 +196,7 @@ fn MarkdownWriter::write_list_item(
 fn MarkdownWriter::write_list_item_children(
   self : MarkdownWriter,
   children : Array[HtmlNode],
-  nested_indent~ : Int,
+  nested_indent~ : Int32,
 ) -> Bool {
   let mut ended_by_nested_list = false
   for child in children {

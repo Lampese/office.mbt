@@ -10,7 +10,7 @@
 
 ///|
 /// Conversion factor: 1 percent = 1000 OOXML units.
-pub let ooxml_per_percent : Int = 1000
+pub let ooxml_per_percent : Int32 = 1000
 
 ///|
 /// A percentage value, expressed in percent (e.g. `Percentage(50.0)` is 50%).
@@ -36,14 +36,14 @@ pub fn Percentage::value(self : Percentage) -> Double {
 ///|
 /// Convert to the OOXML 1/1000-of-a-percent integer representation.
 /// Rounds to the nearest OOXML unit to preserve integer round trips.
-pub fn Percentage::to_ooxml(self : Percentage) -> Int {
+pub fn Percentage::to_ooxml(self : Percentage) -> Int32 {
   (self.0 * ooxml_per_percent.to_double()).round().to_int()
 }
 
 ///|
 /// Construct a `Percentage` from the OOXML 1/1000-of-a-percent integer
 /// representation (e.g. `from_ooxml(50_000)` is 50%).
-pub fn Percentage::from_ooxml(n : Int) -> Percentage {
+pub fn Percentage::from_ooxml(n : Int32) -> Percentage {
   Percentage(n.to_double() / ooxml_per_percent.to_double())
 }
 

@@ -87,11 +87,11 @@ pub fn MediaFormat::is_video(self : MediaFormat) -> Bool {
 /// True if the four bytes at `off` equal `(a, b, c, d)`.
 fn tag_at(
   bytes : FixedArray[Byte],
-  off : Int,
-  a : Int,
-  b : Int,
-  c : Int,
-  d : Int,
+  off : Int32,
+  a : Int32,
+  b : Int32,
+  c : Int32,
+  d : Int32,
 ) -> Bool {
   bytes.length() >= off + 4 &&
   bytes[off].to_int() == a &&

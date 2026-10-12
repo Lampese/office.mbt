@@ -237,7 +237,7 @@ fn conditional_replayed_faithfully(
   sheet : String,
   wanted : @xlsx.ConditionalFormatOptions,
   sqref : String,
-  ordinal : Int,
+  ordinal : Int32,
 ) -> Bool {
   let formats = replayed.get_conditional_formats(sheet) catch {
     _ => return false

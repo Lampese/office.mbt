@@ -46,7 +46,7 @@ pub fn ShapeHyperlink::external(url : String) -> ShapeHyperlink {
 /// A shape hyperlink that jumps to another slide by zero-based index (as
 /// in `Presentation::slides()`). Resolved to an `rt_slide` relationship +
 /// `action="ppaction://hlinksldjump"`.
-pub fn ShapeHyperlink::to_slide(slide_idx : Int) -> ShapeHyperlink {
+pub fn ShapeHyperlink::to_slide(slide_idx : Int32) -> ShapeHyperlink {
   { target: Some(InternalSlide(slide_idx)), click: None, action: None, }
 }
 

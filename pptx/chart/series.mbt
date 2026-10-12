@@ -57,8 +57,8 @@
 ///   `<c:invertIfNegative>`, `<c:pictureOptions>`, `<c:shape>`, `<c:extLst>`,
 ///   foreign-namespace siblings).
 pub(all) struct ChartSeriesCore {
-  idx : Int
-  order : Int
+  idx : Int32
+  order : Int32
   tx : @xml.XmlElement?
   sp_pr : @xml.XmlElement?
   trendlines : Array[Trendline]
@@ -91,8 +91,8 @@ pub impl Show for ChartSeriesCore with fn output(self, logger) {
 /// - `x_val` (`<c:xVal>`) — X-axis numeric data source.
 /// - `y_val` (`<c:yVal>`) — Y-axis numeric data source.
 pub(all) struct ScatterSeriesCore {
-  idx : Int
-  order : Int
+  idx : Int32
+  order : Int32
   tx : @xml.XmlElement?
   sp_pr : @xml.XmlElement?
   trendlines : Array[Trendline]
@@ -126,8 +126,8 @@ pub impl Show for ScatterSeriesCore with fn output(self, logger) {
 /// - `bubble_size` (`<c:bubbleSize>`) — third numeric data source mapping
 ///   bubble area / width.
 pub(all) struct BubbleSeriesCore {
-  idx : Int
-  order : Int
+  idx : Int32
+  order : Int32
   tx : @xml.XmlElement?
   sp_pr : @xml.XmlElement?
   trendlines : Array[Trendline]
@@ -164,8 +164,8 @@ pub impl Show for BubbleSeriesCore with fn output(self, logger) {
 fn parse_chart_series_core(
   el : @xml.XmlElement,
 ) -> ChartSeriesCore raise ChartError {
-  let mut idx : Int? = None
-  let mut order : Int? = None
+  let mut idx : Int32? = None
+  let mut order : Int32? = None
   let mut tx : @xml.XmlElement? = None
   let mut sp_pr : @xml.XmlElement? = None
   let trendlines : Array[Trendline] = []
@@ -209,8 +209,8 @@ fn parse_chart_series_core(
 fn parse_scatter_series_core(
   el : @xml.XmlElement,
 ) -> ScatterSeriesCore raise ChartError {
-  let mut idx : Int? = None
-  let mut order : Int? = None
+  let mut idx : Int32? = None
+  let mut order : Int32? = None
   let mut tx : @xml.XmlElement? = None
   let mut sp_pr : @xml.XmlElement? = None
   let trendlines : Array[Trendline] = []
@@ -254,8 +254,8 @@ fn parse_scatter_series_core(
 fn parse_bubble_series_core(
   el : @xml.XmlElement,
 ) -> BubbleSeriesCore raise ChartError {
-  let mut idx : Int? = None
-  let mut order : Int? = None
+  let mut idx : Int32? = None
+  let mut order : Int32? = None
   let mut tx : @xml.XmlElement? = None
   let mut sp_pr : @xml.XmlElement? = None
   let trendlines : Array[Trendline] = []
@@ -424,8 +424,8 @@ fn write_bubble_series_core(
 /// Shared idx + order leaf emitter.
 fn emit_idx_order(
   w : @xml.XmlWriter,
-  idx : Int,
-  order : Int,
+  idx : Int32,
+  order : Int32,
 ) -> Unit raise @xml.XmlError {
   w.start_element(@xml.QName::new(@oxml.chart_ns, "idx"))
   w.attribute(@xml.QName::unqualified("val"), idx.to_string())

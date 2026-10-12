@@ -33,7 +33,7 @@
 /// Next free `extN` counter.
 pub struct WriteCtx {
   priv known_prefixes : Map[String, String]
-  priv mut next_ext : Int
+  priv mut next_ext : Int32
 }
 
 ///|

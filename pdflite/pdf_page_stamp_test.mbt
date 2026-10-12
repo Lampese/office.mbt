@@ -23,10 +23,10 @@ fn stamp_stream_for_test(
 ///|
 fn stamp_page_for_test(
   ops : ArrayView[@content.PdfContentOp],
-  resources? : @syntax.PdfObject = PdfDictionary([]),
-  rest? : @syntax.PdfObject = PdfDictionary([]),
-  width? : Double = 100.0,
-  height? : Double = 100.0,
+  resources~ : @syntax.PdfObject = PdfDictionary([]),
+  rest~ : @syntax.PdfObject = PdfDictionary([]),
+  width~ : Double = 100.0,
+  height~ : Double = 100.0,
 ) -> @page.PdfPage {
   {
     content: [stamp_stream_for_test(ops)],

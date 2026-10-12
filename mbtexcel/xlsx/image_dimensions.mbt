@@ -1,5 +1,5 @@
 ///|
-fn img_read_u32_be(bytes : BytesView, offset : Int) -> Int? {
+fn img_read_u32_be(bytes : BytesView, offset : Int32) -> Int32? {
   if offset < 0 || offset + 4 > bytes.length() {
     return None
   }
@@ -7,7 +7,7 @@ fn img_read_u32_be(bytes : BytesView, offset : Int) -> Int? {
 }
 
 ///|
-fn img_read_u32_le(bytes : BytesView, offset : Int) -> Int? {
+fn img_read_u32_le(bytes : BytesView, offset : Int32) -> Int32? {
   if offset < 0 || offset + 4 > bytes.length() {
     return None
   }
@@ -15,7 +15,7 @@ fn img_read_u32_le(bytes : BytesView, offset : Int) -> Int? {
 }
 
 ///|
-fn img_read_u16_be(bytes : BytesView, offset : Int) -> Int? {
+fn img_read_u16_be(bytes : BytesView, offset : Int32) -> Int32? {
   if offset < 0 || offset + 2 > bytes.length() {
     return None
   }
@@ -23,7 +23,7 @@ fn img_read_u16_be(bytes : BytesView, offset : Int) -> Int? {
 }
 
 ///|
-fn img_read_u16_le(bytes : BytesView, offset : Int) -> Int? {
+fn img_read_u16_le(bytes : BytesView, offset : Int32) -> Int32? {
   if offset < 0 || offset + 2 > bytes.length() {
     return None
   }
@@ -31,12 +31,12 @@ fn img_read_u16_le(bytes : BytesView, offset : Int) -> Int? {
 }
 
 ///|
-fn png_dimensions(bytes : BytesView) -> (Int, Int)? {
+fn png_dimensions(bytes : BytesView) -> (Int32, Int32)? {
   // PNG signature: 89 50 4E 47 0D 0A 1A 0A
   if bytes.length() < 24 {
     return None
   }
-  let sig : Array[Int] = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
+  let sig : Array[Int32] = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
   for i in 0..<8 {
     if bytes[i].to_int() != sig[i] {
       return None
@@ -59,7 +59,7 @@ fn png_dimensions(bytes : BytesView) -> (Int, Int)? {
 }
 
 ///|
-fn gif_dimensions(bytes : BytesView) -> (Int, Int)? {
+fn gif_dimensions(bytes : BytesView) -> (Int32, Int32)? {
   if bytes.length() < 10 {
     return None
   }
@@ -81,7 +81,7 @@ fn gif_dimensions(bytes : BytesView) -> (Int, Int)? {
 }
 
 ///|
-fn jpeg_dimensions(bytes : BytesView) -> (Int, Int)? {
+fn jpeg_dimensions(bytes : BytesView) -> (Int32, Int32)? {
   if bytes.length() < 4 {
     return None
   }
@@ -149,7 +149,7 @@ fn jpeg_dimensions(bytes : BytesView) -> (Int, Int)? {
 }
 
 ///|
-fn bmp_dimensions(bytes : BytesView) -> (Int, Int)? {
+fn bmp_dimensions(bytes : BytesView) -> (Int32, Int32)? {
   // BMP file header is 14 bytes, followed by a DIB header.
   if bytes.length() < 26 {
     return None
@@ -192,7 +192,7 @@ fn bmp_dimensions(bytes : BytesView) -> (Int, Int)? {
 }
 
 ///|
-fn ico_dimensions(bytes : BytesView) -> (Int, Int)? {
+fn ico_dimensions(bytes : BytesView) -> (Int32, Int32)? {
   // ICONDIR (6 bytes) + at least one ICONDIRENTRY (16 bytes).
   if bytes.length() < 22 {
     return None
@@ -217,7 +217,7 @@ fn ico_dimensions(bytes : BytesView) -> (Int, Int)? {
 }
 
 ///|
-fn tiff_dimensions(bytes : BytesView) -> (Int, Int)? {
+fn tiff_dimensions(bytes : BytesView) -> (Int32, Int32)? {
   if bytes.length() < 8 {
     return None
   }
@@ -226,14 +226,14 @@ fn tiff_dimensions(bytes : BytesView) -> (Int, Int)? {
   if !le && !be {
     return None
   }
-  let read_u16 = fn(bytes : BytesView, offset : Int) -> Int? {
+  let read_u16 = fn(bytes : BytesView, offset : Int32) -> Int32? {
     if le {
       img_read_u16_le(bytes, offset)
     } else {
       img_read_u16_be(bytes, offset)
     }
   }
-  let read_u32 = fn(bytes : BytesView, offset : Int) -> Int? {
+  let read_u32 = fn(bytes : BytesView, offset : Int32) -> Int32? {
     if le {
       img_read_u32_le(bytes, offset)
     } else {
@@ -256,8 +256,8 @@ fn tiff_dimensions(bytes : BytesView) -> (Int, Int)? {
     Some(v) => v
     None => return None
   }
-  let mut width : Int? = None
-  let mut height : Int? = None
+  let mut width : Int32? = None
+  let mut height : Int32? = None
   let mut entry_off = ifd_offset + 2
   for _ in 0..<entry_count {
     if entry_off + 12 > bytes.length() {
@@ -372,7 +372,7 @@ fn svg_attr_value(tag : StringView, name : StringView) -> String? {
 }
 
 ///|
-fn svg_dimensions(bytes : BytesView) -> (Int, Int)? {
+fn svg_dimensions(bytes : BytesView) -> (Int32, Int32)? {
   let text = @encoding/utf8.decode(bytes) catch { _ => return None }
   let start = match text.find("<svg") {
     Some(v) => v
@@ -439,7 +439,7 @@ fn svg_dimensions(bytes : BytesView) -> (Int, Int)? {
 }
 
 ///|
-fn emf_dimensions(bytes : BytesView) -> (Int, Int)? {
+fn emf_dimensions(bytes : BytesView) -> (Int32, Int32)? {
   // ENHMETAHEADER: use rclFrame (in .01 millimeter) if present.
   // Offsets: iType(0), nSize(4), rclBounds(8), rclFrame(24), signature(40).
   if bytes.length() < 44 {
@@ -481,7 +481,7 @@ fn emf_dimensions(bytes : BytesView) -> (Int, Int)? {
 }
 
 ///|
-fn wmf_dimensions(bytes : BytesView) -> (Int, Int)? {
+fn wmf_dimensions(bytes : BytesView) -> (Int32, Int32)? {
   // Placeable metafile header (22 bytes): key + bbox + inch.
   if bytes.length() < 22 {
     return None
@@ -524,7 +524,7 @@ fn wmf_dimensions(bytes : BytesView) -> (Int, Int)? {
 fn image_dimensions_px(
   data : BytesView,
   extension_lower : StringView,
-) -> (Int, Int)? {
+) -> (Int32, Int32)? {
   match extension_lower {
     "png" => png_dimensions(data)
     "gif" => gif_dimensions(data)

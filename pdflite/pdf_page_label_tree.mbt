@@ -216,7 +216,7 @@ pub fn PdfDocument::write_page_labels(
   } else {
     let root = self.pdf_page_label_catalog()
     let pdf = self.copy()
-    let entries : Array[(Int, @syntax.PdfObject)] = Array(
+    let entries : Array[(Int32, @syntax.PdfObject)] = Array(
       capacity=labels.length(),
     )
     for label in labels {

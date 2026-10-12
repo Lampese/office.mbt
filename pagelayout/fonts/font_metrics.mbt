@@ -26,12 +26,12 @@ pub struct FaceMetrics {
   family : String
   bold : Bool
   italic : Bool
-  units_per_em : Int
-  ascender : Int
-  descender : Int
-  line_gap : Int
-  priv advances : Array[Int]
-  priv cmap : Map[Int, Int]
+  units_per_em : Int32
+  ascender : Int32
+  descender : Int32
+  line_gap : Int32
+  priv advances : Array[Int32]
+  priv cmap : Map[Int32, Int32]
 }
 
 ///|
@@ -78,14 +78,14 @@ pub impl Show for FaceMetricsError with fn output(self, logger) {
 /// given (font units, `descender` negative below the baseline).
 pub fn FaceMetrics::new(
   family~ : String,
-  bold? : Bool = false,
-  italic? : Bool = false,
-  units_per_em~ : Int,
-  ascender~ : Int,
-  descender~ : Int,
-  line_gap~ : Int,
-  advances~ : Array[Int],
-  cmap~ : Map[Int, Int],
+  bold~ : Bool = false,
+  italic~ : Bool = false,
+  units_per_em~ : Int32,
+  ascender~ : Int32,
+  descender~ : Int32,
+  line_gap~ : Int32,
+  advances~ : Array[Int32],
+  cmap~ : Map[Int32, Int32],
 ) -> FaceMetrics raise FaceMetricsError {
   let invalid = fn(fault : String) -> FaceMetricsError {
     InvalidFaceMetrics("\{family}: \{fault}")
@@ -126,7 +126,7 @@ pub fn FaceMetrics::new(
 
 ///|
 /// `U+0041` and the like.
-fn codepoint_label(codepoint : Int) -> String {
+fn codepoint_label(codepoint : Int32) -> String {
   "U+" + codepoint.to_string(radix=16).to_upper().pad_start(4, '0')
 }
 
@@ -134,7 +134,7 @@ fn codepoint_label(codepoint : Int) -> String {
 /// The glyph `codepoint` maps to in the face's `cmap`, or None when it maps
 /// to none. A mapping to glyph 0 (`.notdef`) is reported as it is; see
 /// `has_char` for whether the face can really draw the character.
-pub fn FaceMetrics::glyph_id(self : FaceMetrics, codepoint : Int) -> Int? {
+pub fn FaceMetrics::glyph_id(self : FaceMetrics, codepoint : Int32) -> Int32? {
   self.cmap.get(codepoint)
 }
 
@@ -142,7 +142,7 @@ pub fn FaceMetrics::glyph_id(self : FaceMetrics, codepoint : Int) -> Int? {
 /// Every (codepoint, glyph) pair of the face's `cmap`, in no particular
 /// order. The pairs are read from the face; nothing done with them can
 /// reach it.
-pub fn FaceMetrics::cmap_entries(self : FaceMetrics) -> Iter2[Int, Int] {
+pub fn FaceMetrics::cmap_entries(self : FaceMetrics) -> Iter2[Int32, Int32] {
   self.cmap.iter2()
 }
 
@@ -152,7 +152,7 @@ pub fn FaceMetrics::cmap_entries(self : FaceMetrics) -> Iter2[Int, Int] {
 /// `numberOfHMetrics` share the table's final advance, per TrueType.
 pub fn FaceMetrics::advance_pt(
   self : FaceMetrics,
-  codepoint : Int,
+  codepoint : Int32,
   size_pt : Double,
 ) -> Double {
   let glyph = self.cmap.get(codepoint).unwrap_or(0)
@@ -166,7 +166,7 @@ pub fn FaceMetrics::advance_pt(
 
 ///|
 /// Whether the face maps `codepoint` to a real glyph.
-pub fn FaceMetrics::has_char(self : FaceMetrics, codepoint : Int) -> Bool {
+pub fn FaceMetrics::has_char(self : FaceMetrics, codepoint : Int32) -> Bool {
   self.cmap.get(codepoint) is Some(glyph) && glyph != 0
 }
 
@@ -216,7 +216,7 @@ fn parse_sfnt(
   data : Bytes,
 ) -> FaceMetrics raise {
   let metrics = @pdflite.pdf_truetype_metrics(data)
-  let cmap : Map[Int, Int] = Map([])
+  let cmap : Map[Int32, Int32] = Map([])
   // later subtables replace earlier mappings, matching cpdf's reader
   for entry in @pdflite.pdf_truetype_cmap_glyphs(data) {
     cmap[entry.codepoint] = entry.glyph_index
@@ -241,7 +241,7 @@ fn parse_sfnt(
 }
 
 ///|
-fn read_i16(data : Bytes, offset : Int) -> Int {
+fn read_i16(data : Bytes, offset : Int32) -> Int32 {
   let hi = data[offset].to_int()
   let lo = data[offset + 1].to_int()
   let value = (hi << 8) | lo
@@ -296,8 +296,8 @@ pub fn bundled_families() -> Array[String] {
 /// face. For registered faces see `FontRegistry::face`.
 pub fn face(
   family : String,
-  bold? : Bool = false,
-  italic? : Bool = false,
+  bold~ : Bool = false,
+  italic~ : Bool = false,
 ) -> FaceMetrics {
   load_faces()
   match face_cache.get(face_key(family, bold, italic)) {
@@ -340,9 +340,9 @@ pub fn cjk_fallback() -> FaceMetrics {
 pub fn uncovered(
   text : String,
   family : String,
-  bold? : Bool = false,
-  italic? : Bool = false,
-) -> Array[(Int, Int)] {
+  bold~ : Bool = false,
+  italic~ : Bool = false,
+) -> Array[(Int32, Int32)] {
   load_faces()
   uncovered_by(
     text,
@@ -358,9 +358,9 @@ fn uncovered_by(
   text : String,
   requested : FaceMetrics,
   fallback : FaceMetrics,
-) -> Array[(Int, Int)] {
-  let counts : Map[Int, Int] = Map([])
-  let order : Array[Int] = []
+) -> Array[(Int32, Int32)] {
+  let counts : Map[Int32, Int32] = Map([])
+  let order : Array[Int32] = []
   let mut i = 0
   while i < text.length() {
     let unit = text[i].to_int()

@@ -18,7 +18,7 @@ priv struct RegexToken {
 }
 
 ///|
-fn regex_is_escaped(chars : Array[Char], index : Int) -> Bool {
+fn regex_is_escaped(chars : Array[Char], index : Int32) -> Bool {
   let mut count = 0
   for i in index>..0 {
     if chars[i] == '\\' {
@@ -127,9 +127,9 @@ fn regex_token_matches(token : RegexTokenKind, ch : Char) -> Bool {
 fn sheet_regex_match_from(
   text : Array[Char],
   tokens : Array[RegexToken],
-  i : Int,
-  j : Int,
-  memo : Map[(Int, Int), Bool],
+  i : Int32,
+  j : Int32,
+  memo : Map[(Int32, Int32), Bool],
   require_end : Bool,
 ) -> Bool {
   match memo.get((i, j)) {
@@ -167,11 +167,11 @@ fn regex_search(text : StringView, pattern : StringView) -> Bool {
   let (tokens, anchor_start, anchor_end) = parse_regex_tokens(pattern)
   let chars = text.to_array()
   if anchor_start {
-    let memo : Map[(Int, Int), Bool] = Map([])
+    let memo : Map[(Int32, Int32), Bool] = Map([])
     return sheet_regex_match_from(chars, tokens, 0, 0, memo, anchor_end)
   }
   for start in 0..<=chars.length() {
-    let memo : Map[(Int, Int), Bool] = Map([])
+    let memo : Map[(Int32, Int32), Bool] = Map([])
     if sheet_regex_match_from(chars, tokens, start, 0, memo, anchor_end) {
       return true
     }
@@ -184,7 +184,7 @@ pub fn Workbook::search_sheet(
   self : Workbook,
   sheet_name : StringView,
   value : String,
-  reg? : Bool = false,
+  reg~ : Bool = false,
 ) -> Array[String] raise XlsxError {
   check_sheet_name(sheet_name)
   let sheet = match self.sheet(sheet_name) {
@@ -215,7 +215,7 @@ test "search sheet wb: regex parser handles trailing escape and escaped class ch
 
 ///|
 test "search sheet wb: memoized match fast-return branch" {
-  let memo : Map[(Int, Int), Bool] = Map([])
+  let memo : Map[(Int32, Int32), Bool] = Map([])
   memo[(1, 1)] = true
   let tokens : Array[RegexToken] = []
   let result = sheet_regex_match_from(

@@ -10,7 +10,7 @@ fn format_fixture_source(body : String) -> String {
 }
 
 ///|
-fn format_span(start : Int, end : Int) -> ParagraphFormatSpan {
+fn format_span(start : Int32, end : Int32) -> ParagraphFormatSpan {
   { start, end, }
 }
 
@@ -19,7 +19,7 @@ fn format_span(start : Int, end : Int) -> ParagraphFormatSpan {
 /// document string and the receipt for test-specific assertions.
 fn assert_format_edits(
   body : String,
-  paragraph~ : Int,
+  paragraph~ : Int32,
   spans : Array[ParagraphFormatSpan],
   bold? : Bool,
   italic? : Bool,
@@ -147,7 +147,7 @@ fn assert_format_edits(
 ///|
 fn assert_format_refusal(
   body : String,
-  paragraph~ : Int,
+  paragraph~ : Int32,
   spans : Array[ParagraphFormatSpan],
   refusal~ : String,
   bold? : Bool,
@@ -166,7 +166,7 @@ fn assert_format_refusal(
 ///|
 fn assert_format_refusal_in(
   source : String,
-  paragraph~ : Int,
+  paragraph~ : Int32,
   spans : Array[ParagraphFormatSpan],
   refusal~ : String,
   bold? : Bool,
@@ -195,8 +195,8 @@ fn assert_format_refusal_in(
 /// document, for the independent direct-format oracle.
 fn format_result_run_slice(
   spliced : String,
-  paragraph : Int,
-  run : Int,
+  paragraph : Int32,
+  run : Int32,
 ) -> Bytes raise {
   let projection = surgery_native_projection(spliced)
   let bytes = @utf8.encode(spliced)
@@ -1303,9 +1303,9 @@ test "format: zero-width visible content in a touched run refuses" {
 /// projects nothing.
 fn run_projection_range(
   projection : ReaderProjection,
-  paragraph : Int,
+  paragraph : Int32,
   run : ReaderProjectionRun,
-) -> (Int, Int) {
+) -> (Int32, Int32) {
   let base = projection.paragraphs[paragraph].projection_start
   let mut start = -1
   let mut end = -1

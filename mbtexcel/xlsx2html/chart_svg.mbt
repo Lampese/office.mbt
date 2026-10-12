@@ -3,31 +3,31 @@
 /// supports. Everything is bounded: series count, points per series, and
 /// label lengths. Unsupported kinds keep the labeled placeholder so a
 /// reader always knows what was omitted.
-const CHART_SVG_WIDTH : Int = 480
+const CHART_SVG_WIDTH : Int32 = 480
 
 ///|
-const CHART_SVG_HEIGHT : Int = 280
+const CHART_SVG_HEIGHT : Int32 = 280
 
 ///|
-const CHART_SVG_PLOT_LEFT : Int = 48
+const CHART_SVG_PLOT_LEFT : Int32 = 48
 
 ///|
-const CHART_SVG_PLOT_TOP : Int = 24
+const CHART_SVG_PLOT_TOP : Int32 = 24
 
 ///|
-const CHART_SVG_PLOT_WIDTH : Int = 400
+const CHART_SVG_PLOT_WIDTH : Int32 = 400
 
 ///|
-const CHART_SVG_PLOT_HEIGHT : Int = 200
+const CHART_SVG_PLOT_HEIGHT : Int32 = 200
 
 ///|
-const CHART_SVG_MAX_SERIES : Int = 8
+const CHART_SVG_MAX_SERIES : Int32 = 8
 
 ///|
-const CHART_SVG_MAX_POINTS : Int = 64
+const CHART_SVG_MAX_POINTS : Int32 = 64
 
 ///|
-const CHART_SVG_MAX_LABEL_CHARS : Int = 24
+const CHART_SVG_MAX_LABEL_CHARS : Int32 = 24
 
 ///|
 /// A fixed, deterministic series palette (no theme resolution).
@@ -47,9 +47,9 @@ priv struct ChartSvgData {
   kind : String
   series : Array[ChartSvgSeries]
   categories : Array[String]
-  omitted_series : Int
+  omitted_series : Int32
   omitted_points : Bool
-  skipped_values : Int
+  skipped_values : Int32
 }
 
 ///|
@@ -94,7 +94,7 @@ fn chart_label(text : String) -> String {
 /// Finds the one sheet/range separator in a chart formula reference. Excel
 /// quotes sheet names with apostrophes and doubles an apostrophe inside the
 /// name, so `!` only separates the range after the closing quote.
-fn chart_ref_separator(reference : String) -> Int? {
+fn chart_ref_separator(reference : String) -> Int32? {
   if reference.length() == 0 {
     return None
   }
@@ -175,7 +175,7 @@ fn chart_ref_parts(reference : String) -> (String, String)? {
 fn chart_range_numbers(
   workbook : @xlsx.Workbook,
   reference : String,
-) -> (Array[Double], Array[Bool], Bool, Int)? {
+) -> (Array[Double], Array[Bool], Bool, Int32)? {
   guard chart_ref_parts(reference) is Some((sheet, range)) else { return None }
   let cells = @inspect.parse_range(range).cells() catch { _ => return None }
   let values : Array[Double] = []
@@ -281,7 +281,7 @@ fn chart_svg_tag_vals(xml : String, tag : String) -> Array[String] {
     let mut scan = after
     let mut quote_unit = 0
     while scan < xml.length() {
-      let unit : Int = xml[scan].to_int()
+      let unit : Int32 = xml[scan].to_int()
       if quote_unit != 0 {
         if unit == quote_unit {
           quote_unit = 0
@@ -502,7 +502,7 @@ fn chart_svg_axes(
 }
 
 ///|
-fn chart_svg_point_count(data : ChartSvgData) -> Int {
+fn chart_svg_point_count(data : ChartSvgData) -> Int32 {
   let mut count = 0
   for entry in data.series {
     if entry.values.length() > count {

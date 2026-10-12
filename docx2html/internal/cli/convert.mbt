@@ -61,7 +61,7 @@ pub fn parse_output_format(value : String) -> CliOutputFormat raise CliError {
 /// converter says `docx2html:`, the agent CLI says `docx:`).
 pub async fn run_conversion(
   options : CliOptions,
-  program? : String = "docx2html",
+  program~ : String = "docx2html",
 ) -> Unit {
   // Images destined for an --output-dir are collected during conversion (the
   // convert_image callback is synchronous) and written afterwards, so the
@@ -111,7 +111,7 @@ pub async fn run_conversion(
 /// which keeps it easy to test.
 async fn render_conversion(
   options : CliOptions,
-  pending? : Array[(String, Bytes)] = [],
+  pending~ : Array[(String, Bytes)] = [],
 ) -> @docx.ConversionResult {
   let style_map = match options.style_map_path {
     Some(path) => @docx.read_style_map_string(@afs.read_file(path).text())
@@ -198,7 +198,7 @@ fn basename(path : String) -> String {
 }
 
 ///|
-fn last_path_separator(path : String) -> Int? {
+fn last_path_separator(path : String) -> Int32? {
   match (path.rev_find("/"), path.rev_find("\\")) {
     (Some(left), Some(right)) => Some(if left > right { left } else { right })
     (Some(index), None) | (None, Some(index)) => Some(index)

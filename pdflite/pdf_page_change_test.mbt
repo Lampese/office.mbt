@@ -47,7 +47,7 @@ fn page_change_hello_resources_for_test() -> @syntax.PdfObject {
 }
 
 ///|
-fn page_change_index_mediabox_for_test(index : Int) -> @syntax.PdfObject {
+fn page_change_index_mediabox_for_test(index : Int32) -> @syntax.PdfObject {
   PdfArray([
     PdfInteger(index),
     PdfInteger(0),
@@ -57,7 +57,7 @@ fn page_change_index_mediabox_for_test(index : Int) -> @syntax.PdfObject {
 }
 
 ///|
-fn page_change_indexed_blank_for_test(index : Int) -> @page.PdfPage {
+fn page_change_indexed_blank_for_test(index : Int32) -> @page.PdfPage {
   {
     ..@page.pdf_page_blank(@geometry.paper_a4),
     mediabox: page_change_index_mediabox_for_test(index),

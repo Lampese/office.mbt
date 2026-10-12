@@ -4,7 +4,7 @@
 // `pdflite/internal/skrifa`.
 
 ///|
-fn rd_u16(data : Bytes, at : Int) -> Int {
+fn rd_u16(data : Bytes, at : Int32) -> Int32 {
   if at < 0 || at > data.length() - 2 {
     return 0
   }
@@ -12,7 +12,7 @@ fn rd_u16(data : Bytes, at : Int) -> Int {
 }
 
 ///|
-fn rd_i16(data : Bytes, at : Int) -> Int {
+fn rd_i16(data : Bytes, at : Int32) -> Int32 {
   let v = rd_u16(data, at)
   if v >= 0x8000 {
     v - 0x10000
@@ -22,7 +22,7 @@ fn rd_i16(data : Bytes, at : Int) -> Int {
 }
 
 ///|
-fn rd_u32(data : Bytes, at : Int) -> Int {
+fn rd_u32(data : Bytes, at : Int32) -> Int32 {
   if at < 0 || at > data.length() - 4 {
     return 0
   }
@@ -33,7 +33,7 @@ fn rd_u32(data : Bytes, at : Int) -> Int {
 }
 
 ///|
-fn rd_tag(data : Bytes, at : Int) -> String {
+fn rd_tag(data : Bytes, at : Int32) -> String {
   let sb = StringBuilder()
   for i in 0..<4 {
     if at + i < data.length() {
@@ -58,12 +58,12 @@ pub struct Font {
   /// The font file (possibly a collection).
   data : Bytes
   /// The index of the face in a collection.
-  index : Int
+  index : Int32
   priv font_ref : @read_fonts.FontRef
   /// The number of font units per em.
   units_per_em : Double
   /// The number of glyphs.
-  num_glyphs : Int
+  num_glyphs : Int32
   /// The ascender in font units.
   ascent : Double
   /// The descender in font units (negative below the baseline).
@@ -81,7 +81,7 @@ pub struct Font {
   /// The global bounding box `(x_min, y_min, x_max, y_max)` in font units.
   bbox : (Double, Double, Double, Double)
   /// The OS/2 `fsType` embedding permissions.
-  fs_type : Int
+  fs_type : Int32
   /// The outline format.
   kind : OutlineKind
   /// An identifier used to derive subset tags.
@@ -100,7 +100,7 @@ pub struct Font {
 
 ///|
 /// Parse a font face from a font file and a collection index.
-pub fn Font::new(data : Bytes, index : Int, key? : String = "") -> Font? {
+pub fn Font::new(data : Bytes, index : Int32, key~ : String = "") -> Font? {
   Font::new_variable(data, index, [], key~)
 }
 
@@ -111,9 +111,9 @@ pub fn Font::new(data : Bytes, index : Int, key? : String = "") -> Font? {
 /// instance.
 pub fn Font::new_variable(
   data : Bytes,
-  index : Int,
+  index : Int32,
   variation_coordinates : ArrayView[(@subsetter.Tag, Float)],
-  key? : String = "",
+  key~ : String = "",
 ) -> Font? {
   // Like krilla's `Font::new_variable`: the font must be readable by
   // read-fonts (`FontRef::from_index`) and have a readable `head` table;
@@ -284,7 +284,7 @@ pub fn Font::new_variable(
 /// skrifa's `GlyphNames::num_glyphs`: the `maxp` glyph count (or 0), unless
 /// the `post` table has no glyph names and the font has a name-keyed CFF
 /// table, whose charset gives the count.
-fn glyph_names_num_glyphs(font_ref : @read_fonts.FontRef) -> Int {
+fn glyph_names_num_glyphs(font_ref : @read_fonts.FontRef) -> Int32 {
   let num_glyphs = match ok(() => font_ref.maxp()) {
     Some(maxp) => maxp.num_glyphs()
     None => 0
@@ -331,7 +331,7 @@ pub fn Font::variation_coordinates(
 ///|
 /// The advance width of a glyph in font units (at the location of the
 /// variation coordinates).
-pub fn Font::advance_width(self : Font, glyph : Int) -> Double? {
+pub fn Font::advance_width(self : Font, glyph : Int32) -> Double? {
   if glyph < 0 {
     return None
   }

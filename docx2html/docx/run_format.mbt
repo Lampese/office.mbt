@@ -74,12 +74,12 @@ pub fn docx_direct_format(
       }
       let builder = StringBuilder(size_hint=6)
       for ch in hex {
-        let upper = if ch is ('a'..='f') {
+        let upper = if ch is ('a'..<='f') {
           (ch.to_int() - 32).unsafe_to_char()
         } else {
           ch
         }
-        guard upper is ('0'..='9' | 'A'..='F') else {
+        guard upper is ('0'..<='9' | 'A'..<='F') else {
           raise Unsupported(
             message="format color is a six-digit RGB value (RRGGBB or #RRGGBB)",
           )
@@ -105,20 +105,20 @@ pub fn docx_direct_format(
 /// One slice-relative byte edit: replace [start, end) with the
 /// replacement text (encoded as UTF-8 by the consumer).
 pub struct RunFormatEdit {
-  priv start : Int
-  priv end : Int
+  priv start : Int32
+  priv end : Int32
   priv replacement : String
 }
 
 ///|
 /// The byte offset where the edit's replacement begins (slice-relative).
-pub fn RunFormatEdit::start(self : RunFormatEdit) -> Int {
+pub fn RunFormatEdit::start(self : RunFormatEdit) -> Int32 {
   self.start
 }
 
 ///|
 /// The byte offset just past the text the edit replaces (slice-relative).
-pub fn RunFormatEdit::end(self : RunFormatEdit) -> Int {
+pub fn RunFormatEdit::end(self : RunFormatEdit) -> Int32 {
   self.end
 }
 
@@ -269,23 +269,23 @@ priv struct FormatAttribute {
   value : String
   // the FULL attribute span: first byte of the name through the
   // closing quote (inclusive end is exclusive here)
-  name_start : Int
-  attr_end : Int
-  value_start : Int
-  value_end : Int
+  name_start : Int32
+  attr_end : Int32
+  value_start : Int32
+  value_end : Int32
 }
 
 ///|
 priv struct RunChildTag {
   name : String
-  byte_start : Int
-  byte_end : Int
+  byte_start : Int32
+  byte_end : Int32
   self_closing : Bool
-  open_end : Int
+  open_end : Int32
   // Where the close tag STARTS (equals byte_end for a self-closing
   // tag) — recorded, never reconstructed, because `</w:rPr >` is
   // legal XML and longer than the canonical spelling.
-  close_start : Int
+  close_start : Int32
   attributes : Array[FormatAttribute]
   // Direct element children found inside (non-leaf detection).
   has_element_children : Bool
@@ -299,8 +299,8 @@ priv struct RunChildTag {
 /// walker cannot vouch for must not be edited around.
 fn scan_direct_children(
   bytes : BytesView,
-  content_start : Int,
-  content_end : Int,
+  content_start : Int32,
+  content_end : Int32,
 ) -> Array[RunChildTag] raise DocxError {
   let children : Array[RunChildTag] = []
   let mut at = content_start
@@ -370,9 +370,9 @@ fn scan_direct_children(
 fn consume_subtree(
   bytes : BytesView,
   name : String,
-  open_end : Int,
-  limit : Int,
-) -> (Int, Int) raise DocxError {
+  open_end : Int32,
+  limit : Int32,
+) -> (Int32, Int32) raise DocxError {
   let stack : Array[String] = [name]
   let mut at = open_end
   while at < limit && stack.length() > 0 {
@@ -437,9 +437,9 @@ fn consume_subtree(
 /// means).
 fn scan_format_tag(
   bytes : BytesView,
-  start : Int,
-  limit : Int,
-) -> (String, Array[FormatAttribute], Bool, Int) raise DocxError {
+  start : Int32,
+  limit : Int32,
+) -> (String, Array[FormatAttribute], Bool, Int32) raise DocxError {
   let mut at = start + 1
   let name_start = at
   while at < limit &&
@@ -574,9 +574,9 @@ fn validate_ncname_part(part : String) -> Unit raise DocxError {
   let mut first = true
   for ch in part {
     let valid = if first {
-      ch is ('A'..='Z' | 'a'..='z' | '_')
+      ch is ('A'..<='Z' | 'a'..<='z' | '_')
     } else {
-      ch is ('A'..='Z' | 'a'..='z' | '0'..='9' | '_' | '-' | '.')
+      ch is ('A'..<='Z' | 'a'..<='z' | '0'..<='9' | '_' | '-' | '.')
     }
     guard valid else {
       raise Unsupported(message="run formatting found a malformed XML name")
@@ -588,8 +588,8 @@ fn validate_ncname_part(part : String) -> Unit raise DocxError {
 ///|
 fn ascii_slice(
   bytes : BytesView,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> String raise DocxError {
   let builder = StringBuilder()
   for index in start..<end {
@@ -607,7 +607,7 @@ fn ascii_slice(
 /// Attribute VALUES may carry non-ASCII; the comparisons this engine
 /// makes are against ASCII vocabularies, so non-ASCII values simply
 /// never match (and are preserved untouched).
-fn ascii_lossy_slice(bytes : BytesView, start : Int, end : Int) -> String {
+fn ascii_lossy_slice(bytes : BytesView, start : Int32, end : Int32) -> String {
   let builder = StringBuilder()
   for index in start..<end {
     if bytes[index] < b'\x80' {
@@ -625,7 +625,7 @@ fn ascii_lossy_slice(bytes : BytesView, start : Int, end : Int) -> String {
 
 ///|
 /// The ECMA-376 CT_RPr child order, by LOCAL name.
-fn rpr_rank(local_name : String) -> Int? {
+fn rpr_rank(local_name : String) -> Int32? {
   let order = [
     "rStyle", "rFonts", "b", "bCs", "i", "iCs", "caps", "smallCaps", "strike", "dstrike",
     "outline", "shadow", "emboss", "imprint", "noProof", "snapToGrid", "vanish",
@@ -658,11 +658,11 @@ fn on_off_value(children_value : String?) -> Bool? {
 
 ///|
 priv struct PendingEdit {
-  start : Int
-  end : Int
+  start : Int32
+  end : Int32
   replacement : String
   // schema rank for stable equal-offset ordering
-  order : Int
+  order : Int32
 }
 
 ///|
@@ -671,7 +671,7 @@ priv struct PendingEdit {
 /// present. Shared by the planner and the verifier — this is lexer
 /// truth, not edit generation.
 priv struct RunShape {
-  open_end : Int
+  open_end : Int32
   self_closing : Bool
   rpr : RunChildTag?
 }
@@ -886,7 +886,7 @@ priv struct RprInventory {
   underline : RunChildTag?
   color : RunChildTag?
   children : Array[RunChildTag]
-  insertion_limit : Int
+  insertion_limit : Int32
 }
 
 ///|
@@ -925,7 +925,7 @@ fn classify_rpr_children(
   let mut seen_u : RunChildTag? = None
   let mut seen_color : RunChildTag? = None
   let mut last_rank = -1
-  let mut extension_block_start : Int? = None
+  let mut extension_block_start : Int32? = None
   for child in children {
     let (child_prefix, local_name) = split_qname(child.name)
     if child_prefix != binding.element {
@@ -1068,8 +1068,8 @@ fn classify_rpr_children(
 fn scan_extension_interior(
   bytes : BytesView,
   binding : WmlBinding,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> Unit raise DocxError {
   let children = scan_direct_children(bytes, start, end)
   for child in children {
@@ -1232,7 +1232,7 @@ fn rpr_insertion_offset(
   local_name : String,
   inventory : RprInventory,
   container : RunChildTag,
-) -> (Int, Int) raise DocxError {
+) -> (Int32, Int32) raise DocxError {
   guard rpr_rank(local_name) is Some(rank) else {
     raise Unsupported(message="run formatting has no rank for \{local_name}")
   }
@@ -1438,7 +1438,7 @@ fn rgb_equal(existing : String, requested : String) -> Bool {
   let right = requested.code_units()
   for index in 0..<6 {
     let a = left[index].to_int().unsafe_to_char()
-    let folded = if a is ('a'..='f') {
+    let folded = if a is ('a'..<='f') {
       (a.to_int() - 32).unsafe_to_char()
     } else {
       a

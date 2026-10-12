@@ -1,5 +1,5 @@
 ///|
-fn pdf_writer_exponent_marker(text : BytesView) -> Int {
+fn pdf_writer_exponent_marker(text : BytesView) -> Int32 {
   for i in 0..<text.length() {
     if text[i] is (b'E' | b'e') {
       break i
@@ -12,8 +12,8 @@ fn pdf_writer_exponent_marker(text : BytesView) -> Int {
 ///|
 fn pdf_writer_parse_signed_int(
   text : BytesView,
-  start : Int,
-) -> Int raise @core.PdfError {
+  start : Int32,
+) -> Int32 raise @core.PdfError {
   let digit_start = match text.get(start) {
     Some(b'+') | Some(b'-') => start + 1
     _ => start
@@ -21,7 +21,7 @@ fn pdf_writer_parse_signed_int(
   guard digit_start < text.length() else { raise NumberExpected }
   let mut value = 0
   for index in digit_start..<text.length() {
-    guard text[index] is (b'0'..=b'9') else { raise NumberExpected }
+    guard text[index] is (b'0'..<=b'9') else { raise NumberExpected }
     value = value * 10 + (text[index].to_int() - '0')
   }
   if text[start] is b'-' {
@@ -33,7 +33,7 @@ fn pdf_writer_parse_signed_int(
 
 ///|
 /// Number of significant digits kept when rounding a real for output.
-const PDF_WRITER_SIGNIFICANT_DIGITS : Int = 12
+const PDF_WRITER_SIGNIFICANT_DIGITS : Int32 = 12
 
 ///|
 /// Emit decimal digit values with the decimal point logically placed after
@@ -49,8 +49,8 @@ const PDF_WRITER_SIGNIFICANT_DIGITS : Int = 12
 /// the wide-real regression test.
 fn pdf_writer_push_significant_digits(
   output : Array[Byte],
-  digits : Array[Int],
-  decimal_position : Int,
+  digits : Array[Int32],
+  decimal_position : Int32,
 ) -> Unit {
   let significant_start = for i in 0..<digits.length() {
     if digits[i] != 0 {
@@ -117,9 +117,9 @@ fn pdf_writer_push_significant_digits(
 ///|
 fn pdf_writer_push_digit_values(
   output : Array[Byte],
-  digits : ArrayView[Int],
-  start : Int,
-  end : Int,
+  digits : ArrayView[Int32],
+  start : Int32,
+  end : Int32,
 ) -> Unit {
   for i in start..<end {
     pdf_writer_push_byte(output, '0' + digits[i])
@@ -130,7 +130,7 @@ fn pdf_writer_push_digit_values(
 fn pdf_writer_push_scientific_real(
   output : Array[Byte],
   text : BytesView,
-  exponent_at : Int,
+  exponent_at : Int32,
 ) -> Unit raise @core.PdfError {
   let mut mantissa_start = 0
   if exponent_at > 0 {
@@ -144,13 +144,13 @@ fn pdf_writer_push_scientific_real(
     }
   }
   let exponent = pdf_writer_parse_signed_int(text, exponent_at + 1)
-  let digits : Array[Int] = []
+  let digits : Array[Int32] = []
   let mut fractional_digits = 0
   let mut seen_decimal = false
   for i in mantissa_start..<exponent_at {
     match text[i] {
       b'.' => seen_decimal = true
-      b'0'..=b'9' => {
+      b'0'..<=b'9' => {
         digits.push(text[i].to_int() - '0')
         if seen_decimal {
           fractional_digits += 1
@@ -177,7 +177,7 @@ fn pdf_writer_push_plain_significant_real(
     Some(b'-') => (1, true)
     _ => (0, false)
   }
-  let digits : Array[Int] = []
+  let digits : Array[Int32] = []
   let mut decimal_position = -1
   for index in start..<text.length() {
     match text[index] {
@@ -185,7 +185,7 @@ fn pdf_writer_push_plain_significant_real(
         guard decimal_position < 0 else { raise NumberExpected }
         decimal_position = digits.length()
       }
-      b'0'..=b'9' => digits.push(text[index].to_int() - '0')
+      b'0'..<=b'9' => digits.push(text[index].to_int() - '0')
       _ => raise NumberExpected
     }
   }
@@ -283,7 +283,7 @@ fn pdf_writer_push_exact_real(
   for i in start..<mantissa_end {
     match text[i] {
       b'.' => point = digits.length()
-      b'0'..=b'9' => digits.push(text[i])
+      b'0'..<=b'9' => digits.push(text[i])
       _ => raise NumberExpected
     }
   }

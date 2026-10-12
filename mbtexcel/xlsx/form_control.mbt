@@ -6,13 +6,13 @@ pub struct FormControl {
   mut macro_name : String?
   mut checked : Bool?
   mut cell_link : String?
-  mut width : Int?
-  mut height : Int?
-  mut current_val : Int?
-  mut min_val : Int?
-  mut max_val : Int?
-  mut inc_change : Int?
-  mut page_change : Int?
+  mut width : Int32?
+  mut height : Int32?
+  mut current_val : Int32?
+  mut min_val : Int32?
+  mut max_val : Int32?
+  mut inc_change : Int32?
+  mut page_change : Int32?
   mut horizontally : Bool?
   mut format : GraphicOptions
   mut paragraph : Array[RichTextRun]
@@ -45,7 +45,7 @@ fn normalize_form_control_type(
 pub fn FormControl::new(
   cell : String,
   control_type : String,
-  text? : String = "",
+  text~ : String = "",
 ) -> FormControl raise XlsxError {
   if cell == "" {
     raise InvalidSheetOperation(msg="form control cell empty")
@@ -106,7 +106,7 @@ pub fn FormControl::set_cell_link(
 ///|
 pub fn FormControl::set_width(
   self : FormControl,
-  width : Int,
+  width : Int32,
 ) -> Unit raise XlsxError {
   if width <= 0 {
     raise InvalidSheetOperation(msg="form control width invalid")
@@ -117,7 +117,7 @@ pub fn FormControl::set_width(
 ///|
 pub fn FormControl::set_height(
   self : FormControl,
-  height : Int,
+  height : Int32,
 ) -> Unit raise XlsxError {
   if height <= 0 {
     raise InvalidSheetOperation(msg="form control height invalid")
@@ -128,7 +128,7 @@ pub fn FormControl::set_height(
 ///|
 pub fn FormControl::set_current_val(
   self : FormControl,
-  value : Int,
+  value : Int32,
 ) -> Unit raise XlsxError {
   if value < 0 || value > max_form_control_value {
     raise InvalidSheetOperation(msg="form control current value invalid")
@@ -139,7 +139,7 @@ pub fn FormControl::set_current_val(
 ///|
 pub fn FormControl::set_min_val(
   self : FormControl,
-  value : Int,
+  value : Int32,
 ) -> Unit raise XlsxError {
   if value < 0 || value > max_form_control_value {
     raise InvalidSheetOperation(msg="form control min value invalid")
@@ -150,7 +150,7 @@ pub fn FormControl::set_min_val(
 ///|
 pub fn FormControl::set_max_val(
   self : FormControl,
-  value : Int,
+  value : Int32,
 ) -> Unit raise XlsxError {
   if value < 0 || value > max_form_control_value {
     raise InvalidSheetOperation(msg="form control max value invalid")
@@ -161,7 +161,7 @@ pub fn FormControl::set_max_val(
 ///|
 pub fn FormControl::set_inc_change(
   self : FormControl,
-  value : Int,
+  value : Int32,
 ) -> Unit raise XlsxError {
   if value < 0 || value > max_form_control_value {
     raise InvalidSheetOperation(msg="form control inc change invalid")
@@ -172,7 +172,7 @@ pub fn FormControl::set_inc_change(
 ///|
 pub fn FormControl::set_page_change(
   self : FormControl,
-  value : Int,
+  value : Int32,
 ) -> Unit raise XlsxError {
   if value < 0 || value > max_form_control_value {
     raise InvalidSheetOperation(msg="form control page change invalid")
@@ -332,7 +332,7 @@ fn form_control_vml_preset(control_type : StringView) -> FormControlVmlPreset? {
 fn form_control_end_anchor(
   sheet : Worksheet,
   control : FormControl,
-) -> (Int, Int, Int, Int) raise XlsxError {
+) -> (Int32, Int32, Int32, Int32) raise XlsxError {
   let (row, col) = cell_ref_to_rc(control.cell)
   let row0 = row - 1
   let col0 = col - 1
@@ -375,10 +375,10 @@ fn form_control_end_anchor(
 
 ///|
 fn write_form_controls_vml(
-  sheet_id : Int,
+  sheet_id : Int32,
   sheet : Worksheet,
   controls : ArrayView[FormControl],
-  shape_id_start? : Int = 2048,
+  shape_id_start~ : Int32 = 2048,
   budget? : WritePartBudget,
 ) -> String raise XlsxError {
   if !vml_shape_id_range_is_valid(shape_id_start, controls.length()) {
@@ -879,8 +879,8 @@ fn parse_form_controls_vml(
       continue
     }
     let body = cd[end_tag + 1:]
-    let mut row0_opt : Int? = None
-    let mut col0_opt : Int? = None
+    let mut row0_opt : Int32? = None
+    let mut col0_opt : Int32? = None
     match extract_xml_text_tag(body, "x:Row") {
       Some(v) =>
         try @string.parse_int(v, base=10) catch {

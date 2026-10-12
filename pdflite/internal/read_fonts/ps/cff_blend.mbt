@@ -3,16 +3,16 @@
 
 ///|
 /// The maximum number of region scalars that we precompute.
-const MAX_PRECOMPUTED_SCALARS : Int = 16
+const MAX_PRECOMPUTED_SCALARS : Int32 = 16
 
 ///|
 /// State for processing the blend operator for DICTs and charstrings.
 pub struct BlendState {
   store : @read_fonts.ItemVariationStore
   coords : ArrayView[@font_types.F2Dot14]
-  mut store_index : Int
+  mut store_index : Int32
   // The following are dependent on the current `store_index`
-  mut region_indices : Array[Int]
+  mut region_indices : Array[Int32]
   scalars : FixedArray[Fixed]
 }
 
@@ -20,7 +20,7 @@ pub struct BlendState {
 pub fn BlendState::new(
   store : @read_fonts.ItemVariationStore,
   coords : ArrayView[@font_types.F2Dot14],
-  store_index : Int,
+  store_index : Int32,
 ) -> BlendState raise PsError {
   let state : BlendState = {
     store,
@@ -37,7 +37,7 @@ pub fn BlendState::new(
 /// Sets the active variation store index.
 pub fn BlendState::set_store_index(
   self : BlendState,
-  store_index : Int,
+  store_index : Int32,
 ) -> Unit raise PsError {
   if self.store_index != store_index {
     self.store_index = store_index
@@ -48,14 +48,14 @@ pub fn BlendState::set_store_index(
 ///|
 /// Returns the number of variation regions for the currently active
 /// variation store index.
-pub fn BlendState::region_count(self : BlendState) -> Int {
+pub fn BlendState::region_count(self : BlendState) -> Int32 {
   self.region_indices.length()
 }
 
 ///|
 /// The scalar of each variation region of the currently active variation
 /// store index.
-pub fn BlendState::scalar(self : BlendState, i : Int) -> Fixed raise PsError {
+pub fn BlendState::scalar(self : BlendState, i : Int32) -> Fixed raise PsError {
   if i < MAX_PRECOMPUTED_SCALARS {
     self.scalars[i]
   } else {
@@ -90,7 +90,7 @@ fn BlendState::update_precomputed_scalars(
 ///|
 fn BlendState::region_scalar(
   self : BlendState,
-  index : Int,
+  index : Int32,
 ) -> Fixed raise PsError {
   let regions = self.store.variation_region_list() catch { e => raise Read(e) }
   let region = regions.get(index) catch { e => raise Read(e) }

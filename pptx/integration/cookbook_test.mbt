@@ -125,9 +125,9 @@ fn build_pitch_deck() -> FixedArray[Byte] raise {
 /// we wrap at the `AutoShape::textbox` boundary.
 fn add_centered_textbox(
   prs : @presentation.Presentation,
-  slide_idx : Int,
+  slide_idx : Int32,
   text : String,
-  id~ : Int,
+  id~ : Int32,
   y_offset~ : Int64,
 ) -> Unit raise {
   let s = prs.slides()[slide_idx]
@@ -146,8 +146,8 @@ fn add_centered_textbox(
 ///|
 fn add_rect_at(
   prs : @presentation.Presentation,
-  slide_idx : Int,
-  id~ : Int,
+  slide_idx : Int32,
+  id~ : Int32,
   x~ : Int64,
   y~ : Int64,
   cx~ : Int64,
@@ -168,8 +168,8 @@ fn add_rect_at(
 ///|
 fn add_ellipse_centered(
   prs : @presentation.Presentation,
-  slide_idx : Int,
-  id~ : Int,
+  slide_idx : Int32,
+  id~ : Int32,
   cx~ : Int64,
   cy~ : Int64,
 ) -> Unit raise {

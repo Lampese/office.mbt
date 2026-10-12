@@ -50,7 +50,7 @@ pub extend MediaInfo with Eq::{not_equal, equal}
 /// All relationships + parts are wired by
 /// `@presentation.Presentation::add_video_mut` / `add_audio_mut`.
 pub fn Picture::of_media(
-  id~ : Int,
+  id~ : Int32,
   name~ : String,
   kind : MediaKind,
   link_id~ : String,

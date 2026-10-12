@@ -44,8 +44,8 @@
 /// Getting the latter needs a document AST with its own Shrink instance,
 /// which is a larger change than this file.
 priv struct HostileChoices {
-  seeds : ArrayView[Int]
-  mut at : Int
+  seeds : ArrayView[Int32]
+  mut at : Int32
   /// What the generator actually built, recorded as it builds.
   ///
   /// The coverage guard used to search the finished XML for substrings, which
@@ -62,7 +62,7 @@ fn HostileChoices::tag(self : HostileChoices, name : String) -> Unit {
 }
 
 ///|
-fn HostileChoices::next(self : HostileChoices, bound : Int) -> Int {
+fn HostileChoices::next(self : HostileChoices, bound : Int32) -> Int32 {
   // Running out of choices returns 0, and every 0 branch below is the simple
   // or terminating one, so a seed array always yields a finite document.
   if self.at >= self.seeds.length() || bound <= 1 {
@@ -111,7 +111,7 @@ fn hostile_nonempty_text(choices : HostileChoices) -> String {
 
 ///|
 /// One run's worth of inline children.
-fn hostile_run_content(choices : HostileChoices, depth : Int) -> String {
+fn hostile_run_content(choices : HostileChoices, depth : Int32) -> String {
   let out = StringBuilder()
   let count = choices.next(3) + 1
   for _ in 0..<count {
@@ -153,7 +153,7 @@ fn hostile_run_content(choices : HostileChoices, depth : Int) -> String {
 /// the reader suppresses deleted inline text while still walking the deletion
 /// for textboxes, and that interaction is one of the more surprising things
 /// the projection has to mirror.
-fn hostile_textbox(choices : HostileChoices, depth : Int) -> String {
+fn hostile_textbox(choices : HostileChoices, depth : Int32) -> String {
   "<w:pict><v:shape><v:textbox><w:txbxContent>" +
   hostile_block(choices, depth + 1) +
   "</w:txbxContent></v:textbox></v:shape></w:pict>"
@@ -185,9 +185,9 @@ fn hostile_textbox(choices : HostileChoices, depth : Int) -> String {
 /// what has been measured, not a proof that nothing else diverges.
 fn hostile_sdt(
   choices : HostileChoices,
-  depth : Int,
+  depth : Int32,
   site : String,
-  variant? : Int = -1,
+  variant~ : Int32 = -1,
 ) -> String {
   let first = "<w:p><w:r><w:t>\{hostile_text(choices)}</w:t></w:r></w:p>"
   choices.tag("sdt@\{site}")
@@ -367,9 +367,9 @@ fn hostile_sdt_under_pict(choices : HostileChoices) -> String {
 /// treated the two alike would be wrong about one of them.
 fn hostile_alternate_content(
   choices : HostileChoices,
-  depth : Int,
-  site? : String = "block",
-  variant? : Int = -1,
+  depth : Int32,
+  site~ : String = "block",
+  variant~ : Int32 = -1,
 ) -> String {
   let requires = " Requires=\"wps\""
   let choice = "<mc:Choice\{requires}><w:p><w:r><w:t>choice</w:t></w:r></w:p></mc:Choice>"
@@ -440,7 +440,7 @@ fn hostile_alternate_around_rows(choices : HostileChoices) -> String {
 ///|
 /// One block-level construct: a paragraph, a table, or a revision wrapper
 /// around either.
-fn hostile_block(choices : HostileChoices, depth : Int) -> String {
+fn hostile_block(choices : HostileChoices, depth : Int32) -> String {
   if depth >= 4 {
     return "<w:p><w:r><w:t>leaf</w:t></w:r></w:p>"
   }
@@ -507,7 +507,7 @@ fn hostile_block(choices : HostileChoices, depth : Int) -> String {
 ///|
 /// A table, sometimes with a vertical merge or a deleted row, because both
 /// change which cells the reader emits.
-fn hostile_table(choices : HostileChoices, depth : Int) -> String {
+fn hostile_table(choices : HostileChoices, depth : Int32) -> String {
   let out = StringBuilder()
   out.write_string("<w:tbl>")
   let rows = choices.next(2) + 1
@@ -536,14 +536,14 @@ fn hostile_table(choices : HostileChoices, depth : Int) -> String {
 
 ///|
 /// A whole document, from a seed.
-fn hostile_document(seeds : ArrayView[Int]) -> String {
+fn hostile_document(seeds : ArrayView[Int32]) -> String {
   let (document, _) = hostile_document_tagged(seeds)
   document
 }
 
 ///|
 /// The same document, plus what the generator recorded while building it.
-fn hostile_document_tagged(seeds : ArrayView[Int]) -> (String, Array[String]) {
+fn hostile_document_tagged(seeds : ArrayView[Int32]) -> (String, Array[String]) {
   let choices = HostileChoices::{ seeds, at: 0, tags: [], }
   let body = StringBuilder()
   let blocks = choices.next(4) + 1
@@ -579,7 +579,7 @@ test "the generator keeps producing documents worth testing" {
   // diluted every other branch, and at 40 samples deletions fell to one and
   // vMerge pairs to none. The thresholds below are unchanged, so this is the
   // sample count that keeps them honest rather than thresholds lowered to fit.
-  let cases : Array[Array[Int]] = @quickcheck.samples(120)
+  let cases : Array[Array[Int32]] = @quickcheck.samples(120)
   let mut tables = 0
   let mut deletions = 0
   let mut textboxes = 0
@@ -592,14 +592,14 @@ test "the generator keeps producing documents worth testing" {
   // paragraph's physical extras pass, so a substring search cannot tell the
   // two apart -- it would report the interaction as covered when only the
   // block form had been built.
-  let tag_counts : Map[String, Int] = Map([])
+  let tag_counts : Map[String, Int32] = Map([])
   for case in cases {
     let (_, tags) = hostile_document_tagged(case)
     for tag in tags {
       tag_counts[tag] = tag_counts.get(tag).unwrap_or(0) + 1
     }
   }
-  let tagged = fn(name : String) -> Int { tag_counts.get(name).unwrap_or(0) }
+  let tagged = fn(name : String) -> Int32 { tag_counts.get(name).unwrap_or(0) }
   for case in cases {
     let document = hostile_document(case)
     if document.contains("<w:tbl>") {
@@ -693,7 +693,7 @@ fn hostile_native_projection(source : String) -> ReaderProjection? raise {
 /// wrote by hand.
 test "generated documents keep the effect partition matching the reader" {
   @quickcheck.check(
-    (seeds : Array[Int]) => {
+    (seeds : Array[Int32]) => {
       assert_effect_partition_matches_reader(hostile_document(seeds))
       true
     },
@@ -709,7 +709,7 @@ test "generated documents keep the effect partition matching the reader" {
 /// not a cosmetic defect -- it is an edit landing in the wrong place.
 test "generated documents keep every contribution inside its source element" {
   @quickcheck.check(
-    (seeds : Array[Int]) => {
+    (seeds : Array[Int32]) => {
       let source = hostile_document(seeds)
       guard hostile_native_projection(source) is Some(projection) else {
         return true
@@ -744,7 +744,7 @@ test "generated documents keep every contribution inside its source element" {
 /// than merely well-ordered.
 test "generated documents keep element spans addressable in the source" {
   @quickcheck.check(
-    (seeds : Array[Int]) => {
+    (seeds : Array[Int32]) => {
       let source = hostile_document(seeds)
       let bytes = @utf8.encode(source)
       guard hostile_native_projection(source) is Some(projection) else {
@@ -788,7 +788,7 @@ test "generated documents keep element spans addressable in the source" {
 /// the text that produced it, or nowhere.
 test "generated documents keep projection intervals consistent for surgery" {
   @quickcheck.check(
-    (seeds : Array[Int]) => {
+    (seeds : Array[Int32]) => {
       let source = hostile_document(seeds)
       guard hostile_native_projection(source) is Some(projection) else {
         return true

@@ -78,7 +78,7 @@ fn hmtx_subset(ctx : Context) -> Unit raise SubsetError {
 fn extract_metrics(
   hmtx : BytesView,
   ctx : Context,
-) -> Array[(Int, Int)] raise SubsetError {
+) -> Array[(Int32, Int32)] raise SubsetError {
   // Extract the number of horizontal metrics from the `hhea` table.
   let num_h_metrics = {
     guard ctx.expect_table(Tag::hhea()) is Some(hhea) else {
@@ -179,19 +179,19 @@ fn maxp_subset(ctx : Context) -> Unit raise SubsetError {
 ///|
 /// When converting CFF2 to TTF, we need to write a version 1.0 MAXP table.
 priv struct MaxpData {
-  mut max_points : Int
-  mut max_contours : Int
-  max_composite_points : Int
-  max_composite_contours : Int
-  max_zones : Int
-  max_twilight_points : Int
-  max_storage : Int
-  max_function_defs : Int
-  max_instruction_defs : Int
-  max_stack_elements : Int
-  max_size_of_instructions : Int
-  max_component_elements : Int
-  max_component_depth : Int
+  mut max_points : Int32
+  mut max_contours : Int32
+  max_composite_points : Int32
+  max_composite_contours : Int32
+  max_zones : Int32
+  max_twilight_points : Int32
+  max_storage : Int32
+  max_function_defs : Int32
+  max_instruction_defs : Int32
+  max_stack_elements : Int32
+  max_size_of_instructions : Int32
+  max_component_elements : Int32
+  max_component_depth : Int32
 }
 
 ///|
@@ -247,7 +247,7 @@ fn name_subset_table(table : NameTable) -> NameTable? {
   let storage = Writer::new()
   // (Release-mode `u16` arithmetic wraps.)
   let mut cur_storage_offset = 0
-  let name_deduplicator : Map[Bytes, Int] = Map([])
+  let name_deduplicator : Map[Bytes, Int32] = Map([])
   for i, record in names {
     let start = record.string_offset
     let end = (record.string_offset + record.length) & 0xFFFF
@@ -331,12 +331,12 @@ fn NameTable::parse(data : BytesView) -> NameTable? {
 
 ///|
 priv struct NameRecord {
-  platform_id : Int
-  encoding_id : Int
-  language_id : Int
-  name_id : Int
-  length : Int
-  string_offset : Int
+  platform_id : Int32
+  encoding_id : Int32
+  language_id : Int32
+  name_id : Int32
+  length : Int32
+  string_offset : Int32
 }
 
 ///|

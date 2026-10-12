@@ -17,7 +17,7 @@ pub(all) struct PdfContentOperatorFrame {
   stroke_adjustment : Bool
   overprint_stroke : Bool
   overprint_non_stroke : Bool
-  overprint_mode : Int
+  overprint_mode : Int32
   black_generation : @syntax.PdfObject
   undercolour_removal : @syntax.PdfObject
   transfer : @syntax.PdfObject
@@ -51,7 +51,7 @@ pub(all) struct PdfContentOperatorState {
   stroke_adjustment : Bool
   overprint_stroke : Bool
   overprint_non_stroke : Bool
-  overprint_mode : Int
+  overprint_mode : Int32
   black_generation : @syntax.PdfObject
   undercolour_removal : @syntax.PdfObject
   transfer : @syntax.PdfObject

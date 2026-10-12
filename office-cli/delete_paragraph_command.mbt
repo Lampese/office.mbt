@@ -131,7 +131,7 @@ fn delete_paragraph_report_json(
 /// and every `_truncated` flag says whether that cut happened — ONE
 /// limit and ONE judgment, so a flag cannot disagree with the string
 /// it describes.
-const DELETE_ECHO_LIMIT : Int = 160
+const DELETE_ECHO_LIMIT : Int32 = 160
 
 ///|
 fn echo_truncated(text : String) -> Bool {

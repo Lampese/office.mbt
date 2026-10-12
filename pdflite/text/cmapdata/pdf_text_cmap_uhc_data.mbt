@@ -3,7 +3,7 @@
 
 ///|
 /// Generated predefined CMap lookup data.
-let pdf_text_uhc_codepoint_table_flat : ReadOnlyArray[Int] = [
+let pdf_text_uhc_codepoint_table_flat : ReadOnlyArray[Int32] = [
   0x8141, 0xAC02, 0x8142, 0xAC03, 0x8143, 0xAC05, 0x8144, 0xAC06, 0x8145, 0xAC0B,
   0x8146, 0xAC0C, 0x8147, 0xAC0D, 0x8148, 0xAC0E, 0x8149, 0xAC0F, 0x814A, 0xAC18,
   0x814B, 0xAC1E, 0x814C, 0xAC1F, 0x814D, 0xAC21, 0x814E, 0xAC22, 0x814F, 0xAC23,
@@ -3418,7 +3418,7 @@ let pdf_text_uhc_codepoint_table_flat : ReadOnlyArray[Int] = [
 
 ///|
 /// Predefined CMap lookup table, unpacked at load from the flat static data above.
-pub let pdf_text_uhc_codepoint_table : Array[(Int, Int)] = pdf_cmap_unpack2(
+pub let pdf_text_uhc_codepoint_table : Array[(Int32, Int32)] = pdf_cmap_unpack2(
   pdf_text_uhc_codepoint_table_flat,
 )
 
@@ -3427,7 +3427,7 @@ pub let pdf_text_uhc_codepoint_table : Array[(Int, Int)] = pdf_cmap_unpack2(
 
 ///|
 /// Generated predefined CMap lookup data.
-let pdf_text_uhc_charcode_table_flat : ReadOnlyArray[Int] = [
+let pdf_text_uhc_charcode_table_flat : ReadOnlyArray[Int32] = [
   0x00A1, 0xA2AE, 0x00A4, 0xA2B4, 0x00A7, 0xA1D7, 0x00A8, 0xA1A7, 0x00AA, 0xA8A3,
   0x00AD, 0xA1A9, 0x00AE, 0xA2E7, 0x00B0, 0xA1C6, 0x00B1, 0xA1BE, 0x00B2, 0xA9F7,
   0x00B3, 0xA9F8, 0x00B4, 0xA2A5, 0x00B6, 0xA2D2, 0x00B7, 0xA1A4, 0x00B8, 0xA2AC,
@@ -6842,6 +6842,6 @@ let pdf_text_uhc_charcode_table_flat : ReadOnlyArray[Int] = [
 
 ///|
 /// Predefined CMap lookup table, unpacked at load from the flat static data above.
-pub let pdf_text_uhc_charcode_table : Array[(Int, Int)] = pdf_cmap_unpack2(
+pub let pdf_text_uhc_charcode_table : Array[(Int32, Int32)] = pdf_cmap_unpack2(
   pdf_text_uhc_charcode_table_flat,
 )

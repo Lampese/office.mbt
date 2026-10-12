@@ -40,7 +40,7 @@ fn parse_chart_space(r : @xml.XmlReader) -> Chart raise ChartError {
   let mut date1904 : Bool? = None
   let mut lang : String? = None
   let mut rounded_corners : Bool? = None
-  let mut style : Int? = None
+  let mut style : Int32? = None
   let mut chart_body : ChartBody? = None
   let extension : Array[@xml.XmlElement] = []
   while true {
@@ -287,7 +287,7 @@ fn parse_val_bool_attr(attrs : Array[(@xml.QName, String)]) -> Bool? {
 ///|
 /// Pull a `val="…"` attribute and parse as an Int. Returns `None`
 /// when absent or unparseable.
-fn parse_val_int_attr(attrs : Array[(@xml.QName, String)]) -> Int? {
+fn parse_val_int_attr(attrs : Array[(@xml.QName, String)]) -> Int32? {
   match @oxml.optional_attr(attrs, "val") {
     Some(v) => @oxml.parse_signed_int(v)
     None => None

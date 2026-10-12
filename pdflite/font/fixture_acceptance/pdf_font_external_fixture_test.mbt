@@ -18,9 +18,9 @@ fn font_external_ascii_for_test(text : String) -> @core.PdfBytes {
 
 ///|
 fn font_external_inline_image_op_for_test(
-  width : Int,
-  height : Int,
-  data_length : Int,
+  width : Int32,
+  height : Int32,
+  data_length : Int32,
 ) -> @content.PdfContentOp {
   Op_InlineImage(
     @syntax.pdf_dictionary([
@@ -120,7 +120,7 @@ fn font_external_reparse_compressed_for_test(
 fn font_external_bytes_start_with_at_for_test(
   haystack : BytesView,
   needle : BytesView,
-  start : Int,
+  start : Int32,
 ) -> Bool {
   if start < 0 || start + needle.length() > haystack.length() {
     false
@@ -139,7 +139,7 @@ fn font_external_bytes_start_with_at_for_test(
 fn font_external_find_last_bytes_for_test(
   haystack : BytesView,
   needle : BytesView,
-) -> Int {
+) -> Int32 {
   if needle.length() == 0 {
     haystack.length()
   } else if haystack.length() < needle.length() {
@@ -161,7 +161,7 @@ fn font_external_find_last_bytes_for_test(
 fn font_external_find_bytes_for_test(
   haystack : BytesView,
   needle : BytesView,
-) -> Int {
+) -> Int32 {
   if needle.length() == 0 {
     0
   } else if haystack.length() < needle.length() {
@@ -181,8 +181,8 @@ fn font_external_find_bytes_for_test(
 fn font_external_find_bytes_after_for_test(
   haystack : BytesView,
   needle : BytesView,
-  start : Int,
-) -> Int {
+  start : Int32,
+) -> Int32 {
   if needle.length() == 0 {
     start
   } else if start < 0 || haystack.length() < needle.length() {
@@ -245,7 +245,7 @@ fn font_external_corrupt_startxref_pointer_for_test(
 }
 
 ///|
-fn font_external_startxref_offset_for_test(bytes : Bytes) -> Int raise {
+fn font_external_startxref_offset_for_test(bytes : Bytes) -> Int32 raise {
   let marker = b"startxref"
   let marker_position = font_external_find_last_bytes_for_test(bytes, marker)
   if marker_position < 0 {
@@ -313,7 +313,7 @@ fn font_external_corrupt_startxref_trailer_keyword_for_test(
 ///|
 fn font_external_first_in_use_xref_row_start_for_test(
   bytes : Bytes,
-) -> Int raise {
+) -> Int32 raise {
   let free_row = b"0000000000 65535 f"
   let free_row_position = font_external_find_bytes_for_test(bytes, free_row)
   if free_row_position < 0 {
@@ -388,7 +388,7 @@ fn font_external_corrupt_first_in_use_xref_generation_for_test(
 ///|
 fn font_external_first_xref_subsection_spans_for_test(
   bytes : Bytes,
-) -> (Int, Int, Int, Int) raise {
+) -> (Int32, Int32, Int32, Int32) raise {
   let header = b"xref"
   let header_position = font_external_find_bytes_for_test(bytes, header)
   if header_position < 0 {

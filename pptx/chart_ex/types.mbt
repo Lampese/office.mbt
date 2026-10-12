@@ -159,9 +159,9 @@ pub impl Show for ChartExPlotAreaRegion with fn output(self, logger) {
 ///   discriminator and the wrapper attributes lift.
 pub(all) struct ChartExSeries {
   layout_id : ChartExKind
-  format_idx : Int?
+  format_idx : Int32?
   hidden : Bool?
-  owner_idx : Int?
+  owner_idx : Int32?
   body : @xml.XmlElement
 } derive(Eq, Debug)
 

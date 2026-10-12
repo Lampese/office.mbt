@@ -4,7 +4,7 @@
 ///
 /// Newer APIs usually return `Byte?`, but this value preserves the CamlPDF-style
 /// integer cursor contract used by parser code.
-pub let pdf_no_more : Int = -1
+pub let pdf_no_more : Int32 = -1
 
 ///|
 /// A mutable read cursor over a PDF byte view.
@@ -14,8 +14,8 @@ pub let pdf_no_more : Int = -1
 /// offset while absolute positions still refer to the underlying byte view.
 pub struct ByteCursor {
   data : BytesView
-  mut position : Int
-  mut offset : Int
+  mut position : Int32
+  mut offset : Int32
   source : String
 } derive(Debug, Eq, ToJson)
 
@@ -25,7 +25,7 @@ pub struct ByteCursor {
 /// The cursor borrows the byte storage through a view and does not copy it.
 pub fn byte_cursor_of_bytes(
   data : PdfBytes,
-  source? : String = "bytes",
+  source~ : String = "bytes",
 ) -> ByteCursor {
   byte_cursor_of_view(data, source~)
 }
@@ -36,7 +36,7 @@ pub fn byte_cursor_of_bytes(
 /// The optional `source` label appears in parse error messages.
 pub fn byte_cursor_of_view(
   data : BytesView,
-  source? : String = "bytes",
+  source~ : String = "bytes",
 ) -> ByteCursor {
   { data, position: 0, offset: 0, source, }
 }
@@ -63,7 +63,7 @@ pub fn ByteCursor::input_pdf_error(
 
 ///|
 /// Returns the total length of the underlying byte view.
-pub fn ByteCursor::length(self : ByteCursor) -> Int {
+pub fn ByteCursor::length(self : ByteCursor) -> Int32 {
   self.data.length()
 }
 
@@ -81,19 +81,22 @@ pub fn ByteCursor::to_bytes(self : ByteCursor) -> PdfBytes {
 
 ///|
 /// Returns the current logical position, relative to the configured offset.
-pub fn ByteCursor::position(self : ByteCursor) -> Int {
+pub fn ByteCursor::position(self : ByteCursor) -> Int32 {
   self.position - self.offset
 }
 
 ///|
 /// Returns the current absolute position in the underlying byte view.
-pub fn ByteCursor::absolute_position(self : ByteCursor) -> Int {
+pub fn ByteCursor::absolute_position(self : ByteCursor) -> Int32 {
   self.position
 }
 
 ///|
 /// Returns the byte at an absolute input position without advancing.
-pub fn ByteCursor::byte_at_absolute(self : ByteCursor, position : Int) -> Byte? {
+pub fn ByteCursor::byte_at_absolute(
+  self : ByteCursor,
+  position : Int32,
+) -> Byte? {
   if position < 0 || position >= self.data.length() {
     None
   } else {
@@ -107,8 +110,8 @@ pub fn ByteCursor::byte_at_absolute(self : ByteCursor, position : Int) -> Byte? 
 /// Returns `pdf_no_more` when `position` is outside the underlying byte view.
 pub fn ByteCursor::byte_int_at_absolute(
   self : ByteCursor,
-  position : Int,
-) -> Int {
+  position : Int32,
+) -> Int32 {
   match self.byte_at_absolute(position) {
     Some(byte) => byte.to_int()
     None => pdf_no_more
@@ -119,7 +122,7 @@ pub fn ByteCursor::byte_int_at_absolute(
 /// Moves the cursor to an absolute position in the underlying byte view.
 pub fn ByteCursor::seek_absolute(
   self : ByteCursor,
-  position : Int,
+  position : Int32,
 ) -> Unit raise PdfError {
   if position < 0 || position > self.data.length() {
     raise InvalidCursorPosition(position)
@@ -130,7 +133,7 @@ pub fn ByteCursor::seek_absolute(
 ///|
 /// Returns the number of unread bytes remaining from the absolute cursor
 /// position.
-pub fn ByteCursor::remaining_length(self : ByteCursor) -> Int {
+pub fn ByteCursor::remaining_length(self : ByteCursor) -> Int32 {
   if self.position >= self.data.length() {
     0
   } else {
@@ -146,7 +149,7 @@ pub fn ByteCursor::remaining_length(self : ByteCursor) -> Int {
 /// absolute positions for diagnostics.
 pub fn ByteCursor::set_offset(
   self : ByteCursor,
-  offset : Int,
+  offset : Int32,
 ) -> Unit raise PdfError {
   if offset < 0 {
     raise InvalidCursorPosition(offset)
@@ -164,7 +167,7 @@ pub fn ByteCursor::set_offset(
 /// absolute positions raise `PdfError::InvalidCursorPosition`.
 pub fn ByteCursor::seek(
   self : ByteCursor,
-  position : Int,
+  position : Int32,
 ) -> Unit raise PdfError {
   let absolute = position + self.offset
   if absolute < 0 {
@@ -190,7 +193,7 @@ pub fn ByteCursor::deep_copy(self : ByteCursor) -> ByteCursor {
 ///
 /// Returns `pdf_no_more` when reading past the end. This method always advances
 /// by one position, matching the historical parser cursor behavior.
-pub fn ByteCursor::input_byte(self : ByteCursor) -> Int {
+pub fn ByteCursor::input_byte(self : ByteCursor) -> Int32 {
   let value = if self.position > self.data.length() - 1 {
     pdf_no_more
   } else {
@@ -216,7 +219,7 @@ pub fn ByteCursor::read_byte(self : ByteCursor) -> Byte? {
 /// Returns the next byte as an integer without consuming it.
 ///
 /// Returns `pdf_no_more` at end of input.
-pub fn ByteCursor::peek_byte(self : ByteCursor) -> Int {
+pub fn ByteCursor::peek_byte(self : ByteCursor) -> Int32 {
   let value = self.input_byte()
   self.position -= 1
   value

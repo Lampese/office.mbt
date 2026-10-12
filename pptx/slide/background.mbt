@@ -18,7 +18,7 @@
 ///   `Presentation::new()` emits on its slide master.
 pub(all) enum Background {
   Properties(BackgroundProperties)
-  StyleReference(Int, @oxml.Color)
+  StyleReference(Int32, @oxml.Color)
 } derive(Eq, Debug)
 
 ///|
@@ -73,7 +73,7 @@ pub fn Slide::with_background(self : Slide, fill : @oxml.Fill) -> Slide {
 /// (typically a scheme colour such as `bg1`).
 pub fn Slide::with_background_ref(
   self : Slide,
-  idx : Int,
+  idx : Int32,
   color : @oxml.Color,
 ) -> Slide {
   { ..self, background: Some(StyleReference(idx, color)), }

@@ -193,8 +193,8 @@ fn reader_item_source(item : ReaderItem) -> ReaderNode {
 /// because field synthesis re-sources items at the field-begin carrier.
 priv struct ReaderProjectionCarrierCursor {
   events : Array[ReaderFieldCarrierEvent]
-  positions : Map[Int, Int]
-  mut next : Int
+  positions : Map[Int32, Int32]
+  mut next : Int32
 }
 
 ///|
@@ -209,7 +209,7 @@ fn ReaderProjectionBuilder::carrier_cursor(
   // walk only times when the cursor fires.
   let elements = self.scan.elements()
   let events : Array[ReaderFieldCarrierEvent] = []
-  let positions : Map[Int, Int] = Map([])
+  let positions : Map[Int32, Int32] = Map([])
   for input in inputs {
     match input.paragraph.source_element_id {
       Some(SourceElementId(paragraph_identity)) => {
@@ -248,14 +248,14 @@ fn ReaderProjectionBuilder::advance_carrier_cursor(
 fn ReaderProjectionBuilder::advance_carrier_cursor_by_source(
   self : ReaderProjectionBuilder,
   cursor : ReaderProjectionCarrierCursor,
-  source_index : Int,
+  source_index : Int32,
 ) -> Unit raise DocxError {
   let elements = self.scan.elements()
   if source_index < 0 || source_index >= elements.length() {
     return
   }
   let mut current = source_index
-  let mut target : Int? = None
+  let mut target : Int32? = None
   while current >= 0 {
     self.budget.charge_visit()
     match cursor.positions.get(current) {

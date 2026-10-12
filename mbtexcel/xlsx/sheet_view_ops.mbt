@@ -1,8 +1,8 @@
 ///|
 fn Worksheet::ensure_sheet_view(
   self : Worksheet,
-  view_index : Int,
-) -> (SheetView, Int) raise XlsxError {
+  view_index : Int32,
+) -> (SheetView, Int32) raise XlsxError {
   if self.sheet_views.length() == 0 {
     self.sheet_views.push(SheetView::new())
   }
@@ -13,7 +13,7 @@ fn Worksheet::ensure_sheet_view(
 ///|
 fn Worksheet::set_sheet_view(
   self : Worksheet,
-  view_index : Int,
+  view_index : Int32,
   options : SheetViewOptions,
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
@@ -24,7 +24,7 @@ fn Worksheet::set_sheet_view(
 ///|
 fn Worksheet::get_sheet_view(
   self : Worksheet,
-  view_index : Int,
+  view_index : Int32,
 ) -> SheetViewOptions raise XlsxError {
   let (view, _idx) = self.ensure_sheet_view(view_index)
   sheet_view_options_with_defaults(view)

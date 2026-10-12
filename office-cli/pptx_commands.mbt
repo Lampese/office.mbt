@@ -87,9 +87,9 @@ fn pptx_read_payload(
   file : String,
   summary : @office_pptx.PresentationSummary,
   text_mode : Bool,
-  offset : Int,
-  limit : Int,
-  maximum : Int,
+  offset : Int32,
+  limit : Int32,
+  maximum : Int32,
 ) -> BoundedOfficePayload raise CliFailure {
   let records : Array[Json] = []
   let count = summary.slides.length()
@@ -158,10 +158,10 @@ fn run_pptx_read(
   matches : @argparse.Matches,
   source : OfficeReadPackage,
   text_mode : Bool,
-  max_elements : Int,
-  max_output : Int,
-  offset : Int,
-  limit : Int,
+  max_elements : Int32,
+  max_output : Int32,
+  offset : Int32,
+  limit : Int32,
 ) -> Unit raise {
   if optional_value(matches, "under") is Some(_) {
     raise CliFailure(

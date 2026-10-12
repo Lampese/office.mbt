@@ -16,7 +16,7 @@ fn write_relationship_with_id(
   rel_id : StringView,
   rel_type : StringView,
   target : StringView,
-  external? : Bool = false,
+  external~ : Bool = false,
 ) -> Unit raise XlsxError {
   sb.write_view("  <Relationship Id=\"")
   sb.write_xml_attr(rel_id)
@@ -34,10 +34,10 @@ fn write_relationship_with_id(
 ///|
 fn write_relationship(
   sb : LimitedXmlBuilder,
-  rel_id : Int,
+  rel_id : Int32,
   rel_type : String,
   target : String,
-  external? : Bool = false,
+  external~ : Bool = false,
 ) -> Unit raise XlsxError {
   write_relationship_with_id(sb, "rId\{rel_id}", rel_type, target, external~)
 }
@@ -52,7 +52,7 @@ fn write_sheet_rels_xml(
   comment_targets : ArrayView[String],
   vml_targets : ArrayView[String],
   image_targets : ArrayView[String],
-  control_targets? : ArrayView[String] = [],
+  control_targets~ : ArrayView[String] = [],
   budget? : WritePartBudget,
 ) -> String raise XlsxError {
   let sb = LimitedXmlBuilder::new(budget)
@@ -103,7 +103,7 @@ fn write_sheet_rels_xml(
 
 ///|
 fn write_pivot_table_rels_xml(
-  cache_id : Int,
+  cache_id : Int32,
   budget? : WritePartBudget,
 ) -> String raise XlsxError {
   let sb = LimitedXmlBuilder::new(budget)
@@ -120,7 +120,7 @@ fn write_pivot_table_rels_xml(
 
 ///|
 fn write_pivot_cache_rels_xml(
-  cache_id : Int,
+  cache_id : Int32,
   budget? : WritePartBudget,
 ) -> String raise XlsxError {
   let sb = LimitedXmlBuilder::new(budget)
@@ -137,10 +137,10 @@ fn write_pivot_cache_rels_xml(
 
 ///|
 fn write_drawing_rels_xml(
-  image_targets : Array[(Int, String)],
-  chart_targets : Array[(Int, String)],
+  image_targets : Array[(Int32, String)],
+  chart_targets : Array[(Int32, String)],
   hyperlink_targets : Array[DrawingHyperlink],
-  preserved_relationships? : ArrayView[PreservedDrawingRelationship] = [],
+  preserved_relationships~ : ArrayView[PreservedDrawingRelationship] = [],
   budget? : WritePartBudget,
 ) -> String raise XlsxError {
   let sb = LimitedXmlBuilder::new(budget)

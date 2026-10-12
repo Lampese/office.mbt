@@ -28,7 +28,7 @@ let pdf_text_identity_name : @core.PdfName = pdf_text_static_name("/Identity")
 /// the format expects and much smaller than one entry per CID. Runs are
 /// emitted as `first [w w w]`; a single CID is still a one-element run.
 fn pdf_text_cid_widths_array(
-  widths : ArrayView[(Int, Double)],
+  widths : ArrayView[(Int32, Double)],
 ) -> @syntax.PdfObject {
   let entries : Array[@syntax.PdfObject] = []
   let mut index = 0

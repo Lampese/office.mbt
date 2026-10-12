@@ -1,9 +1,9 @@
 ///|
 fn pdf_ccitt_code(
-  bits : Int,
-  width : Int,
-  run : Int,
-  makeup? : Bool = false,
+  bits : Int32,
+  width : Int32,
+  run : Int32,
+  makeup~ : Bool = false,
 ) -> PdfCCITTCode {
   { bits, width, run, makeup, }
 }

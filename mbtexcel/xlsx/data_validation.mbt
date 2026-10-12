@@ -31,7 +31,7 @@ pub(all) enum DataValidationOperator {
 
 ///|
 pub(all) enum DataValidationFormula {
-  IntValue(Int)
+  IntValue(Int32)
   DoubleValue(Double)
   TextValue(String)
 } derive(Debug)

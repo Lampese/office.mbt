@@ -1,8 +1,8 @@
 ///|
 fn wb_range(
   values : Array[FormulaValue],
-  rows : Int,
-  cols : Int,
+  rows : Int32,
+  cols : Int32,
 ) -> RangeValues {
   { values, rows, cols, }
 }
@@ -687,7 +687,7 @@ test "formula eval wb: sort filter and tocol-torow guards" {
 }
 
 ///|
-fn wb_shape_eq(shape : (Int, Int)?, rows : Int, cols : Int) -> Bool {
+fn wb_shape_eq(shape : (Int32, Int32)?, rows : Int32, cols : Int32) -> Bool {
   match shape {
     Some((shape_rows, shape_cols)) => shape_rows == rows && shape_cols == cols
     None => false
@@ -695,7 +695,7 @@ fn wb_shape_eq(shape : (Int, Int)?, rows : Int, cols : Int) -> Bool {
 }
 
 ///|
-fn wb_shape_none(shape : (Int, Int)?) -> Bool {
+fn wb_shape_none(shape : (Int32, Int32)?) -> Bool {
   match shape {
     None => true
     _ => false
@@ -703,7 +703,7 @@ fn wb_shape_none(shape : (Int, Int)?) -> Bool {
 }
 
 ///|
-fn wb_shape_some(shape : (Int, Int)?) -> Bool {
+fn wb_shape_some(shape : (Int32, Int32)?) -> Bool {
   match shape {
     Some(_) => true
     None => false
@@ -715,7 +715,7 @@ fn wb_shape(
   workbook : Workbook,
   sheet_name : String,
   expr : Expr,
-) -> (Int, Int)? {
+) -> (Int32, Int32)? {
   array_shape_from_expr(workbook, sheet_name, expr, CalcContext::new()) catch {
     _ => None
   }
@@ -2217,6 +2217,6 @@ test "formula eval wb: date serial and weekend helper branches part 4" {
     content="true",
   )
 
-  let weekend_mask : Array[Int] = [0, 0, 0, 0, 0, 1, 1]
+  let weekend_mask : Array[Int32] = [0, 0, 0, 0, 0, 1, 1]
   inspect(is_workday_mask(weekend_mask, -1.0), content="false")
 }

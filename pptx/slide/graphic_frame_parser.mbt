@@ -448,7 +448,7 @@ fn parse_fill_from_element(el : @xml.XmlElement) -> @oxml.Fill raise SlideError 
 ///|
 /// Parse `gridSpan` / `rowSpan` integer attribute with a default
 /// fallback. Empty / unparseable → default.
-fn parse_int_attr_default_or(raw : String, default : Int) -> Int {
+fn parse_int_attr_default_or(raw : String, default : Int32) -> Int32 {
   if raw == "" {
     return default
   }

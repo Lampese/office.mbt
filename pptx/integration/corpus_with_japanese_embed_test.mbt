@@ -9,7 +9,7 @@
 
 ///|
 /// Byte length of the original `with_japanese.pptx`.
-let corpus_with_japanese_len : Int = 48011
+let corpus_with_japanese_len : Int32 = 48011
 
 ///|
 /// `with_japanese.pptx` as fixed-width base64 chunks.

@@ -815,7 +815,7 @@ test "review round 3 (batch): XML-unrepresentable characters fail closed" {
 
 ///|
 test "review round 2 (batch): the table writer bounds the grid at Word's 63 columns" {
-  fn cell_with(span : Int) -> @docx2html.DocumentElement {
+  fn cell_with(span : Int32) -> @docx2html.DocumentElement {
     @docx2html.table_cell(
       [@docx2html.paragraph([@docx2html.run([@docx2html.text("x")])])],
       col_span=span,

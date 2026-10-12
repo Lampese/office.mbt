@@ -68,7 +68,7 @@ fn docx_bytes(
 }
 
 ///|
-fn first_run(doc : @docx.DocxDocument, index : Int) -> @paragraph.RunInput {
+fn first_run(doc : @docx.DocxDocument, index : Int32) -> @paragraph.RunInput {
   guard! doc.blocks[index] is Paragraph(input~, ..)
   input.runs[0]
 }

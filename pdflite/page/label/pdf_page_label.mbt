@@ -20,8 +20,8 @@ pub(all) enum PdfPageLabelStyle {
 pub(all) struct PdfPageLabel {
   label_style : PdfPageLabelStyle
   label_prefix : PdfBytes?
-  start_page : Int
-  start_value : Int
+  start_page : Int32
+  start_value : Int32
 } derive(Debug, Eq, ToJson)
 
 ///|

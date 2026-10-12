@@ -8,12 +8,12 @@
 /// composition are handled by native/file wrappers when available.
 pub fn PdfDocument::extract_images_files(
   self : PdfDocument,
-  page_numbers : ArrayView[Int],
+  page_numbers : ArrayView[Int32],
   stem : String,
-  encoding? : @metadata.PdfMetadataEncoding = PdfMetadataUTF8,
-  inline? : Bool = false,
-  dedup? : Bool = false,
-  dedup_per_page? : Bool = false,
+  encoding~ : @metadata.PdfMetadataEncoding = PdfMetadataUTF8,
+  inline~ : Bool = false,
+  dedup~ : Bool = false,
+  dedup_per_page~ : Bool = false,
 ) -> Array[PdfExtractedImageFile] raise @core.PdfError {
   let pages = self.pages_of_pagetree()
   pdf_page_box_validate_page_numbers(page_numbers, pages.length(), "images")
@@ -100,7 +100,7 @@ pub fn pdf_image_extract_images_files(
   dedup : Bool,
   dedup_per_page : Bool,
   document : PdfDocument,
-  page_numbers : ArrayView[Int],
+  page_numbers : ArrayView[Int32],
   stem : String,
 ) -> Array[PdfExtractedImageFile] raise @core.PdfError {
   document.extract_images_files(
@@ -122,7 +122,7 @@ pub fn pdf_image_extract_images_files(
 /// `-smask` stem, matching cpdf's single-image extraction path.
 pub fn PdfDocument::extract_single_image_files(
   self : PdfDocument,
-  object_number : Int,
+  object_number : Int32,
   stem : String,
 ) -> Array[PdfExtractedImageFile] raise @core.PdfError {
   let state = PdfImageExtractionState::{
@@ -160,7 +160,7 @@ pub fn PdfDocument::extract_single_image_files(
 /// Compatibility wrapper for `PdfDocument::extract_single_image_files`.
 pub fn pdf_image_extract_single_image_files(
   document : PdfDocument,
-  object_number : Int,
+  object_number : Int32,
   stem : String,
 ) -> Array[PdfExtractedImageFile] raise @core.PdfError {
   document.extract_single_image_files(object_number, stem)

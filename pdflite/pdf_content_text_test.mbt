@@ -4,7 +4,7 @@ fn content_text_name_for_test(text : String) -> @core.PdfName {
 }
 
 ///|
-fn content_text_bytes_for_test(values : ArrayView[Int]) -> @core.PdfBytes {
+fn content_text_bytes_for_test(values : ArrayView[Int32]) -> @core.PdfBytes {
   try! @core.pdf_bytes_of_int_array(values)
 }
 

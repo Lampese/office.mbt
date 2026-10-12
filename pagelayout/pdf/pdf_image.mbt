@@ -8,7 +8,7 @@
 /// `page` parameter (`application/pdf; page=3`), 1-based, or the first
 /// page without one; 0 for a `page` parameter that is not a positive
 /// integer. None for any other media type.
-fn pdf_image_page(mime : String) -> Int? {
+fn pdf_image_page(mime : String) -> Int32? {
   let parts = mime.split(";").map(p => p.trim().to_owned()).to_array()
   guard parts.get(0) is Some(kind) && kind.to_lower() == "application/pdf" else {
     return None
@@ -75,8 +75,8 @@ fn import_pdf_image(
   document : @pdflite.PdfDocument,
   sources : PdfSources,
   data : Bytes,
-  page : Int,
-) -> (Int, Double, Double)? {
+  page : Int32,
+) -> (Int32, Double, Double)? {
   let source = sources.read(data) catch { _ => return None }
   let imported = document.import_page(source, page) catch { _ => return None }
   Some((imported.object, imported.width, imported.height))
@@ -88,7 +88,7 @@ fn pdf_image_verdict(
   scratch : @pdflite.PdfDocument,
   sources : PdfSources,
   data : Bytes,
-  page : Int,
+  page : Int32,
 ) -> String? {
   let source = sources.read(data) catch {
     _ => return Some("PDF this backend cannot read")

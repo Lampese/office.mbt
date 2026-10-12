@@ -4,9 +4,9 @@
 ///|
 /// A regular (process) color with 8-bit components.
 pub(all) enum RegularColor {
-  Rgb(Int, Int, Int)
-  Luma(Int)
-  Cmyk(Int, Int, Int, Int)
+  Rgb(Int32, Int32, Int32)
+  Luma(Int32)
+  Cmyk(Int32, Int32, Int32, Int32)
 } derive(Eq, Debug)
 
 ///|
@@ -29,11 +29,11 @@ pub(all) struct SeparationSpace {
 pub(all) enum Color {
   Regular(RegularColor)
   /// A separation (spot) color with an 8-bit tint.
-  Separation(Int, SeparationSpace)
+  Separation(Int32, SeparationSpace)
 } derive(Eq, Debug)
 
 ///|
-pub fn Color::rgb(r : Int, g : Int, b : Int) -> Color {
+pub fn Color::rgb(r : Int32, g : Int32, b : Int32) -> Color {
   Regular(Rgb(r, g, b))
 }
 
@@ -53,7 +53,7 @@ fn Color::to_pdf_color(self : Color) -> Array[Double] {
 
 ///|
 fn RegularColor::to_pdf_color(self : RegularColor) -> Array[Double] {
-  let f = (v : Int) => v.to_double() / 255.0
+  let f = (v : Int32) => v.to_double() / 255.0
   match self {
     Rgb(r, g, b) => [f(r), f(g), f(b)]
     Luma(l) => [f(l)]
@@ -63,7 +63,7 @@ fn RegularColor::to_pdf_color(self : RegularColor) -> Array[Double] {
 
 ///|
 /// The rgb value of a color, if it is an rgb color.
-pub fn Color::as_rgb(self : Color) -> (Int, Int, Int)? {
+pub fn Color::as_rgb(self : Color) -> (Int32, Int32, Int32)? {
   match self {
     Regular(Rgb(r, g, b)) => Some((r, g, b))
     _ => None
@@ -147,7 +147,7 @@ pub(all) enum Paint {
 }
 
 ///|
-pub fn Paint::as_rgb(self : Paint) -> (Int, Int, Int)? {
+pub fn Paint::as_rgb(self : Paint) -> (Int32, Int32, Int32)? {
   match self {
     Color(c) => c.as_rgb()
     _ => None
@@ -251,12 +251,12 @@ fn paint_opacity(paint : Paint, opacity : Double) -> Double {
 ///|
 /// The components of a color converted to RGB (for gradients mixing color
 /// spaces).
-fn RegularColor::to_rgb(self : RegularColor) -> (Int, Int, Int) {
+fn RegularColor::to_rgb(self : RegularColor) -> (Int32, Int32, Int32) {
   match self {
     Rgb(r, g, b) => (r, g, b)
     Luma(l) => (l, l, l)
     Cmyk(c, m, y, k) => {
-      let f = (v : Int) => (255 - v) * (255 - k) / 255
+      let f = (v : Int32) => (255 - v) * (255 - k) / 255
       (f(c), f(m), f(y))
     }
   }
@@ -288,7 +288,7 @@ fn normalize_stops(stops : Array[Stop]) -> Array[Stop] {
       Separation(tint, space) => {
         // Mix white (no ink) with the fallback (full ink).
         let (r, g, b) = space.fallback.to_rgb()
-        let mix = (v : Int) => 255 - (255 - v) * tint / 255
+        let mix = (v : Int32) => 255 - (255 - v) * tint / 255
         (mix(r), mix(g), mix(b))
       }
     }

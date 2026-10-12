@@ -2,7 +2,7 @@
 fn PdfDocument::pdf_annotation_subtype(
   self : PdfDocument,
   annotation : @syntax.PdfObject,
-  depth : Int,
+  depth : Int32,
 ) -> @annotation.PdfAnnotationSubtype raise @core.PdfError {
   match self.lookup_direct(pdf_annotation_subtype_key(), annotation) {
     Some(PdfNameObject(name)) if name == pdf_annotation_text_name =>
@@ -71,10 +71,10 @@ fn PdfDocument::pdf_annotation_subtype(
 fn PdfDocument::pdf_annotation_number_array(
   self : PdfDocument,
   object : @syntax.PdfObject,
-) -> Array[Int] raise @core.PdfError {
+) -> Array[Int32] raise @core.PdfError {
   match self.direct(object) {
     PdfArray(items) => {
-      let output : Array[Int] = Array(capacity=items.length())
+      let output : Array[Int32] = Array(capacity=items.length())
       for item in items {
         output.push(self.get_number(item).to_int())
       }
@@ -189,7 +189,7 @@ fn pdf_annotation_rest(
 fn PdfDocument::pdf_annotation_read_depth(
   self : PdfDocument,
   annotation : @syntax.PdfObject,
-  depth : Int,
+  depth : Int32,
 ) -> @annotation.PdfAnnotation raise @core.PdfError {
   let direct_annotation = self.direct(annotation)
   {
@@ -231,7 +231,7 @@ pub fn PdfDocument::read_annotation(
 fn PdfDocument::pdf_annotation_popup_parent(
   self : PdfDocument,
   annotation : @syntax.PdfObject,
-) -> Int? {
+) -> Int32? {
   match self.direct(annotation).lookup_immediate(pdf_annotation_parent_key()) {
     Some(PdfIndirect(parent)) => Some(parent)
     _ => None
@@ -250,7 +250,7 @@ pub fn PdfDocument::annotations_of_page(
 ) -> Array[@annotation.PdfAnnotation] raise @core.PdfError {
   match self.lookup_direct(pdf_annotation_annots_key(), page.rest) {
     Some(PdfArray(annotations)) => {
-      let popup_parents : Array[Int] = Array(capacity=annotations.length())
+      let popup_parents : Array[Int32] = Array(capacity=annotations.length())
       for annotation in annotations {
         match self.pdf_annotation_popup_parent(annotation) {
           Some(parent) => popup_parents.push(parent)

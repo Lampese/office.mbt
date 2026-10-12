@@ -40,10 +40,10 @@ pub impl Show for PackageBuildError with fn output(self, logger) {
 /// four `TransactionBudget` dimensions. Every bound is checked BEFORE the
 /// package archive materializes its (potentially large) entry payloads.
 pub(all) struct PackageLimits {
-  max_output_bytes : Int
-  max_entries : Int
-  max_entry_uncompressed_bytes : Int
-  max_total_uncompressed_bytes : Int
+  max_output_bytes : Int32
+  max_entries : Int32
+  max_entry_uncompressed_bytes : Int32
+  max_total_uncompressed_bytes : Int32
 }
 
 ///|
@@ -64,7 +64,7 @@ pub struct PackageBuilder {
   priv overrides : StableStringMap[String]
   priv relationships : StableStringMap[Array[PackageRelationship]]
   priv part_names : PartNameRegistry
-  priv mut zip_name_chars : Int
+  priv mut zip_name_chars : Int32
 }
 
 ///|
@@ -184,8 +184,8 @@ pub fn PackageBuilder::add_relationship(
   id : String,
   relationship_type : String,
   target : String,
-  source? : String = "",
-  external? : Bool = false,
+  source~ : String = "",
+  external~ : Bool = false,
 ) -> Unit raise PackageBuildError {
   let normalized_id = @xml.collapse_xml_schema_whitespace(id)
   let normalized_type = @xml.collapse_xml_schema_whitespace(relationship_type)
@@ -510,7 +510,7 @@ fn PackageBuilder::build_internal(
 /// — no trailing slash (a "directory" is not a part) and no
 /// builder-owned names (`[Content_Types].xml` and anything shaped like a
 /// relationships part: the builder emits all relationships itself).
-fn check_part_name(name : String) -> Int raise PackageBuildError {
+fn check_part_name(name : String) -> Int32 raise PackageBuildError {
   if name == "" || name.has_prefix("/") || name.has_suffix("/") {
     raise PackageBuildError(
       "invalid part name '\{name}': expected a non-empty logical part name without a leading or trailing slash",

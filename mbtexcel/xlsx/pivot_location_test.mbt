@@ -49,7 +49,7 @@ fn issue264_pivot_location(
   columns : ReadOnlyArray[String],
   filters : ReadOnlyArray[String],
   data : ReadOnlyArray[String],
-  page_over_then_down? : Bool = false,
+  page_over_then_down~ : Bool = false,
 ) -> String raise {
   let wb = issue264_source_workbook()
   let options = @xlsx.PivotTableOptions::new("Data!A1:D3", "Summary!A3:F30")

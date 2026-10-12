@@ -49,7 +49,7 @@ fn demo_unique(values : ArrayView[String]) -> Bool {
 }
 
 ///|
-fn demo_count_tag(xml : String, tag : String) -> Int {
+fn demo_count_tag(xml : String, tag : String) -> Int32 {
   let mut count = 0
   let mut first = true
   for _ in xml.split(tag) {

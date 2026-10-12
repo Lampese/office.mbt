@@ -39,7 +39,7 @@
 /// `presentation.xml`.
 pub fn Presentation::remove_slide_mut(
   self : Presentation,
-  slide_index : Int,
+  slide_index : Int32,
 ) -> Unit raise PptxError {
   let parts = self.ordered_slide_parts()
   if slide_index < 0 || slide_index >= parts.length() {
@@ -160,7 +160,7 @@ pub fn Presentation::remove_slide_mut(
 /// is untouched (it owns its own cloned `@opc.Package`).
 pub fn Presentation::without_slide(
   self : Presentation,
-  slide_index : Int,
+  slide_index : Int32,
 ) -> Presentation raise PptxError {
   let cloned = self.clone()
   cloned.remove_slide_mut(slide_index)

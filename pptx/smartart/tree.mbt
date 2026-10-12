@@ -15,18 +15,18 @@
 priv struct FlatNode {
   /// Global pre-order index — the node's box index and the seed for its
   /// `modelId` / transition / connection ids.
-  gidx : Int
+  gidx : Int32
   text : String
   /// Parent's `gidx`, or `None` when the node is a child of the document root.
-  parent_gidx : Int?
+  parent_gidx : Int32?
   /// Position among its siblings (under the same parent / the document).
-  sib_ord : Int
+  sib_ord : Int32
   /// Depth from the roots — `0` for a top-level node.
-  depth : Int
+  depth : Int32
   /// The node's colour overrides, if any.
   style : NodeStyle?
   /// `gidx`s of this node's direct children (left-to-right).
-  mut children_gidx : Array[Int]
+  mut children_gidx : Array[Int32]
 }
 
 ///|
@@ -35,7 +35,12 @@ priv struct FlatNode {
 /// `gidx` is greater than its parent's).
 fn flatten(nodes : Array[Node]) -> Array[FlatNode] {
   let out = []
-  fn visit(node : Node, parent : Int?, sib_ord : Int, depth : Int) -> Int {
+  fn visit(
+    node : Node,
+    parent : Int32?,
+    sib_ord : Int32,
+    depth : Int32,
+  ) -> Int32 {
     let gidx = out.length()
     out.push({
       gidx,

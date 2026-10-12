@@ -41,7 +41,7 @@ pub fn plan_comment_reply(
   original : BytesView,
   parent_id~ : String,
   spec : CommentSpec,
-  max_fragment_bytes? : Int = 8 * 1024 * 1024,
+  max_fragment_bytes~ : Int32 = 8 * 1024 * 1024,
 ) -> (@splice.SplicePlan, String) raise DocxError {
   let xml_budget = default_annotation_planner_xml_budget()
   plan_comment_reply_zip(
@@ -62,7 +62,7 @@ pub fn plan_comment_reply_archive(
   parent_id~ : String,
   spec : CommentSpec,
   xml_budget? : @xml.XmlReadBudget,
-  max_fragment_bytes? : Int = 8 * 1024 * 1024,
+  max_fragment_bytes~ : Int32 = 8 * 1024 * 1024,
 ) -> (@splice.SplicePlan, String) raise DocxError {
   let xml_budget = match xml_budget {
     Some(value) => value
@@ -84,7 +84,7 @@ fn plan_comment_reply_zip(
   zip : ZipArchive,
   parent_id~ : String,
   spec : CommentSpec,
-  max_fragment_bytes : Int,
+  max_fragment_bytes : Int32,
   xml_budget : @xml.XmlReadBudget,
 ) -> (@splice.SplicePlan, String) raise DocxError {
   check_mutation_gates(annotated)
@@ -386,7 +386,7 @@ fn find_defined_comment(
 fn comment_ordinal(
   annotated : DocxAnnotatedResult,
   id : String,
-) -> Int raise DocxError {
+) -> Int32 raise DocxError {
   for index, pair in annotated.comment_bodies() {
     let (comment_id, _) = pair
     if comment_id == id {
@@ -397,7 +397,7 @@ fn comment_ordinal(
 }
 
 ///|
-fn spec_body_length(spec : CommentSpec) -> Int {
+fn spec_body_length(spec : CommentSpec) -> Int32 {
   spec.body.length()
 }
 
@@ -407,7 +407,7 @@ fn spec_body_length(spec : CommentSpec) -> Int {
 fn allocate_comment_id(
   annotated : DocxAnnotatedResult,
 ) -> String raise DocxError {
-  let used_numeric : Set[Int] = Set([])
+  let used_numeric : Set[Int32] = Set([])
   let mut max_numeric = -1
   for comment in annotated.annotations().comments() {
     match canonical_comment_id(comment.id()) {
@@ -668,7 +668,7 @@ pub fn sweep_archive_para_id_values(
 }
 
 ///|
-let max_swept_para_id_values : Int = 65536
+let max_swept_para_id_values : Int32 = 65536
 
 ///|
 /// A cheap UTF-16 tell: the BOM in either endianness, or ANY NUL in
@@ -776,7 +776,7 @@ fn ensure_w14_on_root(
   }
   // Pass 2: find the expanded mc:Ignorable attribute through any root prefix
   // bound to MC, not merely the first declaration spelling.
-  let mut ignorable : (String, Int)? = None
+  let mut ignorable : (String, Int32)? = None
   for attribute in attributes.entries {
     let (name, value, _, value_end) = attribute
     let (prefix, local_name) = split_qualified(name)
@@ -971,9 +971,9 @@ fn insert_open_tag_attribute(
 ///|
 priv struct OpenTagScan {
   // (name, value, value_start, value_end) per attribute, byte offsets.
-  entries : Array[(String, String, Int, Int)]
+  entries : Array[(String, String, Int32, Int32)]
   // Offset of the closing '>' of the open tag.
-  tag_gt : Int
+  tag_gt : Int32
   self_closing : Bool
 }
 
@@ -981,9 +981,9 @@ priv struct OpenTagScan {
 /// Scans one open tag's attributes from raw UTF-8 bytes, quote-aware.
 fn scan_open_tag_attributes(
   bytes : BytesView,
-  tag_start : Int,
+  tag_start : Int32,
 ) -> OpenTagScan raise DocxError {
-  let entries : Array[(String, String, Int, Int)] = []
+  let entries : Array[(String, String, Int32, Int32)] = []
   let limit = bytes.length()
   let mut at = tag_start + 1
   fn is_space(byte : Byte) -> Bool {
@@ -1050,8 +1050,8 @@ fn scan_open_tag_attributes(
 /// present), and the open tag's insertion offset.
 priv struct CommentExLocation {
   para_id : String
-  done_value_span : (Int, Int)?
-  insert_at : Int
+  done_value_span : (Int32, Int32)?
+  insert_at : Int32
   done_prefix : String
 }
 
@@ -1088,7 +1088,7 @@ fn canonical_para_id(value : String) -> String {
 /// unrepairable state the contract names.
 fn scan_comment_ex_part(
   bytes : BytesView,
-) -> (Array[CommentExLocation], Int?, (Int, Int)) raise DocxError {
+) -> (Array[CommentExLocation], Int32?, (Int32, Int32)) raise DocxError {
   // The root open tag: the first '<' that is not a declaration,
   // comment, or PI.
   let limit = bytes.length()
@@ -1253,7 +1253,7 @@ fn scan_comment_ex_part(
         uri == W15_NAMESPACE &&
         tag_local == "commentEx" {
         let mut para_id : String? = None
-        let mut done_span : (Int, Int)? = None
+        let mut done_span : (Int32, Int32)? = None
         let mut done_prefix = tag_prefix
         for attribute in tag.entries {
           let (name, value, value_start, value_end) = attribute
@@ -1312,7 +1312,7 @@ fn scan_comment_ex_part(
 }
 
 ///|
-fn tag_name_length(bytes : BytesView, name_start : Int) -> Int {
+fn tag_name_length(bytes : BytesView, name_start : Int32) -> Int32 {
   let mut at = name_start
   while at < bytes.length() &&
         bytes[at] != b' ' &&
@@ -1564,8 +1564,8 @@ fn queue_comments_extended_edits(
 /// `inner` inside — the range variant of self_closing_rewrite.
 fn self_closing_rewrite_range(
   part_bytes : BytesView,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
   inner : String,
 ) -> @splice.SpanEdit raise DocxError {
   let slice = part_bytes[start:end]

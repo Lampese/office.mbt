@@ -53,7 +53,7 @@ let max_sheet_hyperlinks = 65530
 ///|
 /// Keeps every writer-produced relationship start tag below the default
 /// 16 MiB OOXML-part ceiling even when every character needs XML escaping.
-let max_hyperlink_target_chars : Int = 1024 * 1024
+let max_hyperlink_target_chars : Int32 = 1024 * 1024
 
 ///|
 fn is_ascii_uri_scheme_start(character : Char) -> Bool {
@@ -202,28 +202,28 @@ fn validate_hyperlink_values(
 ///|
 priv enum HyperlinkMergePlan {
   Keep
-  Reanchor(Int)
+  Reanchor(Int32)
   Conflict(String)
 }
 
 ///|
 priv struct IndexedHyperlinkBounds {
-  index : Int
-  bounds : (Int, Int, Int, Int)
+  index : Int32
+  bounds : (Int32, Int32, Int32, Int32)
 }
 
 ///|
 priv struct IndexedMergedRangeBounds {
-  order : Int
-  bounds : (Int, Int, Int, Int)
+  order : Int32
+  bounds : (Int32, Int32, Int32, Int32)
   anchor : String
 }
 
 ///|
 fn plan_overlapping_hyperlink_for_merge(
-  index : Int,
-  link_bounds : (Int, Int, Int, Int),
-  merge_bounds : (Int, Int, Int, Int),
+  index : Int32,
+  link_bounds : (Int32, Int32, Int32, Int32),
+  merge_bounds : (Int32, Int32, Int32, Int32),
 ) -> HyperlinkMergePlan {
   if bounds_contain(merge_bounds, link_bounds) {
     return Reanchor(index)
@@ -246,9 +246,9 @@ fn plan_overlapping_hyperlink_for_merge(
 /// reader enforce the same identity rules with context-appropriate errors.
 fn plan_hyperlinks_for_merge(
   hyperlinks : ArrayView[Hyperlink],
-  merge_bounds : (Int, Int, Int, Int),
+  merge_bounds : (Int32, Int32, Int32, Int32),
 ) -> HyperlinkMergePlan raise XlsxError {
-  let mut overlapping_hyperlink : Int? = None
+  let mut overlapping_hyperlink : Int32? = None
   let mut plan : HyperlinkMergePlan = Keep
   for index, link in hyperlinks {
     let link_bounds = parse_range_ref(link.reference)
@@ -271,7 +271,7 @@ fn plan_hyperlinks_for_merge(
 ///|
 fn reanchor_hyperlink(
   hyperlinks : Array[Hyperlink],
-  index : Int,
+  index : Int32,
   anchor : String,
 ) -> Unit {
   let link = hyperlinks[index]
@@ -287,11 +287,11 @@ fn reanchor_hyperlink(
 
 ///|
 fn compare_bounds_then_order(
-  left_bounds : (Int, Int, Int, Int),
-  left_order : Int,
-  right_bounds : (Int, Int, Int, Int),
-  right_order : Int,
-) -> Int {
+  left_bounds : (Int32, Int32, Int32, Int32),
+  left_order : Int32,
+  right_bounds : (Int32, Int32, Int32, Int32),
+  right_order : Int32,
+) -> Int32 {
   let (left_min_row, left_min_col, left_max_row, left_max_col) = left_bounds
   let (right_min_row, right_min_col, right_max_row, right_max_col) = right_bounds
   if left_min_row != right_min_row {
@@ -311,7 +311,7 @@ fn compare_bounds_then_order(
 fn compare_indexed_hyperlink_bounds(
   left : IndexedHyperlinkBounds,
   right : IndexedHyperlinkBounds,
-) -> Int {
+) -> Int32 {
   compare_bounds_then_order(left.bounds, left.index, right.bounds, right.index)
 }
 
@@ -319,7 +319,7 @@ fn compare_indexed_hyperlink_bounds(
 fn compare_indexed_merged_range_bounds(
   left : IndexedMergedRangeBounds,
   right : IndexedMergedRangeBounds,
-) -> Int {
+) -> Int32 {
   compare_bounds_then_order(left.bounds, left.order, right.bounds, right.order)
 }
 
@@ -329,7 +329,7 @@ fn compare_indexed_merged_range_bounds(
 /// sheets; checkpoints before and after it keep cancellation responsive.
 fn charge_hyperlink_bound_sort(
   budget : ReadBudget,
-  count : Int,
+  count : Int32,
 ) -> Unit raise XlsxError {
   let mut width = 1
   while width < count {
@@ -402,8 +402,8 @@ fn canonicalize_loaded_hyperlinks_for_merges(
   let indexed_hyperlinks = index_hyperlink_bounds(hyperlinks, budget)
   let indexed_merges = index_merged_range_bounds(merged_cells, budget)
   let mut active : Array[IndexedHyperlinkBounds] = []
-  let planned_anchors : Map[Int, String] = Map([])
-  let reanchors : Array[(Int, String)] = []
+  let planned_anchors : Map[Int32, String] = Map([])
+  let reanchors : Array[(Int32, String)] = []
   let mut hyperlink_cursor = 0
   for merged in indexed_merges {
     budget.checkpoint()
@@ -533,7 +533,7 @@ test "hyperlink ceiling permits replacement and rejects a new identity" {
 
 ///|
 fn hyperlink_merge_budget_fixture(
-  count : Int,
+  count : Int32,
 ) -> (Array[Hyperlink], Array[String]) {
   let hyperlinks : Array[Hyperlink] = []
   let merged_cells : Array[String] = []

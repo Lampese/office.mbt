@@ -1,5 +1,5 @@
 ///|
-let raw_max_edit_part_bytes : Int = 16 * 1024 * 1024
+let raw_max_edit_part_bytes : Int32 = 16 * 1024 * 1024
 
 ///|
 let raw_max_xml_nodes = 100_000
@@ -14,7 +14,7 @@ let raw_max_xml_nodes = 100_000
 /// declaration before their root tag, so 64 KiB leaves ample room for producer
 /// comments and processing instructions while still refusing a part that
 /// buries its document element behind an unbounded prologue.
-let raw_max_root_probe_bytes : Int = 64 * 1024
+let raw_max_root_probe_bytes : Int32 = 64 * 1024
 
 ///|
 let raw_max_path_candidates = 4096
@@ -32,7 +32,7 @@ let raw_max_xml_depth = 256
 let raw_max_xml_name_bytes = 1024
 
 ///|
-let raw_max_xml_attribute_value_bytes : Int = 1024 * 1024
+let raw_max_xml_attribute_value_bytes : Int32 = 1024 * 1024
 
 ///|
 let raw_max_xml_attributes_per_element = 4096
@@ -44,13 +44,13 @@ let raw_max_source_namespace_uri_bytes = 2048
 let raw_max_in_scope_namespaces = 256
 
 ///|
-let raw_max_expanded_name_bytes : Int = 16 * 1024 * 1024
+let raw_max_expanded_name_bytes : Int32 = 16 * 1024 * 1024
 
 ///|
 let raw_max_namespace_scope_work = 2_000_000
 
 ///|
-let raw_metadata_max_bytes : Int = 8 * 1024 * 1024
+let raw_metadata_max_bytes : Int32 = 8 * 1024 * 1024
 
 ///|
 let raw_metadata_max_nodes = 16_384
@@ -65,20 +65,20 @@ let raw_metadata_max_namespace_declarations = 4096
 let raw_metadata_max_attribute_value_bytes = 4096
 
 ///|
-let raw_metadata_max_expanded_name_bytes : Int = 4 * 1024 * 1024
+let raw_metadata_max_expanded_name_bytes : Int32 = 4 * 1024 * 1024
 
 ///|
 let raw_metadata_max_namespace_scope_work = 500_000
 
 ///|
 priv struct RawXmlBudget {
-  max_nodes : Int
-  max_attributes : Int
-  max_namespace_declarations : Int
-  max_text_bytes : Int
-  max_attribute_value_bytes : Int
-  max_expanded_name_bytes : Int
-  max_namespace_scope_work : Int
+  max_nodes : Int32
+  max_attributes : Int32
+  max_namespace_declarations : Int32
+  max_text_bytes : Int32
+  max_attribute_value_bytes : Int32
+  max_expanded_name_bytes : Int32
+  max_namespace_scope_work : Int32
 }
 
 ///|
@@ -91,22 +91,22 @@ priv struct RawNamespaceDeclaration {
 priv struct RawAttributeSpan {
   expanded : String
   value : String
-  value_start : Int
-  value_end : Int
+  value_start : Int32
+  value_end : Int32
 }
 
 ///|
 priv struct RawXmlNode {
   raw_name : String
   expanded : String
-  parent : Int
-  sibling_position : Int
-  start : Int
-  start_tag_end : Int
-  tag_insert_offset : Int
+  parent : Int32
+  sibling_position : Int32
+  start : Int32
+  start_tag_end : Int32
+  tag_insert_offset : Int32
   self_closing : Bool
-  mut end_tag_start : Int
-  mut end : Int
+  mut end_tag_start : Int32
+  mut end : Int32
   attributes : Array[RawAttributeSpan]
   declarations : Array[RawNamespaceDeclaration]
 }
@@ -131,16 +131,16 @@ fn raw_document_uses_strict_ooxml(document : RawXmlDocument) -> Bool {
 priv struct RawLexicalAttribute {
   name : String
   value : String
-  value_start : Int
-  value_end : Int
+  value_start : Int32
+  value_end : Int32
 }
 
 ///|
 priv struct RawOpenTag {
   name : String
   attributes : Array[RawLexicalAttribute]
-  gt : Int
-  insert_at : Int
+  gt : Int32
+  insert_at : Int32
   self_closing : Bool
 }
 
@@ -157,8 +157,8 @@ fn raw_xml_scan_error(name : String, message : String) -> RawError {
 fn raw_xml_resource_limit(
   part : String,
   kind : String,
-  limit : Int,
-  actual : Int,
+  limit : Int32,
+  actual : Int32,
 ) -> RawError {
   raw_error(
     "office.raw.resource_limit",
@@ -181,8 +181,8 @@ fn raw_byte_is_space(value : Byte) -> Bool {
 fn raw_slice_text(
   name : String,
   bytes : BytesView,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> String raise RawError {
   @utf8.decode(bytes[start:end]) catch {
     _ => raise raw_xml_scan_error(name, "source span is not valid UTF-8")
@@ -252,7 +252,7 @@ fn raw_numeric_entity(entity : String, part : String) -> String raise RawError {
       #| yields the fully accumulated codepoint.
     ),
   }
-  match Int::to_char(codepoint) {
+  match Int32::to_char(codepoint) {
     Some(character) if raw_xml_character(character) => character.to_string()
     _ =>
       raise raw_xml_scan_error(part, "numeric entity is not an XML character")
@@ -327,7 +327,7 @@ fn raw_decode_attribute_value(
 fn raw_scan_open_tag(
   part : String,
   bytes : BytesView,
-  start : Int,
+  start : Int32,
 ) -> RawOpenTag raise RawError {
   let limit = bytes.length()
   let mut offset = start + 1
@@ -670,7 +670,7 @@ fn preflight_raw_content_xml(
 ///|
 fn raw_check_root_probe_offset(
   part : String,
-  offset : Int,
+  offset : Int32,
 ) -> Unit raise RawError {
   if offset > raw_max_root_probe_bytes {
     raise raw_xml_resource_limit(
@@ -687,7 +687,7 @@ fn raw_check_root_probe_offset(
 /// ceiling before the real lexer materializes any attribute value. It is a
 /// locator, not a second lexer: when it reports no terminator the lexer still
 /// runs and produces the precise malformed-XML diagnosis.
-fn raw_start_tag_terminator(bytes : BytesView, start : Int) -> Int? {
+fn raw_start_tag_terminator(bytes : BytesView, start : Int32) -> Int32? {
   let mut quote = b'\x00'
   for offset in (start + 1)..<bytes.length() {
     let value = bytes[offset]
@@ -802,9 +802,9 @@ fn preflight_raw_metadata_xml(
 ///|
 fn raw_find_sequence(
   bytes : BytesView,
-  start : Int,
+  start : Int32,
   sequence : BytesView,
-) -> Int? {
+) -> Int32? {
   if sequence.length() == 0 {
     return Some(start)
   }
@@ -826,7 +826,7 @@ fn raw_find_sequence(
 ///|
 fn raw_starts_with_at(
   bytes : BytesView,
-  offset : Int,
+  offset : Int32,
   sequence : BytesView,
 ) -> Bool {
   if offset < 0 || offset + sequence.length() > bytes.length() {
@@ -875,7 +875,7 @@ fn raw_expand_source_name(
 }
 
 ///|
-fn raw_expanded_name_bytes(value : String) -> Int {
+fn raw_expanded_name_bytes(value : String) -> Int32 {
   @utf8.encode(value).length()
 }
 
@@ -959,8 +959,8 @@ fn raw_restore_namespaces(
 fn raw_scan_closing_tag(
   part : String,
   bytes : BytesView,
-  start : Int,
-) -> (String, Int) raise RawError {
+  start : Int32,
+) -> (String, Int32) raise RawError {
   let mut offset = start + 2
   let name_start = offset
   while offset < bytes.length() &&
@@ -1093,9 +1093,9 @@ fn scan_raw_xml(
   }
   raw_reject_non_utf8_declaration(part, bytes)
   let nodes : Array[RawXmlNode] = []
-  let node_stack : Array[Int] = []
+  let node_stack : Array[Int32] = []
   let namespace_undo_stack : Array[Array[(String, String?)]] = []
-  let sibling_counts : StableStringMap[Int] = SortedMap([])
+  let sibling_counts : StableStringMap[Int32] = SortedMap([])
   let interned_expanded_names : StableStringMap[String] = SortedMap([])
   let namespaces : StableStringMap[String] = SortedMap([
     ("xml", "http://www.w3.org/XML/1998/namespace"),
@@ -1265,10 +1265,10 @@ fn select_raw_nodes(
   document : RawXmlDocument,
   path : RawPath,
   allow_multiple : Bool,
-) -> Array[Int] raise RawError {
-  let mut candidates : Set[Int] = Set([])
+) -> Array[Int32] raise RawError {
+  let mut candidates : Set[Int32] = Set([])
   for segment_index, segment in path.segments {
-    let next : Set[Int] = Set([])
+    let next : Set[Int32] = Set([])
     for node_index, node in document.nodes {
       let parent_matches = if segment_index == 0 {
         node.parent == -1
@@ -1323,9 +1323,9 @@ fn select_raw_nodes(
 ///|
 fn raw_effective_namespaces(
   document : RawXmlDocument,
-  node_index : Int,
+  node_index : Int32,
 ) -> Map[String, String] {
-  let chain : Array[Int] = []
+  let chain : Array[Int32] = []
   let mut current = node_index
   while current >= 0 {
     chain.push(current)

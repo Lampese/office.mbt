@@ -80,7 +80,7 @@ fn ShowText::take(self : ShowText) -> @content.PdfContentOp {
 /// declares for WinAnsi `code` — the same rounding `font_object` writes.
 fn declared_simple_width(
   face : PdfFace,
-  code : Int,
+  code : Int32,
   size_pt : Double,
 ) -> Double {
   face.declared_width(face.simple_unicode(code)) * size_pt / 1000.0
@@ -155,7 +155,7 @@ fn emit_run(
 /// past it. The IR pairs one advance with each code unit and gives the
 /// trail half of a surrogate pair advance 0, so a run walks by code unit
 /// but encodes by character.
-fn codepoint_at(text : String, i : Int) -> (Int, Int) {
+fn codepoint_at(text : String, i : Int32) -> (Int32, Int32) {
   let unit = text[i].to_int()
   if unit >= 0xD800 && unit <= 0xDBFF && i + 1 < text.length() {
     let low = text[i + 1].to_int()
@@ -373,7 +373,7 @@ fn pdf_face(spec : @pagelayout.FontSpec, options : RenderOptions) -> PdfFace {
 /// initial zoom position that is not finite.
 pub fn render_pdf(
   model : @pagelayout.PageModel,
-  options? : RenderOptions = RenderOptions::new(),
+  options~ : RenderOptions = RenderOptions::new(),
 ) -> Bytes raise {
   if !options.page_labels.is_empty() &&
     options.page_labels.length() != model.pages.length() {
@@ -401,7 +401,7 @@ pub fn render_pdf(
   // media type as well as bytes: the same bytes under a different type
   // are a different image as far as the reader is concerned, and reusing
   // an earlier decode would draw a picture the document did not ask for.
-  let image_cache : Map[(Bytes, String), (Int, Double, Double)] = Map([])
+  let image_cache : Map[(Bytes, String), (Int32, Double, Double)] = Map([])
   // the documents behind PDF images, read once each
   let pdf_sources = PdfSources::new()
 
@@ -429,7 +429,7 @@ pub fn render_pdf(
   }
 
   // one PDF font object per interned IR font, shared by every page
-  let font_objects : Array[Int] = []
+  let font_objects : Array[Int32] = []
   for index, face in faces {
     font_objects.push(
       match (face.composite, face.program) {
@@ -451,15 +451,15 @@ pub fn render_pdf(
   let pages : Array[@page.PdfPage] = []
   let graphic_resources = GraphicResources::new(document)
   // (name, page index, x, y) of every anchor, in document order
-  let anchors : Array[(String, Int, Double, Double)] = []
+  let anchors : Array[(String, Int32, Double, Double)] = []
   for page_index, model_page in model.pages {
     let ops : Array[@content.PdfContentOp] = []
     // the fonts and images the page uses, in the order of first use, with
     // sets to look them up in (a page can hold many thousand runs)
-    let used : Array[Int] = []
-    let used_set : Map[Int, Unit] = Map([])
-    let images : Array[Int] = []
-    let images_set : Map[Int, Unit] = Map([])
+    let used : Array[Int32] = []
+    let used_set : Map[Int32, Unit] = Map([])
+    let images : Array[Int32] = []
+    let images_set : Map[Int32, Unit] = Map([])
     let annots : Array[@syntax.PdfObject] = []
     let page_graphics = PageGraphics::new()
     let text = fn(run : @pagelayout.GlyphRun, page_height : Double) {
@@ -567,7 +567,7 @@ pub fn render_pdf(
 ///|
 /// A PDF date string (PDF 32000-1 §7.9.4), `D:YYYYMMDDHHmmSS+HH'mm'`, for
 /// `epoch_seconds` shown at `offset_seconds` from UTC.
-pub fn pdf_date(epoch_seconds : Int64, offset_seconds? : Int = 0) -> String {
+pub fn pdf_date(epoch_seconds : Int64, offset_seconds~ : Int32 = 0) -> String {
   let secs = epoch_seconds + offset_seconds.to_int64()
   let mut days = secs / 86400L
   let mut rem = secs % 86400L
@@ -586,7 +586,7 @@ pub fn pdf_date(epoch_seconds : Int64, offset_seconds? : Int = 0) -> String {
   let month = if mp < 10 { mp + 3 } else { mp - 9 }
   let year = yoe + era * 400 + (if month <= 2 { 1 } else { 0 })
   let rem = rem.to_int()
-  let pad = fn(n : Int, width : Int) {
+  let pad = fn(n : Int32, width : Int32) {
     let text = n.to_string()
     "0".repeat(width - text.length()) + text
   }
@@ -602,7 +602,7 @@ pub fn pdf_date(epoch_seconds : Int64, offset_seconds? : Int = 0) -> String {
 /// (PDF 32000-1 §7.9.6): the first differing byte decides, and a key that
 /// is a prefix of another sorts first. `Bytes::compare` is not this order —
 /// it compares lengths first, putting every short key before every long one.
-fn lexical_compare(left : Bytes, right : Bytes) -> Int {
+fn lexical_compare(left : Bytes, right : Bytes) -> Int32 {
   let n = if left.length() < right.length() {
     left.length()
   } else {
@@ -625,8 +625,8 @@ fn lexical_compare(left : Bytes, right : Bytes) -> Int {
 fn add_navigation(
   document : @pdflite.PdfDocument,
   model : @pagelayout.PageModel,
-  page_root : Int,
-  anchors : Array[(String, Int, Double, Double)],
+  page_root : Int32,
+  anchors : Array[(String, Int32, Double, Double)],
   options : RenderOptions,
 ) -> @pdflite.PdfDocument raise {
   let outline = options.outline
@@ -804,9 +804,9 @@ fn add_navigation(
 ///|
 /// How many outline entries show when the document opens: the top level,
 /// and the children of entries that are open and themselves showing.
-fn visible_outline_entries(outline : Array[OutlineEntry]) -> Int {
+fn visible_outline_entries(outline : Array[OutlineEntry]) -> Int32 {
   // (level, showing, open) of the entries enclosing the current one
-  let stack : Array[(Int, Bool, Bool)] = []
+  let stack : Array[(Int32, Bool, Bool)] = []
   let mut count = 0
   for entry in outline {
     while stack.length() > 0 && stack[stack.length() - 1].0 >= entry.level {
@@ -917,7 +917,7 @@ fn uri_bytes(target : String) -> Bytes {
   let bytes = @utf8.encode(target)
   let out = Buffer()
   let hex = b"0123456789ABCDEF"
-  let is_hex = fn(i : Int) {
+  let is_hex = fn(i : Int32) {
     if i >= bytes.length() {
       return false
     }
@@ -952,10 +952,10 @@ fn uri_bytes(target : String) -> Bytes {
 /// font takes.
 fn collect_codepoints(
   model : @pagelayout.PageModel,
-  font_count : Int,
-) -> Array[Array[Int]] {
-  let used : Array[Array[Int]] = []
-  let seen : Array[Map[Int, Unit]] = []
+  font_count : Int32,
+) -> Array[Array[Int32]] {
+  let used : Array[Array[Int32]] = []
+  let seen : Array[Map[Int32, Unit]] = []
   for _ in 0..<font_count {
     used.push([])
     seen.push(Map([]))
@@ -995,15 +995,15 @@ fn collect_codepoints(
 /// pdflite's convention: a font's resource name is derived from its
 /// object number, so a page's `/Font` dictionary is built from the set
 /// of objects it actually used.
-fn font_resource_name(number : Int) -> @core.PdfName {
+fn font_resource_name(number : Int32) -> @core.PdfName {
   name("/F" + number.to_string())
 }
 
 ///|
 fn resources_of(
-  font_objects : Array[Int],
-  image_objects : Array[Int],
-  graphics? : PageGraphics = PageGraphics::new(),
+  font_objects : Array[Int32],
+  image_objects : Array[Int32],
+  graphics~ : PageGraphics = PageGraphics::new(),
 ) -> @syntax.PdfObject {
   let fonts : Array[(@core.PdfName, @syntax.PdfObject)] = []
   for number in font_objects {
@@ -1037,7 +1037,7 @@ fn resources_of(
 }
 
 ///|
-fn image_resource_name(number : Int) -> @core.PdfName {
+fn image_resource_name(number : Int32) -> @core.PdfName {
   name("/I" + number.to_string())
 }
 
@@ -1055,9 +1055,9 @@ fn image_resource_name(number : Int) -> @core.PdfName {
 fn image_object(
   document : @pdflite.PdfDocument,
   image : @pagelayout.ImageItem,
-  cache : Map[(Bytes, String), (Int, Double, Double)],
+  cache : Map[(Bytes, String), (Int32, Double, Double)],
   sources : PdfSources,
-) -> (Int, Double, Double)? {
+) -> (Int32, Double, Double)? {
   let key = (image.data, image.mime)
   match cache.get(key) {
     Some(placed) => return Some(placed)
@@ -1102,8 +1102,8 @@ fn emit_image(
   image : @pagelayout.ImageItem,
   resource : @core.PdfName,
   page_height : Double,
-  natural_w? : Double = 1.0,
-  natural_h? : Double = 1.0,
+  natural_w~ : Double = 1.0,
+  natural_h~ : Double = 1.0,
 ) -> Unit {
   let y = flip(page_height, image.y_pt + image.h_pt)
   ops.push(Op_q)
@@ -1132,12 +1132,12 @@ fn emit_image(
 /// tell a user their screenshots are missing need to ask.
 pub fn unembeddable_images(
   model : @pagelayout.PageModel,
-) -> Array[(String, Int)] {
+) -> Array[(String, Int32)] {
   let document = @pdflite.pdf_document_empty()
   // the documents behind PDF images, read once whatever page they show
   let sources = PdfSources::new()
   let reasons : Array[String] = []
-  let counts : Map[String, Int] = Map([])
+  let counts : Map[String, Int32] = Map([])
   // Only successful conversions are cached by `render_pdf`, so a failing
   // image really is skipped at every occurrence — a header picture on
   // fifty pages is fifty holes, and reporting it once would understate

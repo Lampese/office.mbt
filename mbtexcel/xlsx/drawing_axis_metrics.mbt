@@ -1,9 +1,9 @@
 ///|
 priv struct DrawingAxisMetrics {
   axis : String
-  limit : Int
-  default_px : Int
-  override_indices : Array[Int]
+  limit : Int32
+  default_px : Int32
+  override_indices : Array[Int32]
   prefix_deltas : Array[Int64]
 }
 
@@ -28,7 +28,7 @@ fn drawing_axis_metrics_for_sheet(
   if default_px < 0 {
     raise InvalidXml(msg="drawing cell dimension invalid")
   }
-  let overrides : Array[(Int, Int)] = []
+  let overrides : Array[(Int32, Int32)] = []
   if axis == "col" {
     for idx1, _ in sheet.col_dimensions {
       if idx1 <= 0 || idx1 > limit {
@@ -63,7 +63,7 @@ fn drawing_axis_metrics_for_sheet(
       0
     }
   })
-  let override_indices : Array[Int] = []
+  let override_indices : Array[Int32] = []
   let prefix_deltas : Array[Int64] = [0L]
   let mut delta_sum = 0L
   for entry in overrides {
@@ -88,7 +88,7 @@ fn drawing_metrics_for_sheet(
 ///|
 fn DrawingAxisMetrics::delta_before(
   self : DrawingAxisMetrics,
-  idx0 : Int,
+  idx0 : Int32,
 ) -> Int64 {
   let mut low = 0
   let mut high = self.override_indices.length()
@@ -106,8 +106,8 @@ fn DrawingAxisMetrics::delta_before(
 ///|
 fn DrawingAxisMetrics::pixel_span(
   self : DrawingAxisMetrics,
-  start_idx0 : Int,
-  end_idx0 : Int,
+  start_idx0 : Int32,
+  end_idx0 : Int32,
 ) -> Int64 raise XlsxError {
   if start_idx0 < 0 || end_idx0 < start_idx0 || end_idx0 > self.limit {
     raise InvalidXml(msg="drawing " + self.axis + " invalid")

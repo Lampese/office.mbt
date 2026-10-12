@@ -9,9 +9,9 @@
 fn probed_row_indices(
   workbook : @xlsx.Workbook,
   sheet_name : String,
-  limit : Int,
-) -> Array[Int] raise {
-  let rows : Array[Int] = []
+  limit : Int32,
+) -> Array[Int32] raise {
+  let rows : Array[Int32] = []
   for row in 1..<=limit {
     let non_default = workbook.get_row_height(sheet_name, row) is Some(_) ||
       !workbook.row_visible(sheet_name, row) ||
@@ -30,9 +30,9 @@ fn probed_row_indices(
 fn probed_col_indices(
   workbook : @xlsx.Workbook,
   sheet_name : String,
-  limit : Int,
-) -> Array[Int] raise {
-  let cols : Array[Int] = []
+  limit : Int32,
+) -> Array[Int32] raise {
+  let cols : Array[Int32] = []
   for col in 1..<=limit {
     let non_default = workbook.get_col_width(sheet_name, col) is Some(_) ||
       !workbook.col_visible(sheet_name, col) ||
@@ -140,7 +140,7 @@ test "row dimension enumerator: ascending order, beyond-extent rows, getter agre
   assert_row_entries_match_getters(workbook, "Data")
   // ... and the enumerator reports nothing else: probing every row in a
   // range covering all fixture indices finds exactly the enumerated rows.
-  let enumerated : Array[Int] = []
+  let enumerated : Array[Int32] = []
   for entry in entries {
     enumerated.push(entry.0)
   }
@@ -178,7 +178,7 @@ test "col dimension enumerator: ascending order, styled/hidden columns, getter a
     ),
   )
   assert_col_entries_match_getters(workbook, "Data")
-  let enumerated : Array[Int] = []
+  let enumerated : Array[Int32] = []
   for entry in entries {
     enumerated.push(entry.0)
   }

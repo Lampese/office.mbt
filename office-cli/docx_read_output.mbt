@@ -1,29 +1,29 @@
 ///|
-let docx_cli_default_max_output_chars : Int = 1024 * 1024
+let docx_cli_default_max_output_chars : Int32 = 1024 * 1024
 
 ///|
-let docx_cli_hard_max_output_chars : Int = 4 * 1024 * 1024
+let docx_cli_hard_max_output_chars : Int32 = 4 * 1024 * 1024
 
 ///|
-let docx_cli_output_framing_chars : Int = 1
+let docx_cli_output_framing_chars : Int32 = 1
 
 ///|
-let docx_cli_default_text_limit : Int = 2000
+let docx_cli_default_text_limit : Int32 = 2000
 
 ///|
-let docx_cli_hard_text_limit : Int = 10_000
+let docx_cli_hard_text_limit : Int32 = 10_000
 
 ///|
-let docx_cli_default_query_limit : Int = 100
+let docx_cli_default_query_limit : Int32 = 100
 
 ///|
-let docx_cli_hard_query_limit : Int = 1000
+let docx_cli_hard_query_limit : Int32 = 1000
 
 ///|
-let docx_cli_query_preview_chars : Int = 160
+let docx_cli_query_preview_chars : Int32 = 160
 
 ///|
-let docx_cli_heading_preview_chars : Int = 512
+let docx_cli_heading_preview_chars : Int32 = 512
 
 ///|
 priv struct DocxPropertyPredicate {
@@ -39,8 +39,8 @@ priv struct DocxQuerySpec {
   stable_id : String?
   properties : Array[DocxPropertyPredicate]
   ignore_case : Bool
-  offset : Int
-  limit : Int
+  offset : Int32
+  limit : Int32
 }
 
 ///|
@@ -84,14 +84,14 @@ priv struct BoundedOfficePayload {
 /// including the successful command's explicit trailing line feed.
 priv struct OfficeOutputBudget {
   format : String
-  maximum : Int
-  mut used : Int
+  maximum : Int32
+  mut used : Int32
 }
 
 ///|
 fn OfficeOutputBudget::new(
-  maximum : Int,
-  format? : String = "docx",
+  maximum : Int32,
+  format~ : String = "docx",
 ) -> OfficeOutputBudget {
   { format, maximum, used: docx_cli_output_framing_chars, }
 }
@@ -99,7 +99,7 @@ fn OfficeOutputBudget::new(
 ///|
 fn OfficeOutputBudget::reserve_chars(
   self : OfficeOutputBudget,
-  count : Int,
+  count : Int32,
 ) -> Unit raise CliFailure {
   if count < 0 || count > self.maximum - self.used {
     let actual = if count < 0 { self.used } else { self.used + count }
@@ -196,7 +196,7 @@ fn OfficeOutputBudget::reserve_array_item(
 }
 
 ///|
-fn OfficeOutputBudget::remaining(self : OfficeOutputBudget) -> Int {
+fn OfficeOutputBudget::remaining(self : OfficeOutputBudget) -> Int32 {
   self.maximum - self.used
 }
 
@@ -271,7 +271,7 @@ fn OfficeOutputBudget::reserve_json_string_body(
 ///|
 fn OfficeOutputBudget::reserve_nonnegative_integer_growth(
   self : OfficeOutputBudget,
-  value : Int,
+  value : Int32,
 ) -> Unit raise CliFailure {
   let mut remaining = value
   let mut digits = 1
@@ -295,7 +295,7 @@ fn OfficeOutputBudget::reserve_boolean_growth_from_true(
 }
 
 ///|
-fn checked_output_limit(maximum : Int) -> Int raise CliFailure {
+fn checked_output_limit(maximum : Int32) -> Int32 raise CliFailure {
   if maximum < 1 || maximum > docx_cli_hard_max_output_chars {
     raise docx_cli_failure(
       "office.invalid_arguments",
@@ -313,7 +313,7 @@ fn checked_output_limit(maximum : Int) -> Int raise CliFailure {
 ///|
 fn ensure_office_output_limit(
   output : String,
-  maximum : Int,
+  maximum : Int32,
   format : String,
 ) -> Unit raise CliFailure {
   let mut count = docx_cli_output_framing_chars
@@ -334,7 +334,7 @@ fn ensure_office_output_limit(
 fn bounded_office_payload(
   data : Json,
   warnings : Array[@lib.ProtocolWarning],
-  maximum : Int,
+  maximum : Int32,
   format : String,
 ) -> BoundedOfficePayload raise CliFailure {
   ignore(checked_output_limit(maximum))
@@ -347,7 +347,7 @@ fn bounded_office_payload(
 fn bounded_docx_payload(
   data : Json,
   warnings : Array[@lib.ProtocolWarning],
-  maximum : Int,
+  maximum : Int32,
 ) -> BoundedOfficePayload raise CliFailure {
   bounded_office_payload(data, warnings, maximum, "docx")
 }
@@ -396,7 +396,7 @@ fn checked_docx_json_output(
 ///|
 fn checked_office_human_output(
   output : String,
-  maximum : Int,
+  maximum : Int32,
   format : String,
 ) -> String raise CliFailure {
   ignore(checked_output_limit(maximum))
@@ -407,7 +407,7 @@ fn checked_office_human_output(
 ///|
 fn checked_docx_human_output(
   output : String,
-  maximum : Int,
+  maximum : Int32,
 ) -> String raise CliFailure {
   checked_office_human_output(output, maximum, "docx")
 }
@@ -416,7 +416,7 @@ fn checked_docx_human_output(
 async fn get_docx_payload(
   projection : DocxProjection,
   entry : DocxProjectionEntry,
-  max_output_chars : Int,
+  max_output_chars : Int32,
 ) -> BoundedOfficePayload {
   let children : Array[Json] = []
   let fields = entry_base_json(entry, children)
@@ -481,9 +481,9 @@ async fn docx_text_payload(
   projection : DocxProjection,
   under : DocxProjectionEntry?,
   under_path : String?,
-  offset : Int,
-  limit : Int,
-  max_output_chars : Int,
+  offset : Int32,
+  limit : Int32,
+  max_output_chars : Int32,
 ) -> BoundedOfficePayload {
   let entries : Array[Json] = []
   let fields : Map[String, Json] = {
@@ -682,7 +682,7 @@ async fn docx_query_payload(
   projection : DocxProjection,
   under : DocxProjectionEntry?,
   spec : DocxQuerySpec,
-  max_output_chars : Int,
+  max_output_chars : Int32,
 ) -> BoundedOfficePayload {
   let filter_properties : Array[Json] = []
   let filters : Map[String, Json] = {
@@ -785,7 +785,7 @@ async fn docx_query_payload(
 }
 
 ///|
-fn docx_heading_level(element : @document.DocumentElement) -> Int? {
+fn docx_heading_level(element : @document.DocumentElement) -> Int32? {
   guard element is Paragraph(properties~, ..) else { return None }
   @docx_inspect.heading_level(properties)
 }
@@ -935,7 +935,7 @@ fn reader_diagnostics(
 /// agreed to yet, a deletion hides words that are still in the file — so a
 /// caller deciding whether to look closer needs to know which happened.
 /// The `revisions` array length is their sum.
-async fn docx_revision_counts(projection : DocxProjection) -> (Int, Int) {
+async fn docx_revision_counts(projection : DocxProjection) -> (Int32, Int32) {
   let mut insertions = 0
   let mut deletions = 0
   for record in projection.revisions {
@@ -952,10 +952,10 @@ async fn docx_revision_counts(projection : DocxProjection) -> (Int, Int) {
 ///|
 async fn docx_outline_payload(
   projection : DocxProjection,
-  max_output_chars? : Int = docx_cli_default_max_output_chars,
+  max_output_chars~ : Int32 = docx_cli_default_max_output_chars,
 ) -> BoundedOfficePayload {
   ignore(checked_output_limit(max_output_chars))
-  let counts : Map[String, Int] = Map([])
+  let counts : Map[String, Int32] = Map([])
   let mut footnotes = 0
   let mut endnotes = 0
   projection.cooperate(work=docx_cli_projection_yield_elements)
@@ -1131,16 +1131,16 @@ async fn docx_outline_payload(
 ///|
 priv struct DocxHumanWriter {
   format : String
-  maximum : Int
+  maximum : Int32
   output : StringBuilder
-  mut used : Int
-  mut lines : Int
+  mut used : Int32
+  mut lines : Int32
 }
 
 ///|
 fn DocxHumanWriter::new(
-  maximum : Int,
-  format? : String = "docx",
+  maximum : Int32,
+  format~ : String = "docx",
 ) -> DocxHumanWriter raise CliFailure {
   ignore(checked_output_limit(maximum))
   {
@@ -1153,7 +1153,7 @@ fn DocxHumanWriter::new(
 }
 
 ///|
-fn DocxHumanWriter::remaining(self : DocxHumanWriter) -> Int {
+fn DocxHumanWriter::remaining(self : DocxHumanWriter) -> Int32 {
   self.maximum - self.used
 }
 
@@ -1188,7 +1188,7 @@ fn DocxHumanWriter::write_plain(
 fn DocxHumanWriter::write_terminal_safe(
   self : DocxHumanWriter,
   value : String,
-  single_line? : Bool = false,
+  single_line~ : Bool = false,
 ) -> Unit raise CliFailure {
   for character in value {
     if single_line && character is ('\n' | '\r') {
@@ -1246,10 +1246,10 @@ fn DocxHumanWriter::write_warnings(
 async fn docx_text_human(
   projection : DocxProjection,
   under : DocxProjectionEntry?,
-  offset : Int,
-  limit : Int,
+  offset : Int32,
+  limit : Int32,
   warnings : Array[@lib.ProtocolWarning],
-  maximum? : Int = docx_cli_hard_max_output_chars,
+  maximum~ : Int32 = docx_cli_hard_max_output_chars,
 ) -> String {
   let output = DocxHumanWriter::new(maximum)
   let mut matched = 0
@@ -1293,7 +1293,7 @@ async fn docx_query_human(
   under : DocxProjectionEntry?,
   spec : DocxQuerySpec,
   warnings : Array[@lib.ProtocolWarning],
-  maximum? : Int = docx_cli_hard_max_output_chars,
+  maximum~ : Int32 = docx_cli_hard_max_output_chars,
 ) -> String {
   let output = DocxHumanWriter::new(maximum)
   let scan_budget = DocxTextBudget::new(
@@ -1346,7 +1346,7 @@ fn docx_get_human(
   entry : DocxProjectionEntry,
   text : String,
   warnings : Array[@lib.ProtocolWarning],
-  maximum? : Int = docx_cli_hard_max_output_chars,
+  maximum~ : Int32 = docx_cli_hard_max_output_chars,
 ) -> String raise CliFailure {
   let output = DocxHumanWriter::new(maximum)
   output.begin_line()
@@ -1364,9 +1364,9 @@ fn docx_get_human(
 ///|
 async fn docx_outline_human(
   projection : DocxProjection,
-  maximum? : Int = docx_cli_hard_max_output_chars,
+  maximum~ : Int32 = docx_cli_hard_max_output_chars,
 ) -> String {
-  let counts : Map[String, Int] = Map([])
+  let counts : Map[String, Int32] = Map([])
   let output = DocxHumanWriter::new(maximum)
   output.begin_line()
   output.write_plain("docx: ")

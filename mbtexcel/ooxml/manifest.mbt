@@ -67,9 +67,9 @@ struct WorkbookManifest {
 
 ///|
 pub fn WorkbookManifest::new(
-  sheet_count : Int,
-  include_shared_strings? : Bool = true,
-  include_calc_chain? : Bool = false,
+  sheet_count : Int32,
+  include_shared_strings~ : Bool = true,
+  include_calc_chain~ : Bool = false,
 ) -> WorkbookManifest {
   let safe_sheet_count = if sheet_count < 0 { 0 } else { sheet_count }
   let content_types = ContentTypes::new()
@@ -142,7 +142,7 @@ pub fn WorkbookManifest::content_types_xml(self : WorkbookManifest) -> String {
 /// Serializes `[Content_Types].xml` only while its UTF-8 output fits `maximum`.
 pub fn WorkbookManifest::content_types_xml_limited(
   self : WorkbookManifest,
-  maximum : Int,
+  maximum : Int32,
 ) -> String? {
   if maximum < 0 {
     None
@@ -160,7 +160,7 @@ pub fn WorkbookManifest::root_rels_xml(self : WorkbookManifest) -> String {
 /// Serializes the package relationships only while UTF-8 output fits `maximum`.
 pub fn WorkbookManifest::root_rels_xml_limited(
   self : WorkbookManifest,
-  maximum : Int,
+  maximum : Int32,
 ) -> String? {
   if maximum < 0 {
     None
@@ -178,7 +178,7 @@ pub fn WorkbookManifest::workbook_rels_xml(self : WorkbookManifest) -> String {
 /// Serializes workbook relationships only while UTF-8 output fits `maximum`.
 pub fn WorkbookManifest::workbook_rels_xml_limited(
   self : WorkbookManifest,
-  maximum : Int,
+  maximum : Int32,
 ) -> String? {
   if maximum < 0 {
     None

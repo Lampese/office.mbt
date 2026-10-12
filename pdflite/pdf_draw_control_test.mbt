@@ -4,7 +4,7 @@ fn draw_control_name_for_test(text : String) -> @core.PdfName {
 }
 
 ///|
-fn draw_control_bytes_for_test(values : ArrayView[Int]) -> @core.PdfBytes {
+fn draw_control_bytes_for_test(values : ArrayView[Int32]) -> @core.PdfBytes {
   let output : Array[Byte] = []
   for value in values {
     output.push(try! @core.pdf_byte_of_int(value))
@@ -23,7 +23,7 @@ fn draw_control_append_bytes_for_test(
 }
 
 ///|
-fn draw_control_push_u32_for_test(output : Array[Byte], value : Int) -> Unit {
+fn draw_control_push_u32_for_test(output : Array[Byte], value : Int32) -> Unit {
   output.push(try! @core.pdf_byte_of_int((value >> 24) & 0xFF))
   output.push(try! @core.pdf_byte_of_int((value >> 16) & 0xFF))
   output.push(try! @core.pdf_byte_of_int((value >> 8) & 0xFF))
@@ -32,7 +32,7 @@ fn draw_control_push_u32_for_test(output : Array[Byte], value : Int) -> Unit {
 
 ///|
 fn draw_control_png_chunk_for_test(
-  chunk_type : ArrayView[Int],
+  chunk_type : ArrayView[Int32],
   data : BytesView,
 ) -> @core.PdfBytes {
   let output : Array[Byte] = []

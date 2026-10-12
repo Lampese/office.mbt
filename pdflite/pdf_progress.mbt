@@ -49,7 +49,7 @@ pub fn pdf_progress_line_no_end(text : String) -> Unit {
 
 ///|
 /// Emit a page number fragment when progress is enabled.
-pub fn pdf_progress_page(page : Int) -> Unit {
+pub fn pdf_progress_page(page : Int32) -> Unit {
   pdf_progress_emit(page.to_string())
 }
 

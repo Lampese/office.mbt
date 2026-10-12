@@ -9,7 +9,7 @@
 
 ///|
 /// Ceiling on the edit script document `office edit` will read.
-let office_edit_max_script_bytes : Int = 4 * 1024 * 1024
+let office_edit_max_script_bytes : Int32 = 4 * 1024 * 1024
 
 ///|
 fn edit_findings_json(

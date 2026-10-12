@@ -9,7 +9,7 @@ fn join_text_story(source : String) -> ReaderInputJoinResult {
 }
 
 ///|
-fn joined_preorder_ids(node : ReaderNode, out : Array[Int]) -> Unit raise {
+fn joined_preorder_ids(node : ReaderNode, out : Array[Int32]) -> Unit raise {
   guard node.source_element_id is Some(SourceElementId(index)) else {
     fail("a joined node carries no physical identity")
   }
@@ -20,7 +20,7 @@ fn joined_preorder_ids(node : ReaderNode, out : Array[Int]) -> Unit raise {
 }
 
 ///|
-fn count_dom_elements(element : XmlElement) -> Int {
+fn count_dom_elements(element : XmlElement) -> Int32 {
   let mut count = 1
   for child in element.children {
     if child is XmlElement(child_element) {
@@ -37,7 +37,7 @@ fn count_dom_elements(element : XmlElement) -> Int {
 /// parent's span (MC splicing keeps fallback content physically inside the
 /// construct, which is inside the DOM parent).
 fn assert_join_invariants(story : JoinedReaderStory) -> Unit raise {
-  let ids : Array[Int] = []
+  let ids : Array[Int32] = []
   joined_preorder_ids(story.root, ids)
   assert_eq(ids.length(), count_dom_elements(story.root.element))
   for index in 1..<ids.length() {
@@ -89,7 +89,7 @@ test "join pairs plain stories across namespace spellings" {
       #|<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>a</w:t></w:r></w:p><w:p/></w:body></w:document>
     ),
   )
-  let ids : Array[Int] = []
+  let ids : Array[Int32] = []
   joined_preorder_ids(transitional.root, ids)
   debug_inspect(ids, content="[0, 1, 2, 3, 4, 5]")
   // Strict OOXML URI canonicalizes to the same prefix on both sides
@@ -124,7 +124,7 @@ test "join ignores comments, PIs, text, CDATA, and entities between elements" {
       #|<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><!-- note --><?pi data?><w:p>stray<w:r><w:t><![CDATA[a]]></w:t><w:t>a&amp;b</w:t></w:r></w:p></w:body></w:document>
     ),
   )
-  let ids : Array[Int] = []
+  let ids : Array[Int32] = []
   joined_preorder_ids(story.root, ids)
   debug_inspect(ids, content="[0, 1, 2, 3, 4, 5]")
 }
@@ -137,7 +137,7 @@ test "join cooks alternate content like the parser, whatever the prefix" {
   let literal =
     #|<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"><w:body><w:p/><mc:AlternateContent><mc:Choice Requires="wps"><w:p><w:r><w:t>choice</w:t></w:r></w:p></mc:Choice><mc:Fallback><w:p><w:r><w:t>fallback</w:t></w:r></w:p></mc:Fallback></mc:AlternateContent><w:p/></w:body></w:document>
   let story = assert_joined(literal)
-  let ids : Array[Int] = []
+  let ids : Array[Int32] = []
   joined_preorder_ids(story.root, ids)
   // document=0 body=1 p=2 | AC=3 Choice=4 p=5 r=6 t=7 | Fallback=8 p=9
   // r=10 t=11 | p=12 -- the cooked view keeps 0,1,2 then the fallback
@@ -147,7 +147,7 @@ test "join cooks alternate content like the parser, whatever the prefix" {
   let renamed =
     #|<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:zz="http://schemas.openxmlformats.org/markup-compatibility/2006"><w:body><w:p/><zz:AlternateContent><zz:Choice Requires="wps"><w:p><w:r><w:t>choice</w:t></w:r></w:p></zz:Choice><zz:Fallback><w:p><w:r><w:t>fallback</w:t></w:r></w:p></zz:Fallback></zz:AlternateContent><w:p/></w:body></w:document>
   let renamed_story = assert_joined(renamed)
-  let renamed_ids : Array[Int] = []
+  let renamed_ids : Array[Int32] = []
   joined_preorder_ids(renamed_story.root, renamed_ids)
   debug_inspect(renamed_ids, content="[0, 1, 2, 9, 10, 11, 12]")
 }
@@ -160,7 +160,7 @@ test "join alternate content edge shapes" {
       #|<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"><w:body><mc:AlternateContent><mc:Choice Requires="wps"><w:p/></mc:Choice></mc:AlternateContent><w:p/></w:body></w:document>
     ),
   )
-  let no_fallback_ids : Array[Int] = []
+  let no_fallback_ids : Array[Int32] = []
   joined_preorder_ids(no_fallback.root, no_fallback_ids)
   // document=0 body=1 AC=2 Choice=3 p=4 p=5
   debug_inspect(no_fallback_ids, content="[0, 1, 5]")
@@ -170,7 +170,7 @@ test "join alternate content edge shapes" {
       #|<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"><w:body><mc:AlternateContent><mc:Fallback><mc:AlternateContent><mc:Fallback><w:p/></mc:Fallback></mc:AlternateContent></mc:Fallback></mc:AlternateContent></w:body></w:document>
     ),
   )
-  let nested_ids : Array[Int] = []
+  let nested_ids : Array[Int32] = []
   joined_preorder_ids(nested.root, nested_ids)
   // document=0 body=1 AC=2 Fallback=3 AC=4 Fallback=5 p=6
   debug_inspect(nested_ids, content="[0, 1, 6]")
@@ -181,7 +181,7 @@ test "join alternate content edge shapes" {
     ),
   )
   inspect(root_mc.root.element.name, content="mc:AlternateContent")
-  let root_ids : Array[Int] = []
+  let root_ids : Array[Int32] = []
   joined_preorder_ids(root_mc.root, root_ids)
   debug_inspect(root_ids, content="[0, 1, 2, 3, 4]")
   // AlternateContent OUTSIDE the MC namespace is an ordinary element
@@ -190,7 +190,7 @@ test "join alternate content edge shapes" {
       #|<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:AlternateContent><w:p/></w:AlternateContent></w:body></w:document>
     ),
   )
-  let ordinary_ids : Array[Int] = []
+  let ordinary_ids : Array[Int32] = []
   joined_preorder_ids(ordinary.root, ordinary_ids)
   debug_inspect(ordinary_ids, content="[0, 1, 2, 3]")
 }
@@ -270,7 +270,7 @@ test "join refuses structural disagreement instead of guessing" {
 ///|
 test "join generated documents and hold every invariant" {
   @quickcheck.check(
-    (seeds : Array[Int]) => {
+    (seeds : Array[Int32]) => {
       let source = hostile_document(seeds)
       match join_text_story(source) {
         Joined(story) => assert_join_invariants(story)
@@ -303,7 +303,7 @@ test "join selects the promoted fallback like the parser" {
   // outer Fallback=6, outer x=7. The inner AC cooks to [Fallback@4], which
   // becomes the outer construct's FIRST fallback; its child x@5 is the one
   // the DOM contains.
-  let ids : Array[Int] = []
+  let ids : Array[Int32] = []
   joined_preorder_ids(story.root, ids)
   debug_inspect(ids, content="[0, 5]")
   guard story.root.children[0].element.attributes.get("id") is Some("inner") else {
@@ -334,7 +334,7 @@ test "join accepts implicit xml prefixes and explicit empty namespaces" {
       #|<r xmlns=""><c/></r>
     ),
   )
-  let ids : Array[Int] = []
+  let ids : Array[Int32] = []
   joined_preorder_ids(empty_default.root, ids)
   debug_inspect(ids, content="[0, 1]")
 }

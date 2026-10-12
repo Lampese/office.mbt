@@ -11,16 +11,16 @@ pub type DocxPackageResult = @docx_impl.DocxPackageResult
 /// Converts DOCX bytes to HTML.
 pub fn convert_to_html(
   docx : BytesView,
-  style_map? : Array[String] = [],
-  include_default_style_map? : Bool = true,
-  include_embedded_style_map? : Bool = true,
-  ignore_empty_paragraphs? : Bool = true,
-  id_prefix? : String = "",
-  pretty_print? : Bool = false,
-  convert_image? : (Image) -> ImageConversion = @converter.data_uri_image_converter,
-  transform_document? : (DocumentElement) -> DocumentElement = @document.identity_document_transform,
-  external_file_access? : Bool = false,
-  read_external_file? : (String) -> Bytes? = no_external_file_reader,
+  style_map~ : Array[String] = [],
+  include_default_style_map~ : Bool = true,
+  include_embedded_style_map~ : Bool = true,
+  ignore_empty_paragraphs~ : Bool = true,
+  id_prefix~ : String = "",
+  pretty_print~ : Bool = false,
+  convert_image~ : (Image) -> ImageConversion = @converter.data_uri_image_converter,
+  transform_document~ : (DocumentElement) -> DocumentElement = @document.identity_document_transform,
+  external_file_access~ : Bool = false,
+  read_external_file~ : (String) -> Bytes? = no_external_file_reader,
 ) -> ConversionResult raise DocxError {
   bridge_core_error(() => {
     @docx_impl.convert_to_html(
@@ -43,15 +43,15 @@ pub fn convert_to_html(
 /// Converts DOCX bytes to Markdown.
 pub fn convert_to_markdown(
   docx : BytesView,
-  style_map? : Array[String] = [],
-  include_default_style_map? : Bool = true,
-  include_embedded_style_map? : Bool = true,
-  ignore_empty_paragraphs? : Bool = true,
-  id_prefix? : String = "",
-  convert_image? : (Image) -> ImageConversion = @converter.data_uri_image_converter,
-  transform_document? : (DocumentElement) -> DocumentElement = @document.identity_document_transform,
-  external_file_access? : Bool = false,
-  read_external_file? : (String) -> Bytes? = no_external_file_reader,
+  style_map~ : Array[String] = [],
+  include_default_style_map~ : Bool = true,
+  include_embedded_style_map~ : Bool = true,
+  ignore_empty_paragraphs~ : Bool = true,
+  id_prefix~ : String = "",
+  convert_image~ : (Image) -> ImageConversion = @converter.data_uri_image_converter,
+  transform_document~ : (DocumentElement) -> DocumentElement = @document.identity_document_transform,
+  external_file_access~ : Bool = false,
+  read_external_file~ : (String) -> Bytes? = no_external_file_reader,
 ) -> ConversionResult raise DocxError {
   bridge_core_error(() => {
     @docx_impl.convert_to_markdown(
@@ -73,17 +73,17 @@ pub fn convert_to_markdown(
 /// Converts DOCX bytes using the requested output format.
 pub fn convert(
   docx : BytesView,
-  output_format? : OutputFormat = Html,
-  style_map? : Array[String] = [],
-  include_default_style_map? : Bool = true,
-  include_embedded_style_map? : Bool = true,
-  ignore_empty_paragraphs? : Bool = true,
-  id_prefix? : String = "",
-  pretty_print? : Bool = false,
-  convert_image? : (Image) -> ImageConversion = @converter.data_uri_image_converter,
-  transform_document? : (DocumentElement) -> DocumentElement = @document.identity_document_transform,
-  external_file_access? : Bool = false,
-  read_external_file? : (String) -> Bytes? = no_external_file_reader,
+  output_format~ : OutputFormat = Html,
+  style_map~ : Array[String] = [],
+  include_default_style_map~ : Bool = true,
+  include_embedded_style_map~ : Bool = true,
+  ignore_empty_paragraphs~ : Bool = true,
+  id_prefix~ : String = "",
+  pretty_print~ : Bool = false,
+  convert_image~ : (Image) -> ImageConversion = @converter.data_uri_image_converter,
+  transform_document~ : (DocumentElement) -> DocumentElement = @document.identity_document_transform,
+  external_file_access~ : Bool = false,
+  read_external_file~ : (String) -> Bytes? = no_external_file_reader,
 ) -> ConversionResult raise DocxError {
   bridge_core_error(() => {
     @docx_impl.convert(
@@ -107,8 +107,8 @@ pub fn convert(
 /// Extracts raw text from DOCX bytes.
 pub fn extract_raw_text(
   docx : BytesView,
-  external_file_access? : Bool = false,
-  read_external_file? : (String) -> Bytes? = no_external_file_reader,
+  external_file_access~ : Bool = false,
+  read_external_file~ : (String) -> Bytes? = no_external_file_reader,
 ) -> ConversionResult raise DocxError {
   bridge_core_error(() => {
     @docx_impl.extract_raw_text(
@@ -129,8 +129,8 @@ pub fn read_embedded_style_map(docx : BytesView) -> String? raise DocxError {
 /// Reads DOCX bytes into a document tree.
 pub fn read_docx(
   docx : BytesView,
-  external_file_access? : Bool = false,
-  read_external_file? : (String) -> Bytes? = no_external_file_reader,
+  external_file_access~ : Bool = false,
+  read_external_file~ : (String) -> Bytes? = no_external_file_reader,
 ) -> DocumentElement raise DocxError {
   bridge_core_error(() => {
     @docx_impl.read_docx(docx, external_file_access~, read_external_file~)
@@ -141,8 +141,8 @@ pub fn read_docx(
 /// Reads DOCX bytes into a document tree and diagnostics.
 pub fn read_docx_with_messages(
   docx : BytesView,
-  external_file_access? : Bool = false,
-  read_external_file? : (String) -> Bytes? = no_external_file_reader,
+  external_file_access~ : Bool = false,
+  read_external_file~ : (String) -> Bytes? = no_external_file_reader,
 ) -> DocxReadResult raise DocxError {
   bridge_core_error(() => {
     @docx_impl.read_docx_with_messages(
@@ -179,8 +179,8 @@ pub fn comment_spec(
   author~ : String,
   initials? : String,
   date? : String,
-  from~ : Int,
-  to~ : Int,
+  from~ : Int32,
+  to~ : Int32,
   done? : Bool,
   body : Array[DocumentElement],
 ) -> @docx_impl.CommentSpec raise DocxError {
@@ -197,7 +197,7 @@ pub fn comment_reply(
   author~ : String,
   initials? : String,
   date? : String,
-  reply_to~ : Int,
+  reply_to~ : Int32,
   done? : Bool,
   body : Array[DocumentElement],
 ) -> @docx_impl.CommentSpec raise DocxError {
@@ -237,11 +237,11 @@ pub fn note_spec(
 /// `@docx.write_docx_with_annotations`.
 pub fn write_docx_with_annotations(
   body : Array[DocumentElement],
-  comments? : Array[@docx_impl.CommentSpec] = [],
-  footnotes? : Array[@docx_impl.NoteSpec] = [],
-  endnotes? : Array[@docx_impl.NoteSpec] = [],
-  headers? : Array[@docx_impl.HeaderFooterSpec] = [],
-  footers? : Array[@docx_impl.HeaderFooterSpec] = [],
+  comments~ : Array[@docx_impl.CommentSpec] = [],
+  footnotes~ : Array[@docx_impl.NoteSpec] = [],
+  endnotes~ : Array[@docx_impl.NoteSpec] = [],
+  headers~ : Array[@docx_impl.HeaderFooterSpec] = [],
+  footers~ : Array[@docx_impl.HeaderFooterSpec] = [],
 ) -> Bytes raise DocxError {
   bridge_core_error(() => {
     @docx_impl.write_docx_with_annotations(
@@ -274,8 +274,8 @@ pub fn header_footer_spec(
 /// header/footer stories. See `@docx.read_docx_package`.
 pub fn read_docx_package(
   docx : BytesView,
-  external_file_access? : Bool = false,
-  read_external_file? : (String) -> Bytes? = no_external_file_reader,
+  external_file_access~ : Bool = false,
+  read_external_file~ : (String) -> Bytes? = no_external_file_reader,
 ) -> DocxPackageResult raise DocxError {
   bridge_core_error(() => {
     @docx_impl.read_docx_package(
@@ -307,8 +307,8 @@ fn no_external_file_reader(_path : String) -> Bytes? {
 /// `read_docx_package`.
 pub fn read_docx_annotated(
   docx : BytesView,
-  external_file_access? : Bool = false,
-  read_external_file? : (String) -> Bytes? = no_external_file_reader,
+  external_file_access~ : Bool = false,
+  read_external_file~ : (String) -> Bytes? = no_external_file_reader,
 ) -> @docx_impl.DocxAnnotatedResult raise DocxError {
   bridge_core_error(() => {
     @docx_impl.read_docx_annotated(

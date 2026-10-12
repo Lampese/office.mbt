@@ -108,16 +108,16 @@ let max_relationship_records = 1_000_000
 let max_relationship_id_chars = 1024
 
 ///|
-let max_relationship_type_chars : Int = 16 * 1024
+let max_relationship_type_chars : Int32 = 16 * 1024
 
 ///|
-let max_relationship_target_chars : Int = 64 * 1024
+let max_relationship_target_chars : Int32 = 64 * 1024
 
 ///|
-let max_relationship_retained_chars : Int = 16 * 1024 * 1024
+let max_relationship_retained_chars : Int32 = 16 * 1024 * 1024
 
 ///|
-let max_relationship_mce_work_chars : Int = 16 * 1024 * 1024
+let max_relationship_mce_work_chars : Int32 = 16 * 1024 * 1024
 
 ///|
 fn collapse_schema_whitespace(value : StringView) -> String {
@@ -198,13 +198,13 @@ priv enum RelationshipTargetSelection {
 /// streaming XML scanner, so a long namespace URI is retained once rather than
 /// copied into every `ProcessContent` key.
 priv struct RelationshipMceName {
-  namespace_id : Int
+  namespace_id : Int32
   local_name : String
 }
 
 ///|
 priv struct RelationshipMceScopeDelta {
-  ignorable_namespace_ids : Array[Int]
+  ignorable_namespace_ids : Array[Int32]
   process_content_keys : Array[MceProcessKey]
   process_generation_resets : Array[MceProcessGenerationReset]
 }
@@ -220,9 +220,9 @@ priv struct RelationshipMceScopeEntry {
 /// This keeps scope entry O(number of new directives), without cloning every
 /// inherited set at each nested element.
 priv struct RelationshipMceContext {
-  ignorable_namespace_counts : Map[Int, Int]
+  ignorable_namespace_counts : Map[Int32, Int32]
   process_content : MceProcessTracker
-  mut work_chars : Int
+  mut work_chars : Int32
 }
 
 ///|
@@ -262,7 +262,7 @@ test "relationship MCE directive work is cumulative and bounded" {
 ///|
 fn RelationshipMceContext::add_ignorable(
   self : RelationshipMceContext,
-  namespace_id : Int,
+  namespace_id : Int32,
 ) -> Unit {
   self.ignorable_namespace_counts[namespace_id] = self.ignorable_namespace_counts.get_or_default(
       namespace_id, 0,
@@ -273,7 +273,7 @@ fn RelationshipMceContext::add_ignorable(
 ///|
 fn RelationshipMceContext::is_ignorable(
   self : RelationshipMceContext,
-  namespace_id : Int,
+  namespace_id : Int32,
 ) -> Bool {
   self.ignorable_namespace_counts.get_or_default(namespace_id, 0) > 0
 }
@@ -287,7 +287,7 @@ fn relationship_mce_namespace_is_understood(namespace_uri : StringView) -> Bool 
 ///|
 fn RelationshipMceContext::is_effectively_ignorable(
   self : RelationshipMceContext,
-  namespace_id : Int,
+  namespace_id : Int32,
   namespace_uri : StringView,
 ) -> Bool {
   self.is_ignorable(namespace_id) &&
@@ -334,8 +334,8 @@ fn RelationshipMceContext::leave_scope(
 priv struct RelationshipMceState {
   active : Bool
   included_in_effective_tree : Bool
-  element_effective_depth : Int
-  children_effective_parent_depth : Int
+  element_effective_depth : Int32
+  children_effective_parent_depth : Int32
   scope_delta : RelationshipMceScopeDelta?
   is_alternate_content : Bool
   mut alternate_choice_seen : Bool
@@ -347,7 +347,7 @@ priv struct RelationshipMceState {
 fn relationship_mce_tokens(
   value : StringView,
   label : StringView,
-  allow_empty? : Bool = true,
+  allow_empty~ : Bool = true,
 ) -> Array[String] raise ParseXmlError {
   let normalized = collapse_schema_whitespace(value)
   if normalized == "" {
@@ -374,7 +374,7 @@ fn relationship_mce_resolve_prefix(
   scanner : XmlStartTagScanner,
   prefix : StringView,
   label : StringView,
-) -> (String, Int) raise ParseXmlError {
+) -> (String, Int32) raise ParseXmlError {
   if !is_xml_ncname(prefix) {
     raise InvalidXml(msg="MCE \{label.to_owned()} prefix is invalid")
   }
@@ -414,7 +414,7 @@ fn relationship_mce_enter_scope(
   match ignorable_attribute {
     Some(value) => {
       context.charge(value)
-      let reset_namespaces : Set[Int] = Set([])
+      let reset_namespaces : Set[Int32] = Set([])
       for prefix in relationship_mce_tokens(value, "Ignorable") {
         let (namespace_uri, namespace_id) = relationship_mce_resolve_prefix(
           scanner, prefix, "Ignorable",
@@ -622,7 +622,7 @@ fn relationship_mce_choice_supported(
 ///|
 fn trim_relationship_mce_states(
   states : Array[RelationshipMceState],
-  next_depth : Int,
+  next_depth : Int32,
   context : RelationshipMceContext,
 ) -> Unit raise ParseXmlError {
   while states.length() >= next_depth {
@@ -803,7 +803,7 @@ fn parse_relationship_targets_by_types_selected(
   xml : StringView,
   rel_types : ArrayView[String],
   selection : RelationshipTargetSelection,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Map[String, String] raise ParseXmlError {
   let targets : Map[String, String] = Map([])
   let ids : Set[String] = Set([])
@@ -900,7 +900,7 @@ fn parse_relationship_targets_by_types_selected(
 /// checks used by the type-selecting readers apply here.
 pub fn parse_package_relationships(
   xml : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Array[PackageRelationship] raise ParseXmlError {
   let relationships : Array[PackageRelationship] = []
   let ids : Set[String] = Set([])
@@ -979,7 +979,7 @@ pub fn parse_package_relationships(
 pub fn parse_internal_relationship_targets_by_types(
   xml : StringView,
   rel_types : ArrayView[String],
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Map[String, String] raise ParseXmlError {
   parse_relationship_targets_by_types_selected(
     xml,
@@ -994,7 +994,7 @@ pub fn parse_internal_relationship_targets_by_types(
 pub fn parse_internal_relationship_targets(
   xml : StringView,
   rel_type : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Map[String, String] raise ParseXmlError {
   parse_internal_relationship_targets_by_types(
     xml,
@@ -1009,7 +1009,7 @@ pub fn parse_internal_relationship_targets(
 pub fn parse_external_relationship_targets_by_types(
   xml : StringView,
   rel_types : ArrayView[String],
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Map[String, String] raise ParseXmlError {
   parse_relationship_targets_by_types_selected(
     xml,
@@ -1025,7 +1025,7 @@ pub fn parse_external_relationship_targets_by_types(
 pub fn parse_external_relationship_targets(
   xml : StringView,
   rel_type : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Map[String, String] raise ParseXmlError {
   parse_external_relationship_targets_by_types(
     xml,
@@ -1046,10 +1046,10 @@ pub struct PackageContentTypes {
 let max_content_type_records = 1_000_000
 
 ///|
-let max_content_type_attribute_chars : Int = 16 * 1024
+let max_content_type_attribute_chars : Int32 = 16 * 1024
 
 ///|
-let max_content_type_retained_chars : Int = 16 * 1024 * 1024
+let max_content_type_retained_chars : Int32 = 16 * 1024 * 1024
 
 ///|
 fn content_type_token_character(character : UInt16) -> Bool {
@@ -1077,8 +1077,8 @@ fn content_type_token_character(character : UInt16) -> Bool {
 ///|
 fn content_type_skip_optional_whitespace(
   value : StringView,
-  start : Int,
-) -> Int {
+  start : Int32,
+) -> Int32 {
   let mut index = start
   while index < value.length() &&
         (value[index] == (' ' : UInt16) || value[index] == ('\t' : UInt16)) {
@@ -1283,7 +1283,7 @@ pub fn package_part_name_key(name : StringView) -> String {
 /// units.
 pub fn package_part_name_key_cancellable(
   name : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String raise ParseXmlError {
   if cancelled() {
     raise ReadCancelled
@@ -1305,7 +1305,7 @@ pub fn package_part_name_key_cancellable(
 /// can perform multiple role checks without rescanning the XML document.
 pub fn parse_package_content_types(
   xml : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> PackageContentTypes raise ParseXmlError {
   let overrides : Map[String, String] = Map([])
   let override_part_names : Map[String, String] = Map([])
@@ -1431,7 +1431,7 @@ pub fn parse_package_content_types(
 pub fn PackageContentTypes::content_type_for(
   self : PackageContentTypes,
   part_name : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String? raise ParseXmlError {
   let normalized = if part_name.has_prefix("/") {
     part_name.to_owned()
@@ -1462,7 +1462,7 @@ pub fn PackageContentTypes::content_type_for(
 pub fn find_override_part_by_content_types(
   xml : StringView,
   content_types : ArrayView[String],
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String? raise ParseXmlError {
   let content_types_value = parse_package_content_types(xml, cancelled~)
   for wanted in content_types {
@@ -1482,7 +1482,7 @@ pub fn find_override_part_by_content_types(
 pub fn find_part_content_type(
   xml : StringView,
   part_name : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String? raise ParseXmlError {
   parse_package_content_types(xml, cancelled~).content_type_for(
     part_name,

@@ -2,20 +2,20 @@
 // `src/cff/argstack.rs` (the `DictionaryParser` was taken from ttf-parser).
 
 ///|
-const TWO_BYTE_OPERATOR_MARK : Int = 12
+const TWO_BYTE_OPERATOR_MARK : Int32 = 12
 
 ///|
 /// An operator: one byte, or `12` followed by a second byte (encoded as
 /// `12 << 8 | b`).
-priv struct Operator(Int) derive(Eq)
+priv struct Operator(Int32) derive(Eq)
 
 ///|
-fn Operator::from_one_byte(b : Int) -> Operator {
+fn Operator::from_one_byte(b : Int32) -> Operator {
   Operator(b)
 }
 
 ///|
-fn Operator::from_two_byte(b : Int) -> Operator {
+fn Operator::from_two_byte(b : Int32) -> Operator {
   Operator((TWO_BYTE_OPERATOR_MARK << 8) | b)
 }
 
@@ -79,13 +79,13 @@ let op_font_name : Operator = Operator::from_two_byte(38)
 let op_subrs : Operator = Operator::from_one_byte(19)
 
 ///|
-const MAX_OPERANDS_LEN : Int = 48
+const MAX_OPERANDS_LEN : Int32 = 48
 
 ///|
 priv struct DictionaryParser {
   data : BytesView
-  mut offset : Int
-  mut operands_offset : Int
+  mut offset : Int32
+  mut operands_offset : Int32
   operands : Array[Number]
 }
 
@@ -139,7 +139,7 @@ fn DictionaryParser::parse_operands(self : DictionaryParser) -> Unit? {
 }
 
 ///|
-fn DictionaryParser::parse_sid(self : DictionaryParser) -> Int? {
+fn DictionaryParser::parse_sid(self : DictionaryParser) -> Int32? {
   guard self.parse_operands() is Some(_) else { return None }
   let operands = self.operands
   if operands.length() == 1 {
@@ -155,7 +155,7 @@ fn DictionaryParser::parse_sid(self : DictionaryParser) -> Int? {
 }
 
 ///|
-fn DictionaryParser::parse_offset(self : DictionaryParser) -> Int? {
+fn DictionaryParser::parse_offset(self : DictionaryParser) -> Int32? {
   guard self.parse_operands() is Some(_) else { return None }
   let operands = self.operands
   if operands.length() == 1 {
@@ -189,7 +189,7 @@ fn DictionaryParser::parse_font_matrix(
 
 ///|
 /// A `(start, end)` range.
-fn DictionaryParser::parse_range(self : DictionaryParser) -> (Int, Int)? {
+fn DictionaryParser::parse_range(self : DictionaryParser) -> (Int32, Int32)? {
   guard self.parse_operands() is Some(_) else { return None }
   let operands = self.operands
   if operands.length() == 2 {
@@ -204,12 +204,12 @@ fn DictionaryParser::parse_range(self : DictionaryParser) -> (Int, Int)? {
 }
 
 ///|
-fn is_dict_one_byte_op(b : Int) -> Bool {
+fn is_dict_one_byte_op(b : Int32) -> Bool {
   match b {
-    0..=27 => true
-    28..=30 => false // numbers
+    0..<=27 => true
+    28..<=30 => false // numbers
     31 => true // Reserved
-    32..=254 => false // numbers
+    32..<=254 => false // numbers
     _ => true // Reserved
   }
 }
@@ -234,7 +234,7 @@ fn ArgumentsStack::new() -> ArgumentsStack {
 }
 
 ///|
-fn ArgumentsStack::len(self : ArgumentsStack) -> Int {
+fn ArgumentsStack::len(self : ArgumentsStack) -> Int32 {
   self.data.length()
 }
 
@@ -255,7 +255,7 @@ fn ArgumentsStack::pop(self : ArgumentsStack) -> Number? {
 }
 
 ///|
-fn ArgumentsStack::pop_all(self : ArgumentsStack) -> Int {
+fn ArgumentsStack::pop_all(self : ArgumentsStack) -> Int32 {
   let n = self.data.length()
   self.data.clear()
   n

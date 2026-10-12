@@ -72,8 +72,8 @@ async fn pdflite_cmd_extract_file(
   spec : String,
   retain_numbering : Bool,
   process_struct_tree : Bool,
-  passwords? : PdflitePasswords = { user: None, owner: None, },
-) -> Int {
+  passwords~ : PdflitePasswords = { user: None, owner: None, },
+) -> Int32 {
   let document = match pdflite_cmd_read_document(input_path, passwords~) {
     Ok(document) => document
     Err(message) => {

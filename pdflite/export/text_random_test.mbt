@@ -8,12 +8,12 @@
 ///|
 /// A linear congruential generator: the same numbers on every target.
 priv struct Lcg {
-  mut state : UInt
+  mut state : UInt32
 }
 
 ///|
 /// A number in `0..n`.
-fn Lcg::below(self : Lcg, n : Int) -> Int {
+fn Lcg::below(self : Lcg, n : Int32) -> Int32 {
   self.state = self.state * 1664525U + 1013904223U
   ((self.state >> 8) % n.reinterpret_as_uint()).reinterpret_as_int()
 }
@@ -39,7 +39,7 @@ fn fnv1a(bytes : Bytes) -> String {
 ///|
 /// A run of 1 to 12 glyphs of the test font for a text of `len` code
 /// units.
-fn random_run(rng : Lcg, len : Int) -> Array[@export.Glyph] {
+fn random_run(rng : Lcg, len : Int32) -> Array[@export.Glyph] {
   let advances : ReadOnlyArray[Double] = [0.5, 0.6, 0.55, 0.6, 0.25, 0.7]
   let count = 1 + rng.below(12)
   // How the clusters go: forwards, backwards, in pairs, or anywhere, also
@@ -91,7 +91,7 @@ fn random_run(rng : Lcg, len : Int) -> Array[@export.Glyph] {
 
 ///|
 /// A color glyph hook for the glyphs `a` and `b`.
-fn color_hook(a : Int, b : Int) -> @export.ColorGlyphs {
+fn color_hook(a : Int32, b : Int32) -> @export.ColorGlyphs {
   {
     is_color: g => g == a || g == b,
     draw: (g, _, s) => {
@@ -107,8 +107,8 @@ fn color_hook(a : Int, b : Int) -> @export.ColorGlyphs {
 /// from the twentieth run on, 3 a hook from the start that is replaced
 /// after 15 runs and again, by one without color glyphs, after 30.
 fn random_document(
-  seed : UInt,
-  hooks : Int,
+  seed : UInt32,
+  hooks : Int32,
   settings : @export.SerializeSettings,
 ) -> Bytes raise {
   let rng = Lcg::{ state: seed, }

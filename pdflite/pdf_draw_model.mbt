@@ -19,16 +19,16 @@ pub(all) struct PdfDrawExtGStateResource {
 pub(all) struct PdfDrawXObjectResource {
   source_name : String
   resource_name : @core.PdfName
-  object_number : Int
+  object_number : Int32
 } derive(Debug, Eq, ToJson)
 
 ///|
 /// Font resource tracked while rendering draw operations.
 pub(all) struct PdfDrawFontResource {
   identifier : String
-  font_index : Int
+  font_index : Int32
   resource_name : @core.PdfName
-  object_number : Int
+  object_number : Int32
 } derive(Debug, Eq, ToJson)
 
 ///|
@@ -41,7 +41,7 @@ pub(all) struct PdfDrawFontPackState {
 ///|
 /// Tagged-PDF structure-tree event emitted while rendering draw operations.
 pub(all) enum PdfDrawStructureData {
-  PdfDrawStructureMCID(String, Int, Int)
+  PdfDrawStructureMCID(String, Int32, Int32)
   PdfDrawStructureBeginTree(String)
   PdfDrawStructureEndTree
   PdfDrawStructureNamespace(String)
@@ -63,8 +63,8 @@ pub(all) struct PdfDrawSpecialTextContext {
 /// `cpdfdraw.ml`'s `res`/`fresh_name`/`extgstate` helpers. Later rendering
 /// slices will extend this state with tagged-content resources.
 pub(all) struct PdfDrawRenderState {
-  mut resource_number : Int
-  mut marked_content_id : Int
+  mut resource_number : Int32
+  mut marked_content_id : Int32
   extgstates : Array[PdfDrawExtGStateResource]
   xobjects : Array[PdfDrawXObjectResource]
   form_xobjects : Array[PdfDrawXObjectResource]
@@ -75,7 +75,7 @@ pub(all) struct PdfDrawRenderState {
   mut font_size : Double
   mut structure_tree_enabled : Bool
   mut auto_tag : Bool
-  mut structure_page_number : Int
+  mut structure_page_number : Int32
   structure_data : Array[PdfDrawStructureData]
   page_names : Array[@core.PdfName]
 } derive(Debug, Eq, ToJson)
@@ -115,11 +115,11 @@ pub fn pdf_draw_special_text_context(
 /// Build cpdf draw special-text context for one page of a document.
 pub fn PdfDocument::draw_special_text_context(
   self : PdfDocument,
-  page_number : Int,
-  filename? : String = "",
-  bates? : Int = 1,
-  bates_pad? : Int? = None,
-  time? : @date.PdfStrftimeTime? = None,
+  page_number : Int32,
+  filename~ : String = "",
+  bates~ : Int32 = 1,
+  bates_pad~ : Int32? = None,
+  time~ : @date.PdfStrftimeTime? = None,
 ) -> PdfDrawSpecialTextContext raise @core.PdfError {
   let resolved_time = match time {
     Some(value) => value
@@ -141,11 +141,11 @@ pub fn PdfDocument::draw_special_text_context(
 /// Compatibility wrapper for `PdfDocument::draw_special_text_context`.
 pub fn pdf_draw_special_text_context_for_document(
   document : PdfDocument,
-  page_number : Int,
-  filename? : String = "",
-  bates? : Int = 1,
-  bates_pad? : Int? = None,
-  time? : @date.PdfStrftimeTime? = None,
+  page_number : Int32,
+  filename~ : String = "",
+  bates~ : Int32 = 1,
+  bates_pad~ : Int32? = None,
+  time~ : @date.PdfStrftimeTime? = None,
 ) -> PdfDrawSpecialTextContext raise @core.PdfError {
   document.draw_special_text_context(
     page_number,

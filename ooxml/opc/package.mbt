@@ -20,7 +20,7 @@
 pub struct Package {
   priv parts : Array[Part]
   priv mut content_types : ContentTypes
-  priv index : Map[String, Int]
+  priv index : Map[String, Int32]
 }
 
 // `index` maps a part name to its position in `parts`, so `part_by_name`
@@ -89,8 +89,8 @@ pub fn Package::new() -> Package {
 ///|
 /// Build the name → position map `Package.index` keeps. On a duplicate
 /// name the first position wins, matching the old linear scan.
-fn build_part_index(parts : Array[Part]) -> Map[String, Int] {
-  let index : Map[String, Int] = Map([])
+fn build_part_index(parts : Array[Part]) -> Map[String, Int32] {
+  let index : Map[String, Int32] = Map([])
   for i, p in parts {
     if index.get(p.name) is None {
       index[p.name] = i

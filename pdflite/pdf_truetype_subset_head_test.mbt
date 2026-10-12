@@ -3,11 +3,11 @@
 /// y_max)`: a one-contour simple glyph, or a composite one (`-1` contours)
 /// with the given `(flags, glyph_index, extra_bytes)` components.
 fn truetype_boxed_glyph_for_test(
-  box : (Int, Int, Int, Int),
-  components? : ArrayView[(Int, Int, Int)] = [],
-) -> Array[Int] {
+  box : (Int32, Int32, Int32, Int32),
+  components~ : ArrayView[(Int32, Int32, Int32)] = [],
+) -> Array[Int32] {
   let (x_min, y_min, x_max, y_max) = box
-  let output : Array[Int] = []
+  let output : Array[Int32] = []
   truetype_push_i16_for_test(output, if components.is_empty() { 1 } else { -1 })
   truetype_push_i16_for_test(output, x_min)
   truetype_push_i16_for_test(output, y_min)
@@ -63,9 +63,11 @@ fn truetype_head_bbox_font_for_test(notdef_outline~ : Bool) -> @core.PdfBytes {
 
 ///|
 /// The `head` bounding box of a font, `(xMin, yMin, xMax, yMax)`.
-fn truetype_head_bbox_for_test(font : BytesView) -> (Int, Int, Int, Int) {
+fn truetype_head_bbox_for_test(
+  font : BytesView,
+) -> (Int32, Int32, Int32, Int32) {
   let head = @pdflite.pdf_truetype_table(font, "head").unwrap().offset
-  let i16 = (at : Int) => {
+  let i16 = (at : Int32) => {
     let value = (font[at].to_int() << 8) | font[at + 1].to_int()
     if value >= 0x8000 {
       value - 0x10000
@@ -81,9 +83,9 @@ fn truetype_head_bbox_for_test(font : BytesView) -> (Int, Int, Int, Int) {
 /// whole 32-bit words.
 fn truetype_checksum_for_test(
   font : BytesView,
-  offset : Int,
-  length : Int,
-) -> UInt {
+  offset : Int32,
+  length : Int32,
+) -> UInt32 {
   let mut sum = 0U
   for word = offset; word < offset + length; word = word + 4 {
     let mut value = 0U
@@ -175,7 +177,7 @@ test "recompute_head writes an all-zero box when no kept glyph has an outline" {
 test "recompute_head counts the stored box of a glyph with no contours" {
   // TTFunk 1.7.0 parity, unlike OpenType: only an empty loca range is
   // skipped, so a glyph with data but numberOfContours == 0 still counts
-  let contourless : Array[Int] = []
+  let contourless : Array[Int32] = []
   for value in [0, 10, 20, 30, 40] {
     truetype_push_i16_for_test(contourless, value)
   }
@@ -222,14 +224,14 @@ test "recompute_head writes valid checksums and only changes the head" {
     plain_tables.map(record => (record.tag, record.offset, record.length)),
   )
   let head = @pdflite.pdf_truetype_table(subset, "head").unwrap()
-  let differing : Array[Int] = []
+  let differing : Array[Int32] = []
   for at in (12 + tables.length() * 16)..<subset.length() {
     if subset[at] != plain[at] {
       differing.push(at - head.offset)
     }
   }
   // checkSumAdjustment and the box
-  @test.assert_eq(differing.filter(at => !(at is (8..=11 | 36..=43))), [])
+  @test.assert_eq(differing.filter(at => !(at is (8..<=11 | 36..<=43))), [])
   @test.assert_eq(truetype_head_bbox_for_test(subset), (-30, -250, 600, 800))
   // the subset still maps and lays out its characters
   @test.assert_eq(@pdflite.pdf_truetype_cmap_glyph(subset, 66), Some(2))
@@ -240,8 +242,8 @@ test "recompute_head writes valid checksums and only changes the head" {
 /// fields of a font's 12-byte table directory header.
 fn truetype_directory_header_for_test(
   font : BytesView,
-) -> (UInt, Int, Int, Int, Int) {
-  let u16 = (at : Int) => (font[at].to_int() << 8) | font[at + 1].to_int()
+) -> (UInt32, Int32, Int32, Int32, Int32) {
+  let u16 = (at : Int32) => (font[at].to_int() << 8) | font[at + 1].to_int()
   let version = (u16(0).reinterpret_as_uint() << 16) |
     u16(2).reinterpret_as_uint()
   (version, u16(4), u16(6), u16(8), u16(10))

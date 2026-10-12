@@ -16,7 +16,7 @@ pub(all) struct HeaderFooterPart {
 /// several sections may reference the same part).
 pub(all) struct SectionRef {
   variant : String
-  part : Int
+  part : Int32
 } derive(Debug, Eq)
 
 ///|
@@ -32,7 +32,7 @@ pub(all) struct SectionRef {
 /// variant. Ordering is deterministic: explicit references in XML order,
 /// then inherited entries in the previous section's effective order.
 pub(all) struct DocumentSection {
-  ends_after_paragraph : Int?
+  ends_after_paragraph : Int32?
   headers : Array[SectionRef]
   footers : Array[SectionRef]
 } derive(Debug, Eq)

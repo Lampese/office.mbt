@@ -33,7 +33,7 @@ pub const SCHEMA_BATCH_V2 : String = "docx.batch/2"
 
 ///|
 /// Maximum number of operations in one DOCX authoring script.
-pub const MAX_BATCH_OPS : Int = 10000
+pub const MAX_BATCH_OPS : Int32 = 10000
 
 ///|
 /// Bounds mirroring the writer's fail-closed guards, enforced here too so
@@ -41,11 +41,11 @@ pub const MAX_BATCH_OPS : Int = 10000
 /// whole-document writer error: Word's font-size cap (write_document.mbt)
 /// and Word's 63-column table limit (write_tables.mbt). Row spans are
 /// bounded by the table's remaining rows, exactly like the writer.
-pub const MAX_FONT_SIZE_POINTS : Int = 1638
+pub const MAX_FONT_SIZE_POINTS : Int32 = 1638
 
 ///|
 /// Maximum grid-column count accepted by the DOCX table writer.
-pub const MAX_GRID_COLUMNS : Int = 63
+pub const MAX_GRID_COLUMNS : Int32 = 63
 
 ///|
 /// The operation discriminator vocabulary accepted by this build. The Office
@@ -183,7 +183,7 @@ priv enum InlineSpec {
   )
   // A run holding one footnote/endnote reference; index is the dense
   // per-kind note index the writer consumes.
-  NoteRefSpec(note_type~ : String, index~ : Int)
+  NoteRefSpec(note_type~ : String, index~ : Int32)
   // A WML field (`PAGE`, `NUMPAGES`) — a run SEQUENCE once serialized.
   FieldSpec(instruction~ : String)
 }
@@ -200,8 +200,8 @@ priv struct NoteCollector {
 ///|
 priv struct CellSpec {
   paragraphs : Array[ParagraphSpec]
-  col_span : Int
-  row_span : Int
+  col_span : Int32
+  row_span : Int32
 }
 
 ///|
@@ -215,7 +215,7 @@ priv struct ParagraphSpec {
 ///|
 priv enum OpSpec {
   ParagraphOp(ParagraphSpec)
-  TableOp(rows~ : Array[Array[CellSpec]], header_rows~ : Int)
+  TableOp(rows~ : Array[Array[CellSpec]], header_rows~ : Int32)
 }
 
 ///|
@@ -223,11 +223,11 @@ priv enum OpSpec {
 /// anchors can be checked against the kind of the op they reference and
 /// mapped to the body BLOCK index it produced.
 priv enum ParsedOpKind {
-  ParagraphAt(Int)
+  ParagraphAt(Int32)
   Table
   // Carries the comment's dense id (its index among comment ops), the
   // id replies thread to.
-  Comment(Int)
+  Comment(Int32)
   // A header/footer op: produces no body block and cannot be commented on.
   Story
 }
@@ -245,8 +245,8 @@ priv struct StoryOp {
 /// One parsed `comment` op: metadata verbatim, anchors already mapped
 /// from op indexes to body block indexes, body as paragraph specs.
 priv enum CommentAnchor {
-  AnchorBlocks(from~ : Int, to~ : Int)
-  ReplyToComment(Int)
+  AnchorBlocks(from~ : Int32, to~ : Int32)
+  ReplyToComment(Int32)
 }
 
 ///|
@@ -270,10 +270,10 @@ pub struct BatchScript {
   priv footers : Array[StoryOp]
   priv footnotes : Array[(String, Array[ParagraphSpec])]
   priv endnotes : Array[(String, Array[ParagraphSpec])]
-  priv total_ops : Int
+  priv total_ops : Int32
   // The script op index behind each body BLOCK (comment ops produce no
   // blocks, so block index i came from ops[block_ops[i]]).
-  priv block_ops : Array[Int]
+  priv block_ops : Array[Int32]
 }
 
 ///|
@@ -285,13 +285,13 @@ pub fn BatchScript::image_paths(self : BatchScript) -> Array[String] {
 
 ///|
 /// Number of ops in the script, comment ops included.
-pub fn BatchScript::op_count(self : BatchScript) -> Int {
+pub fn BatchScript::op_count(self : BatchScript) -> Int32 {
   self.total_ops
 }
 
 ///|
 /// Number of `comment` ops in the script.
-pub fn BatchScript::comment_count(self : BatchScript) -> Int {
+pub fn BatchScript::comment_count(self : BatchScript) -> Int32 {
   self.comments.length()
 }
 
@@ -301,7 +301,7 @@ pub fn BatchScript::comment_count(self : BatchScript) -> Int {
 /// Comment ops produce no blocks, so this is NOT the identity once a
 /// script holds comments — writer failures on dynamic content must be
 /// attributed through this mapping.
-pub fn BatchScript::block_op(self : BatchScript, block : Int) -> Int? {
+pub fn BatchScript::block_op(self : BatchScript, block : Int32) -> Int32? {
   self.block_ops.get(block)
 }
 
@@ -432,7 +432,7 @@ pub fn parse_batch(script : Json) -> BatchScript raise BatchError {
   let comments : Array[CommentOp] = []
   let headers : Array[StoryOp] = []
   let footers : Array[StoryOp] = []
-  let block_ops : Array[Int] = []
+  let block_ops : Array[Int32] = []
   // Notes only exist in /2; a None collector makes every note key an
   // addressed schema error under /1.
   let notes : NoteCollector? = if schema == SCHEMA_BATCH_V2 {
@@ -584,7 +584,7 @@ fn parse_story(
 /// because the comments part gets no relationships.
 fn parse_comment(
   params : Map[String, Json],
-  op_index : Int,
+  op_index : Int32,
   at : String,
   kinds : Array[ParsedOpKind],
   image_paths : Array[String],
@@ -615,7 +615,10 @@ fn parse_comment(
   // The date is validated LEXICALLY by the writer (xsd:dateTime and
   // emitted verbatim); here it only has to be a string.
   let date = optional_string(params, "date", at_params)
-  fn endpoint(value : Json, where_ : String) -> (Int, Int) raise BatchError {
+  fn endpoint(
+    value : Json,
+    where_ : String,
+  ) -> (Int32, Int32) raise BatchError {
     guard value is Number(number, ..) else {
       raise BatchError("\{where_} must be an op index (an integer)")
     }
@@ -751,8 +754,8 @@ fn parse_comment_body(
   at_params : String,
   image_paths : Array[String],
   seen_paths : StableStringSet,
-  policy? : ContentPolicy = PlainContent,
-  what? : String = "the comment body",
+  policy~ : ContentPolicy = PlainContent,
+  what~ : String = "the comment body",
 ) -> Array[ParagraphSpec] raise BatchError {
   let body : Array[ParagraphSpec] = []
   match (params.get("text"), params.get("paragraphs")) {
@@ -820,8 +823,8 @@ fn parse_paragraph(
   at : String,
   image_paths : Array[String],
   seen_paths : StableStringSet,
-  policy? : ContentPolicy = BodyContent,
-  notes? : NoteCollector? = None,
+  policy~ : ContentPolicy = BodyContent,
+  notes~ : NoteCollector? = None,
 ) -> ParagraphSpec raise BatchError {
   // `at` is the address of the paragraph object itself ("ops[3].params",
   // "ops[3].params.rows[0][1].paragraphs[2]") so every message below
@@ -919,8 +922,8 @@ fn parse_inline(
   image_paths : Array[String],
   seen_paths : StableStringSet,
   allow_links~ : Bool,
-  policy? : ContentPolicy = BodyContent,
-  notes? : NoteCollector? = None,
+  policy~ : ContentPolicy = BodyContent,
+  notes~ : NoteCollector? = None,
 ) -> InlineSpec raise BatchError {
   guard json is Object(spec) else {
     raise BatchError("\{at} must be an object")
@@ -1181,7 +1184,7 @@ fn parse_table(
   at : String,
   image_paths : Array[String],
   seen_paths : StableStringSet,
-  notes? : NoteCollector? = None,
+  notes~ : NoteCollector? = None,
 ) -> OpSpec raise BatchError {
   check_keys(params, ["rows", "header_rows"], at + ".params")
   guard params.get("rows") is Some(Array(rows_json)) else {
@@ -1311,10 +1314,10 @@ fn int_value(
   object : Map[String, Json],
   key : String,
   at : String,
-  min~ : Int,
-  max~ : Int,
-  default~ : Int,
-) -> Int raise BatchError {
+  min~ : Int32,
+  max~ : Int32,
+  default~ : Int32,
+) -> Int32 raise BatchError {
   match object.get(key) {
     Some(Number(value, ..)) => {
       let as_int = value.to_int()
@@ -1392,7 +1395,7 @@ priv struct ScanFrame {
   // Last decoded key of this object (addresses child containers/values).
   mut pending_key : String
   // Element index for array frames (addresses child containers).
-  mut index : Int
+  mut index : Int32
   // How this frame is addressed from its parent: a key, "[i]", or "" (root).
   entry : String
 }
@@ -1430,7 +1433,7 @@ fn render_scan_path(frames : Array[ScanFrame], leaf : String?) -> String {
 ///|
 /// Renders a UTF-16 code unit as a readable \uXXXX escape (for lone
 /// surrogates in diagnostics).
-fn render_unit_escape(code : Int) -> String {
+fn render_unit_escape(code : Int32) -> String {
   let digits = "0123456789ABCDEF"
   let builder = StringBuilder()
   builder.write_string("\\u")
@@ -1456,12 +1459,12 @@ fn render_unit_escape(code : Int) -> String {
 /// error to report).
 fn lex_json_string(
   units : ArrayView[UInt16],
-  start : Int,
-) -> (String, String, Int?) {
-  let decoded : Array[Int] = []
+  start : Int32,
+) -> (String, String, Int32?) {
+  let decoded : Array[Int32] = []
   let length = units.length()
   let mut cursor = start
-  fn hex4(at : Int) -> Int? {
+  fn hex4(at : Int32) -> Int32? {
     if at + 4 > length {
       return None
     }
@@ -1469,16 +1472,16 @@ fn lex_json_string(
     for offset in 0..<4 {
       let c = units[at + offset].to_int()
       let digit = match c {
-        '0'..='9' => c - '0'.to_int()
-        'a'..='f' => c - 'a'.to_int() + 10
-        'A'..='F' => c - 'A'.to_int() + 10
+        '0'..<='9' => c - '0'.to_int()
+        'a'..<='f' => c - 'a'.to_int() + 10
+        'A'..<='F' => c - 'A'.to_int() + 10
         _ => return None
       }
       value = value * 16 + digit
     }
     Some(value)
   }
-  let mut closed_after : Int? = None
+  let mut closed_after : Int32? = None
   while cursor < length {
     let unit = units[cursor].to_int()
     if unit == '"'.to_int() {
@@ -1649,7 +1652,7 @@ pub fn check_script_text(text : String) -> Unit raise BatchError {
           None => return
         }
       }
-      '-' | '0'..='9' => {
+      '-' | '0'..<='9' => {
         let start = index
         let mut cursor = index
         let mut plain_integer = true
@@ -1659,7 +1662,7 @@ pub fn check_script_text(text : String) -> Unit raise BatchError {
               plain_integer = false
               cursor += 1
             }
-            '-' | '+' | '0'..='9' => cursor += 1
+            '-' | '+' | '0'..<='9' => cursor += 1
             _ => break
           }
         }
@@ -1795,7 +1798,7 @@ pub fn BatchComment::date(self : BatchComment) -> String? {
 ///|
 /// First anchored body block (0-based block index, not op index), or
 /// None for a reply (replies are anchorless).
-pub fn BatchComment::from_block(self : BatchComment) -> Int? {
+pub fn BatchComment::from_block(self : BatchComment) -> Int32? {
   match self.anchor {
     AnchorBlocks(from~, ..) => Some(from)
     ReplyToComment(_) => None
@@ -1804,7 +1807,7 @@ pub fn BatchComment::from_block(self : BatchComment) -> Int? {
 
 ///|
 /// Last anchored body block (inclusive), or None for a reply.
-pub fn BatchComment::to_block(self : BatchComment) -> Int? {
+pub fn BatchComment::to_block(self : BatchComment) -> Int32? {
   match self.anchor {
     AnchorBlocks(to~, ..) => Some(to)
     ReplyToComment(_) => None
@@ -1814,7 +1817,7 @@ pub fn BatchComment::to_block(self : BatchComment) -> Int? {
 ///|
 /// The dense comment index (= writer id) this reply answers, or None
 /// for an anchored comment.
-pub fn BatchComment::reply_to(self : BatchComment) -> Int? {
+pub fn BatchComment::reply_to(self : BatchComment) -> Int32? {
   match self.anchor {
     ReplyToComment(parent) => Some(parent)
     AnchorBlocks(..) => None
@@ -1856,7 +1859,7 @@ pub fn BatchNote::body(self : BatchNote) -> Array[@document.DocumentElement] {
 
 ///|
 /// Number of footnotes and endnotes in the script.
-pub fn BatchScript::note_counts(self : BatchScript) -> (Int, Int) {
+pub fn BatchScript::note_counts(self : BatchScript) -> (Int32, Int32) {
   (self.footnotes.length(), self.endnotes.length())
 }
 
@@ -2001,7 +2004,7 @@ pub fn BatchStory::body(self : BatchStory) -> Array[@document.DocumentElement] {
 
 ///|
 /// Number of `header` and `footer` ops in the script.
-pub fn BatchScript::story_counts(self : BatchScript) -> (Int, Int) {
+pub fn BatchScript::story_counts(self : BatchScript) -> (Int32, Int32) {
   (self.headers.length(), self.footers.length())
 }
 

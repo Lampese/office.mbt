@@ -7,9 +7,9 @@ priv struct ReaderDiagnosticCollector {
   messages : Array[Message]
   warning_texts : StableStringSet
   error_texts : StableStringSet
-  max_messages : Int
-  max_chars : Int
-  mut received_count : Int
+  max_messages : Int32
+  max_chars : Int32
+  mut received_count : Int32
   mut truncated : Bool
 }
 
@@ -21,8 +21,8 @@ priv enum ReaderDiagnosticSeverity {
 
 ///|
 fn ReaderDiagnosticCollector::new(
-  max_messages : Int,
-  max_chars : Int,
+  max_messages : Int32,
+  max_chars : Int32,
 ) -> ReaderDiagnosticCollector {
   {
     messages: [],
@@ -36,7 +36,7 @@ fn ReaderDiagnosticCollector::new(
 }
 
 ///|
-fn bounded_reader_diagnostic_text(value : String, maximum : Int) -> String {
+fn bounded_reader_diagnostic_text(value : String, maximum : Int32) -> String {
   bounded_reader_diagnostic_parts([value], maximum)
 }
 
@@ -47,7 +47,7 @@ fn bounded_reader_diagnostic_text(value : String, maximum : Int) -> String {
 /// copied in full merely to truncate it afterward.
 fn bounded_reader_diagnostic_parts(
   parts : ArrayView[String],
-  maximum : Int,
+  maximum : Int32,
 ) -> String {
   if maximum <= 0 {
     return ""
@@ -159,7 +159,9 @@ fn push_reader_error_parts(
 }
 
 ///|
-fn ReaderDiagnosticCollector::received(self : ReaderDiagnosticCollector) -> Int {
+fn ReaderDiagnosticCollector::received(
+  self : ReaderDiagnosticCollector,
+) -> Int32 {
   self.received_count
 }
 

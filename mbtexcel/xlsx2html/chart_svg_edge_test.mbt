@@ -3,7 +3,7 @@
 // growth, and bounded descriptions.
 
 ///|
-fn edge_probe_workbook(rows : Int) -> @xlsx.Workbook raise {
+fn edge_probe_workbook(rows : Int32) -> @xlsx.Workbook raise {
   let workbook = @xlsx.Workbook::new()
   ignore(workbook.add_sheet("Data"))
   for row in 1..<=rows {
@@ -17,8 +17,8 @@ fn edge_probe_workbook(rows : Int) -> @xlsx.Workbook raise {
 fn edge_chart(
   workbook : @xlsx.Workbook,
   typ : @xlsx.ChartType,
-  rows : Int,
-  series? : Int = 1,
+  rows : Int32,
+  series~ : Int32 = 1,
 ) -> Unit raise {
   let chart = @xlsx.ChartOptions::new(typ)
   for index in 0..<series {

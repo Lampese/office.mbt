@@ -1,6 +1,6 @@
 ///|
 pub struct Table {
-  id : Int
+  id : Int32
   name : String
   display_name : String
   range : String
@@ -111,13 +111,13 @@ fn Table::new(
   name : String,
   range_ref : String,
   columns : ArrayView[String],
-  display_name? : String = "",
-  style_name? : String = "TableStyleMedium9",
-  show_first_column? : Bool = false,
-  show_last_column? : Bool = false,
-  show_row_stripes? : Bool = true,
-  show_column_stripes? : Bool = false,
-  show_header_row? : Bool = true,
+  display_name~ : String = "",
+  style_name~ : String = "TableStyleMedium9",
+  show_first_column~ : Bool = false,
+  show_last_column~ : Bool = false,
+  show_row_stripes~ : Bool = true,
+  show_column_stripes~ : Bool = false,
+  show_header_row~ : Bool = true,
 ) -> Table raise XlsxError {
   if name == "" {
     raise InvalidTable(msg="table name is empty")
@@ -170,7 +170,7 @@ fn Table::new(
 
 ///|
 fn write_table_xml(
-  table_id : Int,
+  table_id : Int32,
   table : Table,
   budget? : WritePartBudget,
 ) -> String raise XlsxError {

@@ -7,8 +7,8 @@
 // public table values (and every consumer) are unchanged.
 
 ///|
-fn pdf_cmap_unpack1(flat : ReadOnlyArray[Int]) -> Array[Int] {
-  let out : Array[Int] = Array(capacity=flat.length())
+fn pdf_cmap_unpack1(flat : ReadOnlyArray[Int32]) -> Array[Int32] {
+  let out : Array[Int32] = Array(capacity=flat.length())
   for i in 0..<flat.length() {
     out.push(flat[i])
   }
@@ -16,9 +16,9 @@ fn pdf_cmap_unpack1(flat : ReadOnlyArray[Int]) -> Array[Int] {
 }
 
 ///|
-fn pdf_cmap_unpack2(flat : ReadOnlyArray[Int]) -> Array[(Int, Int)] {
+fn pdf_cmap_unpack2(flat : ReadOnlyArray[Int32]) -> Array[(Int32, Int32)] {
   let n = flat.length() / 2
-  let out : Array[(Int, Int)] = Array(capacity=n)
+  let out : Array[(Int32, Int32)] = Array(capacity=n)
   for i in 0..<n {
     out.push((flat[i * 2], flat[i * 2 + 1]))
   }
@@ -26,9 +26,11 @@ fn pdf_cmap_unpack2(flat : ReadOnlyArray[Int]) -> Array[(Int, Int)] {
 }
 
 ///|
-fn pdf_cmap_unpack3(flat : ReadOnlyArray[Int]) -> Array[(Int, Int, Int)] {
+fn pdf_cmap_unpack3(
+  flat : ReadOnlyArray[Int32],
+) -> Array[(Int32, Int32, Int32)] {
   let n = flat.length() / 3
-  let out : Array[(Int, Int, Int)] = Array(capacity=n)
+  let out : Array[(Int32, Int32, Int32)] = Array(capacity=n)
   for i in 0..<n {
     out.push((flat[i * 3], flat[i * 3 + 1], flat[i * 3 + 2]))
   }
@@ -38,16 +40,16 @@ fn pdf_cmap_unpack3(flat : ReadOnlyArray[Int]) -> Array[(Int, Int, Int)] {
 ///|
 /// CSR-style unpack: `keys[i]` pairs with `pool[offsets[i]:offsets[i+1]]`.
 fn pdf_cmap_unpack_csr(
-  keys : ReadOnlyArray[Int],
-  offsets : ReadOnlyArray[Int],
-  pool : ReadOnlyArray[Int],
-) -> Array[(Int, Array[Int])] {
+  keys : ReadOnlyArray[Int32],
+  offsets : ReadOnlyArray[Int32],
+  pool : ReadOnlyArray[Int32],
+) -> Array[(Int32, Array[Int32])] {
   let n = keys.length()
-  let out : Array[(Int, Array[Int])] = Array(capacity=n)
+  let out : Array[(Int32, Array[Int32])] = Array(capacity=n)
   for i in 0..<n {
     let start = offsets[i]
     let stop = offsets[i + 1]
-    let vals : Array[Int] = Array(capacity=stop - start)
+    let vals : Array[Int32] = Array(capacity=stop - start)
     for j in start..<stop {
       vals.push(pool[j])
     }

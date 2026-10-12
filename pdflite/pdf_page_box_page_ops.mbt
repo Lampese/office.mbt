@@ -98,7 +98,7 @@ fn PdfDocument::pdf_page_copy_box_page(
 ///|
 fn PdfDocument::pdf_page_set_mediabox_page(
   self : PdfDocument,
-  page_number : Int,
+  page_number : Int32,
   page : @page.PdfPage,
   boxes : ArrayView[(Double, Double, Double, Double)],
 ) -> @page.PdfPage {
@@ -109,7 +109,7 @@ fn PdfDocument::pdf_page_set_mediabox_page(
 ///|
 fn PdfDocument::pdf_page_crop_page(
   self : PdfDocument,
-  page_number : Int,
+  page_number : Int32,
   page : @page.PdfPage,
   boxes : ArrayView[(Double, Double, Double, Double)],
   box_name : @core.PdfName,

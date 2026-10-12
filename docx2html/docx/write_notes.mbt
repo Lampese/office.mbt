@@ -34,8 +34,8 @@ pub fn note_spec(body : Array[DocumentElement]) -> NoteSpec raise DocxError {
 /// carries the note index rather than surfacing mid-write.
 fn check_note_references(
   body : Array[DocumentElement],
-  footnote_count : Int,
-  endnote_count : Int,
+  footnote_count : Int32,
+  endnote_count : Int32,
 ) -> Unit raise DocxError {
   let footnote_uses = Array::make(footnote_count, 0)
   let endnote_uses = Array::make(endnote_count, 0)

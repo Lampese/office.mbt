@@ -46,7 +46,7 @@
 ///   `<a:hlinkClick>` round-trips via the captured `<p:cNvPr>` in
 ///   `extension`).
 pub(all) struct GraphicFrame {
-  id : Int
+  id : Int32
   name : String
   transform : Transform?
   content : GraphicFrameContent
@@ -159,8 +159,8 @@ pub extend TableRow with Eq::{not_equal, equal}
 /// - `properties` — `<a:tcPr>` typed body — margins, anchor, fill, borders.
 ///   `None` when the spec-optional element is absent.
 pub(all) struct TableCell {
-  grid_span : Int
-  row_span : Int
+  grid_span : Int32
+  row_span : Int32
   h_merge : Bool
   v_merge : Bool
   text_body : TextBody?

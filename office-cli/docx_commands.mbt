@@ -2,10 +2,10 @@
 fn bounded_decimal_argument(
   matches : @argparse.Matches,
   name : String,
-  default_value : Int,
-  minimum : Int,
-  maximum : Int,
-) -> Int raise CliFailure {
+  default_value : Int32,
+  minimum : Int32,
+  maximum : Int32,
+) -> Int32 raise CliFailure {
   let value = match optional_value(matches, name) {
     Some(text) => text
     None => return default_value
@@ -23,7 +23,7 @@ fn bounded_decimal_argument(
   }
   let mut result = 0
   for unit in value {
-    if !(unit is ('0'..='9')) {
+    if !(unit is ('0'..<='9')) {
       raise docx_cli_failure(
         "office.invalid_arguments",
         "--\{name} must be an integer between \{minimum} and \{maximum}",
@@ -63,7 +63,7 @@ fn bounded_decimal_argument(
 }
 
 ///|
-fn cli_max_elements(matches : @argparse.Matches) -> Int raise CliFailure {
+fn cli_max_elements(matches : @argparse.Matches) -> Int32 raise CliFailure {
   bounded_decimal_argument(
     matches, "max-elements", docx_cli_default_max_elements, 1, docx_cli_hard_max_elements,
   )
@@ -76,7 +76,7 @@ fn cli_max_elements(matches : @argparse.Matches) -> Int raise CliFailure {
 /// cost first. DOCX retains its independently documented 200,000-node limit.
 fn validate_xlsx_max_elements_before_read(
   file : String,
-  max_elements : Int,
+  max_elements : Int32,
 ) -> Unit raise CliFailure {
   if file.to_lower().has_suffix(".xlsx") {
     validate_xlsx_max_elements(max_elements)
@@ -84,7 +84,7 @@ fn validate_xlsx_max_elements_before_read(
 }
 
 ///|
-fn cli_max_output_chars(matches : @argparse.Matches) -> Int raise CliFailure {
+fn cli_max_output_chars(matches : @argparse.Matches) -> Int32 raise CliFailure {
   bounded_decimal_argument(
     matches, "max-output-chars", docx_cli_default_max_output_chars, 1, docx_cli_hard_max_output_chars,
   )

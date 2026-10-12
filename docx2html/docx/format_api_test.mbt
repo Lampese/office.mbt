@@ -287,8 +287,8 @@ test "format refuses selector and scope mistakes" {
   fn refuse(
     text : String?,
     within : String?,
-    nth : Int?,
-    range : (Int, Int)?,
+    nth : Int32?,
+    range : (Int32, Int32)?,
   ) -> String raise {
     let mut message = ""
     try
@@ -1341,7 +1341,7 @@ test "format verifies many spans of a paragraph together" {
     text="ab",
   )
   let after = format_apply(body, plan)
-  let spans : Array[(Int, Int)] = []
+  let spans : Array[(Int32, Int32)] = []
   for span in receipt.spans() {
     spans.push((span.start(), span.end()))
   }

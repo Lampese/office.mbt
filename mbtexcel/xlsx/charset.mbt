@@ -107,7 +107,7 @@ fn decode_utf16(
 /// `byte - 0x80`; a 0 marks a byte Windows-1252 leaves undefined
 /// (0x81, 0x8D, 0x8F, 0x90, 0x9D), which this decoder passes through as
 /// the C1 control code of the same value, matching browsers and Go.
-let windows_1252_high : FixedArray[Int] = [
+let windows_1252_high : FixedArray[Int32] = [
   0x20ac, 0x0000, 0x201a, 0x0192, 0x201e, 0x2026, 0x2020, 0x2021, 0x02c6, 0x2030,
   0x0160, 0x2039, 0x0152, 0x0000, 0x017d, 0x0000, 0x0000, 0x2018, 0x2019, 0x201c,
   0x201d, 0x2022, 0x2013, 0x2014, 0x02dc, 0x2122, 0x0161, 0x203a, 0x0153, 0x0000,
@@ -132,7 +132,7 @@ fn decode_windows_1252(bytes : BytesView) -> String {
     } else {
       value
     }
-    sb.write_char(Int::unsafe_to_char(code))
+    sb.write_char(Int32::unsafe_to_char(code))
   }
   sb.to_string()
 }

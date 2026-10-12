@@ -73,12 +73,12 @@ pub fn PageLayoutMarginsOptions::with_values(
 
 ///|
 pub struct PageLayoutOptions {
-  mut size : Int?
+  mut size : Int32?
   mut orientation : String?
-  mut first_page_number : Int?
-  mut adjust_to : Int?
-  mut fit_to_height : Int?
-  mut fit_to_width : Int?
+  mut first_page_number : Int32?
+  mut adjust_to : Int32?
+  mut fit_to_height : Int32?
+  mut fit_to_width : Int32?
   mut black_and_white : Bool?
   mut page_order : String?
 } derive(Debug)
@@ -99,12 +99,12 @@ fn PageLayoutOptions::new() -> PageLayoutOptions {
 
 ///|
 pub fn PageLayoutOptions::with_values(
-  size? : Int,
+  size? : Int32,
   orientation? : String,
-  first_page_number? : Int,
-  adjust_to? : Int,
-  fit_to_height? : Int,
-  fit_to_width? : Int,
+  first_page_number? : Int32,
+  adjust_to? : Int32,
+  fit_to_height? : Int32,
+  fit_to_width? : Int32,
   black_and_white? : Bool,
   page_order? : String,
 ) -> PageLayoutOptions {
@@ -151,13 +151,13 @@ pub struct SheetPropsOptions {
   mut published : Bool?
   mut auto_page_breaks : Bool?
   mut fit_to_page : Bool?
-  mut tab_color_indexed : Int?
+  mut tab_color_indexed : Int32?
   mut tab_color_rgb : String?
-  mut tab_color_theme : Int?
+  mut tab_color_theme : Int32?
   mut tab_color_tint : Double?
   mut outline_summary_below : Bool?
   mut outline_summary_right : Bool?
-  mut base_col_width : Int?
+  mut base_col_width : Int32?
   mut default_col_width : Double?
   mut default_row_height : Double?
   mut custom_height : Bool?
@@ -197,13 +197,13 @@ pub fn SheetPropsOptions::with_values(
   published? : Bool,
   auto_page_breaks? : Bool,
   fit_to_page? : Bool,
-  tab_color_indexed? : Int,
+  tab_color_indexed? : Int32,
   tab_color_rgb? : String,
-  tab_color_theme? : Int,
+  tab_color_theme? : Int32,
   tab_color_tint? : Double,
   outline_summary_below? : Bool,
   outline_summary_right? : Bool,
-  base_col_width? : Int,
+  base_col_width? : Int32,
   default_col_width? : Double,
   default_row_height? : Double,
   custom_height? : Bool,
@@ -516,7 +516,7 @@ pub struct SheetProtection {
   mut password : String
   mut hash_value : String
   mut salt_value : String
-  mut spin_count : Int
+  mut spin_count : Int32
   sheet : Bool
   objects : Bool
   scenarios : Bool
@@ -544,9 +544,9 @@ pub struct SheetBackground {
 
 ///|
 pub struct PageBreak {
-  id : Int
-  min : Int
-  max : Int
+  id : Int32
+  min : Int32
+  max : Int32
   manual : Bool
 } derive(Debug)
 

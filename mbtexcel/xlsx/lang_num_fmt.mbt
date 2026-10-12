@@ -13,7 +13,7 @@ fn normalize_culture_info(value : String) -> String {
 }
 
 ///|
-fn lang_num_fmt_zh_tw(id : Int) -> String {
+fn lang_num_fmt_zh_tw(id : Int32) -> String {
   match id {
     27 | 36 | 50 | 57 => "[$-404]e/m/d"
     28 | 29 | 51 | 54 | 58 => "[$-404]e\"年\"m\"月\"d\"日\""
@@ -28,7 +28,7 @@ fn lang_num_fmt_zh_tw(id : Int) -> String {
 }
 
 ///|
-fn lang_num_fmt_zh_cn(id : Int) -> String {
+fn lang_num_fmt_zh_cn(id : Int32) -> String {
   match id {
     27 | 36 | 50 | 52 | 57 => "yyyy\"年\"m\"月\""
     28 | 29 | 51 | 53 | 54 | 58 => "m\"月\"d\"日\""
@@ -43,7 +43,7 @@ fn lang_num_fmt_zh_cn(id : Int) -> String {
 }
 
 ///|
-fn lang_num_fmt_ja_jp(id : Int) -> String {
+fn lang_num_fmt_ja_jp(id : Int32) -> String {
   match id {
     27 | 36 | 50 | 57 => "[$-411]ge.m.d"
     28 | 29 | 51 | 54 | 58 => "[$-411]ggge\"年\"m\"月\"d\"日\""
@@ -58,7 +58,7 @@ fn lang_num_fmt_ja_jp(id : Int) -> String {
 }
 
 ///|
-fn lang_num_fmt_ko_kr(id : Int) -> String {
+fn lang_num_fmt_ko_kr(id : Int32) -> String {
   match id {
     27 | 36 | 50 | 57 => "yyyy\"年\" mm\"月\" dd\"日\""
     28 | 29 | 51 | 54 | 58 => "mm-dd"
@@ -78,7 +78,7 @@ fn lang_num_fmt_ko_kr(id : Int) -> String {
 /// cultures use their glyph tables, and IDs 30 / 32-33 honor the
 /// `short_date_pattern` / `long_time_pattern` option overrides. Returns
 /// `None` for an unknown or unset culture.
-fn lang_num_fmt_code(options : Options, id : Int) -> String? {
+fn lang_num_fmt_code(options : Options, id : Int32) -> String? {
   match normalize_culture_info(options.culture_info) {
     "en-us" => {
       let short_date = if options.short_date_pattern != "" {
@@ -92,8 +92,8 @@ fn lang_num_fmt_code(options : Options, id : Int) -> String? {
         "h:mm:ss"
       }
       match id {
-        32..=35 => Some(long_time)
-        27..=31 | 50..=58 => Some(short_date)
+        32..<=35 => Some(long_time)
+        27..<=31 | 50..<=58 => Some(short_date)
         _ => Some("")
       }
     }

@@ -33,7 +33,7 @@ fn color_hex(value : String) -> String? {
 }
 
 ///|
-fn color_byte(value : String) -> Int? {
+fn color_byte(value : String) -> Int32? {
   if value.length() != 2 {
     return None
   }

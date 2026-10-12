@@ -8,8 +8,8 @@
 /// What a planned replacement will do, and what the document must read
 /// afterwards.
 pub struct DocxReplaceReceipt {
-  selected : Array[Int]
-  replaced : Int
+  selected : Array[Int32]
+  replaced : Int32
   affected : Array[DocxReplaceAffected]
   matches : Array[DocxMatch]
 }
@@ -58,13 +58,13 @@ pub fn DocxMatch::copy(self : DocxMatch) -> DocxMatch {
 
 ///|
 /// The candidate ordinals this plan replaces, in document order.
-pub fn DocxReplaceReceipt::selected(self : DocxReplaceReceipt) -> Array[Int] {
+pub fn DocxReplaceReceipt::selected(self : DocxReplaceReceipt) -> Array[Int32] {
   self.selected.copy()
 }
 
 ///|
 /// How many replacements the plan performs.
-pub fn DocxReplaceReceipt::replaced(self : DocxReplaceReceipt) -> Int {
+pub fn DocxReplaceReceipt::replaced(self : DocxReplaceReceipt) -> Int32 {
   self.replaced
 }
 
@@ -129,7 +129,7 @@ pub fn plan_docx_replacements(
   needle~ : String,
   replacement~ : String,
   within? : String,
-  nth? : Int,
+  nth? : Int32,
 ) -> (@splice.SplicePlan, DocxReplaceReceipt) raise DocxError {
   let part = story.part()
   // The SAME enumeration find shows the caller. The examination ceiling
@@ -195,8 +195,8 @@ pub fn plan_docx_replacements(
   // A path CLAIMED BY TWO paragraphs cannot be planned against: the
   // selection named one of them and a last-wins map could plan against
   // the other, publishing an edit to a paragraph nobody selected.
-  let index_by_path : Map[String, Int] = Map([])
-  let claimants : Map[String, Int] = Map([])
+  let index_by_path : Map[String, Int32] = Map([])
+  let claimants : Map[String, Int32] = Map([])
   for paragraph_index, paragraph in projection.paragraphs {
     guard paragraph.sources.length() > 0 else { continue }
     let SourceElementId(head) = paragraph.sources[0].source
@@ -217,7 +217,7 @@ pub fn plan_docx_replacements(
   let plan = @splice.SplicePlan::new()
   plan.pin_part(part, bytes)
   let affected : Array[DocxReplaceAffected] = []
-  let ordinals : Array[Int] = []
+  let ordinals : Array[Int32] = []
   let mut replaced = 0
   let mut cursor = 0
   while cursor < selected.length() {

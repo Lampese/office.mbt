@@ -36,7 +36,7 @@
 ///   `None` for a parsed group (its `<a:hlinkClick>` round-trips via the
 ///   captured `<p:cNvPr>` in `extension`).
 pub(all) struct GroupShape {
-  id : Int
+  id : Int32
   name : String
   transform : Transform?
   child_offset : Point?

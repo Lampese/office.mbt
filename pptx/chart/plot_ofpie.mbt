@@ -41,11 +41,11 @@ pub(all) struct OfPieChartBody {
   vary_colors : Bool?
   series : Array[ChartSeriesCore]
   d_lbls : DLbls?
-  gap_width : Int?
+  gap_width : Int32?
   split_type : SplitType?
   split_pos : String?
   cust_split : @xml.XmlElement?
-  second_pie_size : Int?
+  second_pie_size : Int32?
   ser_lines : Array[@xml.XmlElement]
   extension : Array[@xml.XmlElement]
 } derive(Eq, Debug)

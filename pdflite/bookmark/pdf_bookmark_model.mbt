@@ -15,12 +15,12 @@ pub(all) struct PdfBookmarkColour {
 /// `text` is the raw PDF title string bytes, and `target` is the parsed
 /// destination or preserved action.
 pub(all) struct PdfBookmark {
-  level : Int
+  level : Int32
   text : @core.PdfBytes
   target : @destination.PdfDestination
   is_open : Bool
   colour : PdfBookmarkColour
-  flags : Int
+  flags : Int32
 } derive(Debug, Eq, ToJson)
 
 ///|

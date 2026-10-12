@@ -1827,14 +1827,14 @@ test "document converter warns for unrecognised styles" {
 
 ///|
 fn run_properties(
-  is_bold? : Bool = false,
-  is_underline? : Bool = false,
-  is_italic? : Bool = false,
-  is_strikethrough? : Bool = false,
-  is_all_caps? : Bool = false,
-  is_small_caps? : Bool = false,
-  vertical_alignment? : @docx2html.VerticalAlignment = Baseline,
-  highlight? : String? = None,
+  is_bold~ : Bool = false,
+  is_underline~ : Bool = false,
+  is_italic~ : Bool = false,
+  is_strikethrough~ : Bool = false,
+  is_all_caps~ : Bool = false,
+  is_small_caps~ : Bool = false,
+  vertical_alignment~ : @docx2html.VerticalAlignment = Baseline,
+  highlight~ : String? = None,
 ) -> @docx2html.RunProperties {
   @docx2html.run_properties(
     is_bold~,
@@ -2207,8 +2207,8 @@ test "document property helpers mirror Mammoth option defaults" {
 ///|
 fn table_cell(
   children : Array[@docx2html.DocumentElement],
-  col_span? : Int = 1,
-  row_span? : Int = 1,
+  col_span~ : Int32 = 1,
+  row_span~ : Int32 = 1,
 ) -> @docx2html.DocumentElement {
   @docx2html.table_cell(children, col_span~, row_span~)
 }
@@ -2216,7 +2216,7 @@ fn table_cell(
 ///|
 fn table_row(
   children : Array[@docx2html.DocumentElement],
-  is_header? : Bool = false,
+  is_header~ : Bool = false,
 ) -> @docx2html.DocumentElement {
   @docx2html.table_row(children, is_header~)
 }

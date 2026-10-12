@@ -1,16 +1,16 @@
 ///|
-fn wb_series(name? : String = "Series1") -> ChartSeries {
+fn wb_series(name~ : String = "Series1") -> ChartSeries {
   try! ChartSeries::new("Sheet1!$A$2:$A$4", "Sheet1!$B$2:$B$4", name~)
 }
 
 ///|
 fn wb_rich_font(
-  italic? : Bool = false,
-  strike? : Bool = false,
-  underline? : String? = None,
-  size? : Double? = None,
-  color? : String? = None,
-  family? : String? = None,
+  italic~ : Bool = false,
+  strike~ : Bool = false,
+  underline~ : String? = None,
+  size~ : Double? = None,
+  color~ : String? = None,
+  family~ : String? = None,
 ) -> RichTextFont {
   {
     bold: false,

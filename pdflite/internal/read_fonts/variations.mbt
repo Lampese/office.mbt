@@ -6,9 +6,9 @@
 /// Outer and inner indices for reading from an [ItemVariationStore].
 pub(all) struct DeltaSetIndex {
   /// Outer delta set index.
-  outer : Int
+  outer : Int32
   /// Inner delta set index.
-  inner : Int
+  inner : Int32
 } derive(Eq, Debug)
 
 ///|
@@ -18,8 +18,8 @@ pub let no_variation_index : DeltaSetIndex = { outer: 0xFFFF, inner: 0xFFFF, }
 /// The [DeltaSetIndexMap](https://learn.microsoft.com/en-us/typography/opentype/spec/otvarcommonformats#associating-target-items-to-variation-data)
 /// table (formats 0 and 1).
 pub struct DeltaSetIndexMap {
-  entry_format : Int
-  map_count : Int
+  entry_format : Int32
+  map_count : Int32
   map_data : FontData
 }
 
@@ -66,7 +66,7 @@ pub fn DeltaSetIndexMap::read(
 /// Returns the delta set index for the specified value.
 pub fn DeltaSetIndexMap::get(
   self : DeltaSetIndexMap,
-  index : UInt,
+  index : UInt32,
 ) -> DeltaSetIndex raise ReadError {
   if self.map_count == 0 {
     return {
@@ -81,7 +81,7 @@ pub fn DeltaSetIndexMap::get(
   let last = (self.map_count - 1).reinterpret_as_uint()
   let index = if index < last { index } else { last }
   let offset = index.reinterpret_as_int() * entry_size
-  let entry : UInt = match entry_size {
+  let entry : UInt32 = match entry_size {
     1 => self.map_data.read_u8(offset).reinterpret_as_uint()
     2 => self.map_data.read_u16(offset).reinterpret_as_uint()
     3 => self.map_data.read_u24(offset).reinterpret_as_uint()
@@ -116,7 +116,10 @@ pub fn ItemVariationStore::read(
 ///|
 /// Resolve an `Offset32` relative to `data` (`OutOfBounds` beyond the end,
 /// `NullOffset` for 0).
-fn resolve_offset32(data : FontData, offset : UInt) -> FontData raise ReadError {
+fn resolve_offset32(
+  data : FontData,
+  offset : UInt32,
+) -> FontData raise ReadError {
   if offset == 0 {
     raise NullOffset
   }
@@ -142,7 +145,7 @@ pub fn ItemVariationStore::variation_region_list(
 /// The number of item variation data subtables (as available).
 pub fn ItemVariationStore::item_variation_data_count(
   self : ItemVariationStore,
-) -> Int {
+) -> Int32 {
   let count = self.data.read_u16(6) catch { _ => 0 }
   // `read_array(range).unwrap_or_default()`: an out of bounds array is
   // empty.
@@ -158,7 +161,7 @@ pub fn ItemVariationStore::item_variation_data_count(
 /// or the offset is null; raises for a malformed subtable.
 pub fn ItemVariationStore::item_variation_data(
   self : ItemVariationStore,
-  index : Int,
+  index : Int32,
 ) -> ItemVariationData? raise ReadError {
   if index < 0 || index >= self.item_variation_data_count() {
     return None
@@ -182,7 +185,7 @@ pub fn ItemVariationStore::compute_delta(
   self : ItemVariationStore,
   index : DeltaSetIndex,
   coords : ArrayView[F2Dot14],
-) -> Int raise ReadError {
+) -> Int32 raise ReadError {
   if coords.length() == 0 || index == no_variation_index {
     return 0
   }
@@ -236,7 +239,7 @@ pub struct VariationRegionList {
 }
 
 ///|
-pub fn VariationRegionList::axis_count(self : VariationRegionList) -> Int {
+pub fn VariationRegionList::axis_count(self : VariationRegionList) -> Int32 {
   self.data.read_u16(0) catch {
     _ => 0
   }
@@ -245,7 +248,7 @@ pub fn VariationRegionList::axis_count(self : VariationRegionList) -> Int {
 ///|
 /// The number of regions in the region array (`ComputedArray::len`): zero
 /// if the array is out of bounds or its regions have no axes.
-pub fn VariationRegionList::region_count(self : VariationRegionList) -> Int {
+pub fn VariationRegionList::region_count(self : VariationRegionList) -> Int32 {
   let count = self.data.read_u16(2) catch { _ => 0 }
   let axis_count = self.axis_count()
   if axis_count == 0 || !self.regions_in_bounds(count, axis_count) {
@@ -260,8 +263,8 @@ pub fn VariationRegionList::region_count(self : VariationRegionList) -> Int {
 /// product of two `u16` counts overflows an `Int`).
 fn VariationRegionList::regions_in_bounds(
   self : VariationRegionList,
-  count : Int,
-  axis_count : Int,
+  count : Int32,
+  axis_count : Int32,
 ) -> Bool {
   4L + count.to_int64() * axis_count.to_int64() * 6L <=
   self.data.len().to_int64()
@@ -276,7 +279,7 @@ fn VariationRegionList::regions_in_bounds(
 /// index past the last region is `OutOfBounds`.
 pub fn VariationRegionList::get(
   self : VariationRegionList,
-  index : Int,
+  index : Int32,
 ) -> VariationRegion raise ReadError {
   let count = self.data.read_u16(2) catch { _ => 0 }
   let axis_count = self.axis_count()
@@ -294,11 +297,14 @@ pub fn VariationRegionList::get(
 /// A variation region: a start, peak and end coordinate for each axis.
 pub struct VariationRegion {
   data : FontData
-  axis_count : Int
+  axis_count : Int32
 }
 
 ///|
-fn VariationRegion::axis(self : VariationRegion, i : Int) -> (Int, Int, Int) {
+fn VariationRegion::axis(
+  self : VariationRegion,
+  i : Int32,
+) -> (Int32, Int32, Int32) {
   let s = self.data.read_i16(6 * i) catch { _ => 0 }
   let p = self.data.read_i16(6 * i + 2) catch { _ => 0 }
   let e = self.data.read_i16(6 * i + 4) catch { _ => 0 }
@@ -383,21 +389,21 @@ pub struct ItemVariationData {
 }
 
 ///|
-pub fn ItemVariationData::item_count(self : ItemVariationData) -> Int {
+pub fn ItemVariationData::item_count(self : ItemVariationData) -> Int32 {
   self.data.read_u16(0) catch {
     _ => 0
   }
 }
 
 ///|
-pub fn ItemVariationData::word_delta_count(self : ItemVariationData) -> Int {
+pub fn ItemVariationData::word_delta_count(self : ItemVariationData) -> Int32 {
   self.data.read_u16(2) catch {
     _ => 0
   }
 }
 
 ///|
-pub fn ItemVariationData::region_index_count(self : ItemVariationData) -> Int {
+pub fn ItemVariationData::region_index_count(self : ItemVariationData) -> Int32 {
   self.data.read_u16(4) catch {
     _ => 0
   }
@@ -407,7 +413,7 @@ pub fn ItemVariationData::region_index_count(self : ItemVariationData) -> Int {
 /// The indices into the variation region list (empty if out of bounds).
 pub fn ItemVariationData::region_indexes(
   self : ItemVariationData,
-) -> Array[Int] {
+) -> Array[Int32] {
   let n = self.region_index_count()
   let out = []
   if 6 + 2 * n > self.data.len() {
@@ -422,9 +428,9 @@ pub fn ItemVariationData::region_indexes(
 ///|
 /// The length of one delta set.
 pub fn ItemVariationData::delta_row_len(
-  word_delta_count : Int,
-  region_index_count : Int,
-) -> Int {
+  word_delta_count : Int32,
+  region_index_count : Int32,
+) -> Int32 {
   let long_words = (word_delta_count & 0x8000) != 0
   let (word_size, small_size) = if long_words { (4, 2) } else { (2, 1) }
   let long_delta_count = word_delta_count & 0x7FFF
@@ -440,8 +446,8 @@ pub fn ItemVariationData::delta_row_len(
 /// The per-region delta values for the specified inner index.
 pub fn ItemVariationData::delta_set(
   self : ItemVariationData,
-  inner_index : Int,
-) -> Array[Int] {
+  inner_index : Int32,
+) -> Array[Int32] {
   let word_delta_count = self.word_delta_count()
   let region_count = self.region_index_count()
   let bytes_per_row = ItemVariationData::delta_row_len(
@@ -492,7 +498,7 @@ pub fn ItemVariationData::delta_set(
 pub fn advance_delta(
   dsim : Result[DeltaSetIndexMap, ReadError]?,
   ivs : Result[ItemVariationStore, ReadError],
-  glyph_id : UInt,
+  glyph_id : UInt32,
   coords : ArrayView[F2Dot14],
 ) -> Fixed raise ReadError {
   if coords.length() == 0 {
@@ -514,7 +520,7 @@ pub fn advance_delta(
 pub fn item_delta(
   dsim : Result[DeltaSetIndexMap, ReadError]?,
   ivs : Result[ItemVariationStore, ReadError],
-  glyph_id : UInt,
+  glyph_id : UInt32,
   coords : ArrayView[F2Dot14],
 ) -> Fixed raise ReadError {
   if coords.length() == 0 {

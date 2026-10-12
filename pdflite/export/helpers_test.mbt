@@ -17,9 +17,9 @@ fn plain_settings() -> @export.SerializeSettings {
 ///|
 /// Settings with a validator.
 fn settings_with(
-  a? : @export.Archival? = None,
-  ua? : @export.Accessibility? = None,
-  version? : @export.PdfVersion = Pdf17,
+  a~ : @export.Archival? = None,
+  ua~ : @export.Accessibility? = None,
+  version~ : @export.PdfVersion = Pdf17,
 ) -> @export.SerializeSettings {
   { ..plain_settings(), configuration: { version, validators: { a, ua, }, }, }
 }
@@ -33,7 +33,7 @@ fn rect_path(x : Double, y : Double, w : Double, h : Double) -> @export.Path {
 }
 
 ///|
-fn solid(r : Int, g : Int, b : Int) -> @export.Paint {
+fn solid(r : Int32, g : Int32, b : Int32) -> @export.Paint {
   Color(@export.Color::rgb(r, g, b))
 }
 
@@ -54,9 +54,9 @@ fn stroke_of(paint : @export.Paint, width : Double) -> @export.Stroke {
 /// Write a single page document; `draw` draws on the page surface.
 fn one_page(
   draw : (@export.Surface) -> Unit raise,
-  settings? : @export.SerializeSettings = plain_settings(),
-  width? : Double = 200.0,
-  height? : Double = 100.0,
+  settings~ : @export.SerializeSettings = plain_settings(),
+  width~ : Double = 200.0,
+  height~ : Double = 100.0,
 ) -> Bytes raise {
   let doc = @export.Document::new_with(settings)
   let page = doc.start_page_with(
@@ -193,7 +193,7 @@ fn Parsed::pages(self : Parsed) -> Array[@syntax.PdfObject] raise {
 }
 
 ///|
-fn Parsed::page(self : Parsed, i : Int) -> @syntax.PdfObject raise {
+fn Parsed::page(self : Parsed, i : Int32) -> @syntax.PdfObject raise {
   self.pages()[i]
 }
 

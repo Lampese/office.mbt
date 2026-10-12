@@ -6,7 +6,7 @@
 /// can tell slides apart (blank slides are otherwise identical).
 fn stamp_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
   marker : String,
 ) -> Unit raise {
   let tb = @slide.AutoShape::textbox(

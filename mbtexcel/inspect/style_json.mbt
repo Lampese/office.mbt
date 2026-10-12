@@ -20,7 +20,7 @@ fn set_bool(out : Map[String, Json], key : String, value : Bool?) -> Unit {
 }
 
 ///|
-fn set_int(out : Map[String, Json], key : String, value : Int?) -> Unit {
+fn set_int(out : Map[String, Json], key : String, value : Int32?) -> Unit {
   match value {
     Some(value) => out[key] = Json::number(value.to_double())
     None => ()

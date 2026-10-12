@@ -1,5 +1,5 @@
 ///|
-fn pdf_jpeg_eoi_length(data : BytesView) -> Int? {
+fn pdf_jpeg_eoi_length(data : BytesView) -> Int32? {
   let mut last = 0
   for index in 0..<data.length() {
     let value = data[index].to_int()
@@ -37,7 +37,7 @@ pub fn pdf_get_jpeg_data(
 }
 
 ///|
-fn pdf_jpeg_get(data : BytesView, index : Int) -> Int? {
+fn pdf_jpeg_get(data : BytesView, index : Int32) -> Int32? {
   if index >= 0 && index < data.length() {
     Some(data[index].to_int())
   } else {
@@ -48,9 +48,9 @@ fn pdf_jpeg_get(data : BytesView, index : Int) -> Int? {
 ///|
 fn pdf_jpeg_get_or(
   data : BytesView,
-  index : Int,
+  index : Int32,
   error : @core.PdfError,
-) -> Int raise @core.PdfError {
+) -> Int32 raise @core.PdfError {
   match pdf_jpeg_get(data, index) {
     Some(value) => value
     None => raise error
@@ -60,9 +60,9 @@ fn pdf_jpeg_get_or(
 ///|
 fn pdf_jpeg_word_at(
   data : BytesView,
-  index : Int,
+  index : Int32,
   error : @core.PdfError,
-) -> Int raise @core.PdfError {
+) -> Int32 raise @core.PdfError {
   pdf_jpeg_get_or(data, index, error) * 256 +
   pdf_jpeg_get_or(data, index + 1, error)
 }
@@ -79,7 +79,7 @@ fn pdf_jpeg_has_app_header(data : BytesView) -> Bool {
 ///|
 fn pdf_jpeg_has_signature(
   data : BytesView,
-  index : Int,
+  index : Int32,
 ) -> Bool raise @core.PdfError {
   let first = pdf_jpeg_get_or(data, index + 2, BadJPEGString)
   let second = pdf_jpeg_get_or(data, index + 3, BadJPEGString)
@@ -105,7 +105,7 @@ fn pdf_jpeg_has_signature(
 ///|
 fn pdf_jpeg_dimensions_inner(
   data : BytesView,
-) -> (Int, Int) raise @core.PdfError {
+) -> (Int32, Int32) raise @core.PdfError {
   if !pdf_jpeg_has_app_header(data) {
     raise BadJPEGHeader
   }
@@ -141,7 +141,7 @@ fn pdf_jpeg_dimensions_inner(
 /// Progressive JPEGs and JPEGs without SOF0 raise `@core.PdfError::JPEGDimensionsExpected`.
 pub fn pdf_jpeg_dimensions_view(
   data : BytesView,
-) -> (Int, Int) raise @core.PdfError {
+) -> (Int32, Int32) raise @core.PdfError {
   pdf_jpeg_dimensions_inner(data)
 }
 
@@ -149,17 +149,17 @@ pub fn pdf_jpeg_dimensions_view(
 /// Return the width and height of a baseline JFIF/Exif JPEG byte stream.
 pub fn pdf_jpeg_dimensions(
   data : @core.PdfBytes,
-) -> (Int, Int) raise @core.PdfError {
+) -> (Int32, Int32) raise @core.PdfError {
   pdf_jpeg_dimensions_view(data)
 }
 
 ///|
-fn pdf_jpeg_marker_without_segment_length(marker : Int) -> Bool {
+fn pdf_jpeg_marker_without_segment_length(marker : Int32) -> Bool {
   marker == 0x01 || (marker >= 0xD0 && marker <= 0xD9)
 }
 
 ///|
-fn pdf_jpeg_marker_has_dimensions(marker : Int) -> Bool {
+fn pdf_jpeg_marker_has_dimensions(marker : Int32) -> Bool {
   match marker {
     0xC0
     | 0xC1
@@ -181,8 +181,8 @@ fn pdf_jpeg_marker_has_dimensions(marker : Int) -> Bool {
 ///|
 fn pdf_jpeg_next_marker(
   data : BytesView,
-  index : Int,
-) -> (Int, Int) raise @core.PdfError {
+  index : Int32,
+) -> (Int32, Int32) raise @core.PdfError {
   let mut cursor = index
   while cursor < data.length() && data[cursor].to_int() != 0xFF {
     cursor += 1
@@ -202,7 +202,7 @@ fn pdf_jpeg_next_marker(
 ///|
 fn pdf_jpeg_backup_dimensions_inner(
   data : BytesView,
-) -> (Int, Int) raise @core.PdfError {
+) -> (Int32, Int32) raise @core.PdfError {
   if data.length() < 2 || data[0].to_int() != 0xFF || data[1].to_int() != 0xD8 {
     raise BadJPEGHeader
   }
@@ -256,7 +256,7 @@ fn pdf_jpeg_backup_dimensions_inner(
 /// `jpeg_dimensions` parser rejects.
 pub fn pdf_jpeg_backup_dimensions_view(
   data : BytesView,
-) -> (Int, Int) raise @core.PdfError {
+) -> (Int32, Int32) raise @core.PdfError {
   pdf_jpeg_backup_dimensions_inner(data)
 }
 
@@ -264,34 +264,34 @@ pub fn pdf_jpeg_backup_dimensions_view(
 /// Return JPEG dimensions by scanning any SOF marker with width and height.
 pub fn pdf_jpeg_backup_dimensions(
   data : @core.PdfBytes,
-) -> (Int, Int) raise @core.PdfError {
+) -> (Int32, Int32) raise @core.PdfError {
   pdf_jpeg_backup_dimensions_view(data)
 }
 
 ///|
 /// What a JPEG's frame header and markers say of its samples.
 pub(all) struct PdfJpegInfo {
-  width : Int
-  height : Int
+  width : Int32
+  height : Int32
   /// bits a sample (the frame's precision)
-  bits : Int
+  bits : Int32
   /// the components of a pixel (as a rule one is greyscale, three colour
   /// and four CMYK; what they are is the markers' and the decoder's to say)
-  components : Int
+  components : Int32
   /// the identifier of each component, as the frame header has them
   /// (JFIF's are 1, 2 and 3; some writers name them: `R`, `G`, `B`)
-  component_ids : Array[Int]
+  component_ids : Array[Int32]
   /// whether it has a JFIF (APP0) marker, whose three components are YCbCr
   jfif : Bool
   /// the frame header's marker, which says how the image is coded: 0xC0
   /// baseline, 0xC1 extended sequential, 0xC2 progressive (the three PDF's
   /// DCTDecode has; progressive since PDF 1.3), 0xC3 and above lossless,
   /// differential or arithmetic
-  frame : Int
+  frame : Int32
   /// the colour transform of its Adobe (APP14) marker — 0 none (RGB, or
   /// CMYK), 1 YCbCr, 2 YCCK — or None without the marker. Adobe writes
   /// the samples of four components inverted.
-  adobe_transform : Int?
+  adobe_transform : Int32?
   /// whether it is of hierarchical mode (a DHP marker before its frames):
   /// frames of several sizes, the first not the image's
   hierarchical : Bool
@@ -307,10 +307,10 @@ pub fn pdf_jpeg_info_view(data : BytesView) -> PdfJpegInfo raise @core.PdfError 
   if data.length() < 2 || data[0].to_int() != 0xFF || data[1].to_int() != 0xD8 {
     raise BadJPEGHeader
   }
-  let mut frame : (Int, Int, Int, Int, Int)? = None
-  let component_ids : Array[Int] = []
+  let mut frame : (Int32, Int32, Int32, Int32, Int32)? = None
+  let component_ids : Array[Int32] = []
   let mut jfif = false
-  let mut adobe_transform : Int? = None
+  let mut adobe_transform : Int32? = None
   let mut hierarchical = false
   let mut index = 2
   while index < data.length() {

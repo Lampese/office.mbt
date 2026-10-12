@@ -29,8 +29,8 @@ fn pdf_content_afm_header_value(
 }
 
 ///|
-fn pdf_content_afm_parse_int(value : BytesView) -> Int? {
-  let parsed : Result[Int, Error] = try @afm.pdf_afm_parse_int(value) catch {
+fn pdf_content_afm_parse_int(value : BytesView) -> Int32? {
+  let parsed : Result[Int32, Error] = try @afm.pdf_afm_parse_int(value) catch {
     err => Err(err)
   } noraise {
     value => Ok(value)

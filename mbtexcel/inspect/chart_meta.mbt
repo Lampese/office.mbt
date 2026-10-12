@@ -137,7 +137,7 @@ fn is_tag_delimiter(c : UInt16) -> Bool {
 ///|
 /// Position of the next `<tag` occurrence at or after `from` whose tag name
 /// ends at a proper delimiter (so `c:ser` does not match `<c:serAx`).
-fn find_tag_open(view : StringView, tag : String, from : Int) -> Int? {
+fn find_tag_open(view : StringView, tag : String, from : Int32) -> Int32? {
   let open = "<" + tag
   for pos = from {
     if pos >= view.length() {
@@ -159,7 +159,7 @@ fn find_tag_open(view : StringView, tag : String, from : Int) -> Int? {
 
 ///|
 /// Position of the next `</tag` closing occurrence at or after `from`.
-fn find_tag_close(view : StringView, tag : String, from : Int) -> Int? {
+fn find_tag_close(view : StringView, tag : String, from : Int32) -> Int32? {
   find_tag_open(view, "/" + tag, from)
 }
 
@@ -168,8 +168,8 @@ fn find_tag_close(view : StringView, tag : String, from : Int) -> Int? {
 /// `from`, plus whether the tag is self-closing. Quoted attribute values
 /// may contain `>` or `/` without ending the tag. `None` when the tag is
 /// never closed.
-fn tag_end(view : StringView, from : Int) -> (Int, Bool)? {
-  let mut quote : Int = 0
+fn tag_end(view : StringView, from : Int32) -> (Int32, Bool)? {
+  let mut quote : Int32 = 0
   let mut prev_slash = false
   for i in from..<view.length() {
     let c = view[i].to_int()
@@ -193,7 +193,11 @@ fn tag_end(view : StringView, from : Int) -> (Int, Bool)? {
 /// The `(content_start, content_end)` of the first `<tag …>…</tag>` element
 /// at or after `from`. `None` when the element is absent, self-closing, or
 /// unclosed (malformed XML degrades to "no metadata", never an error).
-fn element_content(view : StringView, tag : String, from : Int) -> (Int, Int)? {
+fn element_content(
+  view : StringView,
+  tag : String,
+  from : Int32,
+) -> (Int32, Int32)? {
   let open_pos = match find_tag_open(view, tag, from) {
     Some(pos) => pos
     None => return None
@@ -429,7 +433,7 @@ fn decode_entity(entity : StringView) -> Char? {
 }
 
 ///|
-fn decode_char_code(digits : StringView, base : Int) -> Char? {
+fn decode_char_code(digits : StringView, base : Int32) -> Char? {
   if digits.length() == 0 {
     return None
   }

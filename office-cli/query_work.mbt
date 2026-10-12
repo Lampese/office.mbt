@@ -2,22 +2,22 @@
 /// A command-wide linear-work ceiling independent of retained output. UTF-16
 /// length is a conservative upper bound for Unicode-scalar iteration, so the
 /// limit also covers supplementary characters without under-counting.
-let office_cli_max_query_predicate_work_units : Int = 128 * 1024 * 1024
+let office_cli_max_query_predicate_work_units : Int32 = 128 * 1024 * 1024
 
 ///|
-let office_cli_query_yield_work_units : Int = 4096
+let office_cli_query_yield_work_units : Int32 = 4096
 
 ///|
 priv struct OfficeQueryWorkBudget {
   format : String
-  maximum : Int
-  mut used : Int
+  maximum : Int32
+  mut used : Int32
 }
 
 ///|
 fn OfficeQueryWorkBudget::new(
-  maximum : Int,
-  format? : String = "docx",
+  maximum : Int32,
+  format~ : String = "docx",
 ) -> OfficeQueryWorkBudget {
   { format, maximum, used: 0, }
 }
@@ -25,7 +25,7 @@ fn OfficeQueryWorkBudget::new(
 ///|
 fn OfficeQueryWorkBudget::charge(
   self : OfficeQueryWorkBudget,
-  count : Int,
+  count : Int32,
 ) -> Unit raise CliFailure {
   if count < 0 || count > self.maximum - self.used {
     let actual = if count < 0 { self.used } else { self.used + count }
@@ -44,7 +44,7 @@ fn OfficeQueryWorkBudget::charge(
 /// per command, making every value match linear in the scanned text.
 priv struct OfficeLinearPattern {
   characters : Array[Char]
-  failure : Array[Int]
+  failure : Array[Int32]
   ignore_case : Bool
 }
 

@@ -29,7 +29,7 @@
 /// out of range or the package has no parseable `presentation.xml`.
 pub fn Presentation::duplicate_slide_mut(
   self : Presentation,
-  slide_index : Int,
+  slide_index : Int32,
 ) -> String raise PptxError {
   let parts = self.ordered_slide_parts()
   if slide_index < 0 || slide_index >= parts.length() {
@@ -96,7 +96,7 @@ pub fn Presentation::duplicate_slide_mut(
 /// part name; the original is untouched.
 pub fn Presentation::with_duplicated_slide(
   self : Presentation,
-  slide_index : Int,
+  slide_index : Int32,
 ) -> (Presentation, String) raise PptxError {
   let cloned = self.clone()
   let new_name = cloned.duplicate_slide_mut(slide_index)

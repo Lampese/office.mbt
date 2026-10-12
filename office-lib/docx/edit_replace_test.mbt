@@ -48,7 +48,7 @@ fn edit_script(ops : Array[Json]) -> @docx.DocxEditScript raise {
 }
 
 ///|
-fn replace_op(find : String, replace : String, occurrence? : Int) -> Json {
+fn replace_op(find : String, replace : String, occurrence? : Int32) -> Json {
   let params : Map[String, Json] = {
     "find": Json::string(find),
     "replace": Json::string(replace),

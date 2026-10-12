@@ -8,7 +8,7 @@
 ///|
 /// Position of `name` in the `CT_Workbook` child sequence, or `None` when the
 /// element is not a `CT_Workbook` child at all.
-fn ct_workbook_sequence_position(name : String) -> Int? {
+fn ct_workbook_sequence_position(name : String) -> Int32? {
   [
     "fileVersion", "fileSharing", "workbookPr", "workbookProtection", "bookViews",
     "sheets", "functionGroups", "externalReferences", "definedNames", "calcPr", "oleSize",
@@ -72,7 +72,7 @@ fn written_workbook_xml(workbook : @xlsx.Workbook) -> String raise {
 
 ///|
 /// Byte offset of `needle` in `xml`.
-fn workbook_xml_offset(xml : String, needle : String) -> Int raise {
+fn workbook_xml_offset(xml : String, needle : String) -> Int32 raise {
   match xml.find(needle) {
     Some(offset) => offset
     None => fail("expected \{needle} in:\n\{xml}")

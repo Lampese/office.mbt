@@ -12,7 +12,7 @@ pub fn demo_sparklines_bytes() -> Bytes raise @xlsx.XlsxError {
     "Nov", "Dec", "Trend",
   ])
   let teams : ReadOnlyArray[String] = ["Alpha", "Beta", "Gamma", "Delta"]
-  let data : ReadOnlyArray[Array[Int]] = [
+  let data : ReadOnlyArray[Array[Int32]] = [
     [3, 4, 3, 5, 6, 7, 8, 7, 7, 8, 9, 10],
     [6, 5, 6, 6, 5, 4, 5, 5, 6, 7, 6, 6],
     [2, 2, 3, 2, 3, 2, 4, 5, 4, 4, 5, 6],

@@ -117,9 +117,9 @@ pub fn emit_rows(
   layout : TableLayoutResult,
   origin_x : Double,
   origin_y : Double,
-  first : Int,
-  last : Int,
-  repeat_header? : Bool = false,
+  first : Int32,
+  last : Int32,
+  repeat_header~ : Bool = false,
 ) -> Array[@pagelayout.PageItem] {
   let items : Array[@pagelayout.PageItem] = []
   let mut y = origin_y
@@ -148,9 +148,9 @@ pub fn emit_rows(
 /// continuation would carry them.
 pub fn rows_height_pt(
   layout : TableLayoutResult,
-  first : Int,
-  last : Int,
-  repeat_header? : Bool = false,
+  first : Int32,
+  last : Int32,
+  repeat_header~ : Bool = false,
 ) -> Double {
   let mut height = 0.0
   if repeat_header && first > 0 {

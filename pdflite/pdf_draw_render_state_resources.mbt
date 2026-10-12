@@ -59,7 +59,7 @@ fn PdfDrawRenderState::form_resource_name(
 fn PdfDrawRenderState::font_resource_name(
   self : PdfDrawRenderState,
   identifier : String,
-  font_index : Int,
+  font_index : Int32,
 ) -> @core.PdfName raise @core.PdfError {
   match self.stored_font_resource(identifier, font_index) {
     Some(resource) => {

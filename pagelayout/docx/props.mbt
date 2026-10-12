@@ -96,8 +96,8 @@ pub(all) struct ParaProps {
   widow_control : Bool?
   page_break_before : Bool?
   /// `w:numPr`: the list instance and level this paragraph belongs to.
-  num_id : Int?
-  num_level : Int?
+  num_id : Int32?
+  num_level : Int32?
   /// `w:tabs`, in authored order.
   tabs : Array[@paragraph.TabStop]?
 } derive(Eq, Debug, ToJson)
@@ -214,7 +214,7 @@ fn twips_pt(v : @pagelayout.Twips?) -> Double {
 /// line spacing.
 pub fn ParaProps::resolve(
   self : ParaProps,
-  default_tab_pt? : Double = 36.0,
+  default_tab_pt~ : Double = 36.0,
 ) -> @paragraph.ParagraphStyle {
   // The implicit hanging-indent tab stop is NOT inserted here: a
   // numbering level's indents can still override these after resolution,

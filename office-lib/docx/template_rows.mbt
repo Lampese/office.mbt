@@ -25,7 +25,7 @@ let xml_builtin_ns : String = "http://www.w3.org/XML/1998/namespace"
 /// clone (paraId/textId attribute tokens, ascending), or the first
 /// refusal (byte offset + reason).
 priv struct RowGateOutcome {
-  strip_spans : Array[(Int, Int)]
+  strip_spans : Array[(Int32, Int32)]
   refusal : String?
 }
 
@@ -53,7 +53,7 @@ fn row_byte_is_name(byte : Byte) -> Bool {
 /// ASCII slice to String; None when any byte is outside printable ASCII
 /// (names and namespace URIs in OOXML are ASCII — anything else refuses
 /// upstream).
-fn row_ascii(bytes : BytesView, start : Int, end : Int) -> String? {
+fn row_ascii(bytes : BytesView, start : Int32, end : Int32) -> String? {
   let out = StringBuilder()
   for index in start..<end {
     let byte = bytes[index]
@@ -69,7 +69,7 @@ fn row_ascii(bytes : BytesView, start : Int, end : Int) -> String? {
 /// Decodes the five predefined entities inside an ASCII attribute value
 /// (namespace URIs bound through entity spellings still resolve — the
 /// round-4 plan note); None on anything unknown or non-ASCII.
-fn row_attr_value(bytes : BytesView, start : Int, end : Int) -> String? {
+fn row_attr_value(bytes : BytesView, start : Int32, end : Int32) -> String? {
   let out = StringBuilder()
   let mut index = start
   while index < end {
@@ -319,7 +319,7 @@ fn row_safety_gate(
   row : BytesView,
   bindings : Map[String, String],
 ) -> RowGateOutcome {
-  let strip_spans : Array[(Int, Int)] = []
+  let strip_spans : Array[(Int32, Int32)] = []
   let frames : Array[Map[String, String]] = [bindings]
   fn resolve(prefix : String) -> String? {
     let mut index = frames.length() - 1
@@ -401,7 +401,7 @@ fn row_safety_gate(
     }
     // first pass: attribute tokens (with leading-whitespace ownership)
     // and same-tag namespace declarations
-    let attrs : Array[(String, Int, Int, Int, Int)] = []
+    let attrs : Array[(String, Int32, Int32, Int32, Int32)] = []
     // (raw name, token_start, token_end, value_start, value_end)
     let tag_bindings : Map[String, String] = Map([])
     let mut cursor = name_end
@@ -549,7 +549,7 @@ fn row_safety_gate(
 /// declarations on ANY ancestor (the document root, an enclosing
 /// w:tbl, ...) reach the row (codex #213 round 1: a tbl-level binding
 /// was refused as unbound). None when the structure resists the walk.
-fn part_bindings_at(part : BytesView, offset : Int) -> Map[String, String]? {
+fn part_bindings_at(part : BytesView, offset : Int32) -> Map[String, String]? {
   let frames : Array[Map[String, String]] = []
   let mut index = 0
   while index < offset && index < part.length() {
@@ -690,9 +690,9 @@ pub(all) struct DocxRegionOutcome {
   name : String
   /// The region as addressed ("/docx/body/tbl[1]/tr[2]").
   source_location : String
-  records : Int
-  replaced : Int
-  escapes_applied : Int
+  records : Int32
+  replaced : Int32
+  escapes_applied : Int32
 } derive(Eq, @debug.Debug)
 
 ///|
@@ -700,7 +700,7 @@ pub(all) struct DocxRegionOutcome {
 pub struct DocxTemplateDocumentResult {
   report : DocxTemplateReport
   regions : Array[DocxRegionOutcome]
-  scalar_paragraphs_skipped : Int
+  scalar_paragraphs_skipped : Int32
   transaction : @transaction.TransactionReport
 }
 
@@ -708,15 +708,15 @@ pub struct DocxTemplateDocumentResult {
 /// Total clone bytes one merge may materialize before the splice layer
 /// even sees them (its own aggregate accounting remains authoritative
 /// once queued).
-let docx_clone_byte_guard : Int = 8 * 1024 * 1024
+let docx_clone_byte_guard : Int32 = 8 * 1024 * 1024
 
 ///|
 priv struct DocxRegionPlan {
   name : String
   source_location : String
-  span_start : Int
-  span_end : Int
-  strip_spans : Array[(Int, Int)]
+  span_start : Int32
+  span_end : Int32
+  strip_spans : Array[(Int32, Int32)]
   paragraphs : Array[(String, Array[@document.DocumentElement])]
   records : Array[Map[String, @template.TemplateValue]]
 }
@@ -724,8 +724,8 @@ priv struct DocxRegionPlan {
 ///|
 /// One local byte edit inside a row clone.
 priv struct CloneEdit {
-  start : Int
-  end : Int
+  start : Int32
+  end : Int32
   replacement : Bytes
 }
 
@@ -736,11 +736,11 @@ priv struct CloneEdit {
 /// shrinks the bound below the region, so this over-counts and cannot
 /// under-report.
 fn docx_clone_upper_bound(
-  span_start : Int,
-  span_end : Int,
+  span_start : Int32,
+  span_end : Int32,
   record_edits : Array[DocxRunEdit],
-) -> Int {
-  fn saturating_add(a : Int, b : Int) -> Int {
+) -> Int32 {
+  fn saturating_add(a : Int32, b : Int32) -> Int32 {
     if a > 0x3FFFFFFF - b {
       0x3FFFFFFF
     } else {
@@ -776,7 +776,7 @@ pub async fn transact_docx_template_document(
 ) -> DocxTemplateDocumentResult {
   let collected : Ref[DocxTemplateReport?] = Ref(None)
   let outcomes : Ref[Array[DocxRegionOutcome]] = Ref([])
-  let skipped : Ref[Int] = Ref(0)
+  let skipped : Ref[Int32] = Ref(0)
   let report = transact_docx(options, session => {
     let state : DocxMergeState = {
       report: {
@@ -945,7 +945,7 @@ pub async fn transact_docx_template_document(
     // record-ordinal and final texts are per clone ----
     let region_edits : Array[Array[Array[DocxRunEdit]]] = []
     let region_used : Array[Array[Set[String]]] = []
-    let region_counters : Array[(Int, Int)] = []
+    let region_counters : Array[(Int32, Int32)] = []
     for plan in plans {
       let per_record : Array[Array[DocxRunEdit]] = []
       let per_record_used : Array[Set[String]] = []
@@ -1076,7 +1076,7 @@ pub async fn transact_docx_template_document(
     state.report.distinct_keys_used = state.used_keys.length()
     docx_run_fidelity_pass(state, session, annotated)
     // ---- clone materialization (exact accounting BEFORE building) ----
-    let replacements : Array[(Int, Int, Bytes)] = []
+    let replacements : Array[(Int32, Int32, Bytes)] = []
     let clean = state.report.malformed_total == 0 &&
       state.report.unsupported_total == 0 &&
       (state.report.missing_total == 0 || allow_missing)
@@ -1086,7 +1086,7 @@ pub async fn transact_docx_template_document(
           "office.docx.template_internal", "the body part vanished mid-merge",
         )
       }
-      fn saturating_add(a : Int, b : Int) -> Int {
+      fn saturating_add(a : Int32, b : Int32) -> Int32 {
         if a > 0x3FFFFFFF - b {
           0x3FFFFFFF
         } else {
@@ -1247,9 +1247,9 @@ pub async fn transact_docx_template_document(
 /// outside the region (a planner inconsistency, surfaced as a refusal).
 fn docx_build_row_clone(
   part_bytes : BytesView,
-  span_start : Int,
-  span_end : Int,
-  strip_spans : Array[(Int, Int)],
+  span_start : Int32,
+  span_end : Int32,
+  strip_spans : Array[(Int32, Int32)],
   record_edits : Array[DocxRunEdit],
   annotated : @word.DocxAnnotatedResult,
 ) -> Bytes? {

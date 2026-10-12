@@ -3,11 +3,11 @@
 /// unsuitable as persistent editing identities. Text excludes inherited
 /// master/layout placeholders, charts, SmartArt, and embedded documents.
 pub struct SlideSummary {
-  index : Int
+  index : Int32
   part : String
   text : String
   notes : String
-  shape_count : Int
+  shape_count : Int32
 }
 
 ///|
@@ -20,10 +20,10 @@ pub struct PresentationSummary {
 
 ///|
 priv struct ReadBudget {
-  maximum : Int
-  mut used : Int
-  text_limit : Int
-  mut text_used : Int
+  maximum : Int32
+  mut used : Int32
+  text_limit : Int32
+  mut text_used : Int32
   cancelled : () -> Bool
 }
 
@@ -118,9 +118,9 @@ fn shape_text(
 /// by the presentation engine, so it is rejected rather than returning no slides.
 pub fn read_presentation(
   bytes : Bytes,
-  max_elements? : Int = 50_000,
-  max_text_chars? : Int = 16 * 1024 * 1024,
-  cancelled? : () -> Bool = () => false,
+  max_elements~ : Int32 = 50_000,
+  max_text_chars~ : Int32 = 16 * 1024 * 1024,
+  cancelled~ : () -> Bool = () => false,
 ) -> PresentationSummary raise {
   guard max_elements > 0 && max_elements <= 200_000 else {
     raise @office.InvalidPackage(

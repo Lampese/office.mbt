@@ -4,7 +4,7 @@ fn toc_bytes_for_test(text : String) -> @core.PdfBytes {
 }
 
 ///|
-fn toc_raw_bytes_for_test(values : ArrayView[Int]) -> @core.PdfBytes {
+fn toc_raw_bytes_for_test(values : ArrayView[Int32]) -> @core.PdfBytes {
   let output : Array[Byte] = []
   for value in values {
     output.push(value.to_byte())

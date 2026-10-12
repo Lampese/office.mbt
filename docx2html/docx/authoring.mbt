@@ -13,7 +13,7 @@
 /// byte ceiling summed over occurrences. Enforced BEFORE the writer graph is
 /// built, so a script that references one asset thousands of times is refused
 /// as a typed media limit rather than after materializing every part.
-pub const MAX_AUTHORED_MEDIA_PARTS : Int = 1000
+pub const MAX_AUTHORED_MEDIA_PARTS : Int32 = 1000
 
 ///|
 /// Maximum aggregate emitted-media bytes, summed over image occurrences rather

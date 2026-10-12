@@ -339,7 +339,7 @@ test "PdfDocument colour_space_components counts direct and resource spaces" {
     ),
     3,
   )
-  let missing_resource : Result[Int, Error] = try
+  let missing_resource : Result[Int32, Error] = try
     doc.colour_space_components(
       @syntax.pdf_dictionary([]),
       PdfNameObject(space_name_for_test("/CSMissingDict")),
@@ -353,7 +353,7 @@ test "PdfDocument colour_space_components counts direct and resource spaces" {
     name == space_name_for_test("/ColorSpace") else {
     fail("expected missing ColorSpace resource dictionary")
   }
-  let missing_space : Result[Int, Error] = try
+  let missing_space : Result[Int32, Error] = try
     doc.colour_space_components(
       resources,
       PdfNameObject(space_name_for_test("/CSMissing")),
@@ -496,7 +496,7 @@ test "PdfDocument colour_space_components counts special spaces" {
 test "PdfDocument colour_space_components rejects malformed spaces" {
   let doc = @pdflite.pdf_document_empty()
   let resources = @syntax.pdf_dictionary([])
-  let pattern : Result[Int, Error] = try
+  let pattern : Result[Int32, Error] = try
     doc.colour_space_components(
       resources,
       PdfNameObject(space_name_for_test("/Pattern")),
@@ -509,7 +509,7 @@ test "PdfDocument colour_space_components rejects malformed spaces" {
   guard pattern is Err(@core.PdfError::ColourSpaceExpected) else {
     fail("expected @core.PdfError::ColourSpaceExpected for pattern")
   }
-  let bad_icc : Result[Int, Error] = try
+  let bad_icc : Result[Int32, Error] = try
     doc.colour_space_components(
       resources,
       PdfArray([
@@ -525,7 +525,7 @@ test "PdfDocument colour_space_components rejects malformed spaces" {
   guard bad_icc is Err(@core.PdfError::ColourSpaceExpected) else {
     fail("expected @core.PdfError::ColourSpaceExpected for bad ICCBased")
   }
-  let malformed : Result[Int, Error] = try
+  let malformed : Result[Int32, Error] = try
     doc.colour_space_components(
       resources,
       PdfArray([PdfInteger(1), PdfInteger(2)]),

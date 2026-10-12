@@ -39,7 +39,7 @@ fn ResourceKind::dict_key(self : ResourceKind) -> String {
 ///|
 /// The resources used by a content stream.
 priv struct ResourceDictionary {
-  entries : Array[(ResourceKind, Int, String)]
+  entries : Array[(ResourceKind, Int32, String)]
 }
 
 ///|
@@ -52,7 +52,7 @@ fn ResourceDictionary::new() -> ResourceDictionary {
 fn ResourceDictionary::register(
   self : ResourceDictionary,
   kind : ResourceKind,
-  ref_ : Int,
+  ref_ : Int32,
 ) -> String {
   let mut count = 0
   for e in self.entries {
@@ -92,7 +92,7 @@ priv struct ExtGState {
   non_stroking_alpha : Double?
   stroking_alpha : Double?
   blend_mode : String?
-  mask : Int?
+  mask : Int32?
 } derive(Eq, Debug)
 
 ///|
@@ -190,7 +190,7 @@ pub struct Stream {
   priv resources : ResourceDictionary
   priv uses_mask : Bool
   /// The stream ID and number of marked content IDs of tagged content.
-  priv struct_info : (Int, Int)?
+  priv struct_info : (Int32, Int32)?
 }
 
 ///|

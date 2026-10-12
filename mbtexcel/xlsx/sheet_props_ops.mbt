@@ -77,7 +77,10 @@ fn check_header_footer_limits(
 }
 
 ///|
-fn remove_break_by_id(breaks : Array[PageBreak], id : Int) -> Array[PageBreak] {
+fn remove_break_by_id(
+  breaks : Array[PageBreak],
+  id : Int32,
+) -> Array[PageBreak] {
   let updated : Array[PageBreak] = []
   for brk in breaks {
     if brk.id == id {
@@ -232,7 +235,7 @@ pub fn Worksheet::protect_sheet(
 ///|
 pub fn Worksheet::unprotect_sheet(
   self : Worksheet,
-  password? : String = "",
+  password~ : String = "",
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
   match self.sheet_protection {

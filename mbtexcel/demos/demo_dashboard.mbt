@@ -1,5 +1,5 @@
 ///|
-fn dashboard_styles(workbook : @xlsx.Workbook) -> (Int, Int, Int) {
+fn dashboard_styles(workbook : @xlsx.Workbook) -> (Int32, Int32, Int32) {
   let header_font = @xlsx.Font::with_values(
     bold=true,
     size=12.0,
@@ -66,13 +66,15 @@ pub fn demo_dashboard_bytes() -> Bytes raise @xlsx.XlsxError {
     "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
     "Dec",
   ]
-  let north : ReadOnlyArray[Int] = [
+  let north : ReadOnlyArray[Int32] = [
     12, 15, 11, 18, 22, 24, 20, 21, 19, 25, 27, 30,
   ]
-  let south : ReadOnlyArray[Int] = [
+  let south : ReadOnlyArray[Int32] = [
     9, 10, 8, 11, 13, 14, 13, 15, 16, 18, 19, 21,
   ]
-  let west : ReadOnlyArray[Int] = [7, 6, 9, 10, 11, 12, 10, 11, 12, 13, 14, 16]
+  let west : ReadOnlyArray[Int32] = [
+    7, 6, 9, 10, 11, 12, 10, 11, 12, 13, 14, 16,
+  ]
   for i in 0..<months.length() {
     let row = i + 2
     let sum = north[i] + south[i] + west[i]

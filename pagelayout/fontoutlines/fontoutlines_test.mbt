@@ -42,7 +42,7 @@ test "glyph ids match the source font" {
   guard @fontoutlines.outline_sfnt("Noto Sans SC") is Some(sfnt) else {
     fail("Noto Sans SC has no bundled outlines")
   }
-  let cmap : Map[Int, Int] = Map([])
+  let cmap : Map[Int32, Int32] = Map([])
   for entry in @pdflite.pdf_truetype_cmap_glyphs(sfnt) {
     cmap[entry.codepoint] = entry.glyph_index
   }

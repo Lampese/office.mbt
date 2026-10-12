@@ -3,7 +3,7 @@
 
 ///|
 /// A fresh deck with `n` slides on layout 0.
-fn deck_with_slides(n : Int) -> @presentation.Presentation raise {
+fn deck_with_slides(n : Int32) -> @presentation.Presentation raise {
   let prs = @presentation.Presentation::new()
   for _ in 0..<n {
     let _ = prs.add_slide_mut(0)

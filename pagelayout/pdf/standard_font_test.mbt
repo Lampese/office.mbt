@@ -10,7 +10,7 @@
 
 ///|
 /// The characters of WinAnsi's 0x80–0x9F range, by code (0: unused).
-let winansi_high_chars : Array[Int] = [
+let winansi_high_chars : Array[Int32] = [
   0x20AC, 0, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021, 0x02C6, 0x2030, 0x0160,
   0x2039, 0x0152, 0, 0x017D, 0, 0, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013,
   0x2014, 0x02DC, 0x2122, 0x0161, 0x203A, 0x0153, 0, 0x017E, 0x0178,
@@ -19,7 +19,7 @@ let winansi_high_chars : Array[Int] = [
 ///|
 /// The width of WinAnsi `code` in `font`, in thousandths of an em: what a
 /// viewer advances by, from the font's own AFM.
-fn afm_width(font : @pdflite.PdfStandardFont, code : Int) -> Int {
+fn afm_width(font : @pdflite.PdfStandardFont, code : Int32) -> Int32 {
   @pdflite.pdf_standard14_text_width(
     font,
     PdfWinAnsiEncoding,
@@ -37,7 +37,7 @@ fn standard_metrics(
 ) -> @fonts.FaceMetrics raise {
   let font = @pdflite.pdf_standard_font_of_name("/" + name).unwrap()
   let advances = Array::make(256, 0)
-  let cmap : Map[Int, Int] = Map([])
+  let cmap : Map[Int32, Int32] = Map([])
   for code in 0x20..<0x100 {
     let codepoint = if code >= 0x80 && code <= 0x9F {
       winansi_high_chars[code - 0x80]
@@ -66,9 +66,9 @@ fn standard_metrics(
 /// The (code, x) of every code a viewer shows in a standard font, placing
 /// each glyph by the font's own AFM widths (not by anything the renderer
 /// was given) and by the `TJ` displacements.
-fn viewer_positions(bytes : Bytes) -> Array[(Int, Double)] raise {
+fn viewer_positions(bytes : Bytes) -> Array[(Int32, Double)] raise {
   let document = @pdflite.pdf_read_document_from_bytes(bytes)
-  let placed : Array[(Int, Double)] = []
+  let placed : Array[(Int32, Double)] = []
   for page in document.pages_of_pagetree() {
     let fonts = document
       .lookup_direct(name("/Font"), page.resources)

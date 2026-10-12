@@ -1,22 +1,22 @@
 ///|
 /// Maximum canonical selector length in Unicode scalar values.
-pub const SELECTOR_MAX_LENGTH : Int = 2048
+pub const SELECTOR_MAX_LENGTH : Int32 = 2048
 
 ///|
 /// Maximum number of segments after the format root.
-pub const SELECTOR_MAX_DEPTH : Int = 32
+pub const SELECTOR_MAX_DEPTH : Int32 = 32
 
 ///|
 /// Maximum number of bracketed selectors, including an XLSX coordinate leaf.
-pub const SELECTOR_MAX_SELECTIONS : Int = 32
+pub const SELECTOR_MAX_SELECTIONS : Int32 = 32
 
 ///|
 /// Maximum segment or key name length.
-pub const SELECTOR_MAX_NAME_LENGTH : Int = 32
+pub const SELECTOR_MAX_NAME_LENGTH : Int32 = 32
 
 ///|
 /// Maximum decoded named-selector value length in Unicode scalar values.
-pub const SELECTOR_MAX_VALUE_LENGTH : Int = 256
+pub const SELECTOR_MAX_VALUE_LENGTH : Int32 = 256
 
 ///|
 let selector_max_echo_length = 160
@@ -43,19 +43,19 @@ priv enum ParsedSelectorSegment {
 priv enum SelectorUnicodeScan {
   Valid
   TooLong
-  Invalid(Int)
+  Invalid(Int32)
 }
 
 ///|
 priv struct SelectorParser {
   source : String
   chars : Array[Char]
-  mut position : Int
-  mut selection_count : Int
+  mut position : Int32
+  mut selection_count : Int32
 }
 
 ///|
-fn scan_selector_unicode(text : String, limit : Int) -> SelectorUnicodeScan {
+fn scan_selector_unicode(text : String, limit : Int32) -> SelectorUnicodeScan {
   let unit_length = text.length()
   let mut unit_offset = 0
   let mut scalar_offset = 0
@@ -81,7 +81,7 @@ fn scan_selector_unicode(text : String, limit : Int) -> SelectorUnicodeScan {
 }
 
 ///|
-fn bounded_selector_text(text : String, limit : Int) -> String {
+fn bounded_selector_text(text : String, limit : Int32) -> String {
   let output = StringBuilder()
   let mut length = 0
   let mut truncated = false
@@ -131,7 +131,7 @@ fn SelectorParser::advance(self : SelectorParser) -> Char? {
 fn SelectorParser::fail_at(
   self : SelectorParser,
   code : String,
-  offset : Int,
+  offset : Int32,
   message : String,
 ) -> SelectorError {
   SelectorError(
@@ -166,7 +166,7 @@ fn SelectorParser::expect(
 
 ///|
 fn selector_name_start(character : Char) -> Bool {
-  character is ('a'..='z')
+  character is ('a'..<='z')
 }
 
 ///|
@@ -224,8 +224,8 @@ fn SelectorParser::count_selection(
 ///|
 fn SelectorParser::parse_positive_index(
   self : SelectorParser,
-  start : Int,
-) -> Int raise SelectorError {
+  start : Int32,
+) -> Int32 raise SelectorError {
   let mut value = 0
   let mut digits = 0
   while self.peek() is Some(character) && character.is_ascii_digit() {
@@ -351,7 +351,7 @@ fn SelectorParser::parse_regular_selection(
 ///|
 fn SelectorParser::parse_coordinate_token(
   self : SelectorParser,
-) -> (String, Int) raise SelectorError {
+) -> (String, Int32) raise SelectorError {
   self.expect(
     '[', "office.selector.invalid_coordinate", "expected '[' before XLSX coordinate",
   )
@@ -380,12 +380,12 @@ fn SelectorParser::parse_coordinate_token(
 fn parse_a1_address(
   parser : SelectorParser,
   value : String,
-  offset : Int,
+  offset : Int32,
 ) -> CellAddress raise SelectorError {
   let chars = value.to_array()
   let mut split = 0
   while split < chars.length() &&
-        (chars[split] is ('A'..='Z') || chars[split] is ('a'..='z')) {
+        (chars[split] is ('A'..<='Z') || chars[split] is ('a'..<='z')) {
     split = split + 1
   }
   if split == 0 || split == chars.length() || split > 3 {

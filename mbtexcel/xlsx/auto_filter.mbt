@@ -34,7 +34,7 @@ pub struct AutoFilterCustomFilters {
 
 ///|
 pub struct AutoFilterColumn {
-  col : Int
+  col : Int32
   filters : Array[String]?
   custom_filters : AutoFilterCustomFilters?
 } derive(Debug)
@@ -111,7 +111,7 @@ fn tokenize_filter_expression(
 ///|
 fn parse_filter_tokens(
   tokens : ArrayView[String],
-) -> (Int, String) raise XlsxError {
+) -> (Int32, String) raise XlsxError {
   if tokens.length() != 3 {
     raise InvalidAutoFilter(msg="auto filter expression invalid")
   }
@@ -154,11 +154,11 @@ fn parse_filter_tokens(
 ///|
 fn parse_filter_expression(
   tokens : ArrayView[String],
-) -> (Array[Int], Array[String]) raise XlsxError {
+) -> (Array[Int32], Array[String]) raise XlsxError {
   if tokens.length() < 3 || (tokens.length() + 1) % 4 != 0 {
     raise InvalidAutoFilter(msg="auto filter expression invalid")
   }
-  let ops : Array[Int] = []
+  let ops : Array[Int32] = []
   let values : Array[String] = []
   for i = 0; i < tokens.length(); i = i + 4 {
     if i > 0 {
@@ -177,7 +177,7 @@ fn parse_filter_expression(
 }
 
 ///|
-fn custom_filter_operator(op : Int) -> String raise XlsxError {
+fn custom_filter_operator(op : Int32) -> String raise XlsxError {
   match op {
     1 => "lessThan"
     2 => "equal"
@@ -192,7 +192,7 @@ fn custom_filter_operator(op : Int) -> String raise XlsxError {
 
 ///|
 fn auto_filter_column_from_expression(
-  col : Int,
+  col : Int32,
   expression : StringView,
 ) -> AutoFilterColumn raise XlsxError {
   let tokens = tokenize_filter_expression(expression)
@@ -335,7 +335,7 @@ fn clone_auto_filter(filter : AutoFilter) -> AutoFilter {
 
 ///|
 test "auto filter wb: parse_filter_tokens rejects non-3 token input" {
-  let bad_tokens : Result[(Int, String), Error] = Ok(
+  let bad_tokens : Result[(Int32, String), Error] = Ok(
     parse_filter_tokens(["x", "=="]),
   ) catch {
     e => Err(e)

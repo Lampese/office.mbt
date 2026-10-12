@@ -15,8 +15,8 @@ pub(all) struct PdfPortfolioEntry {
 pub fn pdf_portfolio_entry(
   filename : String,
   data : BytesView,
-  relationship? : String? = None,
-  description? : String? = None,
+  relationship~ : String? = None,
+  description~ : String? = None,
 ) -> PdfPortfolioEntry {
   { filename, data: data.to_owned(), relationship, description, }
 }

@@ -2,17 +2,17 @@
 
 ///|
 /// PostScript string identifier (SID).
-pub(all) struct Sid(Int) derive(Eq, Compare, Hash, Debug)
+pub(all) struct Sid(Int32) derive(Eq, Compare, Hash, Debug)
 
 ///|
 /// Creates an identifier from a 16-bit unsigned integer.
-pub fn Sid::new(raw : Int) -> Sid {
+pub fn Sid::new(raw : Int32) -> Sid {
   Sid(raw & 0xFFFF)
 }
 
 ///|
 /// Returns the underlying identifier as a 16-bit unsigned integer.
-pub fn Sid::to_u16(self : Sid) -> Int {
+pub fn Sid::to_u16(self : Sid) -> Int32 {
   self.0
 }
 
@@ -22,7 +22,7 @@ pub fn Sid::to_u16(self : Sid) -> Int {
 /// If the identifier represents a standard string, returns `Ok(string)`,
 /// otherwise returns `Err(index)` with the index that should be used to
 /// retrieve the string from the CFF string INDEX.
-pub fn Sid::resolve_standard(self : Sid) -> Result[String, Int] {
+pub fn Sid::resolve_standard(self : Sid) -> Result[String, Int32] {
   let ix = self.0
   if ix < standard_strings.length() {
     Ok(standard_strings[ix])

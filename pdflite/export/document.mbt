@@ -47,15 +47,15 @@ pub fn PageSettings::with_page_label(
 pub struct Page {
   priv sc : SerializeContext
   priv settings : PageSettings
-  priv page_index : Int
+  priv page_index : Int32
   priv mut stream : Stream
-  priv mut num_mcids : Int
+  priv mut num_mcids : Int32
   priv annotations : Array[Annotation]
 }
 
 ///|
 /// The page index.
-pub fn Page::index(self : Page) -> Int {
+pub fn Page::index(self : Page) -> Int32 {
   self.page_index
 }
 
@@ -124,11 +124,11 @@ pub fn Surface::finish(self : Surface) -> Unit {
 
 ///|
 priv struct InternalPage {
-  stream_ref : Int
+  stream_ref : Int32
   stream : Stream
   settings : PageSettings
-  page_index : Int
-  struct_parent : Int?
+  page_index : Int32
+  struct_parent : Int32?
   annotations : Array[Annotation]
 }
 
@@ -158,7 +158,7 @@ pub fn Page::finish(self : Page) -> Unit {
 ///|
 fn SerializeContext::serialize_page(
   self : SerializeContext,
-  root_ref : Int,
+  root_ref : Int32,
   page : InternalPage,
 ) -> Unit raise ExportError {
   let height = page.settings.surface_size.height

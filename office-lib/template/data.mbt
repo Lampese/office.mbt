@@ -11,11 +11,11 @@ pub const SCHEMA_TEMPLATE_DATA : String = "office.template.data/1"
 
 ///|
 /// Default maximum number of scalar keys in `values` or one region record.
-pub const MAX_TEMPLATE_KEYS : Int = 4096
+pub const MAX_TEMPLATE_KEYS : Int32 = 4096
 
 ///|
 /// Default maximum UTF-16 code units in one template string value.
-pub const MAX_TEMPLATE_VALUE_UNITS : Int = 65536
+pub const MAX_TEMPLATE_VALUE_UNITS : Int32 = 65536
 
 ///|
 /// Errors raised while parsing a template data document.
@@ -92,12 +92,12 @@ fn template_value_text_ok(text : String) -> Bool {
 /// reported by the real parser rather than this pre-scan.
 fn check_duplicate_keys(
   text : String,
-  on_member? : ((Array[String], String, Int) -> Unit raise TemplateDataError)? = None,
+  on_member~ : ((Array[String], String, Int32) -> Unit raise TemplateDataError)? = None,
 ) -> Unit raise TemplateDataError {
   let units = text.code_units()
   let length = units.length()
   let frames : Array[ScanFrame] = []
-  let member_events : Array[(Array[String], String, Int)] = []
+  let member_events : Array[(Array[String], String, Int32)] = []
   let mut index = 0
   while index < length {
     let unit = units[index].to_int()
@@ -224,8 +224,8 @@ priv struct ScanFrame {
 /// `max_value_units` UTF-16 code units.
 pub fn parse_template_data(
   text : String,
-  max_keys? : Int = MAX_TEMPLATE_KEYS,
-  max_value_units? : Int = MAX_TEMPLATE_VALUE_UNITS,
+  max_keys~ : Int32 = MAX_TEMPLATE_KEYS,
+  max_value_units~ : Int32 = MAX_TEMPLATE_VALUE_UNITS,
 ) -> Map[String, TemplateValue] raise TemplateDataError {
   check_duplicate_keys(text)
   let document = @json.parse(text) catch {
@@ -269,8 +269,8 @@ pub fn parse_template_data(
 /// for records); `container` names it in the key-count message.
 fn parse_scalar_entries(
   entries : Map[String, Json],
-  max_keys : Int,
-  max_value_units : Int,
+  max_keys : Int32,
+  max_value_units : Int32,
   prefix : String,
   container : String,
 ) -> Map[String, TemplateValue] raise TemplateDataError {

@@ -23,7 +23,7 @@ pub fn FontRef::mvar(self : FontRef) -> Mvar raise ReadError {
 /// normalized variation coordinates.
 pub fn Mvar::metric_delta(
   self : Mvar,
-  tag : UInt,
+  tag : UInt32,
   coords : ArrayView[F2Dot14],
 ) -> Fixed raise ReadError {
   let count = self.data.read_u16(8)

@@ -13,7 +13,7 @@ enum PdfContentInlineTextFilter {
 } derive(Debug, Eq)
 
 ///|
-type PdfContentColourSpaceComponents = (@syntax.PdfObject) -> Int raise @core.PdfError
+type PdfContentColourSpaceComponents = (@syntax.PdfObject) -> Int32 raise @core.PdfError
 
 ///|
 type PdfContentStreamDecoder = (@syntax.PdfStream) -> @syntax.PdfStream raise @core.PdfError

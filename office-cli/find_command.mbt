@@ -8,12 +8,12 @@
 ///|
 /// Hard ceiling on returned candidates, so a needle matching everything
 /// cannot produce an unbounded document.
-const DOCX_FIND_HARD_LIMIT : Int = 1000
+const DOCX_FIND_HARD_LIMIT : Int32 = 1000
 
 ///|
 /// Default ceiling, chosen to be generous for real edits while still
 /// bounding an accidental single-character needle.
-const DOCX_FIND_DEFAULT_LIMIT : Int = 100
+const DOCX_FIND_DEFAULT_LIMIT : Int32 = 100
 
 ///|
 fn docx_find_command() -> @argparse.Command {

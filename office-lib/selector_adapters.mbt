@@ -36,7 +36,7 @@ let selector_max_coordinate_length = 21
 fn check_xlsx_adapter_argument(
   value : String,
   label : String,
-  limit : Int,
+  limit : Int32,
 ) -> Unit raise SelectorError {
   match scan_selector_unicode(value, limit) {
     Invalid(offset) =>

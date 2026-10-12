@@ -13,8 +13,8 @@ fn contract_strings(values : Array[String]) -> Json {
 fn contract_object(
   name : String,
   entries : Array[(String, String)],
-  required? : Array[String] = [],
-  constraints? : Array[String] = [],
+  required~ : Array[String] = [],
+  constraints~ : Array[String] = [],
 ) -> Json {
   @input_contract.contract_object(name, entries, required~, constraints~)
 }
@@ -23,7 +23,7 @@ fn contract_object(
 fn contract_type(
   name : String,
   type_name : String,
-  constraints? : Array[String] = [],
+  constraints~ : Array[String] = [],
 ) -> Json {
   @input_contract.contract_type(name, type_name, constraints~)
 }
@@ -575,7 +575,7 @@ fn edit_v1_input_contract() -> InputContractCore {
 }
 
 ///|
-fn edit_input_contract_versioned(version : Int) -> InputContractCore {
+fn edit_input_contract_versioned(version : Int32) -> InputContractCore {
   let operations : Array[Json] = []
   for name in @office_docx.docx_edit_operation_names_list() {
     if version == 1 && name == "set_run_text" {

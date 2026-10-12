@@ -34,8 +34,8 @@ fn to_hex(b : Bytes) -> String {
 /// message.
 fn check_subset(
   font : Bytes,
-  index : Int,
-  glyphs : Array[Int],
+  index : Int32,
+  glyphs : Array[Int32],
   coords : Array[(String, Double)]?,
   expected? : Bytes,
   error? : String,

@@ -19,8 +19,8 @@
 /// parseable `presentation.xml`.
 pub fn Presentation::move_slide_mut(
   self : Presentation,
-  from : Int,
-  to : Int,
+  from : Int32,
+  to : Int32,
 ) -> Unit raise PptxError {
   let parts = self.ordered_slide_parts()
   let n = parts.length()
@@ -82,8 +82,8 @@ pub fn Presentation::move_slide_mut(
 /// `to`; the original is untouched.
 pub fn Presentation::with_slide_moved(
   self : Presentation,
-  from : Int,
-  to : Int,
+  from : Int32,
+  to : Int32,
 ) -> Presentation raise PptxError {
   let cloned = self.clone()
   cloned.move_slide_mut(from, to)

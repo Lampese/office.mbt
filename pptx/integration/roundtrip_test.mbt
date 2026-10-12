@@ -40,7 +40,7 @@ fn parts_of(pkg : @opc.Package, content_type : String) -> Array[@opc.Part] {
 /// them.
 fn parse_everything(
   pkg : @opc.Package,
-) -> (Int, Int, Int, Int, Int, Int, Int) raise {
+) -> (Int32, Int32, Int32, Int32, Int32, Int32, Int32) raise {
   let mut themes = 0
   let mut masters = 0
   let mut layouts = 0

@@ -116,7 +116,7 @@ pub(all) enum VisualEffect {
   RandomBars(AnimOrientation)
   Dissolve
   Wedge
-  Wheel(Int)
+  Wheel(Int32)
 } derive(Eq, Debug)
 
 ///|
@@ -128,7 +128,7 @@ pub extend VisualEffect with Eq::{not_equal, equal}
 ///|
 /// The PowerPoint `presetID` for this effect (the entrance-class numbering;
 /// reused for the exit class, where it is a cosmetic UI hint). Exhaustive.
-pub fn VisualEffect::preset_id(self : VisualEffect) -> Int {
+pub fn VisualEffect::preset_id(self : VisualEffect) -> Int32 {
   match self {
     Appear => 1
     FlyIn(_) => 2
@@ -189,8 +189,8 @@ pub fn VisualEffect::fly_direction(self : VisualEffect) -> AnimDirection? {
 /// - `ChangeFillColor` — Animate the fill colour to `color` (`<p:animClr
 ///   clrSpc="rgb">`).
 pub(all) enum EmphasisEffect {
-  Spin(Int)
-  GrowShrink(Int)
+  Spin(Int32)
+  GrowShrink(Int32)
   ChangeFillColor(@units.RgbColor)
 } derive(Eq, Debug)
 
@@ -203,7 +203,7 @@ pub extend EmphasisEffect with Eq::{not_equal, equal}
 ///|
 /// The PowerPoint `presetID` for this emphasis (a cosmetic UI hint — the render
 /// is driven by the behaviour element). Exhaustive over `EmphasisEffect`.
-pub fn EmphasisEffect::preset_id(self : EmphasisEffect) -> Int {
+pub fn EmphasisEffect::preset_id(self : EmphasisEffect) -> Int32 {
   match self {
     Spin(_) => 8
     GrowShrink(_) => 6
@@ -410,10 +410,10 @@ pub extend AnimStart with Eq::{not_equal, equal}
 /// body can reveal one line per click.
 pub struct AnimStep {
   effect : AnimEffect
-  target_shape_id : Int
+  target_shape_id : Int32
   start : AnimStart
-  duration_ms : Int
-  paragraph : Int?
+  duration_ms : Int32
+  paragraph : Int32?
 } derive(Eq, Debug)
 
 ///|
@@ -446,7 +446,7 @@ pub extend Timeline with Eq::{not_equal, equal}
 
 ///|
 /// The default effect duration PowerPoint uses for most animations (0.5 s).
-let anim_default_duration_ms : Int = 500
+let anim_default_duration_ms : Int32 = 500
 
 ///|
 /// An empty timeline. Add steps with `on_click` / `with_previous` /
@@ -460,10 +460,10 @@ pub fn Timeline::new() -> Timeline {
 fn Timeline::add(
   self : Timeline,
   effect : AnimEffect,
-  target_shape_id : Int,
+  target_shape_id : Int32,
   start : AnimStart,
-  duration_ms : Int,
-  paragraph : Int?,
+  duration_ms : Int32,
+  paragraph : Int32?,
 ) -> Timeline {
   let steps = self.steps.copy()
   steps.push({ effect, target_shape_id, start, duration_ms, paragraph, })
@@ -476,9 +476,9 @@ fn Timeline::add(
 pub fn Timeline::on_click(
   self : Timeline,
   effect : AnimEffect,
-  target_shape_id : Int,
-  paragraph? : Int,
-  duration_ms? : Int = anim_default_duration_ms,
+  target_shape_id : Int32,
+  paragraph? : Int32,
+  duration_ms~ : Int32 = anim_default_duration_ms,
 ) -> Timeline {
   self.add(effect, target_shape_id, OnClick, duration_ms, paragraph)
 }
@@ -489,9 +489,9 @@ pub fn Timeline::on_click(
 pub fn Timeline::with_previous(
   self : Timeline,
   effect : AnimEffect,
-  target_shape_id : Int,
-  paragraph? : Int,
-  duration_ms? : Int = anim_default_duration_ms,
+  target_shape_id : Int32,
+  paragraph? : Int32,
+  duration_ms~ : Int32 = anim_default_duration_ms,
 ) -> Timeline {
   self.add(effect, target_shape_id, WithPrevious, duration_ms, paragraph)
 }
@@ -502,9 +502,9 @@ pub fn Timeline::with_previous(
 pub fn Timeline::after_previous(
   self : Timeline,
   effect : AnimEffect,
-  target_shape_id : Int,
-  paragraph? : Int,
-  duration_ms? : Int = anim_default_duration_ms,
+  target_shape_id : Int32,
+  paragraph? : Int32,
+  duration_ms~ : Int32 = anim_default_duration_ms,
 ) -> Timeline {
   self.add(effect, target_shape_id, AfterPrevious, duration_ms, paragraph)
 }

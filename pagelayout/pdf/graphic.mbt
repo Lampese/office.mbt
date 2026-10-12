@@ -49,9 +49,9 @@ fn PaintState::copy(self : PaintState) -> PaintState {
 /// so that a gradient painted many times is written once.
 priv struct GraphicResources {
   document : @pdflite.PdfDocument
-  gstates : Map[String, Int]
-  shadings : Map[String, Int]
-  patterns : Map[String, Int]
+  gstates : Map[String, Int32]
+  shadings : Map[String, Int32]
+  patterns : Map[String, Int32]
 }
 
 ///|
@@ -63,8 +63,8 @@ fn GraphicResources::new(document : @pdflite.PdfDocument) -> GraphicResources {
 /// The resources one page draws with, beyond fonts and images, in the
 /// order of first use.
 priv struct PageGraphics {
-  gstates : Map[Int, Unit]
-  patterns : Map[Int, Unit]
+  gstates : Map[Int32, Unit]
+  patterns : Map[Int32, Unit]
 }
 
 ///|
@@ -73,12 +73,12 @@ fn PageGraphics::new() -> PageGraphics {
 }
 
 ///|
-fn gstate_resource_name(number : Int) -> @core.PdfName {
+fn gstate_resource_name(number : Int32) -> @core.PdfName {
   name("/GS" + number.to_string())
 }
 
 ///|
-fn pattern_resource_name(number : Int) -> @core.PdfName {
+fn pattern_resource_name(number : Int32) -> @core.PdfName {
   name("/P" + number.to_string())
 }
 
@@ -88,7 +88,7 @@ fn GraphicResources::gstate(
   self : GraphicResources,
   fill : Double,
   stroke : Double,
-) -> Int {
+) -> Int32 {
   let key = "\{fill}|\{stroke}"
   match self.gstates.get(key) {
     Some(number) => number
@@ -159,7 +159,7 @@ fn gradient_pieces(
 /// colour; see `set_paint`).
 fn canonical_shape(
   shape : @pagelayout.GradientShape,
-) -> (Int, Array[Double], @pagelayout.Matrix) {
+) -> (Int32, Array[Double], @pagelayout.Matrix) {
   match shape {
     Linear(x1~, y1~, x2~, y2~) => {
       let dx = x2 - x1
@@ -206,9 +206,9 @@ fn radial_extent(
 fn GraphicResources::shading(
   self : GraphicResources,
   gradient : @pagelayout.Gradient,
-  shading_type : Int,
+  shading_type : Int32,
   coords : Array[Double],
-) -> Int {
+) -> Int32 {
   let sb = StringBuilder()
   sb.write_string("\{shading_type}")
   for x in coords {
@@ -280,7 +280,7 @@ fn GraphicResources::pattern(
   self : GraphicResources,
   gradient : @pagelayout.Gradient,
   ctm : @pagelayout.Matrix,
-) -> Int {
+) -> Int32 {
   let (shading_type, coords, canonical) = canonical_shape(gradient.shape)
   let shading = self.shading(gradient, shading_type, coords)
   let m = ctm.after(gradient.transform).after(canonical)

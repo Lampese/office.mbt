@@ -59,7 +59,7 @@ pub fn DocxParagraphAnchor::physical_para_ids(
 /// How many joined physical ids a `multi_physical` anchor reports
 /// before truncating: the inventory is diagnostic, and a revision-heavy
 /// join must not turn an anchor record into a payload.
-let max_reported_physical_para_ids : Int = 8
+let max_reported_physical_para_ids : Int32 = 8
 
 ///|
 /// Validate one as-spelled paraId and return its canonical uppercase
@@ -118,8 +118,8 @@ pub struct DocxParagraphAnchorIndex {
   // physical, not shared; status unique or duplicate). A carrier buried
   // inside a multi-physical join is deliberately NOT here — it counts
   // in `buried_para_ids` so resolution can refuse with the truth.
-  priv by_para_id : Map[String, Array[Int]]
-  priv buried_para_ids : Map[String, Int]
+  priv by_para_id : Map[String, Array[Int32]]
+  priv buried_para_ids : Map[String, Int32]
 }
 
 ///|
@@ -127,7 +127,7 @@ pub struct DocxParagraphAnchorIndex {
 /// the projection — the join `find` and the planners already hold.
 pub fn DocxParagraphAnchorIndex::anchor_of_paragraph(
   self : DocxParagraphAnchorIndex,
-  paragraph_index : Int,
+  paragraph_index : Int32,
 ) -> DocxParagraphAnchor? {
   match self.anchors.get(paragraph_index) {
     Some(anchor) => anchor
@@ -140,7 +140,7 @@ pub fn DocxParagraphAnchorIndex::anchor_of_paragraph(
 /// THIS snapshot.
 pub fn DocxParagraphAnchorIndex::scan_path_of_paragraph(
   self : DocxParagraphAnchorIndex,
-  paragraph_index : Int,
+  paragraph_index : Int32,
 ) -> String? {
   match self.paths.get(paragraph_index) {
     Some(path) => path
@@ -153,7 +153,7 @@ pub fn DocxParagraphAnchorIndex::scan_path_of_paragraph(
 pub fn DocxParagraphAnchorIndex::paragraphs_with_para_id(
   self : DocxParagraphAnchorIndex,
   canonical : String,
-) -> Array[Int] {
+) -> Array[Int32] {
   // A COPY: the internal carrier list is the resolver's authority, and
   // a caller's mutation must not change later resolution answers.
   match self.by_para_id.get(canonical) {
@@ -197,7 +197,7 @@ pub fn docx_paragraph_anchor_index(
   }
   let elements = projection.scan.elements()
   // Pass 1: the part-scoped multiset of valid canonical ids.
-  let occupancy : Map[String, Int] = Map([])
+  let occupancy : Map[String, Int32] = Map([])
   for element in elements {
     if is_wml_uri(element.uri) && element.local_name == "p" {
       match element.para_id_raw {
@@ -216,7 +216,7 @@ pub fn docx_paragraph_anchor_index(
   // one-logical mapping, so participation above one — a tolerated
   // nested paragraph splitting its host — voids singular anchoring
   // for EVERY logical paragraph that shares the physical.
-  let participation : Map[Int, Int] = Map([])
+  let participation : Map[Int32, Int32] = Map([])
   for paragraph in projection.paragraphs {
     for source in paragraph.sources {
       let SourceElementId(index) = source.source
@@ -230,8 +230,8 @@ pub fn docx_paragraph_anchor_index(
   let anchors : Array[DocxParagraphAnchor?] = []
   let by_path : Map[String, DocxParagraphAnchor?] = Map([])
   let paths : Array[String?] = []
-  let by_para_id : Map[String, Array[Int]] = Map([])
-  let buried_para_ids : Map[String, Int] = Map([])
+  let by_para_id : Map[String, Array[Int32]] = Map([])
+  let buried_para_ids : Map[String, Int32] = Map([])
   for paragraph_index, paragraph in projection.paragraphs {
     guard paragraph.sources.length() > 0 else {
       anchors.push(None)
@@ -345,8 +345,8 @@ pub fn para_id_state_delta_violation(
 ) -> String? {
   for part, candidate_values in candidate {
     let source_values = source.get(part).unwrap_or([])
-    let source_invalid : Map[String, Int] = Map([])
-    let source_valid : Map[String, Int] = Map([])
+    let source_invalid : Map[String, Int32] = Map([])
+    let source_valid : Map[String, Int32] = Map([])
     for value in source_values {
       match validated_para_id(value) {
         Some(canonical) =>
@@ -355,8 +355,8 @@ pub fn para_id_state_delta_violation(
           source_invalid[value] = source_invalid.get(value).unwrap_or(0) + 1
       }
     }
-    let candidate_invalid : Map[String, Int] = Map([])
-    let candidate_valid : Map[String, Int] = Map([])
+    let candidate_invalid : Map[String, Int32] = Map([])
+    let candidate_valid : Map[String, Int32] = Map([])
     for value in candidate_values {
       match validated_para_id(value) {
         Some(canonical) =>
@@ -394,7 +394,7 @@ pub fn para_id_state_delta_violation(
 /// unchanged, and a tree surface reporting it says "no sound
 /// correspondence", never a borrowed judgment.
 pub enum DocxParagraphJoin {
-  Joined(Int, DocxParagraphAnchor)
+  Joined(Int32, DocxParagraphAnchor)
   Unjoined(String)
 }
 
@@ -404,7 +404,7 @@ pub enum DocxParagraphJoin {
 /// paragraph by source-vector bijection.
 pub struct DocxParagraphAnchorJoinIndex {
   priv joins : Array[DocxParagraphJoin]
-  priv reverse : Map[Int, Int]
+  priv reverse : Map[Int32, Int32]
   priv anchor_index : DocxParagraphAnchorIndex
 }
 
@@ -415,7 +415,7 @@ pub struct DocxParagraphAnchorJoinIndex {
 /// provenance channel must treat EVERY paragraph as unjoined.
 pub fn DocxParagraphAnchorJoinIndex::join_of_occurrence(
   self : DocxParagraphAnchorJoinIndex,
-  occurrence : Int,
+  occurrence : Int32,
 ) -> DocxParagraphJoin? {
   self.joins.get(occurrence)
 }
@@ -424,7 +424,7 @@ pub fn DocxParagraphAnchorJoinIndex::join_of_occurrence(
 /// Number of paragraph occurrences represented by this story join.
 pub fn DocxParagraphAnchorJoinIndex::occurrence_count(
   self : DocxParagraphAnchorJoinIndex,
-) -> Int {
+) -> Int32 {
   self.joins.length()
 }
 
@@ -433,8 +433,8 @@ pub fn DocxParagraphAnchorJoinIndex::occurrence_count(
 /// joined to, if the bijection held in both directions.
 pub fn DocxParagraphAnchorJoinIndex::occurrence_of_paragraph(
   self : DocxParagraphAnchorJoinIndex,
-  paragraph_index : Int,
-) -> Int? {
+  paragraph_index : Int32,
+) -> Int32? {
   self.reverse.get(paragraph_index)
 }
 
@@ -466,8 +466,8 @@ pub fn docx_paragraph_anchor_join_index(
   }
   let anchors = docx_paragraph_anchor_index(annotated, story)
   // Projection-side claims and participation.
-  let projection_claims : Map[String, Array[Int]] = Map([])
-  let participation : Map[Int, Int] = Map([])
+  let projection_claims : Map[String, Array[Int32]] = Map([])
+  let participation : Map[Int32, Int32] = Map([])
   for paragraph_index, paragraph in projection.paragraphs {
     let key = StringBuilder()
     for source in paragraph.sources {
@@ -482,7 +482,7 @@ pub fn docx_paragraph_anchor_join_index(
     }
   }
   // Tree-side claims.
-  let tree_claims : Map[String, Int] = Map([])
+  let tree_claims : Map[String, Int32] = Map([])
   let tree_keys : Array[String?] = []
   for vector in tree_vectors {
     let mut incomplete = false
@@ -502,7 +502,7 @@ pub fn docx_paragraph_anchor_join_index(
     }
   }
   let joins : Array[DocxParagraphJoin] = []
-  let reverse : Map[Int, Int] = Map([])
+  let reverse : Map[Int32, Int32] = Map([])
   for occurrence, entry in tree_keys {
     match entry {
       None => joins.push(Unjoined("missing-source-identity"))
@@ -550,20 +550,20 @@ pub fn docx_paragraph_anchor_join_index(
 pub enum DocxParaIdResolution {
   /// The unique carrier's tree occurrence (erase order) and its
   /// projection index.
-  ResolvedOccurrence(Int, Int)
+  ResolvedOccurrence(Int32, Int32)
   /// Not eight case-insensitive hex digits in 1..0x7FFFFFFF.
   ParaIdInvalid
   /// No paragraph in the story carries the id.
   ParaIdNotFound
   /// More than one carrier claims the id (part-scoped, case-insensitive)
   /// — the ADDRESSABLE carriers' projection indices, for diagnostics.
-  ParaIdAmbiguous(Array[Int])
+  ParaIdAmbiguous(Array[Int32])
   /// The id's only carriers are buried inside multi-physical joins —
   /// the identity exists but names no addressable paragraph.
   ParaIdInMultiPhysical
   /// A single addressable carrier exists but its tree join does not —
   /// the paragraph cannot be named in the tree without guessing.
-  ParaIdUnjoined(Int)
+  ParaIdUnjoined(Int32)
 }
 
 ///|
@@ -572,10 +572,10 @@ pub enum DocxParaIdResolution {
 /// a tree occurrence.
 pub enum DocxParaIdCarrierResolution {
   /// The single addressable carrier's projection index.
-  ResolvedCarrier(Int)
+  ResolvedCarrier(Int32)
   CarrierInvalid
   CarrierNotFound
-  CarrierAmbiguous(Array[Int])
+  CarrierAmbiguous(Array[Int32])
   CarrierInMultiPhysical
 }
 

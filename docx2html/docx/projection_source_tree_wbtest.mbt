@@ -693,7 +693,7 @@ test "a bookmark name too long to be _GoBack costs no retained characters" {
   let head =
     #|<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>
   let tail = "</w:body></w:document>"
-  fn story(name : (Int) -> String?) -> String {
+  fn story(name : (Int32) -> String?) -> String {
     let markers = StringBuilder()
     for index in 0..<12 {
       match name(index) {
@@ -708,7 +708,7 @@ test "a bookmark name too long to be _GoBack costs no retained characters" {
   }
 
   // The smallest retained-character ceiling this story scans under.
-  fn minimal_ceiling(source : String) -> Int {
+  fn minimal_ceiling(source : String) -> Int32 {
     for ceiling = 8; ceiling <= 16384; ceiling = ceiling + 8 {
       let mut fits = true
       ignore(

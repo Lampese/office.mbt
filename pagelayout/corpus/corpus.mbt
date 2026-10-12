@@ -20,7 +20,7 @@
 
 ///|
 /// Total characters across every glyph run of a model.
-pub fn text_length(model : @pagelayout.PageModel) -> Int {
+pub fn text_length(model : @pagelayout.PageModel) -> Int32 {
   let mut total = 0
   for page in model.pages {
     for item in page.items {

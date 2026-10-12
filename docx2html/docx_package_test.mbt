@@ -114,7 +114,7 @@ fn utf8_part(text : String) -> Bytes {
 ///|
 fn hf_package(
   document~ : String,
-  extra? : Array[(String, String)] = [],
+  extra~ : Array[(String, String)] = [],
 ) -> Bytes {
   let archive = @mbtzip.Archive()
   let content_types = StringBuilder()

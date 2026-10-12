@@ -122,8 +122,8 @@ struct ChartNumFmt {
 
 ///|
 pub fn ChartNumFmt::new(
-  custom_num_fmt? : String = "",
-  source_linked? : Bool = true,
+  custom_num_fmt~ : String = "",
+  source_linked~ : Bool = true,
 ) -> ChartNumFmt {
   { custom_num_fmt, source_linked, }
 }
@@ -137,7 +137,7 @@ pub(all) struct ChartAxis {
   mut minor_grid_lines : Bool
   mut major_unit : Double
   mut tick_label_position : ChartTickLabelPositionType
-  mut tick_label_skip : Int
+  mut tick_label_skip : Int32
   mut reverse_order : Bool
   mut secondary : Bool
   mut maximum : Double?
@@ -148,7 +148,7 @@ pub(all) struct ChartAxis {
   mut num_fmt : ChartNumFmt
   mut title : String
   mut title_rich : Array[RichTextRun]?
-  mut ax_id : Int
+  mut ax_id : Int32
 } derive(Debug)
 
 ///|
@@ -200,8 +200,8 @@ fn write_chart_axis_lines(
 
 ///|
 struct ChartDimension {
-  width : Int
-  height : Int
+  width : Int32
+  height : Int32
 } derive(Debug)
 
 ///|
@@ -211,8 +211,8 @@ fn ChartDimension::new() -> ChartDimension {
 
 ///|
 pub fn ChartDimension::with_values(
-  width : Int,
-  height : Int,
+  width : Int32,
+  height : Int32,
 ) -> ChartDimension raise XlsxError {
   if width <= 0 || height <= 0 {
     raise InvalidSheetOperation(msg="chart dimension must be > 0")
@@ -225,7 +225,7 @@ pub(all) struct ChartLine {
   mut typ : ChartLineType
   mut dash : ChartDashType
   mut color : String
-  mut transparency : Int
+  mut transparency : Int32
   mut smooth : Bool
   mut width : Double
 } derive(Debug)
@@ -264,12 +264,12 @@ pub(all) struct ChartPlotArea {
   mut show_bubble_size : Bool
   mut show_data_table : Bool
   mut show_data_table_keys : Bool
-  mut second_plot_values : Int
+  mut second_plot_values : Int32
   mut num_fmt : ChartNumFmt
   mut up_bars : ChartUpDownBar
   mut down_bars : ChartUpDownBar
   mut fill_color : String
-  mut fill_transparency : Int
+  mut fill_transparency : Int32
   mut fill : ChartFill?
 } derive(Debug)
 
@@ -303,8 +303,8 @@ pub(all) struct ChartLegend {
 
 ///|
 fn ChartLegend::new(
-  position? : String = "bottom",
-  show_legend_key? : Bool = false,
+  position~ : String = "bottom",
+  show_legend_key~ : Bool = false,
 ) -> ChartLegend {
   { position, show_legend_key, font: None, }
 }
@@ -312,15 +312,15 @@ fn ChartLegend::new(
 ///|
 pub(all) struct ChartMarker {
   mut symbol : String
-  mut size : Int
+  mut size : Int32
   mut fill_color : String
-  mut fill_transparency : Int
+  mut fill_transparency : Int32
   mut fill : ChartFill?
   mut border : ChartLine
 } derive(Debug)
 
 ///|
-fn ChartMarker::new(symbol? : String = "", size? : Int = 0) -> ChartMarker {
+fn ChartMarker::new(symbol~ : String = "", size~ : Int32 = 0) -> ChartMarker {
   {
     symbol,
     size,
@@ -336,7 +336,7 @@ pub(all) struct ChartDataLabel {
   mut font : Font
   mut alignment : Alignment
   mut fill_color : String
-  mut fill_transparency : Int
+  mut fill_transparency : Int32
   mut fill : ChartFill?
 } derive(Debug)
 
@@ -353,15 +353,15 @@ fn ChartDataLabel::new() -> ChartDataLabel {
 
 ///|
 struct ChartDataPoint {
-  index : Int
+  index : Int32
   fill_color : String
   fill : ChartFill?
 } derive(Debug)
 
 ///|
 pub fn ChartDataPoint::new(
-  index : Int,
-  fill_color? : String = "",
+  index : Int32,
+  fill_color~ : String = "",
   fill? : ChartFill,
 ) -> ChartDataPoint {
   { index, fill_color, fill, }
@@ -377,19 +377,19 @@ pub fn ChartDataPoint::new(
 /// not emitted.
 pub(all) struct ChartFill {
   mut typ : String
-  mut pattern : Int
+  mut pattern : Int32
   mut color : Array[String]
-  mut shading : Int
-  mut transparency : Int
+  mut shading : Int32
+  mut transparency : Int32
 } derive(Debug)
 
 ///|
 pub fn ChartFill::new(
-  typ? : String = "",
-  pattern? : Int = 0,
-  color? : Array[String] = [],
-  shading? : Int = 0,
-  transparency? : Int = 0,
+  typ~ : String = "",
+  pattern~ : Int32 = 0,
+  color~ : Array[String] = [],
+  shading~ : Int32 = 0,
+  transparency~ : Int32 = 0,
 ) -> ChartFill {
   { typ, pattern, color, shading, transparency, }
 }
@@ -398,7 +398,7 @@ pub fn ChartFill::new(
 /// Effective fill directive derived from an optional `ChartFill`
 /// override and the flattened `fill_color`/`fill_transparency` fields.
 priv enum ChartFillDirective {
-  SolidFill(color~ : String, transparency~ : Int)
+  SolidFill(color~ : String, transparency~ : Int32)
   NoFill
   NoOverride
 }
@@ -407,7 +407,7 @@ priv enum ChartFillDirective {
 fn chart_fill_directive(
   fill : ChartFill?,
   fallback_color : String,
-  fallback_transparency : Int,
+  fallback_transparency : Int32,
 ) -> ChartFillDirective {
   match fill {
     // Excelize's drawShapeFill only acts on pattern fills with index 1.
@@ -433,7 +433,7 @@ fn write_solid_fill(
   sb : StringBuilder,
   indent : String,
   color : String,
-  transparency : Int,
+  transparency : Int32,
 ) -> Unit {
   let value = color.replace_all(old="#", new="").to_upper()
   sb.write_view(indent)
@@ -462,7 +462,7 @@ pub(all) struct ChartSeries {
   mut bubble_size : String?
   mut sizes : String
   mut fill_color : String
-  mut fill_transparency : Int
+  mut fill_transparency : Int32
   mut fill : ChartFill?
   mut legend : ChartLegend
   mut line : ChartLine
@@ -476,7 +476,7 @@ pub(all) struct ChartSeries {
 pub fn ChartSeries::new(
   categories : String,
   values : String,
-  name? : String = "",
+  name~ : String = "",
 ) -> ChartSeries raise XlsxError {
   if categories == "" || values == "" {
     raise InvalidSheetOperation(
@@ -532,7 +532,7 @@ pub(all) struct ChartOptions {
   mut title : String
   mut title_rich : Array[RichTextRun]?
   mut fill_color : String
-  mut fill_transparency : Int
+  mut fill_transparency : Int32
   mut fill : ChartFill?
   mut border : ChartLine
   mut vary_colors : Bool
@@ -540,10 +540,10 @@ pub(all) struct ChartOptions {
   mut y_axis : ChartAxis
   mut plot_area : ChartPlotArea
   mut show_blanks_as : String
-  mut gap_width : Int?
-  mut overlap : Int?
-  mut hole_size : Int?
-  mut bubble_scale : Int?
+  mut gap_width : Int32?
+  mut overlap : Int32?
+  mut hole_size : Int32?
+  mut bubble_scale : Int32?
 } derive(Debug)
 
 ///|
@@ -554,10 +554,10 @@ struct ChartComboOptions {
   y_axis : ChartAxis
   plot_area : ChartPlotArea
   vary_colors : Bool
-  gap_width : Int?
-  overlap : Int?
-  hole_size : Int?
-  bubble_scale : Int?
+  gap_width : Int32?
+  overlap : Int32?
+  hole_size : Int32?
+  bubble_scale : Int32?
 } derive(Debug)
 
 ///|
@@ -971,7 +971,7 @@ fn data_label_pos_value(pos : ChartDataLabelPositionType) -> StringView {
 fn write_chart_series_sppr(
   sb : StringBuilder,
   series : ChartSeries,
-  global_idx : Int,
+  global_idx : Int32,
 ) -> Unit {
   let line = series.line
   let fill_dir = chart_fill_directive(
@@ -1193,8 +1193,8 @@ fn write_chart_series_dpt(sb : StringBuilder, point : ChartDataPoint) -> Unit {
 fn write_chart_series(
   sb : StringBuilder,
   series : ChartSeries,
-  idx : Int,
-  order_base : Int,
+  idx : Int32,
+  order_base : Int32,
 ) -> Unit {
   let global_idx = order_base + idx
   sb.write_view("        <c:ser>\n")
@@ -1223,8 +1223,8 @@ fn write_chart_series(
 fn write_chart_series_scatter(
   sb : StringBuilder,
   series : ChartSeries,
-  idx : Int,
-  order_base : Int,
+  idx : Int32,
+  order_base : Int32,
 ) -> Unit {
   let global_idx = order_base + idx
   sb.write_view("        <c:ser>\n")
@@ -1254,8 +1254,8 @@ fn write_chart_series_for_plot(
   sb : StringBuilder,
   plot_tag : StringView,
   series : ChartSeries,
-  idx : Int,
-  order_base : Int,
+  idx : Int32,
+  order_base : Int32,
 ) -> Unit raise XlsxError {
   if plot_tag == "scatterChart" {
     write_chart_series_scatter(sb, series, idx, order_base)
@@ -1442,7 +1442,7 @@ fn axis_crosses_value(
 }
 
 ///|
-fn axis_id_or_default(axis : ChartAxis, fallback : Int) -> Int {
+fn axis_id_or_default(axis : ChartAxis, fallback : Int32) -> Int32 {
   if axis.ax_id > 0 {
     axis.ax_id
   } else {
@@ -1727,8 +1727,8 @@ fn write_axis(
   sb : StringBuilder,
   axis_tag : StringView,
   axis : ChartAxis,
-  ax_id : Int,
-  cross_ax_id : Int,
+  ax_id : Int32,
+  cross_ax_id : Int32,
   axis_pos : StringView,
   kind : ChartType,
 ) -> Unit {

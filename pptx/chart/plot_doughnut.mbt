@@ -18,8 +18,8 @@ pub(all) struct DoughnutChartBody {
   vary_colors : Bool?
   series : Array[ChartSeriesCore]
   d_lbls : DLbls?
-  first_slice_ang : Int?
-  hole_size : Int?
+  first_slice_ang : Int32?
+  hole_size : Int32?
   extension : Array[@xml.XmlElement]
 } derive(Eq, Debug)
 

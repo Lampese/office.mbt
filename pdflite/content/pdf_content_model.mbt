@@ -6,8 +6,8 @@
 /// parser decodes supported inline-image filters when it can do so safely.
 pub(all) enum PdfContentOp {
   Op_w(Double)
-  Op_J(Int)
-  Op_j(Int)
+  Op_J(Int32)
+  Op_j(Int32)
   Op_M(Double)
   Op_d(Array[Double], Double)
   Op_ri(PdfName)
@@ -41,7 +41,7 @@ pub(all) enum PdfContentOp {
   Op_Tz(Double)
   Op_TL(Double)
   Op_Tf(PdfName, Double)
-  Op_Tr(Int)
+  Op_Tr(Int32)
   Op_Ts(Double)
   Op_Td(Double, Double)
   Op_TD(Double, Double)

@@ -102,8 +102,8 @@ priv enum ReaderTreeShape {
   ReaderTableRow(children~ : Array[ReaderItem], is_header~ : Bool)
   ReaderTableCell(
     children~ : Array[ReaderItem],
-    col_span~ : Int,
-    row_span~ : Int
+    col_span~ : Int32,
+    row_span~ : Int32
   )
   ReaderBreak(@document.BreakType)
   ReaderBookmarkStart(String)

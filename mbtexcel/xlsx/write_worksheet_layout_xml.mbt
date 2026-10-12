@@ -26,7 +26,7 @@ fn write_row_attributes(
 ///|
 fn write_col_attributes(
   sb : LimitedXmlBuilder,
-  col : Int,
+  col : Int32,
   dim : ColDimension,
 ) -> Unit raise XlsxError {
   sb.write_view("    <col min=\"\{col}\" max=\"\{col}\"")

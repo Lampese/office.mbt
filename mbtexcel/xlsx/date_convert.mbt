@@ -10,8 +10,8 @@ let maximum_excel_serial_1904 = 2_957_003
 /// next date, and can therefore be checked before calendar conversion.
 fn excel_serial_day_and_clock(
   value : Double,
-  maximum_day : Int,
-) -> (Int, Int, Int, Int)? {
+  maximum_day : Int32,
+) -> (Int32, Int32, Int32, Int32)? {
   if value.is_nan() ||
     value.is_inf() ||
     value < 0.0 ||
@@ -39,7 +39,9 @@ fn excel_serial_day_and_clock(
 }
 
 ///|
-fn excel_serial_to_parts(value : Double) -> (Int, Int, Int, Int, Int, Int)? {
+fn excel_serial_to_parts(
+  value : Double,
+) -> (Int32, Int32, Int32, Int32, Int32, Int32)? {
   guard excel_serial_day_and_clock(value, maximum_excel_serial_1900)
     is Some((serial_day, hour, minute, second)) else {
     return None
@@ -57,7 +59,7 @@ fn excel_serial_to_parts(value : Double) -> (Int, Int, Int, Int, Int, Int)? {
 ///|
 fn excel_serial_to_parts_1904(
   value : Double,
-) -> (Int, Int, Int, Int, Int, Int)? {
+) -> (Int32, Int32, Int32, Int32, Int32, Int32)? {
   guard excel_serial_day_and_clock(value, maximum_excel_serial_1904)
     is Some((serial_day, hour, minute, second)) else {
     return None
@@ -71,7 +73,7 @@ fn excel_serial_to_parts_1904(
 ///|
 pub fn excel_date_to_time(
   excel_date : Double,
-  use_1904_format? : Bool = false,
+  use_1904_format~ : Bool = false,
 ) -> @time.ZonedDateTime raise XlsxError {
   if excel_date < 0.0 {
     raise InvalidExcelDate(value=excel_date)
