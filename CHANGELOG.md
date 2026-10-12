@@ -65,6 +65,12 @@ covers changes that have landed on `main` but are not yet published.
   digits, the dictionary of a stream entry by entry instead of from a
   filtered copy). The files are the same bytes; `bench/longer.typ` in
   typst.mbt: 1134 to 1125 million instructions (-0.8 %).
+- `export`: the ICC-based sRGB and sGrey colour spaces of a document
+  without device colour spaces are found without a key: every solid fill
+  asked for one through the cache of shared objects (a string hashed, a
+  closure and an option made, per run of text). The files are the same
+  bytes; `bench/longer.typ` in typst.mbt: 1125 to 1114 million
+  instructions (-0.9 %).
 
 ### moonbitlang/pdflite [0.3.9]
 
