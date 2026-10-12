@@ -170,10 +170,11 @@ test "clamp_clusters copies the glyphs only if a cluster is outside the text" {
   inside.push(wb_glyph(3, 4, 4))
   let clamped = clamp_clusters(inside, text)
   assert_eq(clamped.length(), 3)
-  for i in 0..<3 {
-    // The glyphs themselves, not copies.
-    assert_true(physical_equal(clamped[i], inside[i]))
-  }
+  // A view of the caller's array, not a copy: it shows what is written to
+  // the array afterwards.
+  inside[1] = wb_glyph(7, 2, 3)
+  assert_eq(clamped[1].glyph_id, 7)
+  assert_eq(clamped[0].glyph_id, 1)
   let outside = []
   outside.push(wb_glyph(1, -2, 1))
   outside.push(wb_glyph(2, 1, 9))
