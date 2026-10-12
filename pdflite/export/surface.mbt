@@ -173,22 +173,15 @@ pub fn Surface::end_tagged(self : Surface) -> Unit {
 /// The context color of color glyphs: the rgb fill, else the rgb stroke,
 /// else black (`0xRRGGBB`).
 fn Surface::context_color(self : Surface) -> Int {
-  let rgb = match self.fill {
-    Some(f) => f.paint.as_rgb()
-    None => None
+  // (The paints are matched in place of `Paint::as_rgb`, which makes a
+  // tuple: this is asked for every run of text.)
+  if self.fill is Some({ paint: Color(Regular(Rgb(r, g, b))), .. }) {
+    return (r << 16) | (g << 8) | b
   }
-  let rgb = match rgb {
-    Some(_) => rgb
-    None =>
-      match self.stroke {
-        Some(s) => s.paint.as_rgb()
-        None => None
-      }
+  if self.stroke is Some({ paint: Color(Regular(Rgb(r, g, b))), .. }) {
+    return (r << 16) | (g << 8) | b
   }
-  match rgb {
-    Some((r, g, b)) => (r << 16) | (g << 8) | b
-    None => 0
-  }
+  0
 }
 
 ///|
@@ -203,24 +196,44 @@ pub fn Surface::draw_glyphs(
 ) -> Unit {
   let sc = self.sc
   let ctx = self.context_color()
-  let draw = (fill : Fill?, stroke : Stroke?) => {
+  let fill = self.fill
+  let stroke = self.stroke
+  // (No closure for the call that the cases share: this is called for
+  // every run of text.)
+  if fill is Some(_) && stroke is Some(_) {
+    if self.has_complex_fill_or_stroke() {
+      // Fill as text and stroke separately (krilla outlines the glyphs;
+      // here the stroke is drawn as stroked text).
+      self
+      .get_mut()
+      .draw_glyphs(sc, start, fill, None, ctx, glyphs, font, text, font_size)
+      self
+      .get_mut()
+      .draw_glyphs(sc, start, None, stroke, ctx, glyphs, font, text, font_size)
+    } else {
+      self
+      .get_mut()
+      .draw_glyphs(sc, start, fill, stroke, ctx, glyphs, font, text, font_size)
+    }
+  } else if fill is None && stroke is None {
+    self
+    .get_mut()
+    .draw_glyphs(
+      sc,
+      start,
+      Some(Fill::default()),
+      None,
+      ctx,
+      glyphs,
+      font,
+      text,
+      font_size,
+    )
+  } else {
+    // A fill alone or a stroke alone.
     self
     .get_mut()
     .draw_glyphs(sc, start, fill, stroke, ctx, glyphs, font, text, font_size)
-  }
-  match (self.fill, self.stroke) {
-    (Some(f), Some(s)) =>
-      if self.has_complex_fill_or_stroke() {
-        // Fill as text and stroke separately (krilla outlines the glyphs;
-        // here the stroke is drawn as stroked text).
-        draw(Some(f), None)
-        draw(None, Some(s))
-      } else {
-        draw(Some(f), Some(s))
-      }
-    (None, Some(s)) => draw(None, Some(s))
-    (Some(f), None) => draw(Some(f), None)
-    (None, None) => draw(Some(Fill::default()), None)
   }
 }
 

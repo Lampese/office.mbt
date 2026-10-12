@@ -371,9 +371,30 @@ fn ContentBuilder::apply_isolated_op(
   prep : (ContentBuilder) -> Unit,
   op : (ContentBuilder) -> Unit,
 ) -> Unit {
+  self.begin_isolated_op()
+  prep(self)
+  self.write_isolated_state(sc)
+  op(self)
+  self.end_isolated_op()
+}
+
+///|
+/// The start of `apply_isolated_op`, before its `prep`. (The three parts
+/// are functions of their own for `fill_stroke_glyph_run`, which is called
+/// for every run of text and has no closures to hand to
+/// `apply_isolated_op`.)
+fn ContentBuilder::begin_isolated_op(self : ContentBuilder) -> Unit {
   self.save_graphics_state()
   self.content_save_state()
-  prep(self)
+}
+
+///|
+/// The part of `apply_isolated_op` between its `prep` and its `op`: writes
+/// the current transform and graphics state.
+fn ContentBuilder::write_isolated_state(
+  self : ContentBuilder,
+  sc : SerializeContext,
+) -> Unit {
   let transform = self.cur_transform_with_root_transform()
   if !transform.is_identity() {
     self.content.transform(transform)
@@ -384,7 +405,11 @@ fn ContentBuilder::apply_isolated_op(
     let name = self.rd.register(ExtGState, r)
     self.content.set_parameters(name)
   }
-  op(self)
+}
+
+///|
+/// The end of `apply_isolated_op`, after its `op`.
+fn ContentBuilder::end_isolated_op(self : ContentBuilder) -> Unit {
   self.content.restore_state()
   self.restore_graphics_state()
 }
@@ -696,22 +721,16 @@ fn ContentBuilder::set_solid(
   match cs {
     Device =>
       match color {
-        Regular(Rgb(_, _, _) as c) => {
-          for v in c.to_pdf_color() {
-            self.content.num(v)
-          }
+        Regular(Rgb(_, _, _)) => {
+          self.content.color_components(color)
           self.content.op(if stroke { "RG" } else { "rg" })
         }
-        Regular(Luma(_) as c) => {
-          for v in c.to_pdf_color() {
-            self.content.num(v)
-          }
+        Regular(Luma(_)) => {
+          self.content.color_components(color)
           self.content.op(if stroke { "G" } else { "g" })
         }
-        Regular(Cmyk(_, _, _, _) as c) => {
-          for v in c.to_pdf_color() {
-            self.content.num(v)
-          }
+        Regular(Cmyk(_, _, _, _)) => {
+          self.content.color_components(color)
           self.content.op(if stroke { "K" } else { "k" })
         }
         Separation(_, _) =>
@@ -720,11 +739,31 @@ fn ContentBuilder::set_solid(
     Named(n) => {
       self.content.name(n)
       self.content.op(if stroke { "CS" } else { "cs" })
-      for v in color.to_pdf_color() {
-        self.content.num(v)
-      }
+      self.content.color_components(color)
       self.content.op(if stroke { "SCN" } else { "scn" })
     }
+  }
+}
+
+///|
+/// The components of a color in its PDF color space, as operands: the
+/// numbers of `Color::to_pdf_color`, without the array (a color is set for
+/// every run of text).
+fn Content::color_components(self : Content, color : Color) -> Unit {
+  match color {
+    Regular(Rgb(r, g, b)) => {
+      self.num(r.to_double() / 255.0)
+      self.num(g.to_double() / 255.0)
+      self.num(b.to_double() / 255.0)
+    }
+    Regular(Luma(l)) => self.num(l.to_double() / 255.0)
+    Regular(Cmyk(c, m, y, k)) => {
+      self.num(c.to_double() / 255.0)
+      self.num(m.to_double() / 255.0)
+      self.num(y.to_double() / 255.0)
+      self.num(k.to_double() / 255.0)
+    }
+    Separation(tint, _) => self.num(tint.to_double() / 255.0)
   }
 }
 
@@ -741,6 +780,48 @@ fn ContentBuilder::set_pattern(
 }
 
 ///|
+/// krilla's `write_gradient` closure of
+/// `content_set_fill_stroke_properties` (a method, so that setting a solid
+/// color does not make a closure that it does not call).
+fn ContentBuilder::write_gradient(
+  self : ContentBuilder,
+  sc : SerializeContext,
+  bounds : Rect,
+  props : GradientProperties,
+  transform : Transform,
+  stroke : Bool,
+) -> Unit {
+  match props.single_stop_color() {
+    Some((color, opacity)) => {
+      // Write gradients with one stop as a solid color fill (the stop's
+      // opacity has been applied with the fill or stroke opacity, see
+      // `paint_opacity`).
+      ignore(opacity)
+      let cs = self.cs_to_content_cs(sc, color)
+      self.set_solid(cs, color, stroke)
+    }
+    None => {
+      let shading_mask = Mask::new_from_shading(sc, props, transform, bounds)
+      let pattern = ShadingPattern::new(
+        props,
+        self.cur_transform_with_root_transform().pre_concat(transform),
+      )
+      let pr = sc.register_shading_pattern(pattern)
+      let name = self.rd.register(Pattern, pr)
+      if shading_mask is Some(mask) {
+        let mask_ref = sc.register_mask(mask)
+        let state = { ..ExtGState::new(), mask: Some(mask_ref), }
+        self.uses_mask = true
+        let r = sc.register_ext_g_state(state)
+        let gs = self.rd.register(ExtGState, r)
+        self.content.set_parameters(gs)
+      }
+      self.set_pattern(name, stroke)
+    }
+  }
+}
+
+///|
 fn ContentBuilder::content_set_fill_stroke_properties(
   self : ContentBuilder,
   sc : SerializeContext,
@@ -749,36 +830,6 @@ fn ContentBuilder::content_set_fill_stroke_properties(
   opacity : Double,
   stroke : Bool,
 ) -> Unit {
-  let write_gradient = (props : GradientProperties, transform : Transform) => {
-    match props.single_stop_color() {
-      Some((color, opacity)) => {
-        // Write gradients with one stop as a solid color fill (the stop's
-        // opacity has been applied with the fill or stroke opacity, see
-        // `paint_opacity`).
-        ignore(opacity)
-        let cs = self.cs_to_content_cs(sc, color)
-        self.set_solid(cs, color, stroke)
-      }
-      None => {
-        let shading_mask = Mask::new_from_shading(sc, props, transform, bounds)
-        let pattern = ShadingPattern::new(
-          props,
-          self.cur_transform_with_root_transform().pre_concat(transform),
-        )
-        let pr = sc.register_shading_pattern(pattern)
-        let name = self.rd.register(Pattern, pr)
-        if shading_mask is Some(mask) {
-          let mask_ref = sc.register_mask(mask)
-          let state = { ..ExtGState::new(), mask: Some(mask_ref), }
-          self.uses_mask = true
-          let r = sc.register_ext_g_state(state)
-          let gs = self.rd.register(ExtGState, r)
-          self.content.set_parameters(gs)
-        }
-        self.set_pattern(name, stroke)
-      }
-    }
-  }
   match paint {
     Color(c) => {
       let cs = self.cs_to_content_cs(sc, c)
@@ -786,15 +837,15 @@ fn ContentBuilder::content_set_fill_stroke_properties(
     }
     LinearGradient(lg) => {
       let (props, ts) = lg.gradient_properties(bounds)
-      write_gradient(props, ts)
+      self.write_gradient(sc, bounds, props, ts, stroke)
     }
     RadialGradient(rg) => {
       let (props, ts) = rg.gradient_properties(bounds)
-      write_gradient(props, ts)
+      self.write_gradient(sc, bounds, props, ts, stroke)
     }
     SweepGradient(sg) => {
       let (props, ts) = sg.gradient_properties(bounds)
-      write_gradient(props, ts)
+      self.write_gradient(sc, bounds, props, ts, stroke)
     }
     Pattern(pat) => {
       let transform = pat.transform.post_concat(
