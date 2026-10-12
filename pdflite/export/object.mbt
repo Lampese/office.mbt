@@ -123,13 +123,20 @@ fn write_real(buf : @buffer.Buffer, v : Double) -> Unit {
     write_ascii(buf, integral_string(v.round()))
     return
   }
-  if x == x.floor() && x >= -2147483648.0 && x < 2147483648.0 {
-    let i = x.to_int64()
-    if i < 0L {
-      buf.write_byte(b'-')
+  if x >= -2147483648.0 && x < 2147483648.0 {
+    // (In the range of `i32`, so the cast truncates and `x == x.floor()` is
+    // whether the cast gives `x` back.)
+    let i = x.to_int()
+    if i.to_double() == x {
+      let i = i.to_int64()
+      if i < 0L {
+        buf.write_byte(b'-')
+        write_digits(buf, -i)
+      } else {
+        write_digits(buf, i)
+      }
+      return
     }
-    write_decimal(buf, i.abs(), -1)
-    return
   }
   // The shortest digits `n * 10^exp` (at most 9 significant digits) that
   // round to the same `f32`, as ryu chooses them.
@@ -144,9 +151,8 @@ fn write_real(buf : @buffer.Buffer, v : Double) -> Unit {
   if x < 0.0 {
     buf.write_byte(b'-')
   }
-  let len = decimal_length(digits)
   if exp >= 0 {
-    write_decimal(buf, digits, -1)
+    write_digits(buf, digits)
     for _ in 0..<exp {
       buf.write_byte(b'0')
     }
@@ -157,15 +163,23 @@ fn write_real(buf : @buffer.Buffer, v : Double) -> Unit {
       buf.write_byte(b'.')
       buf.write_byte(b'0')
     }
-  } else if len > -exp {
-    write_decimal(buf, digits, len + exp)
+    return
+  }
+  // The last `-exp` digits are behind the decimal point.
+  let frac_digits = -exp
+  if frac_digits < int64_pow10.length() && digits >= int64_pow10[frac_digits] {
+    // There are digits before the point too.
+    let unit = int64_pow10[frac_digits]
+    let int_part = digits / unit
+    write_digits(buf, int_part)
+    buf.write_byte(b'.')
+    write_padded_digits(buf, digits - int_part * unit, frac_digits)
   } else {
+    // All digits are behind the point, after the zeros that fill it up
+    // (`digits` has at most 9 digits, so it is below `10^frac_digits`).
     buf.write_byte(b'0')
     buf.write_byte(b'.')
-    for _ in 0..<(-exp - len) {
-      buf.write_byte(b'0')
-    }
-    write_decimal(buf, digits, -1)
+    write_padded_digits(buf, digits, frac_digits)
   }
 }
 
@@ -178,30 +192,25 @@ let int64_pow10 : ReadOnlyArray[Int64] = [
 ]
 
 ///|
-/// The number of decimal digits of a non-negative `n` (1 for 0).
-fn decimal_length(n : Int64) -> Int32 {
-  let mut len = 1
-  while len < int64_pow10.length() && n >= int64_pow10[len] {
-    len += 1
+/// Write the decimal digits of a non-negative `n`.
+fn write_digits(buf : @buffer.Buffer, n : Int64) -> Unit {
+  // (Divisions by the constant 10, most significant digit first: numbers in
+  // a content stream are short, and a division by a power of ten from a
+  // table per digit is what this replaced.)
+  if n >= 10L {
+    write_digits(buf, n / 10L)
   }
-  len
+  buf.write_byte(((n % 10L).to_int() + '0'.to_int()).to_byte())
 }
 
 ///|
-/// Write the decimal digits of a non-negative `n`, with a decimal point
-/// before the digit at index `point` (none if `point` is negative).
-fn write_decimal(buf : @buffer.Buffer, n : Int64, point : Int32) -> Unit {
-  let len = decimal_length(n)
-  let mut rest = n
-  for i = len - 1; i >= 0; i = i - 1 {
-    if len - 1 - i == point {
-      buf.write_byte(b'.')
-    }
-    let unit = int64_pow10[i]
-    let digit = rest / unit
-    buf.write_byte((digit.to_int() + '0'.to_int()).to_byte())
-    rest = rest - digit * unit
+/// Write the last `width` decimal digits of a non-negative `n`, with
+/// leading zeros (`width >= 1`).
+fn write_padded_digits(buf : @buffer.Buffer, n : Int64, width : Int32) -> Unit {
+  if width > 1 {
+    write_padded_digits(buf, n / 10L, width - 1)
   }
+  buf.write_byte(((n % 10L).to_int() + '0'.to_int()).to_byte())
 }
 
 ///|
@@ -238,35 +247,66 @@ fn integral_string(v : Double) -> String {
 }
 
 ///|
+/// Whether a byte of a name is written as it is: the printable ASCII
+/// characters but `#`, the delimiters `/ ( ) < > [ ] { }` and `%`.
 fn is_regular_name_byte(b : Int32) -> Bool {
-  b > 0x20 &&
-  b < 0x7F &&
-  b != '#'.to_int() &&
-  b != '/'.to_int() &&
-  b != '('.to_int() &&
-  b != ')'.to_int() &&
-  b != '<'.to_int() &&
-  b != '>'.to_int() &&
-  b != '['.to_int() &&
-  b != ']'.to_int() &&
-  b != '{'.to_int() &&
-  b != '}'.to_int() &&
-  b != '%'.to_int()
+  // (One bit per byte, in two words: names are written for every font,
+  // color space and graphics state that a content stream selects.
+  // `object_wbtest.mbt` compares this with the list above for every byte.)
+  if b < 0x40 {
+    b >= 0 && ((REGULAR_NAME_BYTES_LOW >> b) & 1UL) == 1UL
+  } else {
+    b < 0x80 && ((REGULAR_NAME_BYTES_HIGH >> (b - 0x40)) & 1UL) == 1UL
+  }
 }
+
+///|
+/// The regular name bytes below 0x40: 0x21 to 0x3F but `# % ( ) / < >`.
+const REGULAR_NAME_BYTES_LOW : UInt64 = 0xAFFF7CD600000000UL
+
+///|
+/// The regular name bytes from 0x40: 0x40 to 0x7E but `[ ] { }`.
+const REGULAR_NAME_BYTES_HIGH : UInt64 = 0x57FFFFFFD7FFFFFFUL
 
 ///|
 let hex_digits : String = "0123456789ABCDEF"
 
 ///|
 fn write_hex_byte(buf : @buffer.Buffer, b : Int32) -> Unit {
-  buf.write_byte(hex_digits[(b >> 4) & 0xF].to_byte())
-  buf.write_byte(hex_digits[b & 0xF].to_byte())
+  buf.write_byte(hex_digit((b >> 4) & 0xF))
+  buf.write_byte(hex_digit(b & 0xF))
 }
 
 ///|
+/// The digit of `hex_digits` for `n` in `0..16`, computed: two of them are
+/// written for every glyph of a CID font.
+fn hex_digit(n : Int32) -> Byte {
+  if n < 10 {
+    (n + '0'.to_int()).to_byte()
+  } else {
+    (n - 10 + 'A'.to_int()).to_byte()
+  }
+}
+
+///|
+/// Write ASCII text as it is.
 fn write_ascii(buf : @buffer.Buffer, s : String) -> Unit {
-  for c in s {
-    buf.write_byte(c.to_int().to_byte())
+  // (By code unit, which for ASCII is by character.)
+  for i in 0..<s.length() {
+    buf.write_byte(s.unsafe_get(i).to_int().to_byte())
+  }
+}
+
+///|
+/// Write an integer in decimal, the text of `Int::to_string` without the
+/// string.
+fn write_int(buf : @buffer.Buffer, i : Int32) -> Unit {
+  let i = i.to_int64()
+  if i < 0L {
+    buf.write_byte(b'-')
+    write_digits(buf, -i)
+  } else {
+    write_digits(buf, i)
   }
 }
 
@@ -400,7 +440,24 @@ fn write_string_prefix(
 /// Write a name (with the leading slash).
 fn write_name(buf : @buffer.Buffer, name : String) -> Unit {
   buf.write_byte(b'/')
-  for c in name {
+  // The regular bytes that the name starts with, which is all of nearly
+  // every name, by code unit.
+  let len = name.length()
+  let mut start = 0
+  while start < len {
+    let unit = name.unsafe_get(start).to_int()
+    if !is_regular_name_byte(unit) {
+      break
+    }
+    buf.write_byte(unit.to_byte())
+    start += 1
+  }
+  if start == len {
+    return
+  }
+  // (`start` is not inside a surrogate pair: no surrogate is a regular
+  // byte.)
+  for c in name.unsafe_substring(start~, end=len) {
     let cp = c.to_int()
     if cp < 0x80 {
       write_name_byte(buf, cp)
@@ -430,7 +487,7 @@ fn write_obj(buf : @buffer.Buffer, obj : Obj) -> Unit {
   match obj {
     Null => write_ascii(buf, "null")
     Bool(b) => write_ascii(buf, if b { "true" } else { "false" })
-    Int(i) => write_ascii(buf, i.to_string())
+    Int(i) => write_int(buf, i)
     Real(r) => write_real(buf, r)
     Name(n) => write_name(buf, n)
     Str(s) => write_string_bytes(buf, s)
@@ -457,7 +514,10 @@ fn write_obj(buf : @buffer.Buffer, obj : Obj) -> Unit {
       buf.write_byte(b'>')
       buf.write_byte(b'>')
     }
-    Ref(r) => write_ascii(buf, "\{r} 0 R")
+    Ref(r) => {
+      write_int(buf, r)
+      write_ascii(buf, " 0 R")
+    }
   }
 }
 
