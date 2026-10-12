@@ -246,6 +246,11 @@ pub fn Font::new_variable(Bytes, Int, ArrayView[(@subsetter.Tag, Float)], key? :
 pub fn Font::set_color_glyphs(Self, ColorGlyphs) -> Unit
 pub fn Font::variation_coordinates(Self) -> ArrayView[(@subsetter.Tag, Float)]
 
+pub struct FontSubset {
+  // private fields
+}
+pub fn FontSubset::size(Self) -> Int
+
 pub(all) struct Glyph {
   glyph_id : Int
   text_start : Int
@@ -346,7 +351,7 @@ pub(all) enum ListNumbering {
 pub struct Memo {
   // private fields
 }
-pub fn Memo::Memo(deflate? : (Bytes, (Bytes) -> Bytes) -> Bytes) -> Self
+pub fn Memo::Memo(deflate? : (Bytes, (Bytes) -> Bytes) -> Bytes, subset? : (Font, ArrayView[Int], () -> FontSubset raise ExportError) -> FontSubset raise ExportError) -> Self
 
 pub(all) struct Metadata {
   title : String?

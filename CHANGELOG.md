@@ -38,6 +38,21 @@ covers changes that have landed on `main` but are not yet published.
   their bytes, an export of `bench/longer.typ` whose pages are what they
   were goes from 1114 to 773 million instructions (-31 %); a first export
   pays 2 % for the hashes.
+- `export`: the host of a document can keep the subsets of its fonts
+  between documents. krilla memoizes `subset_font` by the font and the
+  glyph remapper (`comemo`); `Memo(subset=..)` takes the lookup for
+  it: a function that is handed the font, the glyph IDs that the document
+  uses of it in the order of their numbers in the subset (the subsetter
+  adds the components of composite glyphs), and the computation, and
+  returns a `FontSubset` (the subset's font file, the number of its glyphs
+  and the bounding box of their outlines, opaque), computed now or kept
+  from an earlier document. The result is a function of the font's data,
+  index and variation coordinates and of the glyph IDs. An error of the
+  computation is raised through the lookup. Without the lookup every font
+  is subset for every document, as before, and the files are the same
+  bytes either way. In typst.mbt a repeated export of `bench/showcase.typ`
+  (thirteen font programs) goes from 135 to 63 million instructions
+  (-53 %), `bench/long.typ` from 187 to 152 (-19 %).
 
 ### moonbitlang/pdflite [0.3.10]
 

@@ -607,9 +607,10 @@ fn CIDFont::serialize(
   if (font.fs_type & 0xF) == 2 {
     sc.register_validation_error(RestrictedLicense(font))
   }
-  let (subsetted_data, num_glyphs, global_bbox) = subset_font(
-    font, glyph_remapper,
-  )
+  let subset = sc.subset_font(font, glyph_remapper)
+  let subsetted_data = subset.data
+  let num_glyphs = subset.num_glyphs
+  let global_bbox = subset.bbox
   let font_stream = {
     // If we have a CFF font, only embed the standalone CFF program.
     let subsetted_ref = @read_fonts.FontRef::new(subsetted_data) catch {
