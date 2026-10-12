@@ -12,6 +12,36 @@ Breaking and notable changes for the published modules in this workspace.
 Entries are grouped by module and by the version they ship in; `Unreleased`
 covers changes that have landed on `main` but are not yet published.
 
+### moonbitlang/pdflite [Unreleased]
+
+- `export`: drawing text is faster, and every document is byte for byte what
+  it was. In typst.mbt the export of `bench/longer.typ` (415 000 glyphs in
+  36 000 runs) goes from 2469 to 1423 million instructions (-42 %),
+  `bench/long.typ` from 526 to 308 (-41 %). The time was in what a glyph
+  and a run of glyphs allocated and asked again and again, not in what is
+  written:
+  - `FontContainer::add_glyph`, which is called three to four times per
+    glyph, asked the colour-glyph hook and remapped the glyph each time and
+    returned a tuple. It keeps the CID of a glyph (krilla's `cid_cache`,
+    dense by glyph ID) and returns a value type.
+  - The text spanner, the grouper and the clamp of cluster ranges allocate
+    nothing per glyph; a run of text makes no closures, cells or tuples
+    (about twenty objects per run before).
+  - The `TJ` array of a run is written as it is encoded, through a scratch
+    buffer of the content builder (krilla's), instead of built as objects
+    first. The advance widths that the font gave are kept per glyph for
+    the document (asking the font was three allocations and a walk through
+    `hmtx` and `HVAR` for every glyph shown).
+  - Numbers: the digits by divisions by the constant ten, small integral
+    values first; names and operators by code unit; integers and
+    references (`12 0 R`) without a string each.
+  - `Transform`, `Point` and `Glyph` are value types (`#valtype`). Their
+    interface is unchanged; on native, `physical_equal` of two of them is
+    always false.
+  No public signature of the package changes. What a caller still pays per
+  glyph is its own: `Glyph.location` is an option of a `UInt64`, an
+  allocation where it is `Some`.
+
 ### moonbitlang/pdflite [0.3.9]
 
 - `export`: an image can keep its compressed samples. `Image::deflated`
