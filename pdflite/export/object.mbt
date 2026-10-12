@@ -123,13 +123,20 @@ fn write_real(buf : @buffer.Buffer, v : Double) -> Unit {
     write_ascii(buf, integral_string(v.round()))
     return
   }
-  if x == x.floor() && x >= -2147483648.0 && x < 2147483648.0 {
-    let i = x.to_int64()
-    if i < 0L {
-      buf.write_byte(b'-')
+  if x >= -2147483648.0 && x < 2147483648.0 {
+    // (In the range of `i32`, so the cast truncates and `x == x.floor()` is
+    // whether the cast gives `x` back.)
+    let i = x.to_int()
+    if i.to_double() == x {
+      let i = i.to_int64()
+      if i < 0L {
+        buf.write_byte(b'-')
+        write_digits(buf, -i)
+      } else {
+        write_digits(buf, i)
+      }
+      return
     }
-    write_decimal(buf, i.abs(), -1)
-    return
   }
   // The shortest digits `n * 10^exp` (at most 9 significant digits) that
   // round to the same `f32`, as ryu chooses them.
@@ -144,9 +151,8 @@ fn write_real(buf : @buffer.Buffer, v : Double) -> Unit {
   if x < 0.0 {
     buf.write_byte(b'-')
   }
-  let len = decimal_length(digits)
   if exp >= 0 {
-    write_decimal(buf, digits, -1)
+    write_digits(buf, digits)
     for _ in 0..<exp {
       buf.write_byte(b'0')
     }
@@ -157,15 +163,23 @@ fn write_real(buf : @buffer.Buffer, v : Double) -> Unit {
       buf.write_byte(b'.')
       buf.write_byte(b'0')
     }
-  } else if len > -exp {
-    write_decimal(buf, digits, len + exp)
+    return
+  }
+  // The last `-exp` digits are behind the decimal point.
+  let frac_digits = -exp
+  if frac_digits < int64_pow10.length() && digits >= int64_pow10[frac_digits] {
+    // There are digits before the point too.
+    let unit = int64_pow10[frac_digits]
+    let int_part = digits / unit
+    write_digits(buf, int_part)
+    buf.write_byte(b'.')
+    write_padded_digits(buf, digits - int_part * unit, frac_digits)
   } else {
+    // All digits are behind the point, after the zeros that fill it up
+    // (`digits` has at most 9 digits, so it is below `10^frac_digits`).
     buf.write_byte(b'0')
     buf.write_byte(b'.')
-    for _ in 0..<(-exp - len) {
-      buf.write_byte(b'0')
-    }
-    write_decimal(buf, digits, -1)
+    write_padded_digits(buf, digits, frac_digits)
   }
 }
 
@@ -178,30 +192,25 @@ let int64_pow10 : ReadOnlyArray[Int64] = [
 ]
 
 ///|
-/// The number of decimal digits of a non-negative `n` (1 for 0).
-fn decimal_length(n : Int64) -> Int {
-  let mut len = 1
-  while len < int64_pow10.length() && n >= int64_pow10[len] {
-    len += 1
+/// Write the decimal digits of a non-negative `n`.
+fn write_digits(buf : @buffer.Buffer, n : Int64) -> Unit {
+  // (Divisions by the constant 10, most significant digit first: numbers in
+  // a content stream are short, and a division by a power of ten from a
+  // table per digit is what this replaced.)
+  if n >= 10L {
+    write_digits(buf, n / 10L)
   }
-  len
+  buf.write_byte(((n % 10L).to_int() + '0'.to_int()).to_byte())
 }
 
 ///|
-/// Write the decimal digits of a non-negative `n`, with a decimal point
-/// before the digit at index `point` (none if `point` is negative).
-fn write_decimal(buf : @buffer.Buffer, n : Int64, point : Int) -> Unit {
-  let len = decimal_length(n)
-  let mut rest = n
-  for i = len - 1; i >= 0; i = i - 1 {
-    if len - 1 - i == point {
-      buf.write_byte(b'.')
-    }
-    let unit = int64_pow10[i]
-    let digit = rest / unit
-    buf.write_byte((digit.to_int() + '0'.to_int()).to_byte())
-    rest = rest - digit * unit
+/// Write the last `width` decimal digits of a non-negative `n`, with
+/// leading zeros (`width >= 1`).
+fn write_padded_digits(buf : @buffer.Buffer, n : Int64, width : Int) -> Unit {
+  if width > 1 {
+    write_padded_digits(buf, n / 10L, width - 1)
   }
+  buf.write_byte(((n % 10L).to_int() + '0'.to_int()).to_byte())
 }
 
 ///|
