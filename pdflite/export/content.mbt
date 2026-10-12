@@ -14,9 +14,11 @@ fn Content::new() -> Content {
 }
 
 ///|
+/// Write ASCII text as it is.
 fn Content::raw(self : Content, s : String) -> Unit {
-  for c in s {
-    self.buf.write_byte(c.to_int().to_byte())
+  // (By code unit, which for ASCII is by character.)
+  for i in 0..<s.length() {
+    self.buf.write_byte(s.unsafe_get(i).to_int().to_byte())
   }
 }
 

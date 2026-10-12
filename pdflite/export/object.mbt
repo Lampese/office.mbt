@@ -247,21 +247,26 @@ fn integral_string(v : Double) -> String {
 }
 
 ///|
+/// Whether a byte of a name is written as it is: the printable ASCII
+/// characters but `#`, the delimiters `/ ( ) < > [ ] { }` and `%`.
 fn is_regular_name_byte(b : Int) -> Bool {
-  b > 0x20 &&
-  b < 0x7F &&
-  b != '#'.to_int() &&
-  b != '/'.to_int() &&
-  b != '('.to_int() &&
-  b != ')'.to_int() &&
-  b != '<'.to_int() &&
-  b != '>'.to_int() &&
-  b != '['.to_int() &&
-  b != ']'.to_int() &&
-  b != '{'.to_int() &&
-  b != '}'.to_int() &&
-  b != '%'.to_int()
+  // (One bit per byte, in two words: names are written for every font,
+  // color space and graphics state that a content stream selects.
+  // `object_wbtest.mbt` compares this with the list above for every byte.)
+  if b < 0x40 {
+    b >= 0 && ((REGULAR_NAME_BYTES_LOW >> b) & 1UL) == 1UL
+  } else {
+    b < 0x80 && ((REGULAR_NAME_BYTES_HIGH >> (b - 0x40)) & 1UL) == 1UL
+  }
 }
+
+///|
+/// The regular name bytes below 0x40: 0x21 to 0x3F but `# % ( ) / < >`.
+const REGULAR_NAME_BYTES_LOW : UInt64 = 0xAFFF7CD600000000UL
+
+///|
+/// The regular name bytes from 0x40: 0x40 to 0x7E but `[ ] { }`.
+const REGULAR_NAME_BYTES_HIGH : UInt64 = 0x57FFFFFFD7FFFFFFUL
 
 ///|
 let hex_digits : String = "0123456789ABCDEF"
@@ -409,7 +414,24 @@ fn write_string_prefix(
 /// Write a name (with the leading slash).
 fn write_name(buf : @buffer.Buffer, name : String) -> Unit {
   buf.write_byte(b'/')
-  for c in name {
+  // The regular bytes that the name starts with, which is all of nearly
+  // every name, by code unit.
+  let len = name.length()
+  let mut start = 0
+  while start < len {
+    let unit = name.unsafe_get(start).to_int()
+    if !is_regular_name_byte(unit) {
+      break
+    }
+    buf.write_byte(unit.to_byte())
+    start += 1
+  }
+  if start == len {
+    return
+  }
+  // (`start` is not inside a surrogate pair: no surrogate is a regular
+  // byte.)
+  for c in name.unsafe_substring(start~, end=len) {
     let cp = c.to_int()
     if cp < 0x80 {
       write_name_byte(buf, cp)
