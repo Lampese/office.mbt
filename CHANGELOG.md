@@ -51,6 +51,15 @@ covers changes that have landed on `main` but are not yet published.
   No public signature of the package changes. What a caller still pays per
   glyph is its own: `Glyph.location` is an option of a `UInt64`, an
   allocation where it is `Some`.
+- `export`: the structure tree is serialized without a string key per
+  piece of marked content: the parent of marked content is found in a
+  table by page and marked content ID instead of in a map by a string of
+  the two, structure element IDs by their bytes instead of by their hex
+  digits, and the attribute dictionaries of an element are started only
+  for the owners it has attributes of. The files are the same bytes. In
+  typst.mbt the export of `bench/longer.typ` (5222 structure elements,
+  13 930 pieces of marked content) goes from 1206 to 1134 million
+  instructions (-6 %).
 
 ### moonbitlang/pdflite [0.3.9]
 
