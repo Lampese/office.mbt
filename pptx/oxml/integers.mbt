@@ -13,7 +13,7 @@
 /// Parse a signed decimal integer. Accepts an optional leading `+` / `-`.
 /// Returns `None` if the input is empty, sign-only, or contains a
 /// non-digit character.
-pub fn parse_signed_int(s : String) -> Int? {
+pub fn parse_signed_int(s : String) -> Int32? {
   let (sign, digits) = match s {
     ['-', .. rest] => (-1, rest)
     ['+', .. rest] => (1, rest)
@@ -24,7 +24,7 @@ pub fn parse_signed_int(s : String) -> Int? {
   }
   let mut acc = 0
   for c in digits {
-    guard c is ('0'..='9') else { return None }
+    guard c is ('0'..<='9') else { return None }
     acc = acc * 10 + (c.to_int() - '0'.to_int())
   }
   Some(acc * sign)
@@ -45,7 +45,7 @@ pub fn parse_signed_int64(s : String) -> Int64? {
   }
   let mut acc : Int64 = 0L
   for c in digits {
-    guard c is ('0'..='9') else { return None }
+    guard c is ('0'..<='9') else { return None }
     acc = acc * 10L + (c.to_int() - '0'.to_int()).to_int64()
   }
   Some(acc * sign)

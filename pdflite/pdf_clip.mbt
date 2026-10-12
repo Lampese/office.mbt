@@ -69,19 +69,19 @@ pub fn pdf_nullpoly() -> PdfClipPolygon {
 
 ///|
 /// Number of contours in this polygon.
-pub fn PdfClipPolygon::num_contours(self : PdfClipPolygon) -> Int {
+pub fn PdfClipPolygon::num_contours(self : PdfClipPolygon) -> Int32 {
   self.contours.length()
 }
 
 ///|
 /// Number of vertices in this contour.
-pub fn PdfClipContour::num_vertices(self : PdfClipContour) -> Int {
+pub fn PdfClipContour::num_vertices(self : PdfClipContour) -> Int32 {
   self.vertices.length()
 }
 
 ///|
 /// Return cpdf's integer hole flag for this contour.
-pub fn PdfClipContour::hole_flag(self : PdfClipContour) -> Int {
+pub fn PdfClipContour::hole_flag(self : PdfClipContour) -> Int32 {
   if self.hole {
     1
   } else {
@@ -91,7 +91,7 @@ pub fn PdfClipContour::hole_flag(self : PdfClipContour) -> Int {
 
 ///|
 /// Return the integer operation code used by cpdf's GPC binding.
-pub fn PdfClipOperation::gpc_code(self : PdfClipOperation) -> Int {
+pub fn PdfClipOperation::gpc_code(self : PdfClipOperation) -> Int32 {
   match self {
     PdfClipDifference => 0
     PdfClipIntersection => 1
@@ -173,9 +173,9 @@ fn pdf_clip_float_text(value : Double) -> String {
 ///|
 fn pdf_gpcml_write_ascii(
   output : Array[Byte],
-  position : Int,
+  position : Int32,
   text : String,
-) -> Int {
+) -> Int32 {
   let mut current = position
   for byte in @ascii.encode(text) {
     output[current] = byte
@@ -187,9 +187,9 @@ fn pdf_gpcml_write_ascii(
 ///|
 fn pdf_gpcml_write_vertex(
   output : Array[Byte],
-  position : Int,
+  position : Int32,
   vertex : PdfClipVertex,
-) -> Int {
+) -> Int32 {
   let mut current = pdf_gpcml_write_ascii(output, position, "    {x = ")
   current = pdf_gpcml_write_ascii(
     output,
@@ -208,9 +208,9 @@ fn pdf_gpcml_write_vertex(
 ///|
 fn pdf_gpcml_write_contour(
   output : Array[Byte],
-  position : Int,
+  position : Int32,
   contour : PdfClipContour,
-) -> Int {
+) -> Int32 {
   let mut current = pdf_gpcml_write_ascii(output, position, "  Contour with ")
   current = pdf_gpcml_write_ascii(
     output,
@@ -232,12 +232,12 @@ fn pdf_gpcml_write_contour(
 }
 
 ///|
-fn pdf_gpcml_text_length(text : String) -> Int {
+fn pdf_gpcml_text_length(text : String) -> Int32 {
   @ascii.encode(text).length()
 }
 
 ///|
-fn pdf_gpcml_vertex_text_length(vertex : PdfClipVertex) -> Int {
+fn pdf_gpcml_vertex_text_length(vertex : PdfClipVertex) -> Int32 {
   pdf_gpcml_text_length("    {x = ") +
   pdf_gpcml_text_length(pdf_clip_float_text(vertex.x)) +
   pdf_gpcml_text_length(", y = ") +
@@ -246,7 +246,7 @@ fn pdf_gpcml_vertex_text_length(vertex : PdfClipVertex) -> Int {
 }
 
 ///|
-fn pdf_gpcml_contour_text_length(contour : PdfClipContour) -> Int {
+fn pdf_gpcml_contour_text_length(contour : PdfClipContour) -> Int32 {
   let mut length = pdf_gpcml_text_length("  Contour with ") +
     pdf_gpcml_text_length(contour.vertices.length().to_string()) +
     pdf_gpcml_text_length(" vertices and hole ") +
@@ -259,7 +259,7 @@ fn pdf_gpcml_contour_text_length(contour : PdfClipContour) -> Int {
 }
 
 ///|
-fn pdf_gpcml_polygon_text_length(polygon : PdfClipPolygon) -> Int {
+fn pdf_gpcml_polygon_text_length(polygon : PdfClipPolygon) -> Int32 {
   let mut length = pdf_gpcml_text_length("Contours: ") +
     pdf_gpcml_text_length(polygon.contours.length().to_string()) +
     1

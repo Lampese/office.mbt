@@ -20,7 +20,7 @@ test "u24" {
 }
 
 ///|
-fn integer_roundtrip(nums : Array[Int], len : Int) -> Unit raise {
+fn integer_roundtrip(nums : Array[Int32], len : Int32) -> Unit raise {
   for num in nums {
     let buffer = write_to_bytes(w => Integer(num).write(w))
     let reparsed = parse_integer(Reader::new(buffer)).unwrap()
@@ -127,7 +127,7 @@ test "binary search probes like Rust's slice::binary_search_by" {
   assert_eq(binary_search_by(xs, x => x.compare(7)), Ok(3))
   assert_eq(binary_search_by(xs, x => x.compare(4)), Err(2))
   assert_eq(binary_search_by(xs, x => x.compare(10)), Err(5))
-  assert_eq(binary_search_by(([] : Array[Int]), x => x.compare(1)), Err(0))
+  assert_eq(binary_search_by(([] : Array[Int32]), x => x.compare(1)), Err(0))
   // Duplicates: the last probed one is found.
   assert_eq(binary_search_by([2, 2, 2, 2], x => x.compare(2)), Ok(3))
 }

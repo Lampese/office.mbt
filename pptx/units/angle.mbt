@@ -9,7 +9,7 @@
 
 ///|
 /// Conversion factor: 1 degree = 60_000 OOXML units.
-pub let ooxml_per_degree : Int = 60_000
+pub let ooxml_per_degree : Int32 = 60_000
 
 ///|
 /// An angle in degrees. Sign convention is OOXML's (positive = clockwise).
@@ -33,14 +33,14 @@ pub fn Angle::degrees(self : Angle) -> Double {
 ///|
 /// Convert to the OOXML 1/60_000-degree integer representation.
 /// Rounds to the nearest OOXML unit to preserve integer round trips.
-pub fn Angle::to_ooxml(self : Angle) -> Int {
+pub fn Angle::to_ooxml(self : Angle) -> Int32 {
   (self.0 * ooxml_per_degree.to_double()).round().to_int()
 }
 
 ///|
 /// Construct an `Angle` from the OOXML 1/60_000-degree integer representation
 /// (e.g. `from_ooxml(5_400_000)` is 90°).
-pub fn Angle::from_ooxml(n : Int) -> Angle {
+pub fn Angle::from_ooxml(n : Int32) -> Angle {
   Angle(n.to_double() / ooxml_per_degree.to_double())
 }
 

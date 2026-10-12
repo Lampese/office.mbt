@@ -9,7 +9,7 @@
 // truth about the format, not a restatement of what this code does.
 
 ///|
-fn png_palette_bytes_for_test(values : ArrayView[Int]) -> @core.PdfBytes {
+fn png_palette_bytes_for_test(values : ArrayView[Int32]) -> @core.PdfBytes {
   try! @core.pdf_bytes_of_int_array(values)
 }
 
@@ -17,11 +17,11 @@ fn png_palette_bytes_for_test(values : ArrayView[Int]) -> @core.PdfBytes {
 /// Assemble a PNG from explicit chunks, so tests can order PLTE, tRNS
 /// and IDAT freely.
 fn png_palette_file_for_test(
-  width : Int,
-  height : Int,
-  bit_depth : Int,
-  interlace : Int,
-  chunks : ArrayView[(ArrayView[Int], @core.PdfBytes)],
+  width : Int32,
+  height : Int32,
+  bit_depth : Int32,
+  interlace : Int32,
+  chunks : ArrayView[(ArrayView[Int32], @core.PdfBytes)],
 ) -> @core.PdfBytes {
   let output : Array[Byte] = []
   for value in [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A] {
@@ -194,8 +194,8 @@ test "pdf_image_object_of_png_data embeds a palette image as /Indexed" {
 /// `file` with a tRNS of `alpha` spliced in at byte `at` (before its IDAT).
 fn png_palette_with_trns_for_test(
   file : @core.PdfBytes,
-  at : Int,
-  alpha : ArrayView[Int],
+  at : Int32,
+  alpha : ArrayView[Int32],
 ) -> @core.PdfBytes {
   let output : Array[Byte] = [..file[:at]]
   image_append_bytes_for_test(
@@ -413,7 +413,7 @@ test "pdf_read_png rejects a 16-bit palette image" {
 ///|
 test "a palette image's mask needs all its data, of a size that fits" {
   let plte = png_palette_bytes_for_test([0, 0, 0, 255, 255, 255])
-  let refused = (width : Int, height : Int, raster : ArrayView[Int]) => {
+  let refused = (width : Int32, height : Int32, raster : ArrayView[Int32]) => {
     let file = png_palette_file_for_test(width, height, 8, 0, [
       ([0x50, 0x4C, 0x54, 0x45], plte),
       ([0x74, 0x52, 0x4E, 0x53], png_palette_bytes_for_test([0, 128])),

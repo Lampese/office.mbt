@@ -11,19 +11,19 @@ pub const MAX_RANGE_CELLS : Int64 = 100_000
 
 ///|
 /// Largest column (XFD) and row of the xlsx grid.
-const MAX_COL : Int = 16_384
+const MAX_COL : Int32 = 16_384
 
 ///|
-const MAX_ROW : Int = 1_048_576
+const MAX_ROW : Int32 = 1_048_576
 
 ///|
 /// A normalized, inclusive rectangular cell range (1-based coordinates,
 /// `lo <= hi` on both axes).
 pub struct CellRange {
-  col_lo : Int
-  row_lo : Int
-  col_hi : Int
-  row_hi : Int
+  col_lo : Int32
+  row_lo : Int32
+  col_hi : Int32
+  row_hi : Int32
 } derive(Eq, @debug.Debug)
 
 ///|
@@ -107,10 +107,10 @@ pub fn parse_range_unbounded(target : String) -> CellRange raise RangeError {
 fn parse_cell_ref(
   reference : StringView,
   full~ : String,
-) -> (Int, Int) raise RangeError {
+) -> (Int32, Int32) raise RangeError {
   let mut pos = 0
   let len = reference.length()
-  fn at(i : Int) -> UInt16 {
+  fn at(i : Int32) -> UInt16 {
     reference[i]
   }
 
@@ -119,7 +119,7 @@ fn parse_cell_ref(
   }
   // Column letters: at most 3 (XFD is the last column).
   let col_start = pos
-  while pos < len && at(pos) is ('A'..='Z' | 'a'..='z') {
+  while pos < len && at(pos) is ('A'..<='Z' | 'a'..<='z') {
     pos += 1
   }
   let letters = pos - col_start
@@ -139,7 +139,7 @@ fn parse_cell_ref(
   // grid, and nothing may trail the digits. The in-loop bound also keeps
   // long digit runs from overflowing `Int`.
   let row_start = pos
-  while pos < len && at(pos) is ('0'..='9') {
+  while pos < len && at(pos) is ('0'..<='9') {
     pos += 1
   }
   if pos - row_start < 1 || pos != len {

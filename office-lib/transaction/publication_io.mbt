@@ -11,12 +11,12 @@ priv struct PublicationTemp {
   path : String
   file : @afs.File
   mut expected : Bytes
-  mut written : Int
+  mut written : Int32
   mut final_permission_applied : Bool
 }
 
 ///|
-async fn publication_set_permission(path : String, permission : Int) -> Unit {
+async fn publication_set_permission(path : String, permission : Int32) -> Unit {
   // Windows inherits the directory ACL; chmod is unsupported.
   if !(@async.platform is Windows) {
     @afs.chmod(path, permission)
@@ -57,7 +57,7 @@ async fn publication_entry_kind(
   directory : PublicationDirectory,
   leaf : String,
   output_path : String,
-) -> Int {
+) -> Int32 {
   let path = join_path(directory.path, leaf)
   let exists = @afs.exists(path) catch {
     error if @async.is_being_cancelled() => raise error
@@ -138,7 +138,7 @@ fn publication_entries_same(
 }
 
 ///|
-async fn publication_read_exactly(file : @afs.File, length : Int) -> Bytes {
+async fn publication_read_exactly(file : @afs.File, length : Int32) -> Bytes {
   let buffer = FixedArray::make(length, b'\x00')
   let mut offset = 0
   while offset < length {
@@ -163,7 +163,7 @@ async fn publication_read_exactly(file : @afs.File, length : Int) -> Bytes {
 async fn publication_file_contents_match(
   file : @afs.File,
   expected : Bytes,
-  expected_length : Int,
+  expected_length : Int32,
 ) -> Bool {
   if expected_length < 0 || expected_length > expected.length() {
     return false
@@ -227,7 +227,7 @@ async fn publication_named_file_matches(
 async fn publication_file_read(
   directory : PublicationDirectory,
   leaf : String,
-  max_bytes : Int,
+  max_bytes : Int32,
   phase : String,
 ) -> Bytes {
   let path = join_path(directory.path, leaf)
@@ -264,9 +264,9 @@ async fn publication_temp_try_create(
   directory : PublicationDirectory,
   leaf : String,
   output_path : String,
-  initial_permission? : Int = 0o600,
-  fail_secure_permission? : Bool = false,
-  fail_cleanup? : Bool = false,
+  initial_permission~ : Int32 = 0o600,
+  fail_secure_permission~ : Bool = false,
+  fail_cleanup~ : Bool = false,
   secure_release? : String,
 ) -> PublicationTemp? {
   let path = join_path(directory.path, leaf)
@@ -344,8 +344,8 @@ async fn publication_temp_try_create(
 async fn publication_temp_write(
   temp : PublicationTemp,
   bytes : Bytes,
-  fail_after_bytes~ : Int?,
-  stall_after_bytes~ : Int?,
+  fail_after_bytes~ : Int32?,
+  stall_after_bytes~ : Int32?,
 ) -> Unit {
   temp.expected = bytes
   temp.written = 0
@@ -416,7 +416,7 @@ async fn publication_temp_publish(
   destination_leaf : String,
   replace : Bool,
   output_path : String,
-  permission : Int,
+  permission : Int32,
 ) -> Bool {
   if temp.written != temp.expected.length() ||
     !publication_temp_identity_matches(temp) {
@@ -496,7 +496,7 @@ async fn publication_temp_substitute(temp : PublicationTemp) -> Unit {
 async fn publication_temp_cleanup(
   temp : PublicationTemp,
   output_path : String,
-  fail_remove? : Bool = false,
+  fail_remove~ : Bool = false,
   cleanup_release? : String,
 ) -> Unit {
   @async.protect_from_cancel(() => {

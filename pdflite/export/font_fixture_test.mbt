@@ -10,7 +10,7 @@
 
 ///|
 priv struct FontBytes {
-  out : Array[Int]
+  out : Array[Int32]
 }
 
 ///|
@@ -19,26 +19,26 @@ fn FontBytes::new() -> FontBytes {
 }
 
 ///|
-fn FontBytes::u16(self : FontBytes, v : Int) -> Unit {
+fn FontBytes::u16(self : FontBytes, v : Int32) -> Unit {
   self.out.push((v >> 8) & 0xFF)
   self.out.push(v & 0xFF)
 }
 
 ///|
-fn FontBytes::u32(self : FontBytes, v : Int) -> Unit {
+fn FontBytes::u32(self : FontBytes, v : Int32) -> Unit {
   self.u16((v >> 16) & 0xFFFF)
   self.u16(v & 0xFFFF)
 }
 
 ///|
-fn FontBytes::bytes(self : FontBytes, v : ArrayView[Int]) -> Unit {
+fn FontBytes::bytes(self : FontBytes, v : ArrayView[Int32]) -> Unit {
   for b in v {
     self.out.push(b)
   }
 }
 
 ///|
-fn FontBytes::pad(self : FontBytes, len : Int) -> Unit {
+fn FontBytes::pad(self : FontBytes, len : Int32) -> Unit {
   while self.out.length() < len {
     self.out.push(0)
   }
@@ -53,7 +53,7 @@ fn FontBytes::align4(self : FontBytes) -> Unit {
 
 ///|
 /// A simple glyph: one rectangular contour.
-fn box_glyph(x0 : Int, y0 : Int, x1 : Int, y1 : Int) -> Array[Int] {
+fn box_glyph(x0 : Int32, y0 : Int32, x1 : Int32, y1 : Int32) -> Array[Int32] {
   let g = FontBytes::new()
   g.u16(1) // numberOfContours
   g.u16(x0)
@@ -74,7 +74,7 @@ fn box_glyph(x0 : Int, y0 : Int, x1 : Int, y1 : Int) -> Array[Int] {
 
 ///|
 /// A composite glyph referencing `component`.
-fn composite_glyph(component : Int) -> Array[Int] {
+fn composite_glyph(component : Int32) -> Array[Int32] {
   let g = FontBytes::new()
   g.u16(-1) // numberOfContours
   g.u16(0)
@@ -92,16 +92,16 @@ fn composite_glyph(component : Int) -> Array[Int] {
 /// A minimal CFF table with `n` glyphs (all `endchar`). A CID-keyed table
 /// has the ROS operator and a charset mapping glyphs 1.. to CIDs 100..
 fn cff_table(
-  n : Int,
+  n : Int32,
   cid_keyed : Bool,
-  seac? : Int = -1,
-  seac_in_subr? : Int = -1,
-  iso_adobe_charset? : Bool = false,
-) -> Array[Int] {
-  let int32 = (v : Int) => {
+  seac~ : Int32 = -1,
+  seac_in_subr~ : Int32 = -1,
+  iso_adobe_charset~ : Bool = false,
+) -> Array[Int32] {
+  let int32 = (v : Int32) => {
     [29, (v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF]
   }
-  let index = (items : Array[Array[Int]]) => {
+  let index = (items : Array[Array[Int32]]) => {
     let out = FontBytes::new()
     out.u16(items.length())
     if items.length() > 0 {
@@ -236,15 +236,15 @@ fn cff_table(
 ///|
 /// A minimal CFF2 table: the boxes of the glyf font as charstrings (no
 /// variation store).
-fn cff2_table() -> Array[Int] {
-  let num = (v : Int) => {
+fn cff2_table() -> Array[Int32] {
+  let num = (v : Int32) => {
     if v >= -107 && v <= 107 {
       [v + 139]
     } else {
       [28, (v >> 8) & 0xFF, v & 0xFF]
     }
   }
-  let box_cs = (x0 : Int, y0 : Int, x1 : Int, y1 : Int) => {
+  let box_cs = (x0 : Int32, y0 : Int32, x1 : Int32, y1 : Int32) => {
     let out = []
     for b in num(x0) + num(y0) + [21] {
       out.push(b) // rmoveto
@@ -263,7 +263,7 @@ fn cff2_table() -> Array[Int] {
     box_cs(0, 0, 700, 700),
   ]
   // A CFF2 INDEX (32-bit count, 2-byte offsets).
-  let index2 = (items : Array[Array[Int]]) => {
+  let index2 = (items : Array[Array[Int32]]) => {
     let out = FontBytes::new()
     out.u32(items.length())
     if items.length() > 0 {
@@ -280,7 +280,7 @@ fn cff2_table() -> Array[Int] {
     }
     out.out
   }
-  let int32 = (v : Int) => {
+  let int32 = (v : Int32) => {
     [29, (v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF]
   }
   // Top DICT: CharStrings and FDArray offsets (5-byte integers).
@@ -307,12 +307,12 @@ fn cff2_table() -> Array[Int] {
 
 ///|
 fn test_font_tables(
-  fs_type : Int,
+  fs_type : Int32,
   ps_name : String,
   outlines : String,
   italic : Bool,
   monospaced : Bool,
-) -> Array[(String, Array[Int])] {
+) -> Array[(String, Array[Int32])] {
   let advances = [500, 600, 550, 600, 250, 700]
   let n = advances.length()
   let head = FontBytes::new()
@@ -426,11 +426,11 @@ fn test_font_tables(
 ///|
 /// The bytes of the synthetic font.
 fn test_font_data(
-  fs_type? : Int = 0,
-  ps_name? : String = "TestSans-Bold",
-  outlines? : String = "glyf",
-  italic? : Bool = false,
-  monospaced? : Bool = false,
+  fs_type~ : Int32 = 0,
+  ps_name~ : String = "TestSans-Bold",
+  outlines~ : String = "glyf",
+  italic~ : Bool = false,
+  monospaced~ : Bool = false,
 ) -> Bytes {
   let tables = test_font_tables(fs_type, ps_name, outlines, italic, monospaced)
   // Table records are sorted by tag (OpenType requires it, and the
@@ -461,11 +461,11 @@ fn test_font_data(
 
 ///|
 fn test_font(
-  fs_type? : Int = 0,
-  ps_name? : String = "TestSans-Bold",
-  outlines? : String = "glyf",
-  italic? : Bool = false,
-  monospaced? : Bool = false,
+  fs_type~ : Int32 = 0,
+  ps_name~ : String = "TestSans-Bold",
+  outlines~ : String = "glyf",
+  italic~ : Bool = false,
+  monospaced~ : Bool = false,
 ) -> @export.Font {
   @export.Font::new(
     test_font_data(fs_type~, ps_name~, outlines~, italic~, monospaced~),
@@ -477,12 +477,12 @@ fn test_font(
 ///|
 /// A glyph with the font's advance (in em).
 fn glyph(
-  id : Int,
-  start : Int,
-  end : Int,
+  id : Int32,
+  start : Int32,
+  end : Int32,
   x_advance? : Double,
-  x_offset? : Double = 0.0,
-  y_offset? : Double = 0.0,
+  x_offset~ : Double = 0.0,
+  y_offset~ : Double = 0.0,
 ) -> @export.Glyph {
   let advances : ReadOnlyArray[Double] = [0.5, 0.6, 0.55, 0.6, 0.25, 0.7]
   {
@@ -619,7 +619,7 @@ test "font collections" {
 
 ///|
 /// Patch big-endian bytes of font data.
-fn patch(data : Bytes, at : Int, bytes : Array[Int]) -> Bytes {
+fn patch(data : Bytes, at : Int32, bytes : Array[Int32]) -> Bytes {
   let arr = data.to_array()
   for i, b in bytes {
     arr[at + i] = b.to_byte()
@@ -629,7 +629,7 @@ fn patch(data : Bytes, at : Int, bytes : Array[Int]) -> Bytes {
 
 ///|
 /// The offset of a table record of the synthetic font.
-fn table_record(data : Bytes, tag : String) -> Int {
+fn table_record(data : Bytes, tag : String) -> Int32 {
   let n = (data[4].to_int() << 8) | data[5].to_int()
   for i in 0..<n {
     let rec = 12 + 16 * i
@@ -689,7 +689,7 @@ test "Font::new accepts and rejects fonts like krilla" {
   )
   // Collections: a negative face index, an index past the count, and a face
   // offset past the end.
-  let ttc = (offset : Int) => {
+  let ttc = (offset : Int32) => {
     let b = FontBytes::new()
     b.bytes([0x74, 0x74, 0x63, 0x66])
     b.u32(0x00010000)

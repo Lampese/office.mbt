@@ -48,7 +48,7 @@ priv enum Piece {
 
 ///|
 /// How finely a curve is divided to measure its length.
-const CURVE_STEPS : Int = 64
+const CURVE_STEPS : Int32 = 64
 
 ///|
 fn bezier(
@@ -424,7 +424,7 @@ fn matrix_attr(m : @pagelayout.Matrix) -> String {
 /// from 1, and a gradient already defined on the page (its definition
 /// the same but for the id) is referred to again rather than repeated.
 priv struct Defs {
-  mut last : Int
+  mut last : Int32
   gradients : Map[String, String]
 }
 
@@ -593,7 +593,7 @@ fn emit_graphic(
   let mut open = 0
   let mut fill_alpha = 1.0
   let mut stroke_alpha = 1.0
-  let stack : Array[(Int, Double, Double)] = []
+  let stack : Array[(Int32, Double, Double)] = []
   for op in graphic.ops {
     match op {
       Save => {

@@ -1,32 +1,32 @@
 ///|
-let office_read_max_package_bytes : Int = 64 * 1024 * 1024
+let office_read_max_package_bytes : Int32 = 64 * 1024 * 1024
 
 ///|
-let office_read_max_zip_entries : Int = 4096
+let office_read_max_zip_entries : Int32 = 4096
 
 ///|
-let office_read_max_zip_entry_bytes : Int = 32 * 1024 * 1024
+let office_read_max_zip_entry_bytes : Int32 = 32 * 1024 * 1024
 
 ///|
-let office_read_max_zip_total_bytes : Int = 128 * 1024 * 1024
+let office_read_max_zip_total_bytes : Int32 = 128 * 1024 * 1024
 
 ///|
-let office_read_max_preserved_source_bytes : Int = 64 * 1024 * 1024 + 65_535
+let office_read_max_preserved_source_bytes : Int32 = 64 * 1024 * 1024 + 65_535
 
 ///|
-let office_read_max_xml_part_bytes : Int = 16 * 1024 * 1024
+let office_read_max_xml_part_bytes : Int32 = 16 * 1024 * 1024
 
 ///|
-let office_read_max_xml_total_units : Int = 64 * 1024 * 1024
+let office_read_max_xml_total_units : Int32 = 64 * 1024 * 1024
 
 ///|
-let office_read_max_workbook_sheets : Int = 256
+let office_read_max_workbook_sheets : Int32 = 256
 
 ///|
-let office_read_max_parser_items : Int = 500_000
+let office_read_max_parser_items : Int32 = 500_000
 
 ///|
-let office_read_max_parser_work_units : Int = 256 * 1024 * 1024
+let office_read_max_parser_work_units : Int32 = 256 * 1024 * 1024
 
 ///|
 priv struct OfficeReadPackage {
@@ -172,7 +172,7 @@ fn office_xlsx_read_limits() -> @xlsx.ReadLimits raise @xlsx.XlsxError {
 ///|
 async fn read_office_package(
   file : String,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> OfficeReadPackage {
   check_office_read_cancelled(cancelled)
   let expected = office_read_format_hint(file)
@@ -256,7 +256,7 @@ fn xlsx_read_failure(error : @xlsx.XlsxError, file : String) -> CliFailure {
 ///|
 fn open_xlsx_read_package(
   source : OfficeReadPackage,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> @xlsx.Workbook raise {
   if source.format is Docx {
     raise CliFailure(

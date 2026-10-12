@@ -4,7 +4,7 @@ pub struct CreateTransactionOptions {
   output_path : String
   dry_run : Bool
   overwrite : Bool
-  permission : Int
+  permission : Int32
 }
 
 ///|
@@ -13,9 +13,9 @@ pub struct CreateTransactionOptions {
 /// destination only after the complete candidate validation boundary passes.
 pub fn create_transaction_options(
   output_path : String,
-  dry_run? : Bool = false,
-  overwrite? : Bool = false,
-  permission? : Int = 0o600,
+  dry_run~ : Bool = false,
+  overwrite~ : Bool = false,
+  permission~ : Int32 = 0o600,
 ) -> CreateTransactionOptions raise TransactionError {
   checked_path(output_path, "output_path")
   if permission < 0 || permission > 0o777 {
@@ -169,8 +169,8 @@ async fn transact_create_with_faults(
   identifier : TransactionIdentifier?,
   faults : TransactionFaults,
   cleanup_release? : String,
-  materialization_limit? : Int64 = transaction_max_live_materialized_bytes,
-  materialization_reserve? : Int64 = transaction_materialization_working_reserve,
+  materialization_limit~ : Int64 = transaction_max_live_materialized_bytes,
+  materialization_reserve~ : Int64 = transaction_materialization_working_reserve,
 ) -> TransactionReport {
   if materialization_limit <= 0L ||
     materialization_reserve < 0L ||
@@ -278,7 +278,7 @@ pub async fn transact_create(
   options : CreateTransactionOptions,
   format : @office.DocumentFormat,
   create : (TransactionBudget) -> TransactionMutation raise,
-  validators? : Array[TransactionValidator] = [],
+  validators~ : Array[TransactionValidator] = [],
   identifier? : TransactionIdentifier,
 ) -> TransactionReport {
   transact_create_with_faults(

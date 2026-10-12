@@ -12,7 +12,7 @@
 ///   never mutates a frozen scan) and the surfaces must SEE them, and the
 ///   resolver's splice is held to the exact byte window the span surface
 ///   reports.
-fn optional_offset(value : Int) -> Int? {
+fn optional_offset(value : Int32) -> Int32? {
   if value < 0 {
     None
   } else {

@@ -1,5 +1,5 @@
 ///|
-fn invoice_styles(workbook : @xlsx.Workbook) -> (Int, Int, Int, Int) {
+fn invoice_styles(workbook : @xlsx.Workbook) -> (Int32, Int32, Int32, Int32) {
   let title_font = @xlsx.Font::with_values(
     bold=true,
     size=28.0,

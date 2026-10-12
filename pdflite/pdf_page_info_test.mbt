@@ -4,7 +4,7 @@ fn page_info_name_for_test(text : String) -> @core.PdfName {
 }
 
 ///|
-fn page_info_number_for_test(value : Int) -> Json {
+fn page_info_number_for_test(value : Int32) -> Json {
   Json::number(value.to_double(), repr=value.to_string())
 }
 

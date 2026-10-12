@@ -17,8 +17,8 @@
 /// defect always beats an earlier span's later-phase defect.
 #warnings("-struct_never_constructed")
 priv struct ParagraphFormatSpan {
-  start : Int
-  end : Int
+  start : Int32
+  end : Int32
 }
 
 ///|
@@ -183,14 +183,14 @@ fn format_surgery_map_rpr_refusal(
 #warnings("-unused_value")
 priv enum FormatRunAction {
   FormattedInPlace
-  SplitIntoSegments(Int)
+  SplitIntoSegments(Int32)
   AlreadySatisfied
 } derive(Debug)
 
 ///|
 #warnings("-unused_field")
 priv struct FormatRunOutcome {
-  run_identity : Int
+  run_identity : Int32
   fully_covered : Bool
   action : FormatRunAction
 }
@@ -201,12 +201,12 @@ priv struct FormatRunOutcome {
 /// UNCHANGED — the exact string the oracle holds the re-read document to.
 #warnings("-unused_field")
 priv struct FormatSurgeryReceipt {
-  paragraph_index : Int
+  paragraph_index : Int32
   expected_projection : String
   outcomes : Array[FormatRunOutcome]
-  runs_changed : Int
-  runs_already_satisfied : Int
-  splits : Int
+  runs_changed : Int32
+  runs_already_satisfied : Int32
+  splits : Int32
 }
 
 ///|
@@ -562,9 +562,9 @@ fn format_surgery_run_binding(
 /// One projecting piece of a run's mapped text, in `w:t`-local UTF-16
 /// coordinates, tagged with whether the batch covers it.
 priv struct FormatPiece {
-  wt_identity : Int
-  local_from : Int
-  local_to : Int
+  wt_identity : Int32
+  local_from : Int32
+  local_to : Int32
   covered : Bool
 }
 
@@ -580,7 +580,7 @@ priv struct FormatPiece {
 fn plan_paragraph_format_edits(
   projection : ReaderProjection,
   source : BytesView,
-  paragraph_index : Int,
+  paragraph_index : Int32,
   requested : Array[ParagraphFormatSpan],
   format : DocxDirectFormat,
 ) -> (Array[RunSurgeryEdit], FormatSurgeryReceipt) raise DocxError {
@@ -641,7 +641,7 @@ fn plan_paragraph_format_edits(
   // Which runs OTHER paragraphs claim, and which runs own each
   // projected source — both indexed once. Scanning every other
   // paragraph's runs for every part is cubic on a legal document.
-  let foreign_runs : Map[Int, Int] = Map([])
+  let foreign_runs : Map[Int32, Int32] = Map([])
   for other_index, other in projection.paragraphs {
     if other_index != paragraph_index {
       for candidate in other.runs {
@@ -664,7 +664,7 @@ fn plan_paragraph_format_edits(
   }
   let before_projection = before.to_string()
   // Which runs project each source, for the cross-paragraph check.
-  let owning_runs : Map[Int, Array[Int]] = Map([])
+  let owning_runs : Map[Int32, Array[Int32]] = Map([])
   for part in parts {
     let SourceElementId(source_identity) = part.contribution.source
     guard part.contribution.run_source is Some(SourceElementId(owner)) else {
@@ -678,7 +678,7 @@ fn plan_paragraph_format_edits(
   // Phase 3: structural restrictions, batch-wide.
   fn require_supported_run(
     run : ReaderProjectionRun,
-    ordinal : Int,
+    ordinal : Int32,
   ) -> Unit raise DocxError {
     match run.field_region {
       FieldInstruction =>
@@ -709,7 +709,7 @@ fn plan_paragraph_format_edits(
 
   fn require_supported_contribution(
     contribution : ReaderProjectionContribution,
-    ordinal : Int,
+    ordinal : Int32,
   ) -> Unit raise DocxError {
     match contribution.field_region {
       FieldInstruction =>
@@ -734,7 +734,7 @@ fn plan_paragraph_format_edits(
   // How many times each source projects, counted ONCE: rescanning
   // every part per part is quadratic, and a run of many small text
   // elements is legal.
-  let projection_counts : Map[Int, Int] = Map([])
+  let projection_counts : Map[Int32, Int32] = Map([])
   for part in parts {
     let SourceElementId(part_identity) = part.contribution.source
     projection_counts[part_identity] = match
@@ -745,7 +745,7 @@ fn plan_paragraph_format_edits(
   }
   fn require_singly_projected(
     contribution : ReaderProjectionContribution,
-    ordinal : Int,
+    ordinal : Int32,
   ) -> Unit raise DocxError {
     let SourceElementId(source_identity) = contribution.source
     let count = projection_counts.get(source_identity).unwrap_or(0)
@@ -760,14 +760,14 @@ fn plan_paragraph_format_edits(
   // Runs by identity, indexed ONCE: resolving a part's run by scanning
   // every run is quadratic, and a paragraph of many small runs is
   // legal.
-  let run_by_identity : Map[Int, ReaderProjectionRun] = Map([])
+  let run_by_identity : Map[Int32, ReaderProjectionRun] = Map([])
   for run in paragraph.runs {
     let SourceElementId(run_identity) = run.source
     run_by_identity[run_identity] = run
   }
   fn resolve_run(
     run_source : SourceElementId?,
-    ordinal : Int,
+    ordinal : Int32,
   ) -> ReaderProjectionRun raise DocxError {
     guard run_source is Some(source_id) else {
       raise format_surgery_refuse(
@@ -787,8 +787,8 @@ fn plan_paragraph_format_edits(
   }
 
   fn require_host_element(
-    identity : Int,
-    ordinal : Int,
+    identity : Int32,
+    ordinal : Int32,
   ) -> Unit raise DocxError {
     let element = elements[identity]
     if run_surgery_inside_checkbox_control(elements, element) {
@@ -826,7 +826,7 @@ fn plan_paragraph_format_edits(
   // Membership by identity: a growing linear scan is quadratic when a
   // span crosses many runs, and a paragraph of many small runs is
   // legal.
-  let touched_seen : Map[Int, Bool] = Map([])
+  let touched_seen : Map[Int32, Bool] = Map([])
   for ordinal, span in requested {
     // Zero-width barriers strictly inside the span refuse.
     for contribution in paragraph.contributions {
@@ -1014,7 +1014,7 @@ fn plan_paragraph_format_edits(
   // Contributions indexed by their owning run ONCE: walking the
   // paragraph's whole list per touched run is quadratic, and a
   // paragraph of many small runs is legal.
-  let contributions_by_run : Map[Int, Array[ReaderProjectionContribution]] = Map([],
+  let contributions_by_run : Map[Int32, Array[ReaderProjectionContribution]] = Map([],
   )
   for contribution in paragraph.contributions {
     guard contribution.run_source is Some(SourceElementId(owner)) else {
@@ -1027,7 +1027,7 @@ fn plan_paragraph_format_edits(
   }
   // A run's projecting parts, indexed ONCE: rescanning every part per
   // touched run is quadratic.
-  let parts_by_run : Map[Int, Array[PartialProjectingPart]] = Map([])
+  let parts_by_run : Map[Int32, Array[PartialProjectingPart]] = Map([])
   for part in parts {
     guard part.contribution.run_source is Some(SourceElementId(owner)) else {
       continue
@@ -1039,8 +1039,8 @@ fn plan_paragraph_format_edits(
   }
   // Runs that physically nest another run, computed ONCE by sweeping
   // the runs in source order rather than comparing every pair.
-  let nesting_runs : Map[Int, Bool] = Map([])
-  let ordered_runs : Array[(Int, Int, Int)] = []
+  let nesting_runs : Map[Int32, Bool] = Map([])
+  let ordered_runs : Array[(Int32, Int32, Int32)] = []
   for candidate in paragraph.runs {
     let SourceElementId(candidate_identity) = candidate.source
     let candidate_element = elements[candidate_identity]
@@ -1177,7 +1177,7 @@ fn plan_paragraph_format_edits(
         "paragraph \{paragraph_index} would mutate a run of paragraph \{index}",
       )
     }
-    let mut anchor : Int?? = None
+    let mut anchor : Int32?? = None
     for part in parts_by_run.get(owned_run_identity).unwrap_or([]) {
       let SourceElementId(identity) = part.contribution.source
       let link = run_surgery_hyperlink_ancestor(elements, elements[identity])
@@ -1301,7 +1301,7 @@ fn plan_paragraph_format_edits(
   }
   // Ordering: distinct runs are disjoint, and within one run the F0 edits
   // are already ascending; the explicit ordinal keeps the sort stable.
-  let ordered : Array[(RunSurgeryEdit, Int)] = []
+  let ordered : Array[(RunSurgeryEdit, Int32)] = []
   for index, edit in edits {
     ordered.push((edit, index))
   }
@@ -1358,7 +1358,7 @@ fn format_surgery_split_run(
   run_prefix : String,
   extension_prefixes : Array[String],
   format : DocxDirectFormat,
-) -> (Int, String) raise DocxError {
+) -> (Int32, String) raise DocxError {
   let elements = projection.scan.elements()
   guard !run_surgery_is_self_closing(run_element) else {
     raise format_surgery_refuse(
@@ -1444,8 +1444,8 @@ fn format_surgery_split_run(
   // Index the run's parts and their projections by text element ONCE:
   // scanning every part per element, and re-reading the projection per
   // piece, is quadratic — a run of many small text elements is legal.
-  let part_by_wt : Map[Int, PartialProjectingPart] = Map([])
-  let projection_by_wt : Map[Int, String] = Map([])
+  let part_by_wt : Map[Int32, PartialProjectingPart] = Map([])
+  let projection_by_wt : Map[Int32, String] = Map([])
   for part in run_parts {
     let SourceElementId(part_identity) = part.contribution.source
     part_by_wt[part_identity] = part
@@ -1466,7 +1466,7 @@ fn format_surgery_split_run(
       continue
     }
     let width = part.local_end - part.local_start
-    let cuts : Array[Int] = [0]
+    let cuts : Array[Int32] = [0]
     for span in requested {
       let from = span.start - part.local_start
       let to = span.end - part.local_start
@@ -1655,8 +1655,8 @@ fn format_surgery_split_run(
 fn format_surgery_clone_wt(
   source : BytesView,
   wt : ScannedElement,
-  byte_from : Int,
-  byte_to : Int,
+  byte_from : Int32,
+  byte_to : Int32,
   fragment_text : String,
 ) -> String raise DocxError {
   let open_bytes = format_surgery_decode(source[wt.byte_start:wt.content_start])
@@ -1700,8 +1700,8 @@ fn format_surgery_clone_wt(
 /// encoding — the offsets this planner works in.
 fn format_surgery_splice_string(
   text : String,
-  byte_from : Int,
-  byte_to : Int,
+  byte_from : Int32,
+  byte_to : Int32,
   replacement : String,
 ) -> String raise DocxError {
   let bytes = @utf8.encode(text)

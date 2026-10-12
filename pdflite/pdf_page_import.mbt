@@ -19,7 +19,7 @@ fn pdf_import_name(text : String) -> @core.PdfName {
 ///|
 /// How deeply direct objects (arrays and dictionaries inside one object)
 /// may nest in a copied object.
-let pdf_import_max_nesting : Int = 256
+let pdf_import_max_nesting : Int32 = 256
 
 ///|
 /// A page of another document, imported as a Form XObject by
@@ -32,7 +32,7 @@ let pdf_import_max_nesting : Int = 256
 /// page's `/XObject` resources under `/Name`.
 pub struct PdfImportedPage {
   /// the Form XObject's object number in the importing document
-  object : Int
+  object : Int32
   /// the page's width as a viewer shows it, in points
   width : Double
   /// the page's height as a viewer shows it, in points
@@ -58,7 +58,7 @@ struct PdfPageSource {
   pages : Array[PdfImportLeaf]
   /// the object numbers of the page tree's nodes, pages included, which
   /// an imported page's objects never reach into
-  tree : Map[Int, Unit]
+  tree : Map[Int32, Unit]
 }
 
 ///|
@@ -102,7 +102,7 @@ pub fn PdfPageSource::new(
     raise PageTreeExpected
   }
   let pages : Array[PdfImportLeaf] = []
-  let tree : Map[Int, Unit] = Map([])
+  let tree : Map[Int32, Unit] = Map([])
   let kids_key = pdf_import_name("/Kids")
   let type_key = pdf_import_name("/Type")
   // nodes still to visit, the next one last
@@ -177,14 +177,14 @@ pub fn PdfPageSource::new(
 
 ///|
 /// How many pages the source has.
-pub fn PdfPageSource::page_count(self : PdfPageSource) -> Int {
+pub fn PdfPageSource::page_count(self : PdfPageSource) -> Int32 {
   self.pages.length()
 }
 
 ///|
 fn PdfPageSource::leaf(
   self : PdfPageSource,
-  page_number : Int,
+  page_number : Int32,
 ) -> PdfImportLeaf raise @core.PdfError {
   guard page_number >= 1 && page_number <= self.pages.length() else {
     raise BadPageSpecification(
@@ -288,7 +288,7 @@ fn PdfImportGeometry::size(self : PdfImportGeometry) -> (Double, Double) {
 /// `/UserUnit` that is not a positive number.
 pub fn PdfPageSource::page_display_size(
   self : PdfPageSource,
-  page_number : Int,
+  page_number : Int32,
 ) -> (Double, Double) raise @core.PdfError {
   self.geometry(self.leaf(page_number)).size()
 }
@@ -316,8 +316,8 @@ fn PdfImportGeometry::matrix(self : PdfImportGeometry) -> Array[Double] {
 fn PdfDocument::pdf_import_rewrite(
   self : PdfDocument,
   object : @syntax.PdfObject,
-  numbers : Map[Int, Int],
-  depth? : Int = 0,
+  numbers : Map[Int32, Int32],
+  depth~ : Int32 = 0,
 ) -> @syntax.PdfObject raise @core.PdfError {
   if depth > pdf_import_max_nesting {
     raise HardError("objects nested too deeply to import")
@@ -363,11 +363,11 @@ fn PdfDocument::pdf_import_rewrite(
 fn PdfPageSource::reached(
   self : PdfPageSource,
   object : @syntax.PdfObject,
-) -> Array[Int] {
+) -> Array[Int32] {
   let document = self.document
   let skipped = [pdf_import_name("/Parent"), pdf_import_name("/Length")]
-  let found : Map[Int, Unit] = Map([])
-  let excluded : Map[Int, Unit] = Map([])
+  let found : Map[Int32, Unit] = Map([])
+  let excluded : Map[Int32, Unit] = Map([])
   let work : Array[@syntax.PdfObject] = [object]
   while work.pop() is Some(next) {
     match next {
@@ -476,7 +476,7 @@ fn PdfDocument::pdf_import_content(
 pub fn PdfDocument::import_page(
   self : PdfDocument,
   source : PdfPageSource,
-  page_number : Int,
+  page_number : Int32,
 ) -> PdfImportedPage raise @core.PdfError {
   let document = source.document
   let leaf = source.leaf(page_number)
@@ -512,7 +512,7 @@ pub fn PdfDocument::import_page(
   let reached = source.reached(form)
   // copy everything under provisional numbers (1, 2, ...) first: a failure
   // leaves this document exactly as it was, no object allocated
-  let provisional : Map[Int, Int] = Map([])
+  let provisional : Map[Int32, Int32] = Map([])
   for i, number in reached {
     provisional[number] = i + 1
   }
@@ -538,7 +538,7 @@ pub fn PdfDocument::import_page(
 /// The copy was bounded by `pdf_import_max_nesting`, and so is this.
 fn pdf_import_renumber(
   object : @syntax.PdfObject,
-  numbers : Array[Int],
+  numbers : Array[Int32],
 ) -> @syntax.PdfObject {
   match object {
     PdfIndirect(k) => PdfIndirect(numbers[k - 1])

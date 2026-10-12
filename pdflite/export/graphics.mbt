@@ -41,7 +41,7 @@ fn XObject::bbox(self : XObject) -> Rect {
 fn SerializeContext::register_xobject(
   self : SerializeContext,
   x : XObject,
-) -> Int {
+) -> Int32 {
   let r = self.new_ref()
   for e in x.stream.validation_errors {
     self.register_validation_error(e)
@@ -108,7 +108,10 @@ fn Mask::new_from_shading(
 }
 
 ///|
-fn SerializeContext::register_mask(self : SerializeContext, mask : Mask) -> Int {
+fn SerializeContext::register_mask(
+  self : SerializeContext,
+  mask : Mask,
+) -> Int32 {
   let x = self.register_xobject(
     XObject::new(mask.stream, false, true, mask.custom_bbox),
   )
@@ -158,7 +161,7 @@ fn TilingPattern::new(
 fn SerializeContext::register_tiling_pattern(
   self : SerializeContext,
   p : TilingPattern,
-) -> Int {
+) -> Int32 {
   let r = self.new_ref()
   for e in p.stream.validation_errors {
     self.register_validation_error(e)
@@ -350,7 +353,7 @@ fn ShadingPattern::new(
 fn SerializeContext::register_shading_pattern(
   self : SerializeContext,
   p : ShadingPattern,
-) -> Int {
+) -> Int32 {
   let shading = self.register_shading_function(p.function)
   let r = self.new_ref()
   self.put(
@@ -394,7 +397,7 @@ fn stop_components(stop : Stop, use_opacities : Bool) -> Array[Double] {
 }
 
 ///|
-fn range_obj(n : Int) -> Obj {
+fn range_obj(n : Int32) -> Obj {
   let r = []
   for _ in 0..<n {
     r.push(Real(0.0))
@@ -408,7 +411,7 @@ fn SerializeContext::serialize_exponential(
   self : SerializeContext,
   c0 : Array[Double],
   c1 : Array[Double],
-) -> Int {
+) -> Int32 {
   let r = self.new_ref()
   self.put(
     r,
@@ -429,7 +432,7 @@ fn SerializeContext::serialize_stitching(
   self : SerializeContext,
   stops : Array[Stop],
   use_opacities : Bool,
-) -> Int {
+) -> Int32 {
   let r = self.new_ref()
   let functions = []
   let bounds = []
@@ -465,7 +468,7 @@ fn SerializeContext::serialize_stitching(
 fn SerializeContext::register_shading_function(
   self : SerializeContext,
   f : ShadingFunction,
-) -> Int {
+) -> Int32 {
   let r = self.new_ref()
   match f.properties {
     RadialAxial(coords, radial, stops, anti_alias) => {
@@ -529,7 +532,7 @@ fn SerializeContext::register_shading_function(
 /// PostScript calculator function code.
 priv enum PsOp {
   PsReal(Double)
-  PsInt(Int)
+  PsInt(Int32)
   PsOp(String)
   PsIf(Array[PsOp])
   PsIfElse(Array[PsOp], Array[PsOp])
@@ -688,7 +691,7 @@ fn SerializeContext::serialize_postscript_function(
   self : SerializeContext,
   p : PostScriptGradient,
   use_opacities : Bool,
-) -> Int {
+) -> Int32 {
   let r = self.new_ref()
   let code = []
   match p.gradient_type {

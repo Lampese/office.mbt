@@ -9,9 +9,9 @@ pub using @core {type PdfBytes, type PdfError}
 /// preserves name-based widths for encodings that refer to glyph names.
 pub(all) struct PdfAfmData {
   headers : Array[(PdfBytes, PdfBytes)]
-  char_metrics : Array[(Int, Int)]
-  kerns : Array[(Int, Int, Int)]
-  char_name_widths : Array[(PdfBytes, Int)]
+  char_metrics : Array[(Int32, Int32)]
+  kerns : Array[(Int32, Int32, Int32)]
+  char_name_widths : Array[(PdfBytes, Int32)]
 } derive(Debug, Eq, ToJson)
 
 ///|
@@ -58,7 +58,7 @@ fn pdf_afm_trim_line_end(line : BytesView) -> BytesView {
 
 ///|
 /// Parse a signed AFM integer token.
-pub fn pdf_afm_parse_int(token : BytesView) -> Int raise PdfError {
+pub fn pdf_afm_parse_int(token : BytesView) -> Int32 raise PdfError {
   if token.length() == 0 {
     raise NumberExpected
   }
@@ -131,7 +131,9 @@ fn pdf_afm_section_lines(
 }
 
 ///|
-fn pdf_afm_char_metric(line : BytesView) -> (PdfBytes, Int, Int) raise PdfError {
+fn pdf_afm_char_metric(
+  line : BytesView,
+) -> (PdfBytes, Int32, Int32) raise PdfError {
   let tokens = @core.pdf_split_whitespace_tokens(line)
   if tokens.length() >= 7 &&
     pdf_afm_view_equals_ascii(tokens[0], "C") &&
@@ -152,9 +154,9 @@ fn pdf_afm_char_metric(line : BytesView) -> (PdfBytes, Int, Int) raise PdfError 
 
 ///|
 fn pdf_afm_lookup_char_number(
-  metrics : ArrayView[(PdfBytes, Int, Int)],
+  metrics : ArrayView[(PdfBytes, Int32, Int32)],
   name : BytesView,
-) -> Int raise PdfError {
+) -> Int32 raise PdfError {
   for metric in metrics {
     let (candidate, char_number, _) = metric
     if pdf_afm_view_equals(candidate, name) {
@@ -168,8 +170,8 @@ fn pdf_afm_lookup_char_number(
 ///|
 fn pdf_afm_kern(
   line : BytesView,
-  metrics : ArrayView[(PdfBytes, Int, Int)],
-) -> (Int, Int, Int)? raise PdfError {
+  metrics : ArrayView[(PdfBytes, Int32, Int32)],
+) -> (Int32, Int32, Int32)? raise PdfError {
   let tokens = @core.pdf_split_whitespace_tokens(line)
   // blank lines, comments and other kinds of pair: no KPX pair
   if pdf_afm_kern_line_skipped(tokens) {
@@ -210,7 +212,7 @@ pub fn pdf_read_afm(data : BytesView) -> PdfAfmData raise PdfError {
   let metric_lines = pdf_afm_section_lines(
     lines, "StartCharMetrics", "EndCharMetrics",
   )
-  let raw_metrics : Array[(PdfBytes, Int, Int)] = Array(
+  let raw_metrics : Array[(PdfBytes, Int32, Int32)] = Array(
     capacity=metric_lines.length(),
   )
   for line in metric_lines {
@@ -218,8 +220,10 @@ pub fn pdf_read_afm(data : BytesView) -> PdfAfmData raise PdfError {
       raw_metrics.push(pdf_afm_char_metric(line))
     }
   }
-  let char_metrics : Array[(Int, Int)] = Array(capacity=raw_metrics.length())
-  let char_name_widths : Array[(PdfBytes, Int)] = Array(
+  let char_metrics : Array[(Int32, Int32)] = Array(
+    capacity=raw_metrics.length(),
+  )
+  let char_name_widths : Array[(PdfBytes, Int32)] = Array(
     capacity=raw_metrics.length(),
   )
   for metric in raw_metrics {
@@ -232,7 +236,7 @@ pub fn pdf_read_afm(data : BytesView) -> PdfAfmData raise PdfError {
   let kern_lines = pdf_afm_section_lines(
     lines, "StartKernPairs", "EndKernPairs",
   )
-  let kerns : Array[(Int, Int, Int)] = Array(capacity=kern_lines.length())
+  let kerns : Array[(Int32, Int32, Int32)] = Array(capacity=kern_lines.length())
   for line in kern_lines {
     match pdf_afm_kern(line, raw_metrics) {
       Some(kern) => kerns.push(kern)
@@ -255,12 +259,12 @@ pub fn pdf_read_afm(data : BytesView) -> PdfAfmData raise PdfError {
 /// any other line.
 pub fn pdf_read_afm_kern_pairs(
   data : BytesView,
-) -> Array[(PdfBytes, PdfBytes, Int)] raise PdfError {
+) -> Array[(PdfBytes, PdfBytes, Int32)] raise PdfError {
   let lines = @core.byte_cursor_of_view(data).read_line_views()
   let kern_lines = pdf_afm_section_lines(
     lines, "StartKernPairs", "EndKernPairs",
   )
-  let pairs : Array[(PdfBytes, PdfBytes, Int)] = Array(
+  let pairs : Array[(PdfBytes, PdfBytes, Int32)] = Array(
     capacity=kern_lines.length(),
   )
   for line in kern_lines {

@@ -338,7 +338,12 @@ async fn transact_docx_revisions(
     if !blocked && !targets.is_empty() {
       let plan = @splice.SplicePlan::new()
       let pinned : Set[String] = Set([])
-      let queue = (part : String, start : Int, end : Int, replacement : Bytes) => {
+      let queue = (
+        part : String,
+        start : Int32,
+        end : Int32,
+        replacement : Bytes,
+      ) => {
         if !pinned.contains(part) {
           guard session.archive.get(part) is Some(source) else {
             raise docx_failure(

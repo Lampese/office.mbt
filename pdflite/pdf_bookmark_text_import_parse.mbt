@@ -2,7 +2,7 @@
 fn PdfDocument::pdf_bookmark_import_parse_line(
   self : PdfDocument,
   line : BytesView,
-  line_number : Int,
+  line_number : Int32,
 ) -> @bookmark.PdfBookmark? raise @core.PdfError {
   let line = pdf_bookmark_import_trim_line_end(line)
   let index = Ref::{ val: 0, }

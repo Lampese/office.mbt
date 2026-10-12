@@ -51,9 +51,9 @@ pub fn SerializeSettings::validators(self : SerializeSettings) -> Validators {
 ///|
 /// Information about a page that is known before it is serialized.
 priv struct PageInfo {
-  ref_ : Int
+  ref_ : Int32
   surface_size : Size
-  mut annotations : Array[(Int, Int?)]
+  mut annotations : Array[(Int32, Int32?)]
   page_label : PageLabel
 }
 
@@ -62,40 +62,40 @@ priv struct PageInfo {
 priv enum StructParentElement {
   /// The index of the page and the number of marked content IDs present on
   /// that page.
-  Page(Int, Int)
+  Page(Int32, Int32)
   /// An annotation.
   Annotation(AnnotationIdentifier)
   /// A form XObject with tagged content: the stream ID and the number of
   /// marked content IDs.
-  Stream(Int, Int)
+  Stream(Int32, Int32)
 }
 
 ///|
 /// The serialization context.
 priv struct SerializeContext {
   settings : SerializeSettings
-  mut cur_ref : Int
-  objects : Map[Int, Indirect]
-  cache : Map[String, Int]
+  mut cur_ref : Int32
+  objects : Map[Int32, Indirect]
+  cache : Map[String, Int32]
   validation_errors : Array[(ValidationError, Validators)]
   mut location : Location?
   page_infos : Array[PageInfo]
-  page_tree_ref : Int
+  page_tree_ref : Int32
   font_containers : Array[FontContainer]
-  named_destinations : Map[String, (Int, XyzDestination)]
-  xyz_destinations : Array[(Int, XyzDestination)]
-  pages : Array[(Int, InternalPage)]
+  named_destinations : Map[String, (Int32, XyzDestination)]
+  xyz_destinations : Array[(Int32, XyzDestination)]
+  pages : Array[(Int32, InternalPage)]
   struct_parents : Array[StructParentElement]
   mut outline : Outline?
   mut tag_tree : TagTree?
-  embedded_files : Map[String, Int]
-  custom_heading_roles : Map[Int, Unit]
+  embedded_files : Map[String, Int32]
+  custom_heading_roles : Map[Int32, Unit]
   separation_fallbacks : Array[(SeparationColorant, RegularColor)]
   mut metadata : Metadata?
   /// The number of form XObjects with tagged content.
-  mut num_tag_streams : Int
+  mut num_tag_streams : Int32
   /// The reference of each form XObject with tagged content.
-  tag_stream_refs : Map[Int, Int]
+  tag_stream_refs : Map[Int32, Int32]
   /// The first error that aborts the export (raised when the document is
   /// finished, like krilla's deferred image errors).
   mut error : ExportError?
@@ -138,7 +138,7 @@ fn SerializeContext::new(settings : SerializeSettings) -> SerializeContext {
 }
 
 ///|
-fn SerializeContext::new_ref(self : SerializeContext) -> Int {
+fn SerializeContext::new_ref(self : SerializeContext) -> Int32 {
   self.cur_ref += 1
   self.cur_ref
 }
@@ -146,7 +146,7 @@ fn SerializeContext::new_ref(self : SerializeContext) -> Int {
 ///|
 fn SerializeContext::put(
   self : SerializeContext,
-  ref_ : Int,
+  ref_ : Int32,
   obj : Obj,
 ) -> Unit {
   self.objects[ref_] = Plain(obj)
@@ -156,10 +156,10 @@ fn SerializeContext::put(
 /// Write a stream object, compressing its data if requested.
 fn SerializeContext::put_stream(
   self : SerializeContext,
-  ref_ : Int,
+  ref_ : Int32,
   dict : Array[(String, Obj)],
   data : Bytes,
-  compress? : Bool = true,
+  compress~ : Bool = true,
 ) -> Unit {
   if compress && data.length() > 0 {
     self.put_deflated_stream(ref_, dict, deflate_stream_data(data))
@@ -182,7 +182,7 @@ fn deflate_stream_data(data : Bytes) -> Bytes {
 /// ([deflate_stream_data]).
 fn SerializeContext::put_deflated_stream(
   self : SerializeContext,
-  ref_ : Int,
+  ref_ : Int32,
   dict : Array[(String, Obj)],
   encoded : Bytes,
 ) -> Unit {
@@ -195,7 +195,7 @@ fn SerializeContext::put_deflated_stream(
 /// Write a content stream, compressed if the settings ask for it.
 fn SerializeContext::put_content_stream(
   self : SerializeContext,
-  ref_ : Int,
+  ref_ : Int32,
   dict : Array[(String, Obj)],
   data : Bytes,
 ) -> Unit {
@@ -212,8 +212,8 @@ fn SerializeContext::put_content_stream(
 fn SerializeContext::cached(
   self : SerializeContext,
   key : String,
-  create : (Int) -> Unit,
-) -> Int {
+  create : (Int32) -> Unit,
+) -> Int32 {
   match self.cache.get(key) {
     Some(r) => r
     None => {
@@ -287,7 +287,7 @@ fn SerializeContext::validate_separation(
 ///|
 /// The ICC profile stream for sRGB (`rgb`) or sGrey, matching the PDF
 /// version (krilla `PdfVersion::rgb_icc`/`grey_icc`).
-fn SerializeContext::icc_profile(self : SerializeContext, rgb : Bool) -> Int {
+fn SerializeContext::icc_profile(self : SerializeContext, rgb : Bool) -> Int32 {
   let v4 = self.settings.pdf_version() >= Pdf17
   self.cached(if rgb { "icc:srgb" } else { "icc:sgrey" }, r => {
     let n = if rgb { 3 } else { 1 }
@@ -306,7 +306,7 @@ fn SerializeContext::icc_profile(self : SerializeContext, rgb : Bool) -> Int {
 fn SerializeContext::icc_color_space(
   self : SerializeContext,
   rgb : Bool,
-) -> Int {
+) -> Int32 {
   self.cached(if rgb { "cs:srgb" } else { "cs:sgrey" }, r => {
     self.put(r, Arr([Name("ICCBased"), Ref(self.icc_profile(rgb))]))
   })
@@ -318,7 +318,7 @@ fn SerializeContext::icc_color_space(
 fn SerializeContext::regular_color_space(
   self : SerializeContext,
   color : RegularColor,
-) -> Int? {
+) -> Int32? {
   let no_device_cs = self.settings.no_device_cs
   match color {
     Rgb(_, _, _) =>
@@ -368,7 +368,7 @@ fn SerializeContext::regular_color_space_obj(
 fn SerializeContext::register_colorspace(
   self : SerializeContext,
   color : Color,
-) -> Int? {
+) -> Int32? {
   match color {
     Regular(c) => self.regular_color_space(c)
     Separation(_, space) => {
@@ -410,9 +410,9 @@ fn SerializeContext::register_colorspace(
 /// Register a page as struct parent of its marked content.
 fn SerializeContext::register_page_struct_parent(
   self : SerializeContext,
-  page_index : Int,
-  num_mcids : Int,
-) -> Int? {
+  page_index : Int32,
+  num_mcids : Int32,
+) -> Int32? {
   if self.settings.enable_tagging {
     if num_mcids == 0 {
       return None
@@ -429,7 +429,7 @@ fn SerializeContext::register_page_struct_parent(
 fn SerializeContext::register_annotation_parent(
   self : SerializeContext,
   ai : AnnotationIdentifier,
-) -> Int? {
+) -> Int32? {
   if self.settings.enable_tagging {
     let id = self.struct_parents.length()
     self.struct_parents.push(Annotation(ai))
@@ -443,7 +443,7 @@ fn SerializeContext::register_annotation_parent(
 fn SerializeContext::register_xyz_destination(
   self : SerializeContext,
   dest : XyzDestination,
-) -> Int {
+) -> Int32 {
   let key = "xyz:\{dest.page_index}:\{dest.point.x}:\{dest.point.y}"
   self.cached(key, r => self.xyz_destinations.push((r, dest)))
 }
@@ -454,7 +454,7 @@ fn SerializeContext::register_xyz_destination(
 fn SerializeContext::register_named_destination(
   self : SerializeContext,
   nd : NamedDestination,
-) -> Int? {
+) -> Int32? {
   match self.named_destinations.get(nd.name) {
     Some((r, existing)) => if existing == nd.xyz_dest { Some(r) } else { None }
     None => {
@@ -485,7 +485,7 @@ fn SerializeContext::register_font_container(
 fn SerializeContext::register_ext_g_state(
   self : SerializeContext,
   state : ExtGState,
-) -> Int {
+) -> Int32 {
   let key = "gs:\{Repr(state)}"
   self.cached(key, r => {
     let d = DictBuilder::new()

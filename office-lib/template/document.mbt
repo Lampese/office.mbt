@@ -7,25 +7,25 @@
 
 ///|
 /// Repetition bounds shared by parsers, merge layers, and reports.
-pub const MAX_TEMPLATE_REGIONS : Int = 64
+pub const MAX_TEMPLATE_REGIONS : Int32 = 64
 
 ///|
-pub const MAX_TEMPLATE_REGION_RECORDS : Int = 4096
+pub const MAX_TEMPLATE_REGION_RECORDS : Int32 = 4096
 
 ///|
 /// Total rows written by repetition across all regions (ΣK, counting every
 /// record's row — the template row is rewritten as the first record).
-pub const MAX_TEMPLATE_TOTAL_REGION_ROWS : Int = 10000
+pub const MAX_TEMPLATE_TOTAL_REGION_ROWS : Int32 = 10000
 
 ///|
 /// Header/footer story ordinals and table/row path ordinals are bounded before
 /// arithmetic or selector allocation.
-pub const MAX_TEMPLATE_STORY_ORDINAL : Int = 99
+pub const MAX_TEMPLATE_STORY_ORDINAL : Int32 = 99
 
 ///|
 /// Maximum decimal digits accepted for table and row ordinals in a DOCX
 /// repeating-region path.
-pub const MAX_TEMPLATE_PATH_ORDINAL_DIGITS : Int = 7
+pub const MAX_TEMPLATE_PATH_ORDINAL_DIGITS : Int32 = 7
 
 ///|
 /// Which story of a DOCX document a table path addresses. v1 merges only
@@ -33,8 +33,8 @@ pub const MAX_TEMPLATE_PATH_ORDINAL_DIGITS : Int = 7
 /// and the merge layer refuses them as unsupported.
 pub(all) enum TemplateStory {
   BodyStory
-  HeaderStory(Int)
-  FooterStory(Int)
+  HeaderStory(Int32)
+  FooterStory(Int32)
 } derive(Eq, @debug.Debug)
 
 ///|
@@ -50,8 +50,8 @@ pub extend TemplateStory with @moonbitlang/core/debug.Debug::{to_repr}
 /// (`{"path": "/docx/body/tbl[N]/tr[M]"}`, the dump grammar). The form must
 /// match the merged file's format; the merge layer enforces that.
 pub(all) enum TemplateRegionAddress {
-  SheetRow(sheet~ : String, row~ : Int)
-  TableRow(story~ : TemplateStory, table~ : Int, row~ : Int)
+  SheetRow(sheet~ : String, row~ : Int32)
+  TableRow(story~ : TemplateStory, table~ : Int32, row~ : Int32)
 } derive(Eq, @debug.Debug)
 
 ///|
@@ -88,14 +88,14 @@ pub extend TemplateData with @moonbitlang/core/debug.Debug::{to_repr}
 /// returns (value, index after "]") or None when the shape is not a
 /// bounded positive ordinal. At most seven digits, no leading zero — far
 /// above any real ordinal while keeping arithmetic trivially overflow-safe.
-fn parse_bracket_ordinal(text : String, start : Int) -> (Int, Int)? {
+fn parse_bracket_ordinal(text : String, start : Int32) -> (Int32, Int32)? {
   if start >= text.length() || text[start] != '[' {
     return None
   }
   let mut index = start + 1
   let mut value = 0
   let mut digits = 0
-  while index < text.length() && text[index] is ('0'..='9') {
+  while index < text.length() && text[index] is ('0'..<='9') {
     if digits == 0 && text[index] == '0' {
       return None
     }
@@ -165,7 +165,7 @@ fn parse_table_row_path(path : String) -> TemplateRegionAddress? {
 ///|
 /// The largest addressable spreadsheet row (XLSX grid bound; the merge
 /// layer still verifies the row against the actual workbook).
-pub const MAX_TEMPLATE_SHEET_ROW : Int = 1048576
+pub const MAX_TEMPLATE_SHEET_ROW : Int32 = 1048576
 
 ///|
 /// Validates one region object into its address. Exactly one addressing
@@ -237,7 +237,7 @@ fn row_bounds_message(name : String) -> String {
 /// Accepts only a plain positive integer literal within the grid: digits
 /// with no sign, fraction, exponent, or leading zero, at most seven of
 /// them, value in 1..=MAX_TEMPLATE_SHEET_ROW.
-fn parse_strict_row_literal(spelling : String) -> Int? {
+fn parse_strict_row_literal(spelling : String) -> Int32? {
   if spelling.length() == 0 || spelling.length() > 7 {
     return None
   }
@@ -246,7 +246,7 @@ fn parse_strict_row_literal(spelling : String) -> Int? {
   }
   let mut value = 0
   for unit in spelling {
-    guard unit is ('0'..='9') else { return None }
+    guard unit is ('0'..<='9') else { return None }
     value = value * 10 + (unit.to_int() - '0'.to_int())
   }
   if value < 1 || value > MAX_TEMPLATE_SHEET_ROW {
@@ -264,7 +264,7 @@ fn parse_strict_row_literal(spelling : String) -> Int? {
 /// structured parser's typed errors.
 fn region_row_lexical_gate(
   text : String,
-) -> (Array[String], String, Int) -> Unit raise TemplateDataError {
+) -> (Array[String], String, Int32) -> Unit raise TemplateDataError {
   (labels, key, after_key) => {
     // labels[2] == "" means the container is an ARRAY ITEM under regions
     // (array items carry no label) — an array-shaped regions member is a
@@ -294,7 +294,7 @@ fn region_row_lexical_gate(
     let first = text[token_start]
     // strings/objects/booleans stay with the structured parser; only
     // number-shaped tokens are judged lexically here
-    guard first is ('0'..='9') || first == '-' else { return }
+    guard first is ('0'..<='9') || first == '-' else { return }
     guard parse_strict_row_literal(text[token_start:index].to_owned())
       is Some(_) else {
       raise TemplateDataError(row_bounds_message(labels[2]))
@@ -312,11 +312,11 @@ fn region_row_lexical_gate(
 /// record is rejected, so region lookup (record ∪ values) is unambiguous.
 pub fn parse_template_document(
   text : String,
-  max_keys? : Int = MAX_TEMPLATE_KEYS,
-  max_value_units? : Int = MAX_TEMPLATE_VALUE_UNITS,
-  max_regions? : Int = MAX_TEMPLATE_REGIONS,
-  max_region_records? : Int = MAX_TEMPLATE_REGION_RECORDS,
-  max_total_region_rows? : Int = MAX_TEMPLATE_TOTAL_REGION_ROWS,
+  max_keys~ : Int32 = MAX_TEMPLATE_KEYS,
+  max_value_units~ : Int32 = MAX_TEMPLATE_VALUE_UNITS,
+  max_regions~ : Int32 = MAX_TEMPLATE_REGIONS,
+  max_region_records~ : Int32 = MAX_TEMPLATE_REGION_RECORDS,
+  max_total_region_rows~ : Int32 = MAX_TEMPLATE_TOTAL_REGION_ROWS,
 ) -> TemplateData raise TemplateDataError {
   check_duplicate_keys(text, on_member=Some(region_row_lexical_gate(text)))
   let document = @json.parse(text) catch {

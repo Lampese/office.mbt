@@ -20,9 +20,9 @@ pub fn PdfStandardFontData::debug_name(self : PdfStandardFontData) -> String {
 /// The integer is the object number for `/FontFile`, `/FontFile2`, or
 /// `/FontFile3`; the constructor records which descriptor key supplied it.
 pub(all) enum PdfFontFile {
-  PdfFontFile(Int)
-  PdfFontFile2(Int)
-  PdfFontFile3(Int)
+  PdfFontFile(Int32)
+  PdfFontFile2(Int32)
+  PdfFontFile3(Int32)
 } derive(Debug, Eq, ToJson)
 
 ///|
@@ -36,7 +36,7 @@ pub(all) struct PdfFontDescriptor {
   descent : Double
   avgwidth : Double
   maxwidth : Double
-  flags : Int
+  flags : Int32
   fontbbox : @geometry.PdfRectangle
   italicangle : Double
   capheight : Double
@@ -44,7 +44,7 @@ pub(all) struct PdfFontDescriptor {
   stemv : Double
   fontfile : PdfFontFile?
   charset : Array[@core.PdfName]?
-  tounicode : Array[(Int, @core.PdfBytes)]?
+  tounicode : Array[(Int32, @core.PdfBytes)]?
 } derive(Debug, Eq, ToJson)
 
 ///|
@@ -80,9 +80,9 @@ pub(all) enum PdfSimpleFontType {
 pub(all) struct PdfSimpleFont {
   fonttype : PdfSimpleFontType
   basefont : @core.PdfName?
-  firstchar : Int
-  lastchar : Int
-  widths : Array[Int]
+  firstchar : Int32
+  lastchar : Int32
+  widths : Array[Int32]
   fontdescriptor : PdfFontDescriptor?
   fontmetrics : Array[Double]?
   encoding : PdfEncoding
@@ -96,7 +96,7 @@ pub(all) struct PdfSimpleFont {
 pub(all) struct PdfCIDSystemInfo {
   registry : @core.PdfBytes
   ordering : @core.PdfBytes
-  supplement : Int
+  supplement : Int32
 } derive(Debug, Eq, ToJson)
 
 ///|
@@ -119,8 +119,8 @@ pub(all) struct PdfCompositeCIDFont {
   cid_system_info : PdfCIDSystemInfo
   cid_basefont : @core.PdfName
   cid_fontdescriptor : PdfFontDescriptor
-  cid_widths : Array[(Int, Double)]
-  cid_widths2 : Array[(Int, PdfCIDVerticalWidth)]
+  cid_widths : Array[(Int32, Double)]
+  cid_widths2 : Array[(Int32, PdfCIDVerticalWidth)]
   cid_default_width : Double
   cid_default_width2 : Array[Double]
 } derive(Debug, Eq, ToJson)
@@ -132,8 +132,8 @@ pub(all) struct PdfCompositeCIDFont {
 /// or parsed from that external stream together with its mapping tables.
 pub(all) enum PdfCMapEncoding {
   PdfPredefinedCMap(@core.PdfName)
-  PdfCMap(Int)
-  PdfExternalCMap(Int, PdfParsedCMap)
+  PdfCMap(Int32)
+  PdfExternalCMap(Int32, PdfParsedCMap)
 } derive(Debug, Eq, ToJson)
 
 ///|
@@ -142,9 +142,9 @@ pub(all) enum PdfCMapEncoding {
 /// `length` is the character-code byte length, and `first`/`last` are the
 /// inclusive packed-byte bounds accepted by that range.
 pub(all) struct PdfCMapCodeSpace {
-  length : Int
-  first : Int
-  last : Int
+  length : Int32
+  first : Int32
+  last : Int32
 } derive(Debug, Eq, ToJson)
 
 ///|
@@ -155,14 +155,14 @@ pub(all) struct PdfCMapCodeSpace {
 /// notdef fallback CIDs. Optional metadata is taken from the stream body or
 /// stream dictionary when available.
 pub(all) struct PdfParsedCMap {
-  map : Array[(Int, @core.PdfBytes)]
-  cid_map : Array[(Int, Int)]
-  notdef_map : Array[(Int, Int)]
+  map : Array[(Int32, @core.PdfBytes)]
+  cid_map : Array[(Int32, Int32)]
+  notdef_map : Array[(Int32, Int32)]
   codespaces : Array[PdfCMapCodeSpace]
   usecmap : @core.PdfName?
-  wmode : Int?
+  wmode : Int32?
   cmap_name : @core.PdfName?
-  cmap_type : Int?
+  cmap_type : Int32?
   cid_system_info : PdfCIDSystemInfo?
 } derive(Debug, Eq, ToJson)
 

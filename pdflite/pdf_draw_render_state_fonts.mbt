@@ -30,7 +30,7 @@ fn PdfDrawRenderState::ensure_fontpack(
 fn PdfDrawRenderState::stored_font_resource(
   self : PdfDrawRenderState,
   identifier : String,
-  font_index : Int,
+  font_index : Int32,
 ) -> PdfDrawFontResource? {
   for resource in self.fonts {
     if resource.identifier == identifier && resource.font_index == font_index {
@@ -44,8 +44,8 @@ fn PdfDrawRenderState::stored_font_resource(
 fn PdfDrawRenderState::register_font_resource(
   self : PdfDrawRenderState,
   identifier : String,
-  font_index : Int,
-  object_number : Int,
+  font_index : Int32,
+  object_number : Int32,
 ) -> @core.PdfName {
   let resource_name = self.fresh_name("/F")
   self.fonts.push({ identifier, font_index, resource_name, object_number, })

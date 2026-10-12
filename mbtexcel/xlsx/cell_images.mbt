@@ -25,7 +25,7 @@ fn parse_cell_images(
   content_types : @ooxml.PackageContentTypes,
   archive : @zip.Archive,
   budget? : ReadBudget,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Array[CellImage] raise XlsxError {
   let images : Array[CellImage] = []
   let targets = if rels_xml is "" {

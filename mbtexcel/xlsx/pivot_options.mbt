@@ -3,7 +3,7 @@ pub struct PivotTableField {
   data : String
   name : String
   subtotal : String
-  num_fmt : Int
+  num_fmt : Int32
   compact : Bool
   outline : Bool
   show_all : Bool
@@ -14,14 +14,14 @@ pub struct PivotTableField {
 ///|
 pub fn PivotTableField::new(
   data : String,
-  name? : String = "",
-  subtotal? : String = "Sum",
-  num_fmt? : Int = 0,
-  compact? : Bool = false,
-  outline? : Bool = false,
-  show_all? : Bool = false,
-  insert_blank_row? : Bool = false,
-  default_subtotal? : Bool = false,
+  name~ : String = "",
+  subtotal~ : String = "Sum",
+  num_fmt~ : Int32 = 0,
+  compact~ : Bool = false,
+  outline~ : Bool = false,
+  show_all~ : Bool = false,
+  insert_blank_row~ : Bool = false,
+  default_subtotal~ : Bool = false,
 ) -> PivotTableField raise XlsxError {
   if data == "" {
     raise InvalidPivotTable(msg="pivot field data empty")
@@ -63,10 +63,10 @@ fn normalize_pivot_subtotal(value : String) -> String {
 /// Returns the number format ID to emit for a pivot data field: built-in
 /// format IDs (including the language-specific 27-36 and 50-81 ranges) pass
 /// through, anything else maps to 0 and is omitted, mirroring Excelize.
-fn pivot_data_field_num_fmt_id(num_fmt : Int) -> Int {
+fn pivot_data_field_num_fmt_id(num_fmt : Int32) -> Int32 {
   match num_fmt {
-    0..=4 | 9..=22 | 37..=49 => num_fmt
-    27..=36 | 50..=81 => num_fmt
+    0..<=4 | 9..<=22 | 37..<=49 => num_fmt
+    27..<=36 | 50..<=81 => num_fmt
     _ => 0
   }
 }
@@ -203,18 +203,18 @@ fn write_pivot_cache_definition_xml(
 priv struct PivotLocation {
   /// `firstHeaderRow`: row of the PivotTable header, relative to the top left
   /// cell of `ref`.
-  first_header_row : Int
+  first_header_row : Int32
   /// `firstDataRow`: row of the first PivotTable data row, relative to the top
   /// left cell of `ref`.
-  first_data_row : Int
+  first_data_row : Int32
   /// `firstDataCol`: column of the first PivotTable data column, relative to
   /// the top left cell of `ref`.
-  first_data_col : Int
+  first_data_col : Int32
   /// `rowPageCount` / `colPageCount`: rows and columns the page (filter) field
   /// area occupies. Both are `0` (the schema default, omitted from the output)
   /// when the pivot has no page fields.
-  row_page_count : Int
-  col_page_count : Int
+  row_page_count : Int32
+  col_page_count : Int32
 }
 
 ///|
@@ -259,10 +259,10 @@ priv struct PivotLocation {
 ///   transposes the pair; that transposed form follows from the attribute's
 ///   definition but was not checked against a real Excel-authored sample.
 fn pivot_location(
-  row_fields : ArrayView[(Int, PivotTableField)],
-  col_fields : ArrayView[(Int, PivotTableField)],
-  page_fields : ArrayView[(Int, PivotTableField)],
-  data_fields : ArrayView[(Int, PivotTableField)],
+  row_fields : ArrayView[(Int32, PivotTableField)],
+  col_fields : ArrayView[(Int32, PivotTableField)],
+  page_fields : ArrayView[(Int32, PivotTableField)],
+  data_fields : ArrayView[(Int32, PivotTableField)],
   opts : PivotTableOptions,
 ) -> PivotLocation {
   // `classic_layout` forces compact="0" outline="0" on every axis field (see
@@ -305,13 +305,13 @@ fn pivot_location(
 ///|
 fn write_pivot_table_definition_xml(
   name : String,
-  cache_id : Int,
+  cache_id : Int32,
   pivot_ref : String,
   field_names : ArrayView[String],
-  row_fields : ArrayView[(Int, PivotTableField)],
-  col_fields : ArrayView[(Int, PivotTableField)],
-  page_fields : ArrayView[(Int, PivotTableField)],
-  data_fields : ArrayView[(Int, PivotTableField)],
+  row_fields : ArrayView[(Int32, PivotTableField)],
+  col_fields : ArrayView[(Int32, PivotTableField)],
+  page_fields : ArrayView[(Int32, PivotTableField)],
+  data_fields : ArrayView[(Int32, PivotTableField)],
   opts : PivotTableOptions,
 ) -> String {
   let sb = StringBuilder()
@@ -352,22 +352,22 @@ fn write_pivot_table_definition_xml(
     sb.write_view(" colPageCount=\"\{location.col_page_count}\"")
   }
   sb.write_view("/>\n")
-  let row_opts : Map[Int, PivotTableField] = Map([])
+  let row_opts : Map[Int32, PivotTableField] = Map([])
   for entry in row_fields {
     let (idx, field) = entry
     row_opts[idx] = field
   }
-  let col_opts : Map[Int, PivotTableField] = Map([])
+  let col_opts : Map[Int32, PivotTableField] = Map([])
   for entry in col_fields {
     let (idx, field) = entry
     col_opts[idx] = field
   }
-  let page_opts : Map[Int, PivotTableField] = Map([])
+  let page_opts : Map[Int32, PivotTableField] = Map([])
   for entry in page_fields {
     let (idx, field) = entry
     page_opts[idx] = field
   }
-  let data_opts : Map[Int, PivotTableField] = Map([])
+  let data_opts : Map[Int32, PivotTableField] = Map([])
   for entry in data_fields {
     let (idx, field) = entry
     data_opts[idx] = field

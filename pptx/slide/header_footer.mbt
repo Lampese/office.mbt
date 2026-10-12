@@ -24,13 +24,13 @@ pub extend DateMode with Eq::{not_equal, equal}
 ///|
 /// Conventional slide-level placeholder indices, matching PowerPoint's own
 /// output: date = 10, footer = 11, slide number = 12.
-let ph_idx_date : Int = 10
+let ph_idx_date : Int32 = 10
 
 ///|
-let ph_idx_footer : Int = 11
+let ph_idx_footer : Int32 = 11
 
 ///|
-let ph_idx_slide_number : Int = 12
+let ph_idx_slide_number : Int32 = 12
 
 ///|
 /// A fixed `<a:fld>` id. PowerPoint regenerates it on edit; a stable GUID
@@ -66,10 +66,10 @@ fn field_text_body(field_type : String, cached : String) -> TextBody {
 /// Build a slide-level placeholder `<p:sp>` with no transform (position
 /// inherited from the master) carrying `body`.
 fn placeholder_shape(
-  id : Int,
+  id : Int32,
   name : String,
   ph_type : String,
-  idx : Int,
+  idx : Int32,
   body : TextBody,
 ) -> AutoShape {
   {

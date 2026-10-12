@@ -23,8 +23,8 @@ fn page_shift_stream_for_test(
 ///|
 fn page_shift_page_for_test(
   ops : ArrayView[@content.PdfContentOp],
-  resources? : @syntax.PdfObject = PdfDictionary([]),
-  rest? : @syntax.PdfObject = PdfDictionary([]),
+  resources~ : @syntax.PdfObject = PdfDictionary([]),
+  rest~ : @syntax.PdfObject = PdfDictionary([]),
 ) -> @page.PdfPage {
   {
     content: [page_shift_stream_for_test(ops)],

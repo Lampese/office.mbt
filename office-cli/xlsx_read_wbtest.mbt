@@ -33,8 +33,8 @@ async fn xlsx_cli_error_async(run : async () -> Unit) -> @lib.ProtocolError {
 async fn xlsx_text_test_data(
   projection : XlsxProjection,
   under : XlsxResolvedSelector?,
-  offset : Int,
-  limit : Int,
+  offset : Int32,
+  limit : Int32,
 ) -> Json {
   xlsx_text_payload(projection, under, offset, limit, 100_000).data
 }

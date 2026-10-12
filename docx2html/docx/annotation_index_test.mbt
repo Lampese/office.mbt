@@ -7,9 +7,9 @@
 /// pin tolerant-reader behavior.
 fn fixture_docx(
   document_xml : String,
-  comments_xml? : String? = None,
-  comments_extended_xml? : String? = None,
-  footnotes_xml? : String? = None,
+  comments_xml~ : String? = None,
+  comments_extended_xml~ : String? = None,
+  footnotes_xml~ : String? = None,
 ) -> Bytes raise {
   let builder = @opc.PackageBuilder::new()
   builder.add_default(
@@ -135,8 +135,8 @@ test "mutation-safe annotated reads preserve the package projection" {
 
 ///|
 fn diagnostic_hash_clustered_element_names(
-  count : Int,
-  bucket_mask : Int,
+  count : Int32,
+  bucket_mask : Int32,
 ) -> Array[String] {
   let names : Array[String] = []
   let mut candidate = 0
@@ -353,7 +353,7 @@ fn with_main_relationship(
   id : String,
   relationship_type : String,
   target : String,
-  external? : Bool = false,
+  external~ : Bool = false,
 ) -> Bytes raise {
   let archive = try! @mbtzip.read(bytes)
   let rels = match archive.get("word/_rels/document.xml.rels") {
@@ -977,7 +977,7 @@ test "mutation-safe reads keep the pre-cutover budget envelope" {
     "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml",
     "<w:hdr xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><w:p><w:r><w:t>head</w:t></w:r></w:p></w:hdr>",
   )
-  fn minimal_units(mutation : Bool) -> Int {
+  fn minimal_units(mutation : Bool) -> Int32 {
     let mut low = 1
     let mut high = 1 << 20
     while low < high {

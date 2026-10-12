@@ -36,6 +36,6 @@ pub fn PdfName::view(self : PdfName) -> BytesView {
 
 ///|
 /// Returns the byte length of this PDF name.
-pub fn PdfName::byte_length(self : PdfName) -> Int {
+pub fn PdfName::byte_length(self : PdfName) -> Int32 {
   self.0.length()
 }

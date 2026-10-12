@@ -146,7 +146,7 @@ fn wrap_hue(h : Double) -> Double {
 }
 
 ///|
-fn round_byte(x : Double) -> Int {
+fn round_byte(x : Double) -> Int32 {
   let r = (x + 0.5).to_int()
   if r < 0 {
     0

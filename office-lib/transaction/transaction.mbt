@@ -8,20 +8,20 @@ let transaction_portable_validator_name = "office-portable-opc"
 let transaction_temp_attempts = 32
 
 ///|
-let transaction_max_package_bytes : Int = 128 * 1024 * 1024
+let transaction_max_package_bytes : Int32 = 128 * 1024 * 1024
 
 ///|
-let transaction_max_total_preserved_source_bytes : Int = transaction_max_package_bytes +
+let transaction_max_total_preserved_source_bytes : Int32 = transaction_max_package_bytes +
   65_535
 
 ///|
-let transaction_max_archive_entries : Int = 8192
+let transaction_max_archive_entries : Int32 = 8192
 
 ///|
-let transaction_max_entry_uncompressed_bytes : Int = 64 * 1024 * 1024
+let transaction_max_entry_uncompressed_bytes : Int32 = 64 * 1024 * 1024
 
 ///|
-let transaction_max_total_uncompressed_bytes : Int = 256 * 1024 * 1024
+let transaction_max_total_uncompressed_bytes : Int32 = 256 * 1024 * 1024
 
 ///|
 /// The complete transaction reserves one cross-phase materialization budget,
@@ -93,8 +93,8 @@ priv struct ResolvedPolicy {
 ///|
 priv struct TransactionFaults {
   fail_write : Bool
-  fail_write_after_bytes : Int?
-  stall_write_after_bytes : Int?
+  fail_write_after_bytes : Int32?
+  stall_write_after_bytes : Int32?
   fail_rename : Bool
   stall_after_temp : Bool
   post_rename_release : String?
@@ -513,8 +513,8 @@ async fn read_original(
 fn resource_limit_error(
   phase : String,
   kind : String,
-  limit : Int,
-  actual : Int,
+  limit : Int32,
+  actual : Int32,
 ) -> TransactionError {
   transaction_error(
     "office.transaction.resource_limit_exceeded",
@@ -608,7 +608,7 @@ fn enforce_returned_candidate_budget(
 fn check_package_size_with_limit(
   bytes : BytesView,
   phase : String,
-  limit : Int,
+  limit : Int32,
 ) -> Unit raise TransactionError {
   if bytes.length() > limit {
     raise resource_limit_error(phase, "package_bytes", limit, bytes.length())
@@ -627,7 +627,7 @@ fn check_package_size(
 /// Bound copied source records by the input size. This is an enforced reader
 /// limit: overlapping records that need more copies are rejected, not assumed
 /// to fit merely because they reference a bounded input buffer.
-fn transaction_archive_source_limit(bytes : BytesView) -> Int {
+fn transaction_archive_source_limit(bytes : BytesView) -> Int32 {
   bytes.length().min(transaction_max_total_preserved_source_bytes)
 }
 
@@ -1281,8 +1281,8 @@ async fn transact_with_identifier_and_faults(
   faults : TransactionFaults,
   post_read_release? : String,
   cleanup_release? : String,
-  materialization_limit? : Int64 = transaction_max_live_materialized_bytes,
-  materialization_reserve? : Int64 = transaction_materialization_working_reserve,
+  materialization_limit~ : Int64 = transaction_max_live_materialized_bytes,
+  materialization_reserve~ : Int64 = transaction_materialization_working_reserve,
 ) -> TransactionReport {
   if materialization_limit <= 0L ||
     materialization_reserve < 0L ||
@@ -1425,7 +1425,7 @@ async fn transact_with_faults(
 pub async fn transact(
   options : TransactionOptions,
   mutate : (@office.DocumentFormat, Bytes, @zip.Archive, TransactionBudget) -> TransactionMutation raise,
-  validators? : Array[TransactionValidator] = [],
+  validators~ : Array[TransactionValidator] = [],
   identifier? : TransactionIdentifier,
 ) -> TransactionReport {
   match identifier {

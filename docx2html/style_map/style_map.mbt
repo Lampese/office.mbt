@@ -53,14 +53,14 @@ priv struct ParsedMatcherSuffixes {
 
 ///|
 priv enum ParsedDocumentMatcher {
-  ParsedDocumentMatcherOk(DocumentMatcher, Int)
+  ParsedDocumentMatcherOk(DocumentMatcher, Int32)
   ParsedDocumentMatcherError(String)
 }
 
 ///|
 priv enum ParsedHtmlPathElement {
-  ParsedHtmlPathElementOk(HtmlPathElement, Int)
-  ParsedHtmlPathElementError(Int, String)
+  ParsedHtmlPathElementOk(HtmlPathElement, Int32)
+  ParsedHtmlPathElementError(Int32, String)
 }
 
 ///|
@@ -177,8 +177,8 @@ pub fn parse_style_map_string(style_map : String) -> StyleMapParseResult {
 ///|
 fn parse_style_document_matcher(
   line : String,
-  index : Int,
-  end : Int,
+  index : Int32,
+  end : Int32,
 ) -> ParsedDocumentMatcher {
   let (name, next, error) = parse_style_identifier(
     line, index, end, "element type",
@@ -250,10 +250,10 @@ fn parse_style_document_matcher(
 ///|
 fn parse_style_matcher_suffixes(
   line : String,
-  index : Int,
-  end : Int,
+  index : Int32,
+  end : Int32,
   allow_list~ : Bool,
-) -> (ParsedMatcherSuffixes, Int, String?) {
+) -> (ParsedMatcherSuffixes, Int32, String?) {
   let mut suffixes = ParsedMatcherSuffixes::{
     style_id: None,
     style_name: None,
@@ -315,8 +315,8 @@ fn parse_style_matcher_suffixes(
 ///|
 fn parse_style_table_matcher(
   line : String,
-  index : Int,
-  end : Int,
+  index : Int32,
+  end : Int32,
 ) -> ParsedDocumentMatcher {
   let (suffixes, next, error) = parse_style_matcher_suffixes(
     line,
@@ -337,9 +337,9 @@ fn parse_style_table_matcher(
 ///|
 fn parse_style_name_suffix(
   line : String,
-  index : Int,
-  end : Int,
-) -> (StyleNameMatcher?, Int, String?) {
+  index : Int32,
+  end : Int32,
+) -> (StyleNameMatcher?, Int32, String?) {
   let name_start = index
   let (name, first_index, error) = parse_style_identifier(
     line, index, end, "identifier \"style-name\"",
@@ -394,9 +394,9 @@ fn parse_style_name_suffix(
 ///|
 fn parse_style_list_suffix_after_colon(
   line : String,
-  index : Int,
-  end : Int,
-) -> (Numbering?, Int, Bool, String?) {
+  index : Int32,
+  end : Int32,
+) -> (Numbering?, Int32, Bool, String?) {
   let (name, first_next, error) = parse_style_identifier(
     line,
     index + 1,
@@ -440,8 +440,8 @@ fn parse_style_list_suffix_after_colon(
 ///|
 fn parse_style_highlight_matcher(
   line : String,
-  index : Int,
-  end : Int,
+  index : Int32,
+  end : Int32,
 ) -> ParsedDocumentMatcher {
   if index >= end || line[index] != '[' {
     return ParsedDocumentMatcherOk(HighlightMatcher(None), index)
@@ -481,8 +481,8 @@ fn parse_style_highlight_matcher(
 ///|
 fn parse_style_break_matcher(
   line : String,
-  index : Int,
-  end : Int,
+  index : Int32,
+  end : Int32,
 ) -> ParsedDocumentMatcher {
   if index >= end || line[index] != '[' {
     return ParsedDocumentMatcherError(
@@ -535,7 +535,7 @@ fn parse_style_break_matcher(
 fn read_html_path_text(
   line : String,
   to_raw : String,
-  after_arrow : Int,
+  after_arrow : Int32,
 ) -> (Array[HtmlPathElement], String?) {
   let end = after_arrow + to_raw.length()
   if after_arrow >= end {
@@ -566,9 +566,9 @@ fn read_html_path_text(
 ///|
 fn parse_style_html_path(
   line : String,
-  index : Int,
-  end : Int,
-) -> (Array[HtmlPathElement], Int, String?) {
+  index : Int32,
+  end : Int32,
+) -> (Array[HtmlPathElement], Int32, String?) {
   if line[index] == '!' {
     return (
       [{ tag: "!", attributes: Map([]), fresh: false, separator: None, }],
@@ -630,8 +630,8 @@ fn parse_style_html_path(
 ///|
 fn parse_style_html_path_element(
   line : String,
-  index : Int,
-  end : Int,
+  index : Int32,
+  end : Int32,
 ) -> ParsedHtmlPathElement {
   let (tag, first_index) = parse_style_tag_choices_after_start(line, index, end)
   let mut index = first_index
@@ -693,9 +693,9 @@ fn parse_style_html_path_element(
 ///|
 fn parse_style_tag_choices_after_start(
   line : String,
-  index : Int,
-  end : Int,
-) -> (String, Int) {
+  index : Int32,
+  end : Int32,
+) -> (String, Int32) {
   let builder = StringBuilder()
   let (tag, first_index) = read_style_identifier_after_start(line, index, end)
   builder.write_string(tag)
@@ -721,9 +721,9 @@ fn is_style_whitespace(char : UInt16) -> Bool {
 ///|
 fn parse_style_attribute(
   line : String,
-  index : Int,
-  end : Int,
-) -> (String, String, Int, String?) {
+  index : Int32,
+  end : Int32,
+) -> (String, String, Int32, String?) {
   let (name, first_index, error) = parse_style_identifier(
     line, index, end, "identifier",
   )
@@ -760,10 +760,10 @@ fn parse_style_attribute(
 ///|
 fn consume_style_option_identifier(
   line : String,
-  index : Int,
-  end : Int,
+  index : Int32,
+  end : Int32,
   expected : String,
-) -> (Int, Bool) {
+) -> (Int32, Bool) {
   if index >= end || line[index] != ':' {
     return (index, false)
   }
@@ -782,9 +782,9 @@ fn consume_style_option_identifier(
 ///|
 fn consume_style_separator_option(
   line : String,
-  index : Int,
-  end : Int,
-) -> (String?, Int, Bool) {
+  index : Int32,
+  end : Int32,
+) -> (String?, Int32, Bool) {
   let (next, consumed) = consume_style_option_identifier(
     line, index, end, "separator",
   )
@@ -808,10 +808,10 @@ fn consume_style_separator_option(
 ///|
 fn parse_style_identifier(
   line : String,
-  index : Int,
-  end : Int,
+  index : Int32,
+  end : Int32,
   expected : String,
-) -> (String, Int, String?) {
+) -> (String, Int32, String?) {
   if !is_style_identifier_start(line, index, end) {
     return ("", index, Some(style_parse_error(line, index, end, expected)))
   }
@@ -822,9 +822,9 @@ fn parse_style_identifier(
 ///|
 fn read_style_identifier_after_start(
   line : String,
-  index : Int,
-  end : Int,
-) -> (String, Int) {
+  index : Int32,
+  end : Int32,
+) -> (String, Int32) {
   let builder = StringBuilder()
   let mut index = index
   while index < end {
@@ -846,9 +846,9 @@ fn read_style_identifier_after_start(
 ///|
 fn parse_style_string(
   line : String,
-  index : Int,
-  end : Int,
-) -> (String, Int, String?) {
+  index : Int32,
+  end : Int32,
+) -> (String, Int32, String?) {
   if index >= end || line[index] != '\'' {
     return ("", index, Some(style_parse_error(line, index, end, "string")))
   }
@@ -882,10 +882,10 @@ fn parse_style_string(
 ///|
 fn parse_style_integer(
   line : String,
-  index : Int,
-  end : Int,
-) -> (Int, Int, String?) {
-  if index >= end || !(line[index] is ('0'..='9')) {
+  index : Int32,
+  end : Int32,
+) -> (Int32, Int32, String?) {
+  if index >= end || !(line[index] is ('0'..<='9')) {
     return (0, index, Some(style_parse_error(line, index, end, "integer")))
   }
   let value_text = read_style_integer_token(line, index, end)
@@ -897,8 +897,8 @@ fn parse_style_integer(
 ///|
 fn starts_with_at(
   line : String,
-  index : Int,
-  end : Int,
+  index : Int32,
+  end : Int32,
   value : String,
 ) -> Bool {
   index + value.length() <= end &&
@@ -906,7 +906,7 @@ fn starts_with_at(
 }
 
 ///|
-fn is_style_identifier_start(line : String, index : Int, end : Int) -> Bool {
+fn is_style_identifier_start(line : String, index : Int32, end : Int32) -> Bool {
   if index >= end {
     false
   } else if line[index] == '\\' {
@@ -918,19 +918,19 @@ fn is_style_identifier_start(line : String, index : Int, end : Int) -> Bool {
 
 ///|
 fn is_style_identifier_start_char(char : UInt16) -> Bool {
-  char is ('a'..='z' | 'A'..='Z' | '-' | '_')
+  char is ('a'..<='z' | 'A'..<='Z' | '-' | '_')
 }
 
 ///|
 fn is_style_identifier_part(char : UInt16) -> Bool {
-  is_style_identifier_start_char(char) || char is ('0'..='9')
+  is_style_identifier_start_char(char) || char is ('0'..<='9')
 }
 
 ///|
 fn style_parse_error(
   line : String,
-  index : Int,
-  end : Int,
+  index : Int32,
+  end : Int32,
   expected : String,
 ) -> String {
   "Error was at character number " +
@@ -942,7 +942,7 @@ fn style_parse_error(
 }
 
 ///|
-fn describe_style_token(line : String, index : Int, end : Int) -> String {
+fn describe_style_token(line : String, index : Int32, end : Int32) -> String {
   if index >= end {
     return "end"
   }
@@ -971,7 +971,7 @@ fn describe_style_token(line : String, index : Int, end : Int) -> String {
           line, index, end, "identifier",
         )
         "identifier \"" + identifier + "\""
-      } else if line[index] is ('0'..='9') {
+      } else if line[index] is ('0'..<='9') {
         "integer \"" + read_style_integer_token(line, index, end) + "\""
       } else {
         "unrecognisedCharacter \"" + line[index:index + 1].to_owned() + "\""
@@ -982,8 +982,8 @@ fn describe_style_token(line : String, index : Int, end : Int) -> String {
 ///|
 fn describe_unterminated_style_string(
   line : String,
-  index : Int,
-  end : Int,
+  index : Int32,
+  end : Int32,
 ) -> String {
   let token = read_unterminated_style_string_token(line, index, end)
   if token == "" {
@@ -996,8 +996,8 @@ fn describe_unterminated_style_string(
 ///|
 fn read_unterminated_style_string_token(
   line : String,
-  index : Int,
-  end : Int,
+  index : Int32,
+  end : Int32,
 ) -> String {
   if index + 1 >= end {
     ""
@@ -1007,9 +1007,13 @@ fn read_unterminated_style_string_token(
 }
 
 ///|
-fn read_style_integer_token(line : String, index : Int, end : Int) -> String {
+fn read_style_integer_token(
+  line : String,
+  index : Int32,
+  end : Int32,
+) -> String {
   let mut cursor = index
-  while cursor < end && line[cursor] is ('0'..='9') {
+  while cursor < end && line[cursor] is ('0'..<='9') {
     cursor = cursor + 1
   }
   line[index:cursor].to_owned()
@@ -1019,7 +1023,7 @@ fn read_style_integer_token(line : String, index : Int, end : Int) -> String {
 fn write_style_escape(
   builder : StringBuilder,
   value : String,
-  index : Int,
+  index : Int32,
 ) -> Unit {
   let char = value[index]
   match char {

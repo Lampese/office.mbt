@@ -76,12 +76,12 @@ fn glyf_subset(ctx : Context) -> Unit raise SubsetError {
 ///|
 fn glyf_subset_with(
   ctx : Context,
-  glyph_data_fn : (Int) -> BytesView raise SubsetError,
+  glyph_data_fn : (Int32) -> BytesView raise SubsetError,
 ) -> Unit raise SubsetError {
   let subsetted_entries = subset_glyf_entries(ctx, glyph_data_fn)
   let sub_glyf = Writer::new()
   let sub_loca = Writer::new()
-  let write_offset = (offset : Int) => {
+  let write_offset = (offset : Int32) => {
     if ctx.long_loca {
       sub_loca.write_u32(offset.reinterpret_as_uint())
     } else {
@@ -121,8 +121,8 @@ fn GlyfTable::new(face : Face) -> GlyfTable? {
 }
 
 ///|
-fn GlyfTable::glyph_data(self : GlyfTable, id : Int) -> BytesView? {
-  let read_offset = (n : Int) => {
+fn GlyfTable::glyph_data(self : GlyfTable, id : Int32) -> BytesView? {
+  let read_offset = (n : Int32) => {
     if self.long {
       let r = Reader::new_at(self.loca, 4 * n)
       match r.read_u32() {
@@ -149,7 +149,7 @@ fn GlyfTable::glyph_data(self : GlyfTable, id : Int) -> BytesView? {
 ///|
 fn subset_glyf_entries(
   ctx : Context,
-  glyph_data_fn : (Int) -> BytesView raise SubsetError,
+  glyph_data_fn : (Int32) -> BytesView raise SubsetError,
 ) -> Array[BytesView] raise SubsetError {
   let mut size = 0L
   let glyf_entries = []
@@ -181,22 +181,22 @@ fn subset_glyf_entries(
 }
 
 ///|
-let arg_1_and_2_are_words : Int = 0x0001
+let arg_1_and_2_are_words : Int32 = 0x0001
 
 ///|
-let we_have_a_scale : Int = 0x0008
+let we_have_a_scale : Int32 = 0x0008
 
 ///|
-let more_components : Int = 0x0020
+let more_components : Int32 = 0x0020
 
 ///|
-let we_have_an_x_and_y_scale : Int = 0x0040
+let we_have_an_x_and_y_scale : Int32 = 0x0040
 
 ///|
-let we_have_a_two_by_two : Int = 0x0080
+let we_have_a_two_by_two : Int32 = 0x0080
 
 ///|
-let we_have_instructions : Int = 0x0100
+let we_have_instructions : Int32 = 0x0100
 
 ///|
 fn remap_component_glyph(
@@ -258,7 +258,7 @@ fn remap_component_glyph(
 ///|
 /// The component glyphs of a glyph (upstream yields them lazily and stops at
 /// the first truncated component).
-fn component_glyphs(glyph_data : BytesView) -> Array[Int]? {
+fn component_glyphs(glyph_data : BytesView) -> Array[Int32]? {
   let r = Reader::new(glyph_data)
 
   // Number of contours

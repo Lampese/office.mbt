@@ -1,8 +1,8 @@
 ///|
 fn CalcContext::new(
-  use_1904_dates? : Bool = false,
-  formula_limits? : SharedFormulaLimits = SharedFormulaLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  use_1904_dates~ : Bool = false,
+  formula_limits~ : SharedFormulaLimits = SharedFormulaLimits::new(),
+  cancelled~ : () -> Bool = () => false,
 ) -> CalcContext {
   {
     visiting: Map([]),
@@ -19,7 +19,11 @@ fn CalcContext::new(
 }
 
 ///|
-fn RangeValues::get(self : RangeValues, row : Int, col : Int) -> FormulaValue? {
+fn RangeValues::get(
+  self : RangeValues,
+  row : Int32,
+  col : Int32,
+) -> FormulaValue? {
   if row < 0 || col < 0 || row >= self.rows || col >= self.cols {
     None
   } else {
@@ -30,7 +34,7 @@ fn RangeValues::get(self : RangeValues, row : Int, col : Int) -> FormulaValue? {
 ///|
 priv struct FormulaParser {
   chars : Array[Char]
-  mut pos : Int
+  mut pos : Int32
 }
 
 ///|
@@ -626,7 +630,11 @@ fn parse_range_ref_token(
 ///|
 
 ///|
-fn address_a1(row : Int, col : Int, abs_num : Int) -> String raise XlsxError {
+fn address_a1(
+  row : Int32,
+  col : Int32,
+  abs_num : Int32,
+) -> String raise XlsxError {
   let col_name = column_name_from_number(col)
   match abs_num {
     1 => "$\{col_name}$\{row}"
@@ -638,7 +646,7 @@ fn address_a1(row : Int, col : Int, abs_num : Int) -> String raise XlsxError {
 }
 
 ///|
-fn address_r1c1(row : Int, col : Int, abs_num : Int) -> String {
+fn address_r1c1(row : Int32, col : Int32, abs_num : Int32) -> String {
   match abs_num {
     1 => "R\{row}C\{col}"
     2 => "R\{row}C[\{col}]"
@@ -649,7 +657,7 @@ fn address_r1c1(row : Int, col : Int, abs_num : Int) -> String {
 }
 
 ///|
-fn parse_r1c1_token(text : StringView) -> (Int, Int)? {
+fn parse_r1c1_token(text : StringView) -> (Int32, Int32)? {
   let chars = text.to_array()
   if chars.length() < 3 || chars[0] != 'R' {
     return None
@@ -720,7 +728,7 @@ fn split_sheet_ref(text : String) -> (String, String) {
 }
 
 ///|
-fn ref_bounds_opt(expr : Expr) -> (Int, Int, Int, Int)? raise XlsxError {
+fn ref_bounds_opt(expr : Expr) -> (Int32, Int32, Int32, Int32)? raise XlsxError {
   match expr {
     Cell(_, reference) => {
       let (row, col) = cell_ref_to_rc(reference)
@@ -736,7 +744,7 @@ fn ref_bounds_opt(expr : Expr) -> (Int, Int, Int, Int)? raise XlsxError {
 }
 
 ///|
-fn current_cell_rc(ctx : CalcContext) -> (Int, Int)? {
+fn current_cell_rc(ctx : CalcContext) -> (Int32, Int32)? {
   if ctx.current_ref == "" {
     None
   } else {

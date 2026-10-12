@@ -4,7 +4,7 @@ fn text_font_read_name_for_test(text : String) -> @core.PdfName {
 }
 
 ///|
-fn text_font_read_bytes_for_test(values : ArrayView[Int]) -> @core.PdfBytes {
+fn text_font_read_bytes_for_test(values : ArrayView[Int32]) -> @core.PdfBytes {
   try! @core.pdf_bytes_of_int_array(values)
 }
 
@@ -70,7 +70,7 @@ fn text_font_read_valid_cid_descendant_for_test(
 
 ///|
 fn text_font_read_cid_top_font_for_test(
-  descendant_number : Int,
+  descendant_number : Int32,
   encoding : @syntax.PdfObject,
 ) -> @syntax.PdfObject {
   @syntax.pdf_dictionary([

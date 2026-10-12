@@ -34,7 +34,7 @@ pub(all) struct AdjustedMetrics {
 priv enum OutlineKind {
   GlyfKind(GlyfOutlines, GlyfOutline)
   // Third field is subfont index
-  CffKind(CffOutlines, GlyphId, Int)
+  CffKind(CffOutlines, GlyphId, Int32)
   VarcKind(VarcOutlines, VarcOutline)
 }
 

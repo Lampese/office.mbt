@@ -253,7 +253,7 @@ priv struct StyleInfo {
 ///|
 priv struct NumberingLevel {
   is_ordered : Bool
-  level : Int
+  level : Int32
   paragraph_style_id : String?
 }
 
@@ -355,8 +355,8 @@ priv struct TableRowForSpan {
 ///|
 priv struct TableCellForSpan {
   children : Array[ReaderItem]
-  col_span : Int
-  row_span : Int
+  col_span : Int32
+  row_span : Int32
   source : ReaderNode
   /// Trace items that preceded this cell among the row's children.
   leading : Array[ReaderItem]
@@ -366,16 +366,16 @@ priv struct TableCellForSpan {
 /// Converts DOCX bytes to HTML.
 pub fn convert_to_html(
   docx : BytesView,
-  style_map? : Array[String] = [],
-  include_default_style_map? : Bool = true,
-  include_embedded_style_map? : Bool = true,
-  ignore_empty_paragraphs? : Bool = true,
-  id_prefix? : String = "",
-  pretty_print? : Bool = false,
-  convert_image? : (Image) -> ImageConversion = data_uri_image_converter,
-  transform_document? : (DocumentElement) -> DocumentElement = identity_document_transform,
-  external_file_access? : Bool = false,
-  read_external_file? : (String) -> Bytes? = no_external_file_reader,
+  style_map~ : Array[String] = [],
+  include_default_style_map~ : Bool = true,
+  include_embedded_style_map~ : Bool = true,
+  ignore_empty_paragraphs~ : Bool = true,
+  id_prefix~ : String = "",
+  pretty_print~ : Bool = false,
+  convert_image~ : (Image) -> ImageConversion = data_uri_image_converter,
+  transform_document~ : (DocumentElement) -> DocumentElement = identity_document_transform,
+  external_file_access~ : Bool = false,
+  read_external_file~ : (String) -> Bytes? = no_external_file_reader,
 ) -> ConversionResult raise DocxError {
   convert(
     docx,
@@ -397,15 +397,15 @@ pub fn convert_to_html(
 /// Converts DOCX bytes to Markdown.
 pub fn convert_to_markdown(
   docx : BytesView,
-  style_map? : Array[String] = [],
-  include_default_style_map? : Bool = true,
-  include_embedded_style_map? : Bool = true,
-  ignore_empty_paragraphs? : Bool = true,
-  id_prefix? : String = "",
-  convert_image? : (Image) -> ImageConversion = data_uri_image_converter,
-  transform_document? : (DocumentElement) -> DocumentElement = identity_document_transform,
-  external_file_access? : Bool = false,
-  read_external_file? : (String) -> Bytes? = no_external_file_reader,
+  style_map~ : Array[String] = [],
+  include_default_style_map~ : Bool = true,
+  include_embedded_style_map~ : Bool = true,
+  ignore_empty_paragraphs~ : Bool = true,
+  id_prefix~ : String = "",
+  convert_image~ : (Image) -> ImageConversion = data_uri_image_converter,
+  transform_document~ : (DocumentElement) -> DocumentElement = identity_document_transform,
+  external_file_access~ : Bool = false,
+  read_external_file~ : (String) -> Bytes? = no_external_file_reader,
 ) -> ConversionResult raise DocxError {
   convert(
     docx,
@@ -426,17 +426,17 @@ pub fn convert_to_markdown(
 /// Converts DOCX bytes using the requested output format.
 pub fn convert(
   docx : BytesView,
-  output_format? : OutputFormat = Html,
-  style_map? : Array[String] = [],
-  include_default_style_map? : Bool = true,
-  include_embedded_style_map? : Bool = true,
-  ignore_empty_paragraphs? : Bool = true,
-  id_prefix? : String = "",
-  pretty_print? : Bool = false,
-  convert_image? : (Image) -> ImageConversion = data_uri_image_converter,
-  transform_document? : (DocumentElement) -> DocumentElement = identity_document_transform,
-  external_file_access? : Bool = false,
-  read_external_file? : (String) -> Bytes? = no_external_file_reader,
+  output_format~ : OutputFormat = Html,
+  style_map~ : Array[String] = [],
+  include_default_style_map~ : Bool = true,
+  include_embedded_style_map~ : Bool = true,
+  ignore_empty_paragraphs~ : Bool = true,
+  id_prefix~ : String = "",
+  pretty_print~ : Bool = false,
+  convert_image~ : (Image) -> ImageConversion = data_uri_image_converter,
+  transform_document~ : (DocumentElement) -> DocumentElement = identity_document_transform,
+  external_file_access~ : Bool = false,
+  read_external_file~ : (String) -> Bytes? = no_external_file_reader,
 ) -> ConversionResult raise DocxError {
   let zip = open_zip(docx)
   let read_result = read_docx_zip_with_messages(
@@ -468,8 +468,8 @@ pub fn convert(
 /// Extracts raw text from DOCX bytes.
 pub fn extract_raw_text(
   docx : BytesView,
-  external_file_access? : Bool = false,
-  read_external_file? : (String) -> Bytes? = no_external_file_reader,
+  external_file_access~ : Bool = false,
+  read_external_file~ : (String) -> Bytes? = no_external_file_reader,
 ) -> ConversionResult raise DocxError {
   let read_result = read_docx_zip_with_messages(
     open_zip(docx),
@@ -531,8 +531,8 @@ fn read_embedded_style_map_from_zip(
 /// Reads DOCX bytes into a document tree.
 pub fn read_docx(
   docx : BytesView,
-  external_file_access? : Bool = false,
-  read_external_file? : (String) -> Bytes? = no_external_file_reader,
+  external_file_access~ : Bool = false,
+  read_external_file~ : (String) -> Bytes? = no_external_file_reader,
 ) -> DocumentElement raise DocxError {
   read_docx_with_messages(docx, external_file_access~, read_external_file~).document
 }
@@ -541,8 +541,8 @@ pub fn read_docx(
 /// Reads DOCX bytes into a document tree and diagnostics.
 pub fn read_docx_with_messages(
   docx : BytesView,
-  external_file_access? : Bool = false,
-  read_external_file? : (String) -> Bytes? = no_external_file_reader,
+  external_file_access~ : Bool = false,
+  read_external_file~ : (String) -> Bytes? = no_external_file_reader,
 ) -> DocxReadResult raise DocxError {
   read_docx_zip_with_messages(
     open_zip(docx),
@@ -621,13 +621,13 @@ priv struct DocumentParts {
 ///|
 fn DocumentParts::build(
   zip : ZipArchive,
-  external_files? : ExternalFileAccess = default_external_file_access(),
-  read_images? : Bool = true,
+  external_files~ : ExternalFileAccess = default_external_file_access(),
+  read_images~ : Bool = true,
   xml_budget? : @xml.XmlReadBudget,
   diagnostics? : ReaderDiagnosticCollector,
   expected_main_document_path? : String,
-  strict_main_document? : Bool = false,
-  story_reader_mode? : StoryReaderMode = TolerantReader,
+  strict_main_document~ : Bool = false,
+  story_reader_mode~ : StoryReaderMode = TolerantReader,
 ) -> DocumentParts raise DocxError {
   let main_document = find_main_document(
     zip,
@@ -920,8 +920,8 @@ fn DocumentParts::story_body_reader(self : DocumentParts) -> BodyReader {
 ///|
 fn read_docx_zip_with_messages(
   zip : ZipArchive,
-  external_files? : ExternalFileAccess = default_external_file_access(),
-  read_images? : Bool = true,
+  external_files~ : ExternalFileAccess = default_external_file_access(),
+  read_images~ : Bool = true,
 ) -> DocxReadResult raise DocxError {
   let parts = DocumentParts::build(zip, external_files~, read_images~)
   let document_result = parts.read_document()
@@ -1250,7 +1250,7 @@ fn resolve_unique_internal_part(
   relationship_types : ReadOnlyArray[String],
   base_path : String,
   label : String,
-  reject_multiple_relationships? : Bool = false,
+  reject_multiple_relationships~ : Bool = false,
 ) -> String? raise DocxError {
   let targets : Array[String] = []
   let seen : StableStringSet = SortedSet([])
@@ -1906,12 +1906,12 @@ fn read_notes_for_document(
   story_reader_mode~ : StoryReaderMode,
   reader_projections~ : StableStringMap[ReaderProjection],
   reader_projection_sources~ : StableStringMap[BytesView],
-  external_files? : ExternalFileAccess = default_external_file_access(),
-  read_images? : Bool = true,
+  external_files~ : ExternalFileAccess = default_external_file_access(),
+  read_images~ : Bool = true,
   xml_budget? : @xml.XmlReadBudget,
   annotation_path_budget? : AnnotationPathBudget,
   diagnostics? : ReaderDiagnosticCollector,
-  colors? : RunColors = RunColors::empty(),
+  colors~ : RunColors = RunColors::empty(),
 ) -> NotesReadResult raise DocxError {
   let notes : Array[Note] = []
   let annotation_ids : Array[String?] = []
@@ -1970,12 +1970,12 @@ fn read_note_part_at_path(
   styles~ : StableStringMap[StyleInfo],
   numbering~ : NumberingMap,
   content_types~ : ContentTypes,
-  external_files? : ExternalFileAccess = default_external_file_access(),
-  read_images? : Bool = true,
+  external_files~ : ExternalFileAccess = default_external_file_access(),
+  read_images~ : Bool = true,
   xml_budget? : @xml.XmlReadBudget,
   annotation_path_budget? : AnnotationPathBudget,
   diagnostics? : ReaderDiagnosticCollector,
-  colors? : RunColors = RunColors::empty(),
+  colors~ : RunColors = RunColors::empty(),
 ) -> NotesReadResult raise DocxError {
   if !zip.exists(path) {
     return { notes: [], annotation_ids: [], messages: [], }
@@ -2067,13 +2067,13 @@ fn read_comments_for_document(
   story_reader_mode~ : StoryReaderMode,
   reader_projections~ : StableStringMap[ReaderProjection],
   reader_projection_sources~ : StableStringMap[BytesView],
-  external_files? : ExternalFileAccess = default_external_file_access(),
-  read_images? : Bool = true,
+  external_files~ : ExternalFileAccess = default_external_file_access(),
+  read_images~ : Bool = true,
   xml_budget? : @xml.XmlReadBudget,
   annotation_path_budget? : AnnotationPathBudget,
   comments_part_path? : String,
   diagnostics? : ReaderDiagnosticCollector,
-  colors? : RunColors = RunColors::empty(),
+  colors~ : RunColors = RunColors::empty(),
 ) -> CommentsReadResult raise DocxError {
   let authoritative = match comments_part_path {
     Some(path) => Some(path)
@@ -2252,10 +2252,10 @@ fn read_document_xml_with_messages(
   base_path : String,
   notes : Array[Note],
   comments : Array[Comment],
-  external_files? : ExternalFileAccess = default_external_file_access(),
-  read_images? : Bool = true,
+  external_files~ : ExternalFileAccess = default_external_file_access(),
+  read_images~ : Bool = true,
   diagnostics? : ReaderDiagnosticCollector,
-  colors? : RunColors = RunColors::empty(),
+  colors~ : RunColors = RunColors::empty(),
 ) -> DocxReadResult raise DocxError {
   let body = match root.first("w:body") {
     Some(body) => body
@@ -2321,7 +2321,7 @@ fn BodyReader::read_children(
   let deleted_paragraphs : Array[ReaderNode] = []
   // each pending deleted paragraph remembers where in the output its
   // suppression trace belongs, in case no paragraph ever joins it
-  let deleted_paragraph_pending : Array[(ReaderNode, Int)] = []
+  let deleted_paragraph_pending : Array[(ReaderNode, Int32)] = []
   for element in children {
     match element.name() {
       "w:p" if is_deleted_paragraph(element) => {
@@ -2668,7 +2668,7 @@ fn symbol_to_unicode(font : String, char : String) -> String? {
 }
 
 ///|
-fn parse_dingbat_hex(value : String) -> Int? {
+fn parse_dingbat_hex(value : String) -> Int32? {
   let mut index = 0
   while index < value.length() && is_field_whitespace(value[index]) {
     index += 1
@@ -3069,7 +3069,7 @@ fn parse_hyperlink_field_instruction(
 }
 
 ///|
-fn read_field_location(value : String, index : Int) -> String? {
+fn read_field_location(value : String, index : Int32) -> String? {
   if index >= value.length() {
     None
   } else if value[index] == '"' {
@@ -3085,7 +3085,7 @@ fn read_field_location(value : String, index : Int) -> String? {
 }
 
 ///|
-fn read_unquoted_field_location(value : String, index : Int) -> String? {
+fn read_unquoted_field_location(value : String, index : Int32) -> String? {
   if index >= value.length() || value[index] == '\\' {
     None
   } else {
@@ -3094,7 +3094,7 @@ fn read_unquoted_field_location(value : String, index : Int) -> String? {
 }
 
 ///|
-fn read_until_field_whitespace(value : String, start : Int) -> String {
+fn read_until_field_whitespace(value : String, start : Int32) -> String {
   for index in start..<value.length() {
     if is_field_whitespace(value[index]) {
       return value[start:index].to_owned()
@@ -3104,7 +3104,7 @@ fn read_until_field_whitespace(value : String, start : Int) -> String {
 }
 
 ///|
-fn skip_field_whitespace(value : String, start : Int) -> Int {
+fn skip_field_whitespace(value : String, start : Int32) -> Int32 {
   let mut index = start
   while index < value.length() && is_field_whitespace(value[index]) {
     index = index + 1
@@ -3118,7 +3118,7 @@ fn is_field_whitespace(char : UInt16) -> Bool {
 }
 
 ///|
-fn field_starts_with_at(value : String, index : Int, prefix : String) -> Bool {
+fn field_starts_with_at(value : String, index : Int32, prefix : String) -> Bool {
   index + prefix.length() <= value.length() &&
   value[index:index + prefix.length()].to_owned() == prefix
 }
@@ -3909,7 +3909,7 @@ fn BodyReader::read_blip(
 }
 
 ///|
-fn BodyReader::diagnostic_count(self : BodyReader) -> Int {
+fn BodyReader::diagnostic_count(self : BodyReader) -> Int32 {
   let collected = match self.diagnostics {
     Some(value) => value.received()
     None => 0
@@ -4023,7 +4023,7 @@ fn external_file_candidate_paths(target : String) -> Array[String] {
 }
 
 ///|
-fn external_uri_to_path(uri : String, platform? : String = "") -> String? {
+fn external_uri_to_path(uri : String, platform~ : String = "") -> String? {
   let raw_path = if uri.has_prefix("file://") {
     local_file_uri_path(uri)
   } else if is_relative_uri(uri) {
@@ -4091,7 +4091,7 @@ fn strip_uri_fragment(uri : String) -> String {
 }
 
 ///|
-fn find_uri_scheme_colon(uri : String) -> Int? {
+fn find_uri_scheme_colon(uri : String) -> Int32? {
   if uri.length() == 0 || !is_uri_scheme_start(uri[0]) {
     return None
   }
@@ -4107,12 +4107,12 @@ fn find_uri_scheme_colon(uri : String) -> Int? {
 
 ///|
 fn is_uri_scheme_start(char : UInt16) -> Bool {
-  char is ('A'..='Z' | 'a'..='z')
+  char is ('A'..<='Z' | 'a'..<='z')
 }
 
 ///|
 fn is_uri_scheme_char(char : UInt16) -> Bool {
-  is_uri_scheme_start(char) || char is ('0'..='9' | '+' | '-' | '.')
+  is_uri_scheme_start(char) || char is ('0'..<='9' | '+' | '-' | '.')
 }
 
 ///|
@@ -4151,11 +4151,11 @@ fn percent_decode_uri_path(path : String) -> String? {
 }
 
 ///|
-fn hex_value(char : UInt16) -> Int? {
+fn hex_value(char : UInt16) -> Int32? {
   match char {
-    '0'..='9' => Some(char.to_int() - '0'.to_int())
-    'A'..='F' => Some(char.to_int() - 'A'.to_int() + 10)
-    'a'..='f' => Some(char.to_int() - 'a'.to_int() + 10)
+    '0'..<='9' => Some(char.to_int() - '0'.to_int())
+    'A'..<='F' => Some(char.to_int() - 'A'.to_int() + 10)
+    'a'..<='f' => Some(char.to_int() - 'a'.to_int() + 10)
     _ => None
   }
 }
@@ -4277,7 +4277,7 @@ fn BodyReader::read_table_cell(
 }
 
 ///|
-fn parse_grid_span(value : String) -> Int {
+fn parse_grid_span(value : String) -> Int32 {
   let mut index = 0
   while index < value.length() && is_field_whitespace(value[index]) {
     index += 1
@@ -4308,9 +4308,9 @@ fn parse_grid_span(value : String) -> Int {
 }
 
 ///|
-fn decimal_digit_value(char : UInt16) -> Int? {
+fn decimal_digit_value(char : UInt16) -> Int32? {
   match char {
-    '0'..='9' => Some(char.to_int() - '0'.to_int())
+    '0'..<='9' => Some(char.to_int() - '0'.to_int())
     _ => None
   }
 }
@@ -4416,10 +4416,10 @@ fn BodyReader::calculate_typed_table_row_spans(
   _self : BodyReader,
   elements : Array[TableRowForSpan],
 ) -> Array[ReaderItem] {
-  let row_spans : Array[Array[Int]] = []
+  let row_spans : Array[Array[Int32]] = []
   let skip_cells : Array[Array[Bool]] = []
   for row in elements {
-    let spans : Array[Int] = []
+    let spans : Array[Int32] = []
     let skips : Array[Bool] = []
     for _ in row.cells {
       spans.push(1)
@@ -4428,7 +4428,7 @@ fn BodyReader::calculate_typed_table_row_spans(
     row_spans.push(spans)
     skip_cells.push(skips)
   }
-  let open_cells : Map[Int, (Int, Int)] = Map([])
+  let open_cells : Map[Int32, (Int32, Int32)] = Map([])
   for row_index in 0..<elements.length() {
     let mut column_index = 0
     for cell_index in 0..<elements[row_index].cells.length() {

@@ -1,55 +1,55 @@
 ///|
-let docx_cli_max_element_text_chars : Int = 1024 * 1024
+let docx_cli_max_element_text_chars : Int32 = 1024 * 1024
 
 ///|
-let docx_cli_max_query_text_scan_chars : Int = 16 * 1024 * 1024
+let docx_cli_max_query_text_scan_chars : Int32 = 16 * 1024 * 1024
 
 ///|
-let docx_cli_text_yield_work_units : Int = 4096
+let docx_cli_text_yield_work_units : Int32 = 4096
 
 ///|
 priv struct DocxTextBudget {
   resource : String
-  maximum : Int
-  reported_maximum : Int
-  reported_offset : Int
-  mut used : Int
+  maximum : Int32
+  reported_maximum : Int32
+  reported_offset : Int32
+  mut used : Int32
 }
 
 ///|
 priv struct DocxTextCollector {
-  maximum : Int
-  reported_maximum : Int
-  reported_offset : Int
+  maximum : Int32
+  reported_maximum : Int32
+  reported_offset : Int32
   fail_on_limit : Bool
   resource : String
   output : StringBuilder
-  mut used : Int
-  mut scanned : Int
-  mut pending_newlines : Int
+  mut used : Int32
+  mut scanned : Int32
+  mut pending_newlines : Int32
   mut truncated : Bool
   cancelled : () -> Bool
-  mut work_since_yield : Int
+  mut work_since_yield : Int32
 }
 
 ///|
 priv struct DocxCollectedText {
   text : String
-  scanned : Int
+  scanned : Int32
   truncated : Bool
 }
 
 ///|
-fn DocxTextBudget::new(resource : String, maximum : Int) -> DocxTextBudget {
+fn DocxTextBudget::new(resource : String, maximum : Int32) -> DocxTextBudget {
   { resource, maximum, reported_maximum: maximum, reported_offset: 0, used: 0, }
 }
 
 ///|
 fn DocxTextBudget::new_reported(
   resource : String,
-  maximum : Int,
-  reported_maximum : Int,
-  reported_offset : Int,
+  maximum : Int32,
+  reported_maximum : Int32,
+  reported_offset : Int32,
 ) -> DocxTextBudget {
   { resource, maximum, reported_maximum, reported_offset, used: 0, }
 }
@@ -57,11 +57,11 @@ fn DocxTextBudget::new_reported(
 ///|
 fn DocxTextCollector::new_reported(
   resource : String,
-  maximum : Int,
-  reported_maximum : Int,
-  reported_offset : Int,
+  maximum : Int32,
+  reported_maximum : Int32,
+  reported_offset : Int32,
   fail_on_limit : Bool,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> DocxTextCollector {
   {
     maximum,
@@ -89,7 +89,7 @@ fn DocxTextCollector::check_cancelled(
 ///|
 async fn DocxTextCollector::cooperate(
   self : DocxTextCollector,
-  work? : Int = 1,
+  work~ : Int32 = 1,
 ) -> Unit {
   self.check_cancelled()
   self.work_since_yield += work.max(0)
@@ -376,12 +376,12 @@ async fn trim_docx_text_end_cooperative(
 ///|
 async fn collect_docx_text_counted_cooperative(
   element : @document.DocumentElement,
-  maximum : Int,
+  maximum : Int32,
   resource : String,
-  reported_maximum : Int,
-  reported_offset : Int,
+  reported_maximum : Int32,
+  reported_offset : Int32,
   fail_on_limit : Bool,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> DocxCollectedText {
   let collector = DocxTextCollector::new_reported(
     resource,
@@ -402,8 +402,8 @@ async fn collect_docx_text_counted_cooperative(
 ///|
 async fn collect_docx_text_prefix_cooperative(
   element : @document.DocumentElement,
-  maximum : Int,
-  cancelled? : () -> Bool = () => false,
+  maximum : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> (String, Bool) {
   let result = collect_docx_text_counted_cooperative(
     element,
@@ -421,7 +421,7 @@ async fn collect_docx_text_prefix_cooperative(
 async fn entry_text_with_budget_cooperative(
   entry : DocxProjectionEntry,
   budget : DocxTextBudget,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String {
   guard entry.element is Some(element) else { return "" }
   let remaining = budget.maximum - budget.used
@@ -459,8 +459,8 @@ async fn entry_text_with_budget_cooperative(
 ///|
 async fn entry_text_prefix_cooperative(
   entry : DocxProjectionEntry,
-  maximum : Int,
-  cancelled? : () -> Bool = () => false,
+  maximum : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> (String, Bool) {
   match entry.element {
     Some(element) =>

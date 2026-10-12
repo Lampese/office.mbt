@@ -8,8 +8,8 @@
 ///|
 /// What one replace transaction did.
 pub struct DocxFindReplaceReport {
-  priv selected : Array[Int]
-  priv replaced : Int
+  priv selected : Array[Int32]
+  priv replaced : Int32
   priv affected_paths : Array[String]
   priv affected : Array[@word.DocxReplaceAffected]
   priv matches : Array[@word.DocxMatch]
@@ -22,12 +22,12 @@ pub struct DocxFindReplaceReport {
 ///|
 pub fn DocxFindReplaceReport::selected(
   self : DocxFindReplaceReport,
-) -> Array[Int] {
+) -> Array[Int32] {
   self.selected.copy()
 }
 
 ///|
-pub fn DocxFindReplaceReport::replaced(self : DocxFindReplaceReport) -> Int {
+pub fn DocxFindReplaceReport::replaced(self : DocxFindReplaceReport) -> Int32 {
   self.replaced
 }
 
@@ -91,7 +91,7 @@ pub fn DocxEditSession::queue_find_replace(
   needle~ : String,
   replacement~ : String,
   within? : String,
-  nth? : Int,
+  nth? : Int32,
 ) -> (@word.DocxReplaceReceipt, String?) raise @transaction.TransactionError {
   // paraId R2b: a stable `p[id="…"]` scope resolves against THIS
   // transaction's snapshot — the same typed refusals as the read
@@ -309,9 +309,9 @@ pub async fn transact_docx_find_replace(
   needle~ : String,
   replacement~ : String,
   within? : String,
-  nth? : Int,
-  expect? : Int,
-  allow_zero? : Bool = false,
+  nth? : Int32,
+  expect? : Int32,
+  allow_zero~ : Bool = false,
   preflight? : (DocxFindReplaceReport) -> Unit raise,
 ) -> DocxFindReplaceResult {
   let collected : Ref[DocxFindReplaceReport?] = Ref(None)

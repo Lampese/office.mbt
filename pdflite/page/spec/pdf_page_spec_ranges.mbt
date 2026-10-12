@@ -1,6 +1,6 @@
 ///|
-fn pdf_pagespec_range(start : Int, finish : Int) -> Array[Int] {
-  let output : Array[Int] = Array(
+fn pdf_pagespec_range(start : Int32, finish : Int32) -> Array[Int32] {
+  let output : Array[Int32] = Array(
     capacity=if start <= finish {
       finish - start + 1
     } else {
@@ -24,15 +24,15 @@ fn pdf_pagespec_range(start : Int, finish : Int) -> Array[Int] {
 }
 
 ///|
-fn pdf_pagespec_all_pages(end_page : Int) -> Array[Int] {
+fn pdf_pagespec_all_pages(end_page : Int32) -> Array[Int32] {
   pdf_pagespec_range(1, end_page)
 }
 
 ///|
 fn pdf_pagespec_invert_range(
-  end_page : Int,
-  range : ArrayView[Int],
-) -> Array[Int] {
+  end_page : Int32,
+  range : ArrayView[Int32],
+) -> Array[Int32] {
   if end_page <= 0 {
     []
   } else {
@@ -42,7 +42,7 @@ fn pdf_pagespec_invert_range(
         selected_pages[selected] = true
       }
     }
-    let output : Array[Int] = Array(capacity=end_page)
+    let output : Array[Int32] = Array(capacity=end_page)
     for page in 1..<=end_page {
       if !selected_pages[page] {
         output.push(page)
@@ -53,7 +53,7 @@ fn pdf_pagespec_invert_range(
 }
 
 ///|
-fn pdf_pagespec_count_commas(tokens : ArrayView[PdfPageSpecToken]) -> Int {
+fn pdf_pagespec_count_commas(tokens : ArrayView[PdfPageSpecToken]) -> Int32 {
   let mut count = 0
   for token in tokens {
     if token is PageSpecComma {
@@ -64,7 +64,7 @@ fn pdf_pagespec_count_commas(tokens : ArrayView[PdfPageSpecToken]) -> Int {
 }
 
 ///|
-fn pdf_pagespec_sum_lengths(parts : ArrayView[Array[Int]]) -> Int {
+fn pdf_pagespec_sum_lengths(parts : ArrayView[Array[Int32]]) -> Int32 {
   let mut length = 0
   for part in parts {
     length += part.length()
@@ -73,8 +73,8 @@ fn pdf_pagespec_sum_lengths(parts : ArrayView[Array[Int]]) -> Int {
 }
 
 ///|
-fn pdf_pagespec_flatten(parts : ArrayView[Array[Int]]) -> Array[Int] {
-  let output : Array[Int] = Array(capacity=pdf_pagespec_sum_lengths(parts))
+fn pdf_pagespec_flatten(parts : ArrayView[Array[Int32]]) -> Array[Int32] {
+  let output : Array[Int32] = Array(capacity=pdf_pagespec_sum_lengths(parts))
   for part in parts {
     for page in part {
       output.push(page)
@@ -86,24 +86,27 @@ fn pdf_pagespec_flatten(parts : ArrayView[Array[Int]]) -> Array[Int] {
 ///|
 /// Return pages in `1..=end_page` that are not present in `range`.
 pub fn pdf_invert_page_range(
-  end_page : Int,
-  range : ArrayView[Int],
-) -> Array[Int] {
+  end_page : Int32,
+  range : ArrayView[Int32],
+) -> Array[Int32] {
   pdf_pagespec_invert_range(end_page, range)
 }
 
 ///|
 /// Source-spelled compatibility alias for cpdfpagespec's `invert_range`.
-pub fn pdf_invert_range(end_page : Int, range : ArrayView[Int]) -> Array[Int] {
+pub fn pdf_invert_range(
+  end_page : Int32,
+  range : ArrayView[Int32],
+) -> Array[Int32] {
   pdf_pagespec_invert_range(end_page, range)
 }
 
 ///|
 fn pdf_pagespec_duplicate_range(
-  count : Int,
-  range : ArrayView[Int],
-) -> Array[Int] {
-  let output : Array[Int] = Array(capacity=count * range.length())
+  count : Int32,
+  range : ArrayView[Int32],
+) -> Array[Int32] {
+  let output : Array[Int32] = Array(capacity=count * range.length())
   for page in range {
     for _ in 0..<count {
       output.push(page)
@@ -113,8 +116,8 @@ fn pdf_pagespec_duplicate_range(
 }
 
 ///|
-fn pdf_pagespec_filter_odd(range : ArrayView[Int]) -> Array[Int] {
-  let output : Array[Int] = Array(capacity=range.length())
+fn pdf_pagespec_filter_odd(range : ArrayView[Int32]) -> Array[Int32] {
+  let output : Array[Int32] = Array(capacity=range.length())
   for page in range {
     if page % 2 != 0 {
       output.push(page)
@@ -124,8 +127,8 @@ fn pdf_pagespec_filter_odd(range : ArrayView[Int]) -> Array[Int] {
 }
 
 ///|
-fn pdf_pagespec_filter_even(range : ArrayView[Int]) -> Array[Int] {
-  let output : Array[Int] = Array(capacity=range.length())
+fn pdf_pagespec_filter_even(range : ArrayView[Int32]) -> Array[Int32] {
+  let output : Array[Int32] = Array(capacity=range.length())
   for page in range {
     if page % 2 == 0 {
       output.push(page)
@@ -138,7 +141,7 @@ fn pdf_pagespec_filter_even(range : ArrayView[Int]) -> Array[Int] {
 fn pdf_pagespec_token_number(
   context : PdfPageSpecContext,
   token : PdfPageSpecToken,
-) -> Int? raise PdfError {
+) -> Int32? raise PdfError {
   let number = match token {
     PageSpecNumber(value) => Some(value)
     PageSpecWord("end") => Some(context.end_page)
@@ -166,7 +169,7 @@ fn pdf_pagespec_token_number(
 fn pdf_pagespec_split_commas(
   tokens : ArrayView[PdfPageSpecToken],
   context : PdfPageSpecContext,
-  comma_count : Int,
+  comma_count : Int32,
 ) -> Array[Array[PdfPageSpecToken]] raise PdfError {
   let parts : Array[Array[PdfPageSpecToken]] = Array(capacity=comma_count + 1)
   let mut current : Array[PdfPageSpecToken] = Array(capacity=tokens.length())

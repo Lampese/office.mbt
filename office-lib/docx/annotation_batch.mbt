@@ -18,7 +18,7 @@ pub const SCHEMA_ANNOTATION_RESULT : String = "office.docx.annotation-batch/1"
 /// Coarse op-count backstop; the true guard is the cumulative staged-byte
 /// ceiling below (transact exposes no cancellation hook to its sync
 /// callback, and scheduler-cooperative parsing is deferred to #174).
-pub const MAX_ANNOTATION_OPS : Int = 128
+pub const MAX_ANNOTATION_OPS : Int32 = 128
 
 ///|
 /// Absolute ceiling on cumulative staged-archive payload growth across
@@ -29,7 +29,7 @@ pub const MAX_ANNOTATION_TOTAL_GROWTH : Int64 = 32L * 1024L * 1024L
 /// Largest paragraph ordinal accepted by annotation anchors. This is below the
 /// shared selector parser's integer ceiling and keeps the annotation grammar's
 /// public bound explicit.
-pub const MAX_ANNOTATION_ANCHOR_ORDINAL : Int = 9999999
+pub const MAX_ANNOTATION_ANCHOR_ORDINAL : Int32 = 9999999
 
 ///|
 /// The parser-owned operation discriminator vocabulary, in stable order.
@@ -107,7 +107,7 @@ pub(all) struct DocxAnnotationOpResult {
 ///|
 /// The complete annotation-batch outcome.
 pub(all) struct DocxAnnotationReport {
-  mut ops_applied : Int
+  mut ops_applied : Int32
   results : Array[DocxAnnotationOpResult]
   labels : Array[(String, String)]
   changed_parts : Array[String]

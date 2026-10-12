@@ -6,7 +6,7 @@
 /// attachment annotation with a file specification but no embedded-file stream.
 pub(all) struct PdfAttachment {
   name : String
-  pagenumber : Int
+  pagenumber : Int32
   data : @core.PdfBytes?
   description : String?
   relationship : String?

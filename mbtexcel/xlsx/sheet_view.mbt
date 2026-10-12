@@ -36,8 +36,8 @@ pub fn Selection::with_values(
 pub struct Panes {
   mut freeze : Bool
   mut split : Bool
-  mut x_split : Int
-  mut y_split : Int
+  mut x_split : Int32
+  mut y_split : Int32
   mut top_left_cell : String
   mut active_pane : String
   mut selection : Array[Selection]
@@ -60,8 +60,8 @@ pub fn Panes::new() -> Panes {
 pub fn Panes::with_values(
   freeze? : Bool,
   split? : Bool,
-  x_split? : Int,
-  y_split? : Int,
+  x_split? : Int32,
+  y_split? : Int32,
   top_left_cell? : String,
   active_pane? : String,
   selection? : Array[Selection],
@@ -210,7 +210,7 @@ struct SheetView {
   mut view : String?
   mut zoom_scale : Double?
   mut tab_selected : Bool
-  mut workbook_view_id : Int
+  mut workbook_view_id : Int32
   mut pane : SheetPane?
   selection : Array[Selection]
 } derive(Debug)
@@ -374,7 +374,10 @@ fn sheet_view_options_with_defaults(view : SheetView) -> SheetViewOptions {
 }
 
 ///|
-fn normalize_view_index(view_index : Int, count : Int) -> Int raise XlsxError {
+fn normalize_view_index(
+  view_index : Int32,
+  count : Int32,
+) -> Int32 raise XlsxError {
   if count <= 0 {
     raise InvalidSheetOperation(msg="view index out of range")
   }
@@ -404,7 +407,7 @@ test "sheet view wb: invalid view mode is ignored and defaults are preserved" {
 
 ///|
 test "sheet view wb: normalize_view_index rejects empty view list" {
-  let result : Result[Int, Error] = Ok(normalize_view_index(0, 0)) catch {
+  let result : Result[Int32, Error] = Ok(normalize_view_index(0, 0)) catch {
     e => Err(e)
   }
   inspect(result is Err(XlsxError::InvalidSheetOperation(_)), content="true")

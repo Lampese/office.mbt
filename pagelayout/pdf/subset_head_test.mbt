@@ -12,9 +12,9 @@
 
 ///|
 /// The `head` bounding box of a font program, `(xMin, yMin, xMax, yMax)`.
-fn head_bbox(font : BytesView) -> (Int, Int, Int, Int) {
+fn head_bbox(font : BytesView) -> (Int32, Int32, Int32, Int32) {
   let head = @pdflite.pdf_truetype_table(font, "head").unwrap().offset
-  let i16 = (at : Int) => {
+  let i16 = (at : Int32) => {
     let value = (font[at].to_int() << 8) | font[at + 1].to_int()
     if value >= 0x8000 {
       value - 0x10000
@@ -27,7 +27,7 @@ fn head_bbox(font : BytesView) -> (Int, Int, Int, Int) {
 
 ///|
 /// The OpenType checksum of `length` bytes from `offset`.
-fn sfnt_checksum(font : BytesView, offset : Int, length : Int) -> UInt {
+fn sfnt_checksum(font : BytesView, offset : Int32, length : Int32) -> UInt32 {
   let mut sum = 0U
   for word = offset; word < offset + length; word = word + 4 {
     let mut value = 0U
@@ -68,7 +68,7 @@ fn bundled_program(family : String) -> Bytes raise {
 ///|
 test "a subset's head box is TTFunk's" {
   // (family, characters, TTFunk's box)
-  let cases : Array[(String, String, (Int, Int, Int, Int))] = [
+  let cases : Array[(String, String, (Int32, Int32, Int32, Int32))] = [
     ("Calibri", "Hello, World!", (12, -262, 1810, 1422)),
     // composite accented letters, with their components
     ("Calibri", "éÅçñ", (0, -344, 1178, 1810)),

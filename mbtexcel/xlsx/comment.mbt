@@ -2,11 +2,11 @@
 pub(all) struct Comment {
   cell : String
   author : String
-  author_id : Int?
+  author_id : Int32?
   text : String
   paragraph : Array[RichTextRun]
-  width : Int?
-  height : Int?
+  width : Int32?
+  height : Int32?
 } derive(Debug)
 
 ///|
@@ -74,8 +74,8 @@ fn validate_comment_rich_text_font(font : RichTextFont) -> Unit raise XlsxError 
 fn validate_comment_content_units(
   value : StringView,
   field : StringView,
-  initial_units : Int,
-) -> Int raise XlsxError {
+  initial_units : Int32,
+) -> Int32 raise XlsxError {
   let mut units = initial_units
   for character in value {
     if !is_valid_xml_output_character(character) {

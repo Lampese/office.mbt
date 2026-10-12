@@ -149,10 +149,10 @@ pub fn TableCellProperties::default() -> TableCellProperties {
 /// in builder chains: `TableCellProperties::default().with_margins(…)`.
 pub fn TableCellProperties::with_margins(
   self : TableCellProperties,
-  left? : @units.Emu? = None,
-  right? : @units.Emu? = None,
-  top? : @units.Emu? = None,
-  bottom? : @units.Emu? = None,
+  left~ : @units.Emu? = None,
+  right~ : @units.Emu? = None,
+  top~ : @units.Emu? = None,
+  bottom~ : @units.Emu? = None,
 ) -> TableCellProperties {
   { ..self, margin_l: left, margin_r: right, margin_t: top, margin_b: bottom, }
 }

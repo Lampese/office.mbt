@@ -17,8 +17,8 @@ pub(all) struct XmlElement {
 /// Builds an XML element.
 pub fn xml_element(
   name : String,
-  attributes? : Map[String, String] = Map([]),
-  children? : Array[XmlNode] = [],
+  attributes~ : Map[String, String] = Map([]),
+  children~ : Array[XmlNode] = [],
 ) -> XmlElement {
   { name, attributes: SortedMap(attributes.to_array()), children, }
 }
@@ -109,7 +109,7 @@ pub fn XmlElement::text(self : XmlElement) -> String raise DocxError {
 /// Parses XML text into an element.
 pub fn read_xml_string(
   source : String,
-  namespace_map? : Map[String, String] = Map([]),
+  namespace_map~ : Map[String, String] = Map([]),
 ) -> XmlElement raise DocxError {
   read_xml_string_with_mode(
     source,
@@ -129,7 +129,7 @@ pub fn read_xml_string(
 /// happens to match a caller's canonical prefix.
 pub fn read_xml_string_with_root_namespace_uri(
   source : String,
-  namespace_map? : Map[String, String] = Map([]),
+  namespace_map~ : Map[String, String] = Map([]),
 ) -> (String?, XmlElement) raise DocxError {
   read_xml_string_with_mode_and_root_namespace_uri(
     source,
@@ -150,7 +150,7 @@ pub fn read_xml_string_with_root_namespace_uri(
 /// gates should use this entry point so malformed XML fails closed.
 pub fn read_xml_string_strict(
   source : String,
-  namespace_map? : Map[String, String] = Map([]),
+  namespace_map~ : Map[String, String] = Map([]),
 ) -> XmlElement raise DocxError {
   read_xml_string_with_mode(
     source,
@@ -182,7 +182,7 @@ pub(all) enum XmlSourceEncoding {
 pub fn read_xml_string_strict_encoded(
   source : String,
   source_encoding : XmlSourceEncoding,
-  namespace_map? : Map[String, String] = Map([]),
+  namespace_map~ : Map[String, String] = Map([]),
 ) -> XmlElement raise DocxError {
   read_xml_string_with_mode(
     source,
@@ -202,7 +202,7 @@ pub fn read_xml_string_strict_encoded_limited(
   source : String,
   source_encoding : XmlSourceEncoding,
   budget : XmlReadBudget,
-  namespace_map? : Map[String, String] = Map([]),
+  namespace_map~ : Map[String, String] = Map([]),
 ) -> XmlElement raise DocxError {
   read_xml_string_with_mode(
     source,
@@ -223,10 +223,10 @@ pub fn read_xml_string_strict_encoded_limited(
 /// parser copies or appends it. Reusing one budget across package parts bounds
 /// the aggregate DOM rather than granting every part an independent ceiling.
 pub struct XmlReadBudget {
-  priv mut remaining_source_units : Int
-  priv mut remaining_tokens : Int
-  priv mut remaining_materialized_chars : Int
-  priv max_token_chars : Int
+  priv mut remaining_source_units : Int32
+  priv mut remaining_tokens : Int32
+  priv mut remaining_materialized_chars : Int32
+  priv max_token_chars : Int32
   priv cancelled : () -> Bool
 }
 
@@ -234,11 +234,11 @@ pub struct XmlReadBudget {
 /// Builds a cumulative XML read budget. Negative ceilings clamp to zero; a
 /// zero ceiling is valid and makes the corresponding first charge fail.
 pub fn xml_read_budget(
-  max_source_units~ : Int,
-  max_tokens~ : Int,
-  max_materialized_chars~ : Int,
-  max_token_chars~ : Int,
-  cancelled? : () -> Bool = () => false,
+  max_source_units~ : Int32,
+  max_tokens~ : Int32,
+  max_materialized_chars~ : Int32,
+  max_token_chars~ : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> XmlReadBudget {
   {
     remaining_source_units: if max_source_units > 0 {
@@ -277,7 +277,7 @@ fn XmlReadBudget::checkpoint(self : XmlReadBudget) -> Unit raise DocxError {
 ///|
 fn XmlReadBudget::charge_source(
   self : XmlReadBudget,
-  units : Int,
+  units : Int32,
 ) -> Unit raise DocxError {
   self.checkpoint()
   if units < 0 || units > self.remaining_source_units {
@@ -289,7 +289,7 @@ fn XmlReadBudget::charge_source(
 ///|
 fn XmlReadBudget::charge_token(
   self : XmlReadBudget,
-  chars : Int,
+  chars : Int32,
 ) -> Unit raise DocxError {
   self.checkpoint()
   if chars < 0 || chars > self.max_token_chars {
@@ -312,7 +312,7 @@ fn XmlReadBudget::charge_token(
 /// they remain inside the same cumulative envelope.
 pub fn XmlReadBudget::charge_derived_chars(
   self : XmlReadBudget,
-  chars : Int,
+  chars : Int32,
 ) -> Unit raise DocxError {
   self.checkpoint()
   if chars < 0 || chars > self.remaining_materialized_chars {
@@ -324,7 +324,7 @@ pub fn XmlReadBudget::charge_derived_chars(
 ///|
 fn XmlReadBudget::charge_namespace_bindings(
   self : XmlReadBudget,
-  operations : Int,
+  operations : Int32,
 ) -> Unit raise DocxError {
   self.checkpoint()
   // Namespace declarations allocate one scope-delta record and later restore
@@ -341,7 +341,7 @@ fn XmlReadBudget::charge_namespace_bindings(
 pub fn read_xml_string_limited(
   source : String,
   budget : XmlReadBudget,
-  namespace_map? : Map[String, String] = Map([]),
+  namespace_map~ : Map[String, String] = Map([]),
 ) -> XmlElement raise DocxError {
   read_xml_string_with_mode(
     source,
@@ -360,7 +360,7 @@ pub fn read_xml_string_limited(
 pub fn read_xml_string_strict_limited(
   source : String,
   budget : XmlReadBudget,
-  namespace_map? : Map[String, String] = Map([]),
+  namespace_map~ : Map[String, String] = Map([]),
 ) -> XmlElement raise DocxError {
   read_xml_string_with_mode(
     source,
@@ -379,7 +379,7 @@ pub fn read_xml_string_strict_limited(
 pub fn read_xml_bytes_limited(
   source : BytesView,
   budget : XmlReadBudget,
-  namespace_map? : Map[String, String] = Map([]),
+  namespace_map~ : Map[String, String] = Map([]),
 ) -> XmlElement raise DocxError {
   budget.charge_source(source.length())
   let text = @utf8.decode(source, ignore_bom=true) catch {
@@ -404,7 +404,7 @@ pub fn read_xml_bytes_limited(
 pub fn read_xml_bytes_limited_with_root_namespace_uri(
   source : BytesView,
   budget : XmlReadBudget,
-  namespace_map? : Map[String, String] = Map([]),
+  namespace_map~ : Map[String, String] = Map([]),
 ) -> (String?, XmlElement) raise DocxError {
   budget.charge_source(source.length())
   let text = @utf8.decode(source, ignore_bom=true) catch {
@@ -426,7 +426,7 @@ pub fn read_xml_bytes_limited_with_root_namespace_uri(
 pub fn read_xml_bytes_strict_limited(
   source : BytesView,
   budget : XmlReadBudget,
-  namespace_map? : Map[String, String] = Map([]),
+  namespace_map~ : Map[String, String] = Map([]),
 ) -> XmlElement raise DocxError {
   budget.charge_source(source.length())
   let text = @utf8.decode(source, ignore_bom=true) catch {
@@ -521,7 +521,7 @@ fn read_xml_string_with_mode_and_root_namespace_uri(
 /// Serializes an XML element to text.
 pub fn write_xml_string(
   root : XmlElement,
-  namespaces? : Map[String, String] = Map([]),
+  namespaces~ : Map[String, String] = Map([]),
 ) -> String {
   let writer = XmlWriter::{
     namespaces,
@@ -543,7 +543,7 @@ pub fn write_xml_string(
 /// bindings).
 pub fn write_xml_fragment(
   element : XmlElement,
-  namespaces? : Map[String, String] = Map([]),
+  namespaces~ : Map[String, String] = Map([]),
 ) -> String {
   let writer = XmlWriter::{
     namespaces,
@@ -561,8 +561,8 @@ pub fn write_xml_fragment(
 /// nesting before the recursive writer runs.
 pub fn write_xml_fragment_limited(
   element : XmlElement,
-  max_output_bytes~ : Int,
-  namespaces? : Map[String, String] = Map([]),
+  max_output_bytes~ : Int32,
+  namespaces~ : Map[String, String] = Map([]),
 ) -> String raise DocxError {
   let limit = if max_output_bytes > 0 { max_output_bytes } else { 0 }
   let work_scaled = limit.to_int64() * xml_write_name_work_scale.to_int64()
@@ -597,7 +597,7 @@ priv struct XmlWriter {
 ///|
 /// The strict parser and limited writer share the same conservative recursive
 /// depth ceiling, keeping their stack use portable on Wasm as well as native.
-let xml_write_max_depth : Int = 256
+let xml_write_max_depth : Int32 = 256
 
 ///|
 /// Namespace mapping may inspect a Clark name several times (delimiter scan and
@@ -606,18 +606,18 @@ let xml_write_max_depth : Int = 256
 /// small permitted fragment into excessive serialization work. The multiplier
 /// comfortably covers the standard OOXML namespace-to-tag ratio while rejecting
 /// hostile amplification.
-let xml_write_name_work_scale : Int = 64
+let xml_write_name_work_scale : Int32 = 64
 
 ///|
 /// `Array::sort_by` is worst-case O(n log n). This conservative multiplier
 /// covers pivot selection, its small-array bubble-sort path, heap-sort
 /// fallback, and the fixed work around every string comparison.
-let xml_write_sort_work_scale : Int = 8
+let xml_write_sort_work_scale : Int32 = 8
 
 ///|
 /// Binary lookup is performed once by the sizing pass and once by the writer.
 /// This multiplier also covers loop/index overhead around every comparison.
-let xml_write_lookup_work_scale : Int = 4
+let xml_write_lookup_work_scale : Int32 = 4
 
 ///|
 /// A collision-independent URI-to-prefix index. Entries are sorted by URI and
@@ -625,21 +625,21 @@ let xml_write_lookup_work_scale : Int = 4
 /// the last namespace binding wins when aliases share a URI.
 priv struct NamespaceLookup {
   entries : Array[(String, String)]
-  max_uri_chars : Int
+  max_uri_chars : Int32
 }
 
 ///|
 priv struct XmlWriteSizer {
   namespaces : Map[String, String]
   namespace_lookup : NamespaceLookup
-  mut remaining_bytes : Int
-  mut remaining_name_work : Int
+  mut remaining_bytes : Int32
+  mut remaining_name_work : Int32
 }
 
 ///|
 fn XmlWriteSizer::charge_bytes(
   self : XmlWriteSizer,
-  bytes : Int,
+  bytes : Int32,
 ) -> Unit raise DocxError {
   if bytes < 0 || bytes > self.remaining_bytes {
     raise InvalidXml(message="XML serialization byte limit exceeded")
@@ -650,7 +650,7 @@ fn XmlWriteSizer::charge_bytes(
 ///|
 fn XmlWriteSizer::charge_name_work(
   self : XmlWriteSizer,
-  units : Int,
+  units : Int32,
 ) -> Unit raise DocxError {
   if units < 0 || units > self.remaining_name_work {
     raise InvalidXml(message="XML serialization name work limit exceeded")
@@ -660,10 +660,10 @@ fn XmlWriteSizer::charge_name_work(
 
 ///|
 fn checked_xml_sort_name_work(
-  item_count : Int,
-  max_name_chars : Int,
-  remaining : Int,
-) -> Int raise DocxError {
+  item_count : Int32,
+  max_name_chars : Int32,
+  remaining : Int32,
+) -> Int32 raise DocxError {
   if item_count <= 1 {
     return 0
   }
@@ -693,10 +693,10 @@ fn checked_xml_sort_name_work(
 
 ///|
 fn checked_xml_lookup_name_work(
-  item_count : Int,
-  max_name_chars : Int,
-  remaining : Int,
-) -> Int raise DocxError {
+  item_count : Int32,
+  max_name_chars : Int32,
+  remaining : Int32,
+) -> Int32 raise DocxError {
   if item_count <= 0 {
     return 0
   }
@@ -856,7 +856,7 @@ fn XmlWriteSizer::size_attribute(
 fn XmlWriteSizer::size_node(
   self : XmlWriteSizer,
   node : XmlNode,
-  depth~ : Int,
+  depth~ : Int32,
 ) -> Unit raise DocxError {
   match node {
     XmlElement(element) => self.size_element(element, depth~)
@@ -868,8 +868,8 @@ fn XmlWriteSizer::size_node(
 fn XmlWriteSizer::size_element(
   self : XmlWriteSizer,
   element : XmlElement,
-  is_root? : Bool = false,
-  depth~ : Int,
+  is_root~ : Bool = false,
+  depth~ : Int32,
 ) -> Unit raise DocxError {
   if depth >= xml_write_max_depth {
     raise InvalidXml(message="XML serialization nesting limit exceeded")
@@ -928,7 +928,7 @@ fn NamespaceLookup::lookup(self : NamespaceLookup, uri : StringView) -> String? 
 
 ///|
 fn build_namespace_lookup(map : Map[String, String]) -> NamespaceLookup {
-  let indexed : Array[(String, String, Int)] = []
+  let indexed : Array[(String, String, Int32)] = []
   let mut ordinal = 0
   let mut max_uri_chars = 0
   for prefix, uri in map {
@@ -943,7 +943,7 @@ fn build_namespace_lookup(map : Map[String, String]) -> NamespaceLookup {
 /// Parser namespace maps are already URI-to-prefix mappings, unlike writer
 /// namespace declarations, which are prefix-to-URI and require inversion.
 fn build_direct_namespace_lookup(map : Map[String, String]) -> NamespaceLookup {
-  let indexed : Array[(String, String, Int)] = []
+  let indexed : Array[(String, String, Int32)] = []
   let mut ordinal = 0
   let mut max_uri_chars = 0
   for uri, prefix in map {
@@ -956,8 +956,8 @@ fn build_direct_namespace_lookup(map : Map[String, String]) -> NamespaceLookup {
 
 ///|
 fn finish_namespace_lookup(
-  indexed : Array[(String, String, Int)],
-  max_uri_chars : Int,
+  indexed : Array[(String, String, Int32)],
+  max_uri_chars : Int32,
 ) -> NamespaceLookup {
   indexed.sort_by(fn(a, b) {
     let (uri_a, _, ordinal_a) = a
@@ -990,9 +990,9 @@ fn finish_namespace_lookup(
 /// and output-prefix sorts are charged before serialization.
 fn build_namespace_lookup_limited(
   map : Map[String, String],
-  name_work_limit : Int,
-) -> (NamespaceLookup, Int) raise DocxError {
-  let indexed : Array[(String, String, Int)] = []
+  name_work_limit : Int32,
+) -> (NamespaceLookup, Int32) raise DocxError {
+  let indexed : Array[(String, String, Int32)] = []
   let mut remaining = if name_work_limit > 0 { name_work_limit } else { 0 }
   let mut item_count = 0
   let mut max_prefix_chars = 0
@@ -1046,7 +1046,7 @@ fn XmlWriter::write_element(
   self : XmlWriter,
   builder : StringBuilder,
   element : XmlElement,
-  is_root? : Bool = false,
+  is_root~ : Bool = false,
 ) -> Unit {
   builder.write_string("<")
   builder.write_string(self.map_element_name(element.name))
@@ -1152,7 +1152,7 @@ fn write_serialized_xml_attributes(
 }
 
 ///|
-fn xml_attribute_rank(key : String) -> Int {
+fn xml_attribute_rank(key : String) -> Int32 {
   match key {
     "Id" => 0
     "Extension" => 0
@@ -1182,13 +1182,13 @@ fn write_serialized_xml_attribute(
 /// Maximum element nesting depth accepted by the tolerant XML parser. Keep it
 /// aligned with strict parsing and serialization so every recursive XML path
 /// reaches its typed guard before exhausting the Wasm stack.
-let xml_max_depth : Int = 256
+let xml_max_depth : Int32 = 256
 
 ///|
-let strict_xml_max_depth : Int = 256
+let strict_xml_max_depth : Int32 = 256
 
 ///|
-let xml_diagnostic_token_chars : Int = 160
+let xml_diagnostic_token_chars : Int32 = 160
 
 ///|
 /// Bounds attacker-controlled text before it participates in an error-message
@@ -1214,7 +1214,7 @@ fn xml_diagnostic_token(value : String) -> String {
 /// Pre-sizes the native/Wasm UTF-16 builder exactly when the byte-sized hint
 /// fits in `Int`. Exact sizing lets `to_string()` transfer the completed buffer
 /// without retaining a second token-sized allocation.
-fn xml_string_builder_for_units(units : Int) -> StringBuilder {
+fn xml_string_builder_for_units(units : Int32) -> StringBuilder {
   let bytes = units.to_int64() * 2L
   if units > 0 && bytes <= 2147483647L {
     StringBuilder(size_hint=bytes.to_int())
@@ -1318,8 +1318,8 @@ fn is_xml_qname(value : StringView) -> Bool {
 ///|
 priv struct XmlParser {
   source : String
-  mut pos : Int
-  mut depth : Int
+  mut pos : Int32
+  mut depth : Int32
   strict : Bool
   budget : XmlReadBudget?
   source_encoding : XmlSourceEncoding?
@@ -1374,7 +1374,7 @@ fn XmlParser::parse_element(self : XmlParser) -> XmlElement raise DocxError {
 ///|
 fn XmlParser::charge_token(
   self : XmlParser,
-  chars : Int,
+  chars : Int32,
 ) -> Unit raise DocxError {
   match self.budget {
     Some(budget) => budget.charge_token(chars)
@@ -1389,17 +1389,17 @@ fn XmlParser::charge_token(
 /// into unbounded derived strings.
 fn XmlParser::charge_derived_name(
   self : XmlParser,
-  chars : Int,
+  chars : Int32,
 ) -> Unit raise DocxError {
   self.charge_token(chars)
 }
 
 ///|
 fn xml_derived_name_length(
-  first : Int,
-  second : Int,
-  punctuation : Int,
-) -> Int raise DocxError {
+  first : Int32,
+  second : Int32,
+  punctuation : Int32,
+) -> Int32 raise DocxError {
   let total = first.to_int64() + second.to_int64() + punctuation.to_int64()
   if first < 0 || second < 0 || punctuation < 0 || total > 2147483647L {
     raise @core.docx_xml_resource_limit_error(DocxXmlMaterializedCharacters)
@@ -2105,7 +2105,7 @@ fn XmlParser::skip_whitespace_and_report(self : XmlParser) -> Bool {
 }
 
 ///|
-fn xml_boundary_splits_pair(source : String, boundary : Int) -> Bool {
+fn xml_boundary_splits_pair(source : String, boundary : Int32) -> Bool {
   if boundary <= 0 || boundary >= source.length() {
     return false
   }
@@ -2123,8 +2123,8 @@ fn xml_boundary_splits_pair(source : String, boundary : Int) -> Bool {
 /// historically), so well-formed documents are unaffected.
 fn xml_substring(
   source : String,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> String raise DocxError {
   if xml_boundary_splits_pair(source, start) ||
     xml_boundary_splits_pair(source, end) {
@@ -2132,7 +2132,7 @@ fn xml_substring(
   }
   let builder = xml_string_builder_for_units(end - start)
   for index in start..<end {
-    builder.write_char(Int::unsafe_to_char(source[index].to_int()))
+    builder.write_char(Int32::unsafe_to_char(source[index].to_int()))
   }
   builder.to_string()
 }
@@ -2392,8 +2392,8 @@ fn XmlParser::skip_until(
 ///|
 fn xml_source_range_equals(
   source : String,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
   expected : String,
 ) -> Bool {
   if end - start != expected.length() {
@@ -2410,7 +2410,11 @@ fn xml_source_range_equals(
 ///|
 /// Decodes one tolerant entity from a borrowed source range. Unknown or
 /// malformed references return `None` and are retained verbatim by the caller.
-fn tolerant_xml_entity_char(source : String, start : Int, end : Int) -> Char? {
+fn tolerant_xml_entity_char(
+  source : String,
+  start : Int32,
+  end : Int32,
+) -> Char? {
   if xml_source_range_equals(source, start, end, "amp") {
     return Some('&')
   }
@@ -2455,9 +2459,9 @@ fn tolerant_xml_entity_char(source : String, start : Int, end : Int) -> Char? {
 /// those compatibility semantics without allocating the transformed suffix.
 fn xmldom_numeric_virtual_unit(
   source : String,
-  text_start : Int,
-  first_lower_x : Int,
-  virtual_index : Int,
+  text_start : Int32,
+  first_lower_x : Int32,
+  virtual_index : Int32,
 ) -> UInt16 {
   if first_lower_x < 0 {
     return source[text_start + virtual_index]
@@ -2480,10 +2484,10 @@ fn xmldom_numeric_virtual_unit(
 /// U+110000 distinguishes overflow so the caller preserves the entity raw.
 fn parse_xmldom_numeric_xml_range(
   source : String,
-  text_start : Int,
-  text_end : Int,
-  first_lower_x : Int,
-) -> Int? {
+  text_start : Int32,
+  text_end : Int32,
+  first_lower_x : Int32,
+) -> Int32? {
   let virtual_length = text_end -
     text_start +
     (if first_lower_x >= 0 { 1 } else { 0 })
@@ -2529,9 +2533,9 @@ fn parse_xmldom_numeric_xml_range(
 /// remain linear.
 fn tolerant_xml_decoded_shape(
   source : String,
-  start : Int,
-  end : Int,
-) -> (Int, Bool) raise DocxError {
+  start : Int32,
+  end : Int32,
+) -> (Int32, Bool) raise DocxError {
   let mut index = start
   let mut output_units = 0
   let mut changed = false
@@ -2569,8 +2573,8 @@ fn tolerant_xml_decoded_shape(
 fn write_xml_source_range(
   output : StringBuilder,
   source : String,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> Unit raise DocxError {
   let mut index = start
   while index < end {
@@ -2587,8 +2591,8 @@ fn write_xml_source_range(
 fn write_tolerant_xml_decoded_range(
   output : StringBuilder,
   source : String,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> Unit raise DocxError {
   let mut index = start
   let mut no_remaining_semicolon = false
@@ -2623,8 +2627,8 @@ fn write_tolerant_xml_decoded_range(
 /// exactly-sized output allocation.
 fn decode_tolerant_xml_range(
   source : String,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> String raise DocxError {
   let (output_units, changed) = tolerant_xml_decoded_shape(source, start, end)
   if output_units == 0 {
@@ -2643,8 +2647,8 @@ fn decode_tolerant_xml_range(
 /// first copying an attacker-sized entity token.
 fn xml_diagnostic_range(
   source : String,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> String raise DocxError {
   if end - start <= xml_diagnostic_token_chars {
     return xml_substring(source, start, end)
@@ -2672,8 +2676,8 @@ fn xml_diagnostic_range(
 /// No entity-sized substring is allocated, including on error paths.
 fn strict_xml_entity_char(
   source : String,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> Char raise DocxError {
   if xml_source_range_equals(source, start, end, "amp") {
     return '&'
@@ -2722,7 +2726,7 @@ fn strict_xml_entity_char(
     }
     codepoint = codepoint * base + digit
   }
-  match Int::to_char(codepoint) {
+  match Int32::to_char(codepoint) {
     Some(char) if is_xml_character(char) => char
     _ => raise InvalidXml(message="numeric XML entity is not an XML character")
   }
@@ -2733,11 +2737,11 @@ fn strict_xml_entity_char(
 /// the exact UTF-16 output size without allocating raw or normalized copies.
 fn strict_xml_decoded_shape(
   source : String,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
   attribute~ : Bool,
   entities~ : Bool,
-) -> (Int, Bool) raise DocxError {
+) -> (Int32, Bool) raise DocxError {
   let mut index = start
   let mut output_units = 0
   let mut changed = false
@@ -2783,8 +2787,8 @@ fn strict_xml_decoded_shape(
 fn write_strict_xml_decoded_range(
   output : StringBuilder,
   source : String,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
   attribute~ : Bool,
   entities~ : Bool,
 ) -> Unit raise DocxError {
@@ -2823,8 +2827,8 @@ fn write_strict_xml_decoded_range(
 /// validation/size pass followed by one exactly-sized output allocation.
 fn decode_strict_xml_range(
   source : String,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
   attribute~ : Bool,
   entities~ : Bool,
 ) -> String raise DocxError {
@@ -2854,7 +2858,7 @@ fn decode_strict_xml_range(
 }
 
 ///|
-fn xml_entity_digit_value(char : UInt16, radix : Int) -> Int? {
+fn xml_entity_digit_value(char : UInt16, radix : Int32) -> Int32? {
   let value = if char >= '0' && char <= '9' {
     Some(char.to_int() - '0'.to_int())
   } else if char >= 'A' && char <= 'F' {

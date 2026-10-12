@@ -19,8 +19,8 @@
 
 ///|
 priv enum CommentTarget {
-  Anchored(from~ : Int, to~ : Int)
-  ReplyTo(Int)
+  Anchored(from~ : Int32, to~ : Int32)
+  ReplyTo(Int32)
 }
 
 ///|
@@ -56,8 +56,8 @@ pub fn comment_spec(
   author~ : String,
   initials? : String,
   date? : String,
-  from~ : Int,
-  to~ : Int,
+  from~ : Int32,
+  to~ : Int32,
   done? : Bool,
   body : Array[DocumentElement],
 ) -> CommentSpec raise DocxError {
@@ -90,7 +90,7 @@ pub fn comment_reply(
   author~ : String,
   initials? : String,
   date? : String,
-  reply_to~ : Int,
+  reply_to~ : Int32,
   done? : Bool,
   body : Array[DocumentElement],
 ) -> CommentSpec raise DocxError {
@@ -150,7 +150,7 @@ fn check_comment_body(body : Array[DocumentElement]) -> Unit raise DocxError {
 /// any derived XML tree or per-paragraph metadata array is allocated.
 fn check_comment_body_for_fragment(
   body : Array[DocumentElement],
-  max_fragment_bytes : Int,
+  max_fragment_bytes : Int32,
 ) -> Unit raise DocxError {
   if max_fragment_bytes <= 0 {
     raise Unsupported(
@@ -168,8 +168,8 @@ fn check_comment_body_for_fragment(
 
 ///|
 priv struct CommentBodyInputBudget {
-  mut remaining_bytes : Int
-  mut remaining_nodes : Int
+  mut remaining_bytes : Int32
+  mut remaining_nodes : Int32
 }
 
 ///|
@@ -182,7 +182,7 @@ fn comment_body_limit_exceeded() -> Unit raise DocxError {
 ///|
 fn CommentBodyInputBudget::charge_node(
   self : CommentBodyInputBudget,
-  depth : Int,
+  depth : Int32,
 ) -> Unit raise DocxError {
   if depth >= 64 || self.remaining_nodes <= 0 {
     comment_body_limit_exceeded()
@@ -236,7 +236,7 @@ fn CommentBodyInputBudget::charge_optional_string(
 fn CommentBodyInputBudget::visit(
   self : CommentBodyInputBudget,
   element : DocumentElement,
-  depth : Int,
+  depth : Int32,
 ) -> Unit raise DocxError {
   self.charge_node(depth)
   match element {
@@ -286,8 +286,8 @@ fn CommentBodyInputBudget::visit(
 ///|
 fn check_comment_body_limited(
   body : Array[DocumentElement],
-  max_input_bytes~ : Int,
-  max_nodes~ : Int,
+  max_input_bytes~ : Int32,
+  max_nodes~ : Int32,
 ) -> Unit raise DocxError {
   if body.length() == 0 {
     raise Unsupported(
@@ -413,11 +413,11 @@ pub fn write_docx_with_comments(
 /// plumbing notes and the in-note footnoteRef/endnoteRef mark run.
 pub fn write_docx_with_annotations(
   body : Array[DocumentElement],
-  comments? : Array[CommentSpec] = [],
-  footnotes? : Array[NoteSpec] = [],
-  endnotes? : Array[NoteSpec] = [],
-  headers? : Array[HeaderFooterSpec] = [],
-  footers? : Array[HeaderFooterSpec] = [],
+  comments~ : Array[CommentSpec] = [],
+  footnotes~ : Array[NoteSpec] = [],
+  endnotes~ : Array[NoteSpec] = [],
+  headers~ : Array[HeaderFooterSpec] = [],
+  footers~ : Array[HeaderFooterSpec] = [],
   limits? : @opc.PackageLimits,
 ) -> Bytes raise DocxError {
   check_header_footer_variants(headers, kind="header")
@@ -472,8 +472,8 @@ pub fn write_docx_with_annotations(
   // Dense ids: the spec index is the w:id. Starts and ends are grouped
   // per block in ascending id order (array order), which the loops below
   // preserve.
-  let starts_at : Map[Int, Array[Int]] = Map([])
-  let ends_at : Map[Int, Array[Int]] = Map([])
+  let starts_at : Map[Int32, Array[Int32]] = Map([])
+  let ends_at : Map[Int32, Array[Int32]] = Map([])
   for id, comment in comments {
     guard comment.target is Anchored(from~, to~) else {
       // Replies are anchorless: no markers anywhere in document.xml.
@@ -782,7 +782,7 @@ const MC_NAMESPACE : String = "http://schemas.openxmlformats.org/markup-compatib
 ///|
 /// Eight uppercase hex digits (ST_LongHexNumber). Callers keep the
 /// counter positive and far below Word's 0x80000000 ceiling.
-fn format_para_id(value : Int) -> String {
+fn format_para_id(value : Int32) -> String {
   let digits = "0123456789ABCDEF"
   let builder = StringBuilder()
   for shift in [28, 24, 20, 16, 12, 8, 4, 0] {
@@ -796,17 +796,17 @@ fn format_para_id(value : Int) -> String {
 }
 
 ///|
-fn comment_range_start(id : Int) -> XmlElement {
+fn comment_range_start(id : Int32) -> XmlElement {
   @xml.xml_element("w:commentRangeStart", attributes={ "w:id": id.to_string() })
 }
 
 ///|
-fn comment_range_end(id : Int) -> XmlElement {
+fn comment_range_end(id : Int32) -> XmlElement {
   @xml.xml_element("w:commentRangeEnd", attributes={ "w:id": id.to_string() })
 }
 
 ///|
-fn comment_reference_run(id : Int) -> XmlElement {
+fn comment_reference_run(id : Int32) -> XmlElement {
   @xml.xml_element("w:r", children=[
     XmlElement(
       @xml.xml_element("w:commentReference", attributes={
@@ -830,7 +830,7 @@ fn comment_reference_run(id : Int) -> XmlElement {
 fn check_comment_date(date : String) -> Unit raise DocxError {
   let units = date.code_units()
   let length = units.length()
-  fn digit(at : Int) -> Int? {
+  fn digit(at : Int32) -> Int32? {
     if at < length {
       let code = units[at].to_int()
       if code >= '0'.to_int() && code <= '9'.to_int() {
@@ -839,7 +839,7 @@ fn check_comment_date(date : String) -> Unit raise DocxError {
     }
     None
   }
-  fn number(at : Int, digits : Int) -> Int? {
+  fn number(at : Int32, digits : Int32) -> Int32? {
     let mut value = 0
     for offset in 0..<digits {
       match digit(at + offset) {
@@ -849,7 +849,7 @@ fn check_comment_date(date : String) -> Unit raise DocxError {
     }
     Some(value)
   }
-  fn expect(at : Int, ch : Char) -> Bool {
+  fn expect(at : Int32, ch : Char) -> Bool {
     at < length && units[at].to_int() == ch.to_int()
   }
   fn fail(reason : String) -> DocxError {
@@ -965,7 +965,7 @@ fn check_comment_date(date : String) -> Unit raise DocxError {
 ///|
 /// Days per month given the year's residue mod 400 (which fixes the
 /// Gregorian leap decision: %4 and %100 both divide 400).
-fn days_in_month(year_mod_400 : Int, month : Int) -> Int {
+fn days_in_month(year_mod_400 : Int32, month : Int32) -> Int32 {
   match month {
     1 | 3 | 5 | 7 | 8 | 10 | 12 => 31
     4 | 6 | 9 | 11 => 30

@@ -192,8 +192,8 @@ pub fn TableProperties::with_style(
 pub fn Table::with_style(
   self : Table,
   preset : TableStylePreset,
-  first_row? : Bool = true,
-  band_row? : Bool = true,
+  first_row~ : Bool = true,
+  band_row~ : Bool = true,
 ) -> Table {
   let props = self.properties.unwrap_or(TableProperties::default())
   {

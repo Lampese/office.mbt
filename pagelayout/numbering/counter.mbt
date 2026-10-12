@@ -5,7 +5,7 @@
 // deeper ones, and returns the label to print.
 
 ///|
-fn to_roman(value : Int, upper : Bool) -> String {
+fn to_roman(value : Int32, upper : Bool) -> String {
   if value <= 0 {
     // Word prints nothing sensible below 1; keep the digits visible
     return value.to_string()
@@ -44,7 +44,7 @@ fn to_roman(value : Int, upper : Bool) -> String {
 
 ///|
 /// Word's spreadsheet-style letters: 1→a … 26→z, 27→aa, 28→ab.
-fn to_letters(value : Int, upper : Bool) -> String {
+fn to_letters(value : Int32, upper : Bool) -> String {
   if value <= 0 {
     return value.to_string()
   }
@@ -66,7 +66,7 @@ fn to_letters(value : Int, upper : Bool) -> String {
 
 ///|
 /// Render one counter in `format`.
-pub fn format_counter(value : Int, format : NumberFormat) -> String {
+pub fn format_counter(value : Int32, format : NumberFormat) -> String {
   match format {
     Decimal => value.to_string()
     LowerLetter => to_letters(value, false)
@@ -81,7 +81,7 @@ pub fn format_counter(value : Int, format : NumberFormat) -> String {
 ///|
 /// Counter state for one document: current value per (numId, depth).
 pub struct Counters {
-  values : Map[String, Int]
+  values : Map[String, Int32]
   /// Levels that have been started, so a first use takes `w:start`.
   started : Map[String, Unit]
 }
@@ -93,7 +93,7 @@ pub fn Counters::new() -> Counters {
 }
 
 ///|
-fn key(num_id : Int, depth : Int) -> String {
+fn key(num_id : Int32, depth : Int32) -> String {
   "\{num_id}|\{depth}"
 }
 
@@ -103,7 +103,7 @@ fn key(num_id : Int, depth : Int) -> String {
 /// which is what `w:isLgl` means.
 fn expand(
   text : String,
-  counters : Array[Int],
+  counters : Array[Int32],
   formats : Array[NumberFormat],
   is_legal : Bool,
 ) -> String {
@@ -146,8 +146,8 @@ fn expand(
 pub fn Counters::advance(
   self : Counters,
   numbering : Numbering,
-  num_id : Int,
-  depth : Int,
+  num_id : Int32,
+  depth : Int32,
 ) -> String? {
   let depth = if depth < 0 { 0 } else if depth > 8 { 8 } else { depth }
   let level = numbering.level(num_id, depth)
@@ -192,7 +192,7 @@ pub fn Counters::advance(
   if level.format is Bullet {
     return Some(level.text)
   }
-  let counters : Array[Int] = []
+  let counters : Array[Int32] = []
   let formats : Array[NumberFormat] = []
   for d = 0; d <= depth; d = d + 1 {
     let d_level = numbering.level(num_id, d)

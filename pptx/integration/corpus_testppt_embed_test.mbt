@@ -9,7 +9,7 @@
 
 ///|
 /// Byte length of the original `testPPT.pptx`.
-let corpus_testppt_len : Int = 36518
+let corpus_testppt_len : Int32 = 36518
 
 ///|
 /// `testPPT.pptx` as fixed-width base64 chunks.

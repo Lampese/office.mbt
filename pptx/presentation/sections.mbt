@@ -17,7 +17,7 @@
 /// then empty (PowerPoint allows slide-less sections).
 pub(all) struct Section {
   title : String
-  start : Int
+  start : Int32
 } derive(Eq, Debug)
 
 ///|
@@ -30,7 +30,7 @@ pub extend Section with Eq::{not_equal, equal}
 /// Deterministic section id — sections need a `{GUID}`-shaped id, but
 /// nothing keys off its value outside this file, so a counter-derived
 /// one keeps builds reproducible (no RNG / clock in the library).
-fn section_guid(idx : Int) -> String {
+fn section_guid(idx : Int32) -> String {
   let mut digits = (idx + 1).to_string()
   while digits.length() < 12 {
     digits = "0" + digits
@@ -212,7 +212,7 @@ pub fn Presentation::set_sections_mut(
 pub fn Presentation::add_section_mut(
   self : Presentation,
   title~ : String,
-  start~ : Int,
+  start~ : Int32,
 ) -> Unit raise PptxError {
   let current = self.sections()
   let mut at = current.length()

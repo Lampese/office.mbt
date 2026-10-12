@@ -1,30 +1,30 @@
 ///|
 priv struct RowValues {
-  row : Int
+  row : Int32
   values : Array[String]
 }
 
 ///|
 struct RowCells {
-  row : Int
+  row : Int32
   cells : Array[Cell]
-  max_col : Int
+  max_col : Int32
 }
 
 ///|
 pub struct RowOpts {
   height : Double
   hidden : Bool
-  style_id : Int
-  outline_level : Int
+  style_id : Int32
+  outline_level : Int32
 } derive(Debug)
 
 ///|
 pub fn RowOpts::with_values(
-  height? : Double = 0.0,
-  hidden? : Bool = false,
-  style_id? : Int = 0,
-  outline_level? : Int = 0,
+  height~ : Double = 0.0,
+  hidden~ : Bool = false,
+  style_id~ : Int32 = 0,
+  outline_level~ : Int32 = 0,
 ) -> RowOpts {
   { height, hidden, style_id, outline_level, }
 }
@@ -33,7 +33,7 @@ pub fn RowOpts::with_values(
 pub struct Rows {
   sheet : Worksheet
   entries : Array[RowCells]
-  mut index : Int
+  mut index : Int32
   styles : Array[Style]?
   options : Options
   use_1904_format : Bool
@@ -42,14 +42,14 @@ pub struct Rows {
 ///|
 fn collect_row_cells(sheet : Worksheet) -> Array[RowCells] {
   let cells = sheet.sorted_cells()
-  let row_cells : Map[Int, Array[Cell]] = Map([])
+  let row_cells : Map[Int32, Array[Cell]] = Map([])
   for cell in cells {
     let entries = row_cells.get(cell.row).unwrap_or([])
     entries.push(cell)
     row_cells[cell.row] = entries
   }
-  let row_keys : Array[Int] = []
-  let row_present : Map[Int, Bool] = Map([])
+  let row_keys : Array[Int32] = []
+  let row_present : Map[Int32, Bool] = Map([])
   for row, _ in row_cells {
     row_keys.push(row)
     row_present[row] = true
@@ -88,7 +88,7 @@ fn Rows::new_with_options(
   sheet : Worksheet,
   styles : Array[Style]?,
   options : Options,
-  use_1904_format? : Bool = false,
+  use_1904_format~ : Bool = false,
 ) -> Rows {
   {
     sheet,
@@ -145,7 +145,7 @@ pub fn Rows::columns(
 }
 
 ///|
-pub fn Rows::row_index(self : Rows) -> Int? {
+pub fn Rows::row_index(self : Rows) -> Int32? {
   if self.index <= 0 || self.index > self.entries.length() {
     return None
   }
@@ -159,7 +159,7 @@ fn default_row_height(sheet : Worksheet) -> Double {
 }
 
 ///|
-fn row_opts_for_row(sheet : Worksheet, row : Int) -> RowOpts {
+fn row_opts_for_row(sheet : Worksheet, row : Int32) -> RowOpts {
   let dim = sheet.row_dimension_value(row)
   let height = match dim.height {
     Some(value) => value
@@ -191,8 +191,8 @@ pub fn Rows::close(_self : Rows) -> Unit {
 pub struct Cols {
   sheet : Worksheet
   columns : Array[Array[Cell]]
-  max_row : Int
-  mut index : Int
+  max_row : Int32
+  mut index : Int32
   styles : Array[Style]?
   options : Options
   use_1904_format : Bool
@@ -200,7 +200,7 @@ pub struct Cols {
 }
 
 ///|
-fn max_row_for_columns(sheet : Worksheet) -> Int {
+fn max_row_for_columns(sheet : Worksheet) -> Int32 {
   let mut max_row = sheet.max_row()
   for row, _ in sheet.row_dimensions {
     if row > max_row {
@@ -211,7 +211,10 @@ fn max_row_for_columns(sheet : Worksheet) -> Int {
 }
 
 ///|
-fn collect_column_cells(sheet : Worksheet, max_col : Int) -> Array[Array[Cell]] {
+fn collect_column_cells(
+  sheet : Worksheet,
+  max_col : Int32,
+) -> Array[Array[Cell]] {
   let columns : Array[Array[Cell]] = []
   for _ in 0..<max_col {
     columns.push([])
@@ -232,14 +235,14 @@ fn collect_row_entries_with_options(
   use_1904_format : Bool,
 ) -> Array[RowValues] raise XlsxError {
   let cells = sheet.sorted_cells()
-  let row_cells : Map[Int, Array[Cell]] = Map([])
+  let row_cells : Map[Int32, Array[Cell]] = Map([])
   for cell in cells {
     let entries = row_cells.get(cell.row).unwrap_or([])
     entries.push(cell)
     row_cells[cell.row] = entries
   }
-  let row_keys : Array[Int] = []
-  let row_present : Map[Int, Bool] = Map([])
+  let row_keys : Array[Int32] = []
+  let row_present : Map[Int32, Bool] = Map([])
   for row, _ in row_cells {
     row_keys.push(row)
     row_present[row] = true
@@ -291,7 +294,7 @@ fn collect_columns_with_options(
     return []
   }
   let max_row = max_row_for_columns(sheet)
-  let col_cells : Map[Int, Array[(Int, String)]] = Map([])
+  let col_cells : Map[Int32, Array[(Int32, String)]] = Map([])
   for cell in sheet.cells {
     let formatted = format_cell_value_for_workbook(
       styles,
@@ -328,7 +331,7 @@ fn Cols::new_with_options(
   sheet : Worksheet,
   styles : Array[Style]?,
   options : Options,
-  use_1904_format? : Bool = false,
+  use_1904_format~ : Bool = false,
 ) -> Cols {
   let max_col = sheet.max_col()
   let columns = if max_col <= 0 {
@@ -407,7 +410,7 @@ pub fn Cols::rows(self : Cols, options? : Options) -> Array[String] {
 }
 
 ///|
-pub fn Cols::col_index(self : Cols) -> Int? {
+pub fn Cols::col_index(self : Cols) -> Int32? {
   if self.index <= 0 || self.index > self.columns.length() {
     return None
   }

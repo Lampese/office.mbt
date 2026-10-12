@@ -27,7 +27,7 @@ pub(all) suberror OfficeError {
   UnsupportedFileExtension(String)
   InvalidPackage(String)
   FormatMismatch(expected~ : DocumentFormat, actual~ : DocumentFormat)
-  ResourceLimit(kind~ : String, limit~ : Int, actual~ : Int)
+  ResourceLimit(kind~ : String, limit~ : Int32, actual~ : Int32)
   Cancelled
 } derive(Debug, Eq)
 
@@ -53,22 +53,22 @@ pub impl Show for OfficeError with fn output(self, logger) {
 }
 
 ///|
-const DEFAULT_DETECT_MAX_PACKAGE_BYTES : Int = 64 * 1024 * 1024
+const DEFAULT_DETECT_MAX_PACKAGE_BYTES : Int32 = 64 * 1024 * 1024
 
 ///|
-const DEFAULT_DETECT_MAX_ARCHIVE_ENTRIES : Int = 4096
+const DEFAULT_DETECT_MAX_ARCHIVE_ENTRIES : Int32 = 4096
 
 ///|
-const DEFAULT_DETECT_MAX_ENTRY_BYTES : Int = 32 * 1024 * 1024
+const DEFAULT_DETECT_MAX_ENTRY_BYTES : Int32 = 32 * 1024 * 1024
 
 ///|
-const DEFAULT_DETECT_MAX_TOTAL_BYTES : Int = 128 * 1024 * 1024
+const DEFAULT_DETECT_MAX_TOTAL_BYTES : Int32 = 128 * 1024 * 1024
 
 ///|
-const DEFAULT_DETECT_MAX_XML_PART_BYTES : Int = 16 * 1024 * 1024
+const DEFAULT_DETECT_MAX_XML_PART_BYTES : Int32 = 16 * 1024 * 1024
 
 ///|
-const DEFAULT_DETECT_MAX_XML_TOTAL_UNITS : Int = 64 * 1024 * 1024
+const DEFAULT_DETECT_MAX_XML_TOTAL_UNITS : Int32 = 64 * 1024 * 1024
 
 ///|
 const XLSX_MAIN_CONTENT_TYPE : String = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"
@@ -129,9 +129,9 @@ fn media_type_equal(left : StringView, right : StringView) -> Bool {
 ///|
 fn is_media_type_token_char(char : Char) -> Bool {
   char
-  is ('a'..='z'
-  | 'A'..='Z'
-  | '0'..='9'
+  is ('a'..<='z'
+  | 'A'..<='Z'
+  | '0'..<='9'
   | '!'
   | '#'
   | '$'
@@ -155,14 +155,14 @@ fn is_media_type_quoted_char(char : Char) -> Bool {
   is ('\t'
   | ' '
   | '\u{21}'
-  | '\u{23}'..='\u{5b}'
-  | '\u{5d}'..='\u{7e}'
-  | '\u{80}'..='\u{ff}')
+  | '\u{23}'..<='\u{5b}'
+  | '\u{5d}'..<='\u{7e}'
+  | '\u{80}'..<='\u{ff}')
 }
 
 ///|
 fn is_media_type_quoted_pair_char(char : Char) -> Bool {
-  char is ('\t' | ' ' | '\u{21}'..='\u{7e}' | '\u{80}'..='\u{ff}')
+  char is ('\t' | ' ' | '\u{21}'..<='\u{7e}' | '\u{80}'..<='\u{ff}')
 }
 
 ///|
@@ -310,8 +310,8 @@ priv struct DecodedXmlPart {
 /// cached so repeated identity and structural checks do not parse or
 /// materialize the same package metadata more than once.
 priv struct OfficeFormatContext {
-  max_xml_part_bytes : Int
-  xml_work_limit : Int
+  max_xml_part_bytes : Int32
+  xml_work_limit : Int32
   xml_budget : @xml.XmlReadBudget
   cancelled : () -> Bool
   xml_parts : StableStringMap[@xml.XmlElement]
@@ -319,7 +319,7 @@ priv struct OfficeFormatContext {
 }
 
 ///|
-fn bounded_scale(value : Int, factor : Int) -> Int {
+fn bounded_scale(value : Int32, factor : Int32) -> Int32 {
   if value <= 0 || factor <= 0 {
     0
   } else {
@@ -334,9 +334,9 @@ fn bounded_scale(value : Int, factor : Int) -> Int {
 
 ///|
 fn OfficeFormatContext::new(
-  max_xml_part_bytes : Int,
-  max_xml_total_units : Int,
-  cancelled? : () -> Bool = () => false,
+  max_xml_part_bytes : Int32,
+  max_xml_total_units : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> OfficeFormatContext {
   let xml_work_limit = bounded_scale(max_xml_total_units, 4)
   {
@@ -587,9 +587,9 @@ fn has_uri_scheme(target : StringView) -> Bool {
       _ => ()
     }
     let valid = if index == 0 {
-      char is ('a'..='z' | 'A'..='Z')
+      char is ('a'..<='z' | 'A'..<='Z')
     } else {
-      char is ('a'..='z' | 'A'..='Z' | '0'..='9' | '+' | '-' | '.')
+      char is ('a'..<='z' | 'A'..<='Z' | '0'..<='9' | '+' | '-' | '.')
     }
     if !valid {
       return false
@@ -601,12 +601,12 @@ fn has_uri_scheme(target : StringView) -> Bool {
 
 ///|
 fn is_ascii_hex_digit(char : Char) -> Bool {
-  char is ('0'..='9' | 'A'..='F' | 'a'..='f')
+  char is ('0'..<='9' | 'A'..<='F' | 'a'..<='f')
 }
 
 ///|
 fn is_uri_unreserved(char : Char) -> Bool {
-  char is ('a'..='z' | 'A'..='Z' | '0'..='9' | '-' | '.' | '_' | '~')
+  char is ('a'..<='z' | 'A'..<='Z' | '0'..<='9' | '-' | '.' | '_' | '~')
 }
 
 ///|
@@ -697,8 +697,8 @@ fn is_iri_reg_name_char(char : Char) -> Bool {
 ///|
 fn is_valid_uri_chars(
   chars : ArrayView[Char],
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
   allowed : (Char) -> Bool,
 ) -> Bool {
   let mut index = start
@@ -726,8 +726,8 @@ fn is_valid_uri_chars(
 ///|
 fn is_valid_ipv4_literal(
   chars : ArrayView[Char],
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> Bool {
   let mut index = start
   let mut components = 0
@@ -765,8 +765,8 @@ fn is_valid_ipv4_literal(
 // 16-bit group; an IPv4 tail occupies the final two groups.
 fn is_valid_ipv6_literal(
   chars : ArrayView[Char],
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> Bool {
   if start >= end {
     return false
@@ -837,8 +837,8 @@ fn is_valid_ipv6_literal(
 ///|
 fn is_valid_ipv_future_literal(
   chars : ArrayView[Char],
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> Bool {
   if start >= end || !(chars[start] is ('v' | 'V')) {
     return false
@@ -867,8 +867,8 @@ fn is_valid_ipv_future_literal(
 ///|
 fn is_valid_uri_authority(
   chars : ArrayView[Char],
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
   allow_iri_chars : Bool,
 ) -> Bool {
   let mut host_start = start
@@ -941,12 +941,16 @@ fn is_valid_uri_authority(
 }
 
 ///|
-fn is_valid_uri_scheme(chars : ArrayView[Char], start : Int, end : Int) -> Bool {
-  if start >= end || !(chars[start] is ('a'..='z' | 'A'..='Z')) {
+fn is_valid_uri_scheme(
+  chars : ArrayView[Char],
+  start : Int32,
+  end : Int32,
+) -> Bool {
+  if start >= end || !(chars[start] is ('a'..<='z' | 'A'..<='Z')) {
     return false
   }
   chars[start + 1:end].all(char => {
-    char is ('a'..='z' | 'A'..='Z' | '0'..='9' | '+' | '-' | '.')
+    char is ('a'..<='z' | 'A'..<='Z' | '0'..<='9' | '+' | '-' | '.')
   })
 }
 
@@ -1067,8 +1071,8 @@ fn is_valid_iri_reference(value : StringView) -> Bool {
 ///|
 fn is_valid_office_file_path_chars(
   chars : ArrayView[Char],
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> Bool {
   is_valid_uri_chars(chars, start, end, fn(char) {
     is_iri_pchar(char) || char == '/' || char == '\\'
@@ -1078,7 +1082,7 @@ fn is_valid_office_file_path_chars(
 ///|
 /// Index of the first `\` or `/` at or after `start`, or `chars.length()` when
 /// the remainder holds neither separator.
-fn next_path_separator(chars : ArrayView[Char], start : Int) -> Int {
+fn next_path_separator(chars : ArrayView[Char], start : Int32) -> Int32 {
   match chars[start:].search_by(char => char is ('\\' | '/')) {
     Some(offset) => start + offset
     None => chars.length()
@@ -1108,7 +1112,7 @@ fn is_valid_office_windows_file_iri(value : StringView) -> Bool {
     return false
   }
   let chars = owned["file:///".length():].to_array()
-  if chars is ['a'..='z' | 'A'..='Z', ':', '\\' | '/', ..] {
+  if chars is ['a'..<='z' | 'A'..<='Z', ':', '\\' | '/', ..] {
     return is_valid_office_file_path_chars(chars, 2, chars.length())
   }
   is_valid_office_unc_path(chars)
@@ -1217,7 +1221,7 @@ fn resolve_relationship_target(base : String, target : StringView) -> String? {
 ///|
 priv struct StructuralFindings {
   mut first : String?
-  mut count : Int
+  mut count : Int32
 }
 
 ///|
@@ -1226,7 +1230,7 @@ fn StructuralFindings::new() -> StructuralFindings {
 }
 
 ///|
-fn bounded_structural_finding(value : String, maximum? : Int = 512) -> String {
+fn bounded_structural_finding(value : String, maximum~ : Int32 = 512) -> String {
   let output = StringBuilder()
   let mut count = 0
   for character in value {
@@ -1271,7 +1275,7 @@ fn validate_package_structure(
   context : OfficeFormatContext,
 ) -> StructuralFindings raise OfficeError {
   let findings = StructuralFindings::new()
-  let parts : StableStringMap[Int] = SortedMap([])
+  let parts : StableStringMap[Int32] = SortedMap([])
   let part_names : StableStringMap[String] = SortedMap([])
   let package_parts : StableStringMap[Bool] = SortedMap([])
   let document_parts : StableStringMap[Bool] = SortedMap([])
@@ -2000,13 +2004,13 @@ fn structural_findings(
 pub fn detect_format(
   path : StringView,
   data : BytesView,
-  max_package_bytes? : Int = DEFAULT_DETECT_MAX_PACKAGE_BYTES,
-  max_archive_entries? : Int = DEFAULT_DETECT_MAX_ARCHIVE_ENTRIES,
-  max_entry_uncompressed_bytes? : Int = DEFAULT_DETECT_MAX_ENTRY_BYTES,
-  max_total_uncompressed_bytes? : Int = DEFAULT_DETECT_MAX_TOTAL_BYTES,
-  max_xml_part_bytes? : Int = DEFAULT_DETECT_MAX_XML_PART_BYTES,
-  max_xml_total_units? : Int = DEFAULT_DETECT_MAX_XML_TOTAL_UNITS,
-  cancelled? : () -> Bool = () => false,
+  max_package_bytes~ : Int32 = DEFAULT_DETECT_MAX_PACKAGE_BYTES,
+  max_archive_entries~ : Int32 = DEFAULT_DETECT_MAX_ARCHIVE_ENTRIES,
+  max_entry_uncompressed_bytes~ : Int32 = DEFAULT_DETECT_MAX_ENTRY_BYTES,
+  max_total_uncompressed_bytes~ : Int32 = DEFAULT_DETECT_MAX_TOTAL_BYTES,
+  max_xml_part_bytes~ : Int32 = DEFAULT_DETECT_MAX_XML_PART_BYTES,
+  max_xml_total_units~ : Int32 = DEFAULT_DETECT_MAX_XML_TOTAL_UNITS,
+  cancelled~ : () -> Bool = () => false,
 ) -> DocumentFormat raise OfficeError {
   // Preserve the fail-fast extension contract before parsing package bytes.
   ignore(format_from_extension(path))
@@ -2061,9 +2065,9 @@ pub fn detect_format(
 pub fn detect_archive_format(
   path : StringView,
   archive : @zip.Archive,
-  max_xml_part_bytes? : Int = DEFAULT_DETECT_MAX_XML_PART_BYTES,
-  max_xml_total_units? : Int = DEFAULT_DETECT_MAX_XML_TOTAL_UNITS,
-  cancelled? : () -> Bool = () => false,
+  max_xml_part_bytes~ : Int32 = DEFAULT_DETECT_MAX_XML_PART_BYTES,
+  max_xml_total_units~ : Int32 = DEFAULT_DETECT_MAX_XML_TOTAL_UNITS,
+  cancelled~ : () -> Bool = () => false,
 ) -> DocumentFormat raise OfficeError {
   let expected = format_from_extension(path)
   let context = OfficeFormatContext::new(

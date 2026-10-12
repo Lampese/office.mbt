@@ -75,7 +75,7 @@ fn join_zip_path(parts : Array[String]) -> String {
 ///|
 fn read_xml_string(
   value : String,
-  namespace_map? : Map[String, String] = Map([]),
+  namespace_map~ : Map[String, String] = Map([]),
 ) -> XmlElement raise DocxError {
   @xml.read_xml_string(value, namespace_map~)
 }
@@ -83,7 +83,7 @@ fn read_xml_string(
 ///|
 fn write_xml_string(
   element : XmlElement,
-  namespaces? : Map[String, String] = Map([]),
+  namespaces~ : Map[String, String] = Map([]),
 ) -> String {
   @xml.write_xml_string(element, namespaces~)
 }
@@ -91,8 +91,8 @@ fn write_xml_string(
 ///|
 fn xml_element(
   name : String,
-  attributes? : Map[String, String] = Map([]),
-  children? : Array[XmlNode] = [],
+  attributes~ : Map[String, String] = Map([]),
+  children~ : Array[XmlNode] = [],
 ) -> XmlElement {
   @xml.xml_element(name, attributes~, children~)
 }
@@ -100,14 +100,14 @@ fn xml_element(
 ///|
 fn convert_document(
   document : DocumentElement,
-  output_format? : OutputFormat = Html,
-  style_map? : Array[String] = [],
-  include_default_style_map? : Bool = true,
-  ignore_empty_paragraphs? : Bool = true,
-  id_prefix? : String = "",
-  pretty_print? : Bool = false,
-  convert_image? : (Image) -> ImageConversion = @converter.data_uri_image_converter,
-  transform_document? : (DocumentElement) -> DocumentElement = @document.identity_document_transform,
+  output_format~ : OutputFormat = Html,
+  style_map~ : Array[String] = [],
+  include_default_style_map~ : Bool = true,
+  ignore_empty_paragraphs~ : Bool = true,
+  id_prefix~ : String = "",
+  pretty_print~ : Bool = false,
+  convert_image~ : (Image) -> ImageConversion = @converter.data_uri_image_converter,
+  transform_document~ : (DocumentElement) -> DocumentElement = @document.identity_document_transform,
 ) -> ConversionResult {
   @converter.convert_document(
     document,
@@ -147,8 +147,8 @@ fn identity_document_transform(element : DocumentElement) -> DocumentElement {
 ///|
 fn document(
   children : Array[DocumentElement],
-  notes? : Array[Note] = [],
-  comments? : Array[Comment] = [],
+  notes~ : Array[Note] = [],
+  comments~ : Array[Comment] = [],
 ) -> DocumentElement {
   @document.document(children, notes~, comments~)
 }

@@ -51,10 +51,10 @@ pub(all) struct Level {
   /// `w:lvlText`, e.g. `"%1."` or `"%1.%2"` or a bullet glyph.
   text : String
   /// `w:start` — the first value this level counts from.
-  start : Int
+  start : Int32
   /// `w:lvlRestart`: restart when a level at most this deep advances.
   /// `None` means the default (restart on any higher level).
-  restart : Int?
+  restart : Int32?
   /// `w:isLgl` — render all levels of `text` as decimal.
   is_legal : Bool
   suffix : Suffix
@@ -73,7 +73,7 @@ pub(all) struct Level {
 
 ///|
 /// A level with Word's defaults: decimal, `%N.`, starting at 1.
-pub fn Level::default(depth : Int) -> Level {
+pub fn Level::default(depth : Int32) -> Level {
   {
     format: Decimal,
     text: "%\{depth + 1}.",
@@ -92,24 +92,24 @@ pub fn Level::default(depth : Int) -> Level {
 ///|
 /// An `w:abstractNum`: up to nine levels, by depth.
 pub(all) struct AbstractNum {
-  levels : Map[Int, Level]
+  levels : Map[Int32, Level]
 } derive(Eq, Debug, ToJson)
 
 ///|
 /// A `w:num` instance: which abstract definition it uses, plus any
 /// per-instance level overrides (`w:lvlOverride`).
 pub(all) struct NumInstance {
-  abstract_id : Int
-  overrides : Map[Int, Level]
+  abstract_id : Int32
+  overrides : Map[Int32, Level]
   /// `w:startOverride` per level, which also forces a restart.
-  start_overrides : Map[Int, Int]
+  start_overrides : Map[Int32, Int32]
 } derive(Eq, Debug, ToJson)
 
 ///|
 /// A parsed `word/numbering.xml`.
 pub struct Numbering {
-  abstracts : Map[Int, AbstractNum]
-  instances : Map[Int, NumInstance]
+  abstracts : Map[Int32, AbstractNum]
+  instances : Map[Int32, NumInstance]
 }
 
 ///|
@@ -121,8 +121,8 @@ pub fn Numbering::empty() -> Numbering {
 ///|
 /// Build from parsed parts (the DOCX frontend supplies these).
 pub fn Numbering::new(
-  abstracts : Map[Int, AbstractNum],
-  instances : Map[Int, NumInstance],
+  abstracts : Map[Int32, AbstractNum],
+  instances : Map[Int32, NumInstance],
 ) -> Numbering {
   { abstracts, instances, }
 }
@@ -132,7 +132,11 @@ pub fn Numbering::new(
 /// it has one, else the abstract definition's level, else Word's default
 /// for that depth. Unknown ids still produce a usable level rather than
 /// dropping the list marker.
-pub fn Numbering::level(self : Numbering, num_id : Int, depth : Int) -> Level {
+pub fn Numbering::level(
+  self : Numbering,
+  num_id : Int32,
+  depth : Int32,
+) -> Level {
   // OOXML defines exactly nine levels; an out-of-range w:ilvl would
   // otherwise produce a default whose %N has no counter and leak the
   // literal placeholder into the rendered text
@@ -158,9 +162,9 @@ pub fn Numbering::level(self : Numbering, num_id : Int, depth : Int) -> Level {
 /// A `w:startOverride` for `(num_id, depth)`, if the instance sets one.
 pub fn Numbering::start_override(
   self : Numbering,
-  num_id : Int,
-  depth : Int,
-) -> Int? {
+  num_id : Int32,
+  depth : Int32,
+) -> Int32? {
   match self.instances.get(num_id) {
     Some(instance) => instance.start_overrides.get(depth)
     None => None

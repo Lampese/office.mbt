@@ -5,12 +5,12 @@
 ///|
 /// A destination pointing to a point on a page (top-left origin).
 pub(all) struct XyzDestination {
-  page_index : Int
+  page_index : Int32
   point : Point
 } derive(Eq, Debug)
 
 ///|
-pub fn XyzDestination::new(page_index : Int, point : Point) -> XyzDestination {
+pub fn XyzDestination::new(page_index : Int32, point : Point) -> XyzDestination {
   { page_index, point, }
 }
 
@@ -111,7 +111,7 @@ pub fn LinkAnnotation::new_with_quad_points(
 pub(all) struct Annotation {
   link : LinkAnnotation
   alt : String?
-  mut struct_parent : Int?
+  mut struct_parent : Int32?
   location : Location?
 }
 
@@ -119,7 +119,7 @@ pub(all) struct Annotation {
 pub fn Annotation::new_link(
   link : LinkAnnotation,
   alt : String?,
-  location? : Location? = None,
+  location~ : Location? = None,
 ) -> Annotation {
   { link, alt, struct_parent: None, location, }
 }
@@ -133,7 +133,7 @@ fn page_root_transform(height : Double) -> Transform {
 fn Annotation::serialize(
   self : Annotation,
   sc : SerializeContext,
-  root_ref : Int,
+  root_ref : Int32,
   page_height : Double,
 ) -> Unit raise ExportError {
   let d = DictBuilder::new()
@@ -223,7 +223,7 @@ pub fn Outline::push_child(self : Outline, node : OutlineNode) -> Unit {
 }
 
 ///|
-fn count_nodes(nodes : Array[OutlineNode]) -> Int {
+fn count_nodes(nodes : Array[OutlineNode]) -> Int32 {
   let mut n = nodes.length()
   for c in nodes {
     n += count_nodes(c.children)
@@ -235,8 +235,8 @@ fn count_nodes(nodes : Array[OutlineNode]) -> Int {
 fn SerializeContext::serialize_outline_nodes(
   self : SerializeContext,
   nodes : Array[OutlineNode],
-  parent : Int,
-) -> (Int, Int) {
+  parent : Int32,
+) -> (Int32, Int32) {
   let refs = nodes.map(_ => self.new_ref())
   for i, node in nodes {
     let d = DictBuilder::new()
@@ -275,14 +275,14 @@ pub(all) enum NumberingStyle {
 pub(all) struct PageLabel {
   style : NumberingStyle?
   prefix : String?
-  offset : Int?
+  offset : Int32?
 } derive(Eq, Debug)
 
 ///|
 pub fn PageLabel::new(
   style : NumberingStyle?,
   prefix : String?,
-  offset : Int?,
+  offset : Int32?,
 ) -> PageLabel {
   { style, prefix, offset, }
 }
@@ -334,18 +334,18 @@ pub(all) enum TextDirection {
 ///|
 /// A date and time.
 pub(all) struct DateTime {
-  year : Int
-  month : Int?
-  day : Int?
-  hour : Int?
-  minute : Int?
-  second : Int?
-  utc_offset_hour : Int?
-  utc_offset_minute : Int
+  year : Int32
+  month : Int32?
+  day : Int32?
+  hour : Int32?
+  minute : Int32?
+  second : Int32?
+  utc_offset_hour : Int32?
+  utc_offset_minute : Int32
 } derive(Eq, Debug)
 
 ///|
-pub fn DateTime::new(year : Int) -> DateTime {
+pub fn DateTime::new(year : Int32) -> DateTime {
   {
     year: if year > 9999 {
       9999
@@ -363,7 +363,7 @@ pub fn DateTime::new(year : Int) -> DateTime {
 }
 
 ///|
-fn clamp(v : Int, lo : Int, hi : Int) -> Int {
+fn clamp(v : Int32, lo : Int32, hi : Int32) -> Int32 {
   if v < lo {
     lo
   } else if v > hi {
@@ -374,42 +374,42 @@ fn clamp(v : Int, lo : Int, hi : Int) -> Int {
 }
 
 ///|
-pub fn DateTime::month(self : DateTime, m : Int) -> DateTime {
+pub fn DateTime::month(self : DateTime, m : Int32) -> DateTime {
   { ..self, month: Some(clamp(m, 1, 12)), }
 }
 
 ///|
-pub fn DateTime::day(self : DateTime, d : Int) -> DateTime {
+pub fn DateTime::day(self : DateTime, d : Int32) -> DateTime {
   { ..self, day: Some(clamp(d, 1, 31)), }
 }
 
 ///|
-pub fn DateTime::hour(self : DateTime, h : Int) -> DateTime {
+pub fn DateTime::hour(self : DateTime, h : Int32) -> DateTime {
   { ..self, hour: Some(clamp(h, 0, 23)), }
 }
 
 ///|
-pub fn DateTime::minute(self : DateTime, m : Int) -> DateTime {
+pub fn DateTime::minute(self : DateTime, m : Int32) -> DateTime {
   { ..self, minute: Some(clamp(m, 0, 59)), }
 }
 
 ///|
-pub fn DateTime::second(self : DateTime, s : Int) -> DateTime {
+pub fn DateTime::second(self : DateTime, s : Int32) -> DateTime {
   { ..self, second: Some(clamp(s, 0, 59)), }
 }
 
 ///|
-pub fn DateTime::utc_offset_hour(self : DateTime, h : Int) -> DateTime {
+pub fn DateTime::utc_offset_hour(self : DateTime, h : Int32) -> DateTime {
   { ..self, utc_offset_hour: Some(clamp(h, -23, 23)), }
 }
 
 ///|
-pub fn DateTime::utc_offset_minute(self : DateTime, m : Int) -> DateTime {
+pub fn DateTime::utc_offset_minute(self : DateTime, m : Int32) -> DateTime {
   { ..self, utc_offset_minute: clamp(m, 0, 59), }
 }
 
 ///|
-fn pad2(v : Int) -> String {
+fn pad2(v : Int32) -> String {
   if v < 10 {
     "0\{v}"
   } else {
@@ -418,7 +418,7 @@ fn pad2(v : Int) -> String {
 }
 
 ///|
-fn pad4(v : Int) -> String {
+fn pad4(v : Int32) -> String {
   let s = v.to_string()
   let sb = StringBuilder()
   for _ in 0..<(4 - s.length()) {
@@ -613,7 +613,7 @@ pub(all) struct EmbeddedFile {
 fn SerializeContext::serialize_embedded_file(
   self : SerializeContext,
   file : EmbeddedFile,
-  root_ref : Int,
+  root_ref : Int32,
 ) -> Unit {
   self.register_validation_error(EmbeddedFile(Existence, file.location))
   if file.modification_date is None {

@@ -23,10 +23,10 @@ pub(all) struct Bar3DChartBody {
   vary_colors : Bool?
   series : Array[ChartSeriesCore]
   d_lbls : DLbls?
-  gap_width : Int?
-  gap_depth : Int?
+  gap_width : Int32?
+  gap_depth : Int32?
   shape : BarShape?
-  ax_ids : Array[Int]
+  ax_ids : Array[Int32]
   extension : Array[@xml.XmlElement]
 } derive(Eq, Debug)
 
@@ -54,8 +54,8 @@ pub(all) struct Line3DChartBody {
   series : Array[ChartSeriesCore]
   d_lbls : DLbls?
   drop_lines : @xml.XmlElement?
-  gap_depth : Int?
-  ax_ids : Array[Int]
+  gap_depth : Int32?
+  ax_ids : Array[Int32]
   extension : Array[@xml.XmlElement]
 } derive(Eq, Debug)
 

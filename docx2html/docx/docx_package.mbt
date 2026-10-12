@@ -25,8 +25,8 @@ pub(all) struct DocxPackageResult {
 /// first-reference order), and the sections that reference them.
 pub fn read_docx_package(
   docx : BytesView,
-  external_file_access? : Bool = false,
-  read_external_file? : (String) -> Bytes? = no_external_file_reader,
+  external_file_access~ : Bool = false,
+  read_external_file~ : (String) -> Bytes? = no_external_file_reader,
 ) -> DocxPackageResult raise DocxError {
   let zip = open_zip(docx)
   let external_files = external_file_access_options(
@@ -173,8 +173,8 @@ priv struct HeaderFooterCollector {
   parts : DocumentParts
   headers : Array[@document.HeaderFooterPart]
   footers : Array[@document.HeaderFooterPart]
-  header_index_by_path : StableStringMap[Int]
-  footer_index_by_path : StableStringMap[Int]
+  header_index_by_path : StableStringMap[Int32]
+  footer_index_by_path : StableStringMap[Int32]
   messages : Array[Message]
 }
 
@@ -194,7 +194,7 @@ fn HeaderFooterCollector::new(parts : DocumentParts) -> HeaderFooterCollector {
 fn HeaderFooterCollector::section(
   self : HeaderFooterCollector,
   sect_pr : XmlElement,
-  ends_after_paragraph : Int?,
+  ends_after_paragraph : Int32?,
 ) -> SectionScan raise DocxError {
   let headers : Array[@document.SectionRef] = []
   let footers : Array[@document.SectionRef] = []
@@ -265,7 +265,7 @@ fn HeaderFooterCollector::resolve_part(
   self : HeaderFooterCollector,
   rel_id : String,
   is_header~ : Bool,
-) -> Int? raise DocxError {
+) -> Int32? raise DocxError {
   let kind = if is_header { "header" } else { "footer" }
   let path = resolve_header_footer_reference_part(
     self.parts.zip,

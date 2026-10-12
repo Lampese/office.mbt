@@ -10,7 +10,7 @@ fn page_label_bytes_for_test(text : String) -> @core.PdfBytes {
 
 ///|
 fn page_label_bytes_from_ints_for_test(
-  values : ArrayView[Int],
+  values : ArrayView[Int32],
 ) -> @core.PdfBytes {
   try! @core.pdf_bytes_of_int_array(values)
 }

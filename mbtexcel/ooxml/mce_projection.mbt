@@ -6,7 +6,7 @@ let max_xml_mce_token_chars = 1024
 
 ///|
 priv struct XmlMceName {
-  namespace_id : Int
+  namespace_id : Int32
   local_name : String
 }
 
@@ -18,7 +18,7 @@ priv struct XmlMceExtensionName {
 
 ///|
 priv struct XmlMceScopeDelta {
-  ignorable_namespace_ids : Array[Int]
+  ignorable_namespace_ids : Array[Int32]
   process_content_keys : Array[MceProcessKey]
   process_generation_resets : Array[MceProcessGenerationReset]
 }
@@ -33,17 +33,17 @@ priv struct XmlMceScopeEntry {
 priv struct XmlMceContext {
   understood_namespaces : Set[String]
   extension_elements : Set[XmlMceExtensionName]
-  ignorable_namespace_counts : Map[Int, Int]
+  ignorable_namespace_counts : Map[Int32, Int32]
   process_content : MceProcessTracker
-  max_work_chars : Int
-  mut work_chars : Int
+  max_work_chars : Int32
+  mut work_chars : Int32
 }
 
 ///|
 fn XmlMceContext::new(
   understood_namespaces : ArrayView[String],
   extension_elements : ArrayView[(String, String)],
-  max_work_chars : Int,
+  max_work_chars : Int32,
 ) -> XmlMceContext {
   let understood : Set[String] = Set([])
   for namespace_uri in understood_namespaces {
@@ -95,7 +95,7 @@ fn XmlMceContext::understands(
 ///|
 fn XmlMceContext::add_ignorable(
   self : XmlMceContext,
-  namespace_id : Int,
+  namespace_id : Int32,
 ) -> Unit {
   self.ignorable_namespace_counts[namespace_id] = self.ignorable_namespace_counts.get_or_default(
       namespace_id, 0,
@@ -106,7 +106,7 @@ fn XmlMceContext::add_ignorable(
 ///|
 fn XmlMceContext::is_ignorable(
   self : XmlMceContext,
-  namespace_id : Int,
+  namespace_id : Int32,
 ) -> Bool {
   self.ignorable_namespace_counts.get_or_default(namespace_id, 0) > 0
 }
@@ -114,7 +114,7 @@ fn XmlMceContext::is_ignorable(
 ///|
 fn XmlMceContext::is_effectively_ignorable(
   self : XmlMceContext,
-  namespace_id : Int,
+  namespace_id : Int32,
   namespace_uri : StringView,
 ) -> Bool {
   self.is_ignorable(namespace_id) && !self.understands(namespace_uri)
@@ -181,7 +181,7 @@ priv struct XmlMceProjectionState {
 fn xml_mce_tokens(
   value : StringView,
   label : StringView,
-  allow_empty? : Bool = true,
+  allow_empty~ : Bool = true,
 ) -> Array[String] raise ParseXmlError {
   let normalized = collapse_schema_whitespace(value)
   if normalized == "" {
@@ -208,7 +208,7 @@ fn xml_mce_resolve_prefix(
   scanner : XmlStartTagScanner,
   prefix : StringView,
   label : StringView,
-) -> (String, Int) raise ParseXmlError {
+) -> (String, Int32) raise ParseXmlError {
   if !is_xml_ncname(prefix) {
     raise InvalidXml(msg="MCE \{label.to_owned()} prefix is invalid")
   }
@@ -245,7 +245,7 @@ fn xml_mce_enter_scope(
   match scanner.attribute(markup_compatibility_namespace, "Ignorable") {
     Some(value) => {
       context.charge(value)
-      let reset_namespaces : Set[Int] = Set([])
+      let reset_namespaces : Set[Int32] = Set([])
       for prefix in xml_mce_tokens(value, "Ignorable") {
         let (namespace_uri, namespace_id) = xml_mce_resolve_prefix(
           scanner, prefix, "Ignorable",
@@ -428,7 +428,7 @@ fn xml_mce_namespace_attributes(
 ///|
 fn trim_xml_mce_states(
   states : Array[XmlMceProjectionState],
-  next_depth : Int,
+  next_depth : Int32,
   context : XmlMceContext,
 ) -> Unit raise ParseXmlError {
   while states.length() >= next_depth {
@@ -654,9 +654,9 @@ fn xml_mce_state_for_current_element(
 pub fn project_xml_markup_compatibility(
   xml : StringView,
   understood_namespaces : ArrayView[String],
-  max_output_chars? : Int = 16 * 1024 * 1024,
-  cancelled? : () -> Bool = () => false,
-  extension_elements? : ArrayView[(String, String)] = [],
+  max_output_chars~ : Int32 = 16 * 1024 * 1024,
+  cancelled~ : () -> Bool = () => false,
+  extension_elements~ : ArrayView[(String, String)] = [],
 ) -> String raise ParseXmlError {
   check_xml_cancelled(cancelled)
   if max_output_chars < 0 {

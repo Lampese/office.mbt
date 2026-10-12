@@ -43,9 +43,9 @@ fn latin_program() -> Bytes raise {
 /// The fold is a remainder, not a bitmask. Masking with the range's width
 /// looks equivalent and is not: `& 0x5D` reaches 32 of these 94
 /// characters and never produces an uppercase letter.
-fn printable(seeds : ArrayView[Int]) -> Array[Int] {
-  let seen : Map[Int, Unit] = Map([])
-  let unique : Array[Int] = []
+fn printable(seeds : ArrayView[Int32]) -> Array[Int32] {
+  let seen : Map[Int32, Unit] = Map([])
+  let unique : Array[Int32] = []
   for seed in seeds {
     // '!' through '~'; the mask only clears the sign so the remainder
     // cannot be negative
@@ -60,9 +60,9 @@ fn printable(seeds : ArrayView[Int]) -> Array[Int] {
 
 ///|
 /// The generated character sets every property below runs over.
-fn generated_character_sets() -> Array[Array[Int]] raise {
-  let cases : Array[Array[Int]] = @quickcheck.samples(16)
-  let sets : Array[Array[Int]] = []
+fn generated_character_sets() -> Array[Array[Int32]] raise {
+  let cases : Array[Array[Int32]] = @quickcheck.samples(16)
+  let sets : Array[Array[Int32]] = []
   for case in cases {
     let unique = printable(case)
     // one codepoint cannot exercise a prefix relation, and zero cannot

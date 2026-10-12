@@ -27,7 +27,7 @@
 /// it.
 pub fn Presentation::add_slide_mut(
   self : Presentation,
-  layout_index : Int,
+  layout_index : Int32,
 ) -> String raise PptxError {
   let layout_part_name = self.layout_part_name_at(layout_index)
   self.add_slide_on_layout_mut(layout_part_name)
@@ -185,7 +185,7 @@ fn build_slide_rels_xml(layout_target : String) -> String {
 /// may surface a typed `SlideLayoutRef` instead.
 fn Presentation::layout_part_name_at(
   self : Presentation,
-  layout_index : Int,
+  layout_index : Int32,
 ) -> String raise PptxError {
   let mut seen = 0
   for p in self.pkg.parts() {
@@ -224,7 +224,7 @@ fn next_unused_rid(rels : @opc.Relationships) -> String {
 }
 
 ///|
-fn extract_rid_index(rid : String) -> Int {
+fn extract_rid_index(rid : String) -> Int32 {
   let prefix = "rId"
   let total = rid.length()
   let prefix_len = prefix.length()
@@ -376,8 +376,8 @@ fn Presentation::write_rels_for_part(
 /// `count` of zero or less adds nothing and returns an empty array.
 pub fn Presentation::add_slides_mut(
   self : Presentation,
-  layout_index : Int,
-  count : Int,
+  layout_index : Int32,
+  count : Int32,
 ) -> Array[String] raise PptxError {
   let names : Array[String] = []
   if count <= 0 {
@@ -460,7 +460,7 @@ pub fn Presentation::add_slides_mut(
 ///|
 /// Highest `rIdN` index in `rels`, or 0 when it holds none. `next_unused_rid`
 /// is this plus one, formatted; the batch path steps the number instead.
-fn extract_max_rid_index(rels : @opc.Relationships) -> Int {
+fn extract_max_rid_index(rels : @opc.Relationships) -> Int32 {
   let mut max_seen = 0
   for r in rels.items() {
     let n = extract_rid_index(r.id)

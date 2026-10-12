@@ -6,7 +6,7 @@
 ///   ctrTitle · body(idx 1) · ftr · sldNum(idx 10) · content(no type → obj)
 /// followed by a plain rectangle with no `<p:ph>` (skipped by accessors).
 fn slide_with_placeholders() -> FixedArray[Byte] {
-  fn ph_sp(id : Int, name : String, ph : String) -> String {
+  fn ph_sp(id : Int32, name : String, ph : String) -> String {
     "<p:sp><p:nvSpPr>" +
     "<p:cNvPr id=\"" +
     id.to_string() +

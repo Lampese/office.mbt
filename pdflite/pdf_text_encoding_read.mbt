@@ -68,7 +68,7 @@ fn PdfDocument::read_encoding_differences(
       let output : Array[PdfEncodingDifference] = Array(
         capacity=values.length(),
       )
-      let mut next_code : Int? = None
+      let mut next_code : Int32? = None
       for value in values {
         match self.direct(value) {
           PdfInteger(code) => next_code = Some(code)

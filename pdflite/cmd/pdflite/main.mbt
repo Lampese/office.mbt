@@ -14,8 +14,8 @@ let pdflite_cmd_exit_usage_error = 2
 priv struct PdfliteCmdInfoReport {
   path : String
   version : String
-  pages : Int
-  objects : Int
+  pages : Int32
+  objects : Int32
   encrypted : Bool
 }
 
@@ -245,7 +245,7 @@ async fn main {
 }
 
 ///|
-async fn pdflite_cmd_run(args : ArrayView[String]) -> Int {
+async fn pdflite_cmd_run(args : ArrayView[String]) -> Int32 {
   let matches = pdflite_cmd_command().parse(argv=args, env=Map([])) catch {
     err => {
       @stdio.stderr.write(err.to_string() + "\n")
@@ -320,7 +320,7 @@ async fn pdflite_cmd_run(args : ArrayView[String]) -> Int {
 ///|
 async fn pdflite_cmd_read_document(
   input_path : String,
-  passwords? : PdflitePasswords = { user: None, owner: None, },
+  passwords~ : PdflitePasswords = { user: None, owner: None, },
 ) -> Result[@pdf.PdfDocument, String] {
   let bytes = @fs.read_file(input_path).binary() catch {
     err => return Err("cannot read '" + input_path + "': " + err.to_string())
@@ -374,7 +374,7 @@ fn pdflite_cmd_info_text(report : PdfliteCmdInfoReport) -> String {
 }
 
 ///|
-fn pdflite_cmd_json_number(value : Int) -> Json {
+fn pdflite_cmd_json_number(value : Int32) -> Json {
   Json::number(value.to_double(), repr=value.to_string())
 }
 
@@ -394,7 +394,7 @@ fn pdflite_cmd_info_json_text(report : PdfliteCmdInfoReport) -> String {
 async fn pdflite_cmd_info_file(
   input_path : String,
   json : Bool,
-  passwords? : PdflitePasswords = { user: None, owner: None, },
+  passwords~ : PdflitePasswords = { user: None, owner: None, },
 ) -> Result[Unit, String] {
   let document = match pdflite_cmd_read_document(input_path, passwords~) {
     Ok(value) => value
@@ -459,7 +459,7 @@ fn pdflite_cmd_verify_rewritten_bytes(
 ///|
 fn pdflite_cmd_verify_merged_bytes(
   output : Bytes,
-  expected_page_count : Int,
+  expected_page_count : Int32,
 ) -> Result[Unit, String] {
   let merged = @pdf.pdf_read_document_from_bytes(output) catch {
     err =>
@@ -504,7 +504,7 @@ async fn pdflite_cmd_write_output_file(
 async fn pdflite_cmd_rewrite_file(
   input_path : String,
   output_path : String,
-  passwords? : PdflitePasswords = { user: None, owner: None, },
+  passwords~ : PdflitePasswords = { user: None, owner: None, },
 ) -> Result[Unit, String] {
   let document = match pdflite_cmd_read_document(input_path, passwords~) {
     Ok(value) => value
@@ -524,7 +524,7 @@ async fn pdflite_cmd_rewrite_file(
 ///|
 async fn pdflite_cmd_validate_file(
   input_path : String,
-  passwords? : PdflitePasswords = { user: None, owner: None, },
+  passwords~ : PdflitePasswords = { user: None, owner: None, },
 ) -> Result[Unit, String] {
   let document = match pdflite_cmd_read_document(input_path, passwords~) {
     Ok(value) => value

@@ -815,7 +815,7 @@ test "review round 3 (batch): XML-unrepresentable characters fail closed" {
 
 ///|
 test "review round 2 (batch): the table writer bounds the grid at Word's 63 columns" {
-  fn cell_with(span : Int) -> @docx2html.DocumentElement {
+  fn cell_with(span : Int32) -> @docx2html.DocumentElement {
     @docx2html.table_cell(
       [@docx2html.paragraph([@docx2html.run([@docx2html.text("x")])])],
       col_span=span,
@@ -1617,10 +1617,10 @@ test "K3: written footnotes and endnotes round-trip through the index" {
       #|"1"
     ),
   )
-  json_inspect(index.footnotes()[0].references().to_json(), content=[
+  json_inspect(Json(index.footnotes()[0].references()), content=[
     "/body/p[1]/r[1]",
   ])
-  json_inspect(index.footnotes()[1].references().to_json(), content=[
+  json_inspect(Json(index.footnotes()[1].references()), content=[
     "/body/p[1]/r[2]",
   ])
   // Note bodies are readable stories.

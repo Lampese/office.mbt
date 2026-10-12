@@ -1,13 +1,13 @@
 ///|
 /// A minimal sfnt holding only a `name` table with the given (platform,
 /// raw string bytes) records for name ID 6.
-fn sfnt_with_names(records : Array[(Int, Bytes)]) -> Bytes {
+fn sfnt_with_names(records : Array[(Int32, Bytes)]) -> Bytes {
   let out : Array[Byte] = []
-  let u16 = fn(v : Int) {
+  let u16 = fn(v : Int32) {
     out.push((v >> 8).to_byte())
     out.push((v & 0xFF).to_byte())
   }
-  let u32 = fn(v : Int) {
+  let u32 = fn(v : Int32) {
     u16(v >> 16)
     u16(v & 0xFFFF)
   }

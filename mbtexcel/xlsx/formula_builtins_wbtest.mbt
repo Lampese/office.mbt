@@ -5705,9 +5705,9 @@ test "formula builtins wb: text dispatch happy paths part 15" {
   let zh_props = CoreProperties::with_values(language="zh-cn")
   workbook.set_core_properties(zh_props)
   let fullwidth_abc = String::from_array([
-    Int::unsafe_to_char(0xff41),
-    Int::unsafe_to_char(0xff42),
-    Int::unsafe_to_char(0xff43),
+    Int32::unsafe_to_char(0xff41),
+    Int32::unsafe_to_char(0xff42),
+    Int32::unsafe_to_char(0xff43),
   ])
   inspect(
     is_formula_string(

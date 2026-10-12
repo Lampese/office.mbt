@@ -233,7 +233,7 @@ fn decoded(bytes : Bytes) -> String raise {
 
 ///|
 /// A one-page model with `n` pages.
-fn pages_model(n : Int) -> @pagelayout.PageModel {
+fn pages_model(n : Int32) -> @pagelayout.PageModel {
   let model = text_model("x")
   for _ in 1..<n {
     model.pages.push({ width_pt: 200, height_pt: 100, items: [], })

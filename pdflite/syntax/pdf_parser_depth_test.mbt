@@ -1,5 +1,5 @@
 ///|
-fn syntax_depth_nested_bytes(open : Byte, close : Byte, count : Int) -> Bytes {
+fn syntax_depth_nested_bytes(open : Byte, close : Byte, count : Int32) -> Bytes {
   let out : Array[Byte] = []
   for _ in 0..<count {
     out.push(open)

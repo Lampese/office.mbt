@@ -1,17 +1,17 @@
 ///|
 pub struct CalcPropsOptions {
-  mut calc_id : UInt?
+  mut calc_id : UInt32?
   mut calc_mode : String?
   mut full_calc_on_load : Bool?
   mut ref_mode : String?
   mut iterate : Bool?
-  mut iterate_count : UInt?
+  mut iterate_count : UInt32?
   mut iterate_delta : Double?
   mut full_precision : Bool?
   mut calc_completed : Bool?
   mut calc_on_save : Bool?
   mut concurrent_calc : Bool?
-  mut concurrent_manual_count : UInt?
+  mut concurrent_manual_count : UInt32?
   mut force_full_calc : Bool?
 } derive(Eq, Debug)
 
@@ -36,18 +36,18 @@ pub fn CalcPropsOptions::new() -> CalcPropsOptions {
 
 ///|
 pub fn CalcPropsOptions::with_values(
-  calc_id? : UInt,
+  calc_id? : UInt32,
   calc_mode? : String,
   full_calc_on_load? : Bool,
   ref_mode? : String,
   iterate? : Bool,
-  iterate_count? : UInt,
+  iterate_count? : UInt32,
   iterate_delta? : Double,
   full_precision? : Bool,
   calc_completed? : Bool,
   calc_on_save? : Bool,
   concurrent_calc? : Bool,
-  concurrent_manual_count? : UInt,
+  concurrent_manual_count? : UInt32,
   force_full_calc? : Bool,
 ) -> CalcPropsOptions {
   {
@@ -90,7 +90,7 @@ pub fn WorkbookPropsOptions::with_values(
 
 ///|
 pub(all) enum CustomPropertyValue {
-  Integer(Int)
+  Integer(Int32)
   Float(Double)
   Boolean(Bool)
   Text(String)
@@ -131,10 +131,10 @@ fn WorkbookProtectionOptions::new() -> WorkbookProtectionOptions {
 
 ///|
 pub fn WorkbookProtectionOptions::with_values(
-  algorithm_name? : String = "",
-  password? : String = "",
-  lock_structure? : Bool = false,
-  lock_windows? : Bool = false,
+  algorithm_name~ : String = "",
+  password~ : String = "",
+  lock_structure~ : Bool = false,
+  lock_windows~ : Bool = false,
 ) -> WorkbookProtectionOptions {
   { algorithm_name, password, lock_structure, lock_windows, }
 }
@@ -146,7 +146,7 @@ struct WorkbookProtection {
   mut algorithm_name : String
   mut hash_value : String
   mut salt_value : String
-  mut spin_count : Int
+  mut spin_count : Int32
 } derive(Debug)
 
 ///|

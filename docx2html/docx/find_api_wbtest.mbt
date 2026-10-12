@@ -128,9 +128,9 @@ test "an identity edit is a valid proxy for a real edit" {
 fn find_wbtest_plans(
   projection : ReaderProjection,
   bytes : Bytes,
-  paragraph_index : Int,
-  start : Int,
-  end : Int,
+  paragraph_index : Int32,
+  start : Int32,
+  end : Int32,
   replacement : String,
 ) -> Bool {
   try {

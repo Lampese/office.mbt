@@ -6,20 +6,24 @@
 priv struct ReadBudget {
   limits : ReadLimits
   cancelled : () -> Bool
-  mut parser_items : Int
-  mut parser_work_units : Int
+  mut parser_items : Int32
+  mut parser_work_units : Int32
 }
 
 ///|
 fn ReadBudget::new(
   limits : ReadLimits,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> ReadBudget {
   { limits, cancelled, parser_items: 0, parser_work_units: 0, }
 }
 
 ///|
-fn read_budget_actual(current : Int, amount : Int, limit : Int) -> (Int, Bool) {
+fn read_budget_actual(
+  current : Int32,
+  amount : Int32,
+  limit : Int32,
+) -> (Int32, Bool) {
   if amount > limit - current {
     // `ReadLimits` accepts every positive Int. Keep the reported value
     // representable when the ceiling is Int::max while carrying overflow as a
@@ -34,7 +38,7 @@ fn read_budget_actual(current : Int, amount : Int, limit : Int) -> (Int, Bool) {
 ///|
 fn ReadBudget::charge_items(
   self : ReadBudget,
-  amount : Int,
+  amount : Int32,
 ) -> Unit raise XlsxError {
   if amount <= 0 {
     return
@@ -57,7 +61,7 @@ fn ReadBudget::charge_items(
 ///|
 fn ReadBudget::charge_work(
   self : ReadBudget,
-  amount : Int,
+  amount : Int32,
 ) -> Unit raise XlsxError {
   if amount <= 0 {
     return
@@ -88,8 +92,8 @@ fn ReadBudget::checkpoint(self : ReadBudget) -> Unit raise XlsxError {
 fn ReadBudget::tag_end(
   self : ReadBudget,
   xml : StringView,
-  start : Int,
-) -> Int? raise XlsxError {
+  start : Int32,
+) -> Int32? raise XlsxError {
   let mut index = start
   let mut next_checkpoint = start
   let mut quote : UInt16? = None
@@ -116,7 +120,7 @@ fn ReadBudget::tag_end(
 ///|
 fn xml_sequence_at(
   xml : StringView,
-  start : Int,
+  start : Int32,
   sequence : StringView,
 ) -> Bool {
   if start < 0 || start > xml.length() - sequence.length() {
@@ -134,9 +138,9 @@ fn xml_sequence_at(
 fn ReadBudget::sequence_end(
   self : ReadBudget,
   xml : StringView,
-  start : Int,
+  start : Int32,
   sequence : StringView,
-) -> Int? raise XlsxError {
+) -> Int32? raise XlsxError {
   let mut index = start
   let mut next_checkpoint = start
   while index <= xml.length() - sequence.length() {
@@ -153,7 +157,7 @@ fn ReadBudget::sequence_end(
 }
 
 ///|
-fn xml_name_local_start(xml : StringView, start : Int, end : Int) -> Int {
+fn xml_name_local_start(xml : StringView, start : Int32, end : Int32) -> Int32 {
   let mut local_start = start
   for index in start..<end {
     if xml[index] == (':' : UInt16) {
@@ -166,8 +170,8 @@ fn xml_name_local_start(xml : StringView, start : Int, end : Int) -> Int {
 ///|
 fn xml_name_local_is(
   xml : StringView,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
   expected : StringView,
 ) -> Bool {
   let local_start = xml_name_local_start(xml, start, end)

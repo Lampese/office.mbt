@@ -1,14 +1,14 @@
 ///|
 fn write_workbook_xml(
   workbook : Workbook,
-  chartsheet_rel_start : Int,
-  pivot_cache_rel_entries : ArrayView[(Int, String)],
+  chartsheet_rel_start : Int32,
+  pivot_cache_rel_entries : ArrayView[(Int32, String)],
   slicer_cache_rel_ids_x14 : ArrayView[String],
   slicer_cache_rel_ids_x15 : ArrayView[String],
   budget? : WritePartBudget,
 ) -> String raise XlsxError {
   fn write_pivot_caches_xml(
-    pivot_cache_rel_entries : ArrayView[(Int, String)],
+    pivot_cache_rel_entries : ArrayView[(Int32, String)],
     budget : WritePartBudget?,
   ) -> String? raise XlsxError {
     if pivot_cache_rel_entries.length() == 0 {
@@ -74,7 +74,7 @@ fn write_workbook_xml(
   let sheets = workbook.sheet_order
   let worksheet_count = workbook.sheets().length()
   let sb = LimitedXmlBuilder::new(budget)
-  let sheet_index : Map[String, Int] = Map([])
+  let sheet_index : Map[String, Int32] = Map([])
   for i, entry in sheets {
     sheet_index.set(normalize_sheet_name(workbook.sheet_entry_name(entry)), i)
   }

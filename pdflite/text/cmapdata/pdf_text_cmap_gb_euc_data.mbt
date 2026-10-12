@@ -3,7 +3,7 @@
 
 ///|
 /// Generated predefined CMap lookup data.
-let pdf_text_gb_euc_codepoint_table_flat : ReadOnlyArray[Int] = [
+let pdf_text_gb_euc_codepoint_table_flat : ReadOnlyArray[Int32] = [
   0xA1A1, 0x3000, 0xA1A2, 0x3001, 0xA1A3, 0x3002, 0xA1A4, 0x30FB, 0xA1A5, 0x02C9,
   0xA1A6, 0x02C7, 0xA1A7, 0x00A8, 0xA1A8, 0x3003, 0xA1A9, 0x3005, 0xA1AA, 0x2015,
   0xA1AB, 0xFF5E, 0xA1AC, 0x2016, 0xA1AD, 0x2026, 0xA1AE, 0x2018, 0xA1AF, 0x2019,
@@ -1497,7 +1497,7 @@ let pdf_text_gb_euc_codepoint_table_flat : ReadOnlyArray[Int] = [
 
 ///|
 /// Predefined CMap lookup table, unpacked at load from the flat static data above.
-pub let pdf_text_gb_euc_codepoint_table : Array[(Int, Int)] = pdf_cmap_unpack2(
+pub let pdf_text_gb_euc_codepoint_table : Array[(Int32, Int32)] = pdf_cmap_unpack2(
   pdf_text_gb_euc_codepoint_table_flat,
 )
 
@@ -1506,7 +1506,7 @@ pub let pdf_text_gb_euc_codepoint_table : Array[(Int, Int)] = pdf_cmap_unpack2(
 
 ///|
 /// Generated predefined CMap lookup data.
-let pdf_text_gb_euc_charcode_table_flat : ReadOnlyArray[Int] = [
+let pdf_text_gb_euc_charcode_table_flat : ReadOnlyArray[Int32] = [
   0x00A4, 0xA1E8, 0x00A7, 0xA1EC, 0x00A8, 0xA1A7, 0x00B0, 0xA1E3, 0x00B1, 0xA1C0,
   0x00D7, 0xA1C1, 0x00E0, 0xA8A4, 0x00E1, 0xA8A2, 0x00E8, 0xA8A8, 0x00E9, 0xA8A6,
   0x00EA, 0xA8BA, 0x00EC, 0xA8AC, 0x00ED, 0xA8AA, 0x00F2, 0xA8B0, 0x00F3, 0xA8AE,
@@ -3000,6 +3000,6 @@ let pdf_text_gb_euc_charcode_table_flat : ReadOnlyArray[Int] = [
 
 ///|
 /// Predefined CMap lookup table, unpacked at load from the flat static data above.
-pub let pdf_text_gb_euc_charcode_table : Array[(Int, Int)] = pdf_cmap_unpack2(
+pub let pdf_text_gb_euc_charcode_table : Array[(Int32, Int32)] = pdf_cmap_unpack2(
   pdf_text_gb_euc_charcode_table_flat,
 )

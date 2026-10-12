@@ -8,9 +8,9 @@
 /// media part.
 struct RichValueImages {
   /// value-metadata block index (0-based, i.e. vm-1) -> rich value index
-  value_metadata : Array[Int]
+  value_metadata : Array[Int32]
   /// rich values: each is (structure index, ordered values)
-  rich_values : Array[(Int, Array[String])]
+  rich_values : Array[(Int32, Array[String])]
   /// rich value structures: each is the ordered list of key names
   structures : Array[Array[String]]
   /// ordered relationship ids referenced by rich values
@@ -36,7 +36,7 @@ fn parse_rich_value_images(
   content_types : @ooxml.PackageContentTypes,
   decode : (BytesView) -> String raise XlsxError,
   budget? : ReadBudget,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> RichValueImages? raise XlsxError {
   let metadata_bytes = archive.get("xl/metadata.xml")
   let rich_value_bytes = archive.get("xl/richData/rdrichvalue.xml")
@@ -193,8 +193,8 @@ fn parse_web_image_blip_ids(xml : String) -> Array[String] raise XlsxError {
 ///|
 /// Parses the `<valueMetadata>` blocks of `xl/metadata.xml`, returning
 /// the first record value of each block (the rich value index).
-fn parse_value_metadata(xml : String) -> Array[Int] raise XlsxError {
-  let result : Array[Int] = []
+fn parse_value_metadata(xml : String) -> Array[Int32] raise XlsxError {
+  let result : Array[Int32] = []
   let body = match extract_tag_body_from(xml, "valueMetadata") {
     Some(value) => value
     None => return result
@@ -229,8 +229,8 @@ fn parse_value_metadata(xml : String) -> Array[Int] raise XlsxError {
 /// its structure index `s` and the ordered `<v>` values.
 fn parse_rich_values(
   xml : String,
-) -> Array[(Int, Array[String])] raise XlsxError {
-  let result : Array[(Int, Array[String])] = []
+) -> Array[(Int32, Array[String])] raise XlsxError {
+  let result : Array[(Int32, Array[String])] = []
   // Extract the rvData body first so the split does not also match the
   // "<rvData" container element (which would insert a phantom entry and
   // shift every rich value index by one).
@@ -352,8 +352,8 @@ fn parse_rich_value_rel_ids(xml : String) -> Array[String] raise XlsxError {
 /// returning a canonical-reference -> vm-index map. Rich-value cell
 /// images are the only cells that carry `vm`, so this is the link
 /// between a cell and its rich value.
-fn parse_cell_vm_map(sheet_xml : String) -> Map[String, Int] raise XlsxError {
-  let result : Map[String, Int] = Map([])
+fn parse_cell_vm_map(sheet_xml : String) -> Map[String, Int32] raise XlsxError {
+  let result : Map[String, Int32] = Map([])
   let mut first = true
   for chunk in sheet_xml.split("<c ") {
     if first {
@@ -427,7 +427,7 @@ fn rich_value_web_target(
 
 ///|
 /// Returns the index of a key name within a rich value structure, or -1.
-fn rich_value_key_index(keys : Array[String], name : String) -> Int {
+fn rich_value_key_index(keys : Array[String], name : String) -> Int32 {
   for i, key in keys {
     if key == name {
       return i

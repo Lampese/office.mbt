@@ -82,13 +82,13 @@ pub(all) enum PdfColourSpace {
   )
   PdfLab(PdfTristimulusPoint, PdfTristimulusPoint, Array[Double])
   PdfICCBased(
-    Int,
+    Int32,
     PdfColourSpace,
     Array[Double],
     @syntax.PdfObject?,
     @syntax.PdfObject
   )
-  PdfIndexed(PdfColourSpace, Array[(Int, Array[Int])])
+  PdfIndexed(PdfColourSpace, Array[(Int32, Array[Int32])])
   PdfPattern
   PdfPatternWithBaseColourSpace(PdfColourSpace)
   PdfSeparation(@core.PdfName, PdfColourSpace, @syntax.PdfObject)

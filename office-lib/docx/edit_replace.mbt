@@ -27,7 +27,7 @@ pub const SCHEMA_DOCX_EDIT_V2 : String = "docx.edit/2"
 
 ///|
 /// Largest `at` run path, in UTF-16 code units.
-pub const MAX_EDIT_RUN_PATH_UNITS : Int = 4096
+pub const MAX_EDIT_RUN_PATH_UNITS : Int32 = 4096
 
 ///|
 /// The versioned result schema emitted by `office edit`.
@@ -42,32 +42,32 @@ pub const SCHEMA_DOCX_EDIT_RESULT_V2 : String = "office.docx.edit/2"
 /// Largest number of edit operations in one script. The scan cost is
 /// ops x document length, so this bounds the work together with the
 /// scan budget below.
-pub const MAX_EDIT_OPS : Int = 64
+pub const MAX_EDIT_OPS : Int32 = 64
 
 ///|
 /// Largest `find` needle, in UTF-16 code units.
-pub const MAX_EDIT_FIND_UNITS : Int = 4096
+pub const MAX_EDIT_FIND_UNITS : Int32 = 4096
 
 ///|
 /// Largest `replace` text, in UTF-16 code units.
-pub const MAX_EDIT_REPLACE_UNITS : Int = 65536
+pub const MAX_EDIT_REPLACE_UNITS : Int32 = 65536
 
 ///|
 /// Largest accepted `occurrence` ordinal.
-pub const MAX_EDIT_OCCURRENCE : Int = 1_000_000
+pub const MAX_EDIT_OCCURRENCE : Int32 = 1_000_000
 
 ///|
 /// Total code units of scanning work one edit transaction may charge.
-pub const MAX_EDIT_SCAN_UNITS : Int = 64 * 1024 * 1024
+pub const MAX_EDIT_SCAN_UNITS : Int32 = 64 * 1024 * 1024
 
 ///|
-let docx_edit_finding_limit : Int = 64
+let docx_edit_finding_limit : Int32 = 64
 
 ///|
 /// Largest `id` or `author` a revision selector may carry, in UTF-16 code
 /// units. Both are matched against attributes the source spelled, so a
 /// selector longer than any legal attribute can only ever match nothing.
-pub const MAX_REVISION_SELECTOR_UNITS : Int = 4096
+pub const MAX_REVISION_SELECTOR_UNITS : Int32 = 4096
 
 ///|
 /// The parser-owned operation vocabulary, in stable order.
@@ -94,7 +94,7 @@ priv struct DocxReplaceOp {
   replace : String
   // None replaces EVERY occurrence in document order; Some(n) replaces
   // only the nth (1-based) and leaves the rest untouched
-  occurrence : Int?
+  occurrence : Int32?
 }
 
 ///|
@@ -151,7 +151,7 @@ pub fn DocxEditScript::schema(self : DocxEditScript) -> String {
 
 ///|
 /// Number of operations in the script.
-pub fn DocxEditScript::length(self : DocxEditScript) -> Int {
+pub fn DocxEditScript::length(self : DocxEditScript) -> Int32 {
   match self.program {
     ReplaceProgram(ops) => ops.length()
     RevisionProgram(ops) => ops.length()
@@ -167,7 +167,7 @@ pub(all) struct DocxEditOpResult {
   op : String
   find : String
   replace : String
-  occurrence : Int?
+  occurrence : Int32?
   // set_run_text only; all three absent for other ops. `find`/`replace`
   // stay empty for set_run_text -- the /1 fields are never overloaded.
   at : String?
@@ -185,28 +185,28 @@ pub(all) struct DocxEditOpResult {
   // replace_text: occurrences seen in editable stories, whether or not they
   // were selected by `occurrence`. Revision ops: revisions this selector
   // matched, whether or not they could be resolved.
-  mut matched : Int
+  mut matched : Int32
   // spans actually rewritten
-  mut replacements : Int
+  mut replacements : Int32
   // revisions this op resolved. Two ops selecting the SAME revision with the
   // same action each count it, while the report total counts it once.
-  mut resolved : Int
+  mut resolved : Int32
 } derive(Eq, @debug.Debug)
 
 ///|
 /// The complete literal-edit outcome.
 pub(all) struct DocxEditReport {
-  mut ops_applied : Int
-  mut replacements : Int
+  mut ops_applied : Int32
+  mut replacements : Int32
   // distinct tracked-change elements resolved across every operation
-  mut revisions_resolved : Int
+  mut revisions_resolved : Int32
   results : Array[DocxEditOpResult]
   unmatched : Array[DocxTemplateFinding]
-  mut unmatched_total : Int
+  mut unmatched_total : Int32
   unsupported : Array[DocxTemplateFinding]
-  mut unsupported_total : Int
+  mut unsupported_total : Int32
   conflicts : Array[DocxTemplateFinding]
-  mut conflicts_total : Int
+  mut conflicts_total : Int32
   locations : Array[DocxTemplateFinding]
   mut locations_truncated : Bool
   stories_scanned : Array[String]
@@ -273,9 +273,9 @@ fn docx_edit_text_ok(text : String) -> Bool {
 fn docx_edit_text_field(
   params : Map[String, Json],
   key : String,
-  limit : Int,
+  limit : Int32,
   required_nonempty~ : Bool,
-  op? : String = "replace_text",
+  op~ : String = "replace_text",
 ) -> String raise DocxEditParseError {
   guard params.get(key) is Some(String(value)) else {
     raise docx_edit_parse_error(op + " params needs a string \"" + key + "\"")
@@ -480,7 +480,7 @@ pub fn parse_docx_edit_script(
 /// paths directly.
 fn parse_docx_run_address(
   value : String,
-  index : Int,
+  index : Int32,
 ) -> String raise DocxEditParseError {
   let canonical_prefix = "/docx/body/"
   let relative = if value.has_prefix(canonical_prefix) {
@@ -562,7 +562,7 @@ fn parse_docx_run_address(
 fn parse_docx_revision_op(
   params : Map[String, Json],
   accept : Bool,
-  index : Int,
+  index : Int32,
 ) -> DocxRevisionOp raise DocxEditParseError {
   docx_edit_reject_unknown(
     params,
@@ -638,7 +638,7 @@ fn parse_docx_revision_op(
 priv struct DocxEditState {
   report : DocxEditReport
   ops : Array[DocxReplaceOp]
-  budget : Ref[Int]
+  budget : Ref[Int32]
   edits : Array[DocxRunEdit]
   checks : Array[DocxRunEdit]
 }
@@ -696,7 +696,7 @@ fn DocxEditState::scan_paragraph(
   let texts = pieces.map(piece => piece.text)
   // (linear start, linear end, op index, span) for every span this
   // paragraph accepts, in op order
-  let accepted : Array[(Int, Int, Int, @template.TemplateSpan)] = []
+  let accepted : Array[(Int32, Int32, Int32, @template.TemplateSpan)] = []
   for op_index, op in self.ops {
     let result = self.report.results[op_index]
     for span in @template.scan_literal(texts, op.find, self.budget) {

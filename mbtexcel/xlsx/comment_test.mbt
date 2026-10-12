@@ -1,5 +1,5 @@
 ///|
-fn repeat_comment_text(text : String, count : Int) -> String {
+fn repeat_comment_text(text : String, count : Int32) -> String {
   let sb = StringBuilder()
   for _ in 0..<count {
     sb.write_view(text)

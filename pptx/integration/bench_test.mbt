@@ -16,7 +16,7 @@
 
 ///|
 /// Add a slide, then place a text box on it — the shape every example uses.
-fn build_idiomatic(n : Int) -> @presentation.Presentation raise {
+fn build_idiomatic(n : Int32) -> @presentation.Presentation raise {
   let prs = @presentation.Presentation::new()
   for i in 0..<n {
     let _ = prs.add_slide_mut(0)
@@ -30,7 +30,7 @@ fn build_idiomatic(n : Int) -> @presentation.Presentation raise {
 
 ///|
 /// The same deck using `slide_at`, which parses one slide instead of all.
-fn build_slide_at(n : Int) -> @presentation.Presentation raise {
+fn build_slide_at(n : Int32) -> @presentation.Presentation raise {
   let prs = @presentation.Presentation::new()
   for i in 0..<n {
     let _ = prs.add_slide_mut(0)
@@ -44,7 +44,7 @@ fn build_slide_at(n : Int) -> @presentation.Presentation raise {
 
 ///|
 /// The same deck, with the one `slides()` call lifted out of the loop.
-fn build_hoisted(n : Int) -> @presentation.Presentation raise {
+fn build_hoisted(n : Int32) -> @presentation.Presentation raise {
   let prs = @presentation.Presentation::new()
   for _ in 0..<n {
     let _ = prs.add_slide_mut(0)
@@ -57,7 +57,7 @@ fn build_hoisted(n : Int) -> @presentation.Presentation raise {
 }
 
 ///|
-fn slide_title(i : Int) -> @slide.AutoShape {
+fn slide_title(i : Int32) -> @slide.AutoShape {
   @slide.AutoShape::textbox(
     id=2,
     name="Title",
@@ -70,7 +70,7 @@ fn slide_title(i : Int) -> @slide.AutoShape {
 }
 
 ///|
-fn deck(n : Int) -> @presentation.Presentation {
+fn deck(n : Int32) -> @presentation.Presentation {
   build_hoisted(n) catch {
     _ => abort("bench fixture: build failed")
   }
@@ -244,7 +244,7 @@ test "bench add 1000 slides, nothing else" (it : @bench.T) {
 }
 
 ///|
-fn add_only(n : Int) -> @presentation.Presentation raise {
+fn add_only(n : Int32) -> @presentation.Presentation raise {
   let prs = @presentation.Presentation::new()
   for _ in 0..<n {
     let _ = prs.add_slide_mut(0)
@@ -265,7 +265,7 @@ test "bench add 1000 slides in one batch" (it : @bench.T) {
 }
 
 ///|
-fn add_batch(n : Int) -> @presentation.Presentation raise {
+fn add_batch(n : Int32) -> @presentation.Presentation raise {
   let prs = @presentation.Presentation::new()
   let _ = prs.add_slides_mut(0, n)
   prs
@@ -274,7 +274,7 @@ fn add_batch(n : Int) -> @presentation.Presentation raise {
 ///|
 /// The whole deck the recommended way: one batch add, then one
 /// `update_slide_mut` per slide.
-fn build_batch(n : Int) -> @presentation.Presentation raise {
+fn build_batch(n : Int32) -> @presentation.Presentation raise {
   let prs = @presentation.Presentation::new()
   let _ = prs.add_slides_mut(0, n)
   let all = prs.slides()

@@ -68,7 +68,7 @@ pub fn build_sample_deck() -> FixedArray[Byte] raise @presentation.PptxError {
   // any are filled, so the table-of-contents slide's forward "jump to
   // section" hyperlinks resolve against slides that already exist.
   let builders : Array[
-    (@presentation.Presentation, Int) -> Unit raise @presentation.PptxError,
+    (@presentation.Presentation, Int32) -> Unit raise @presentation.PptxError,
   ] = [
     sample_title_slide, sample_toc_slide, sample_text_slide, sample_shapes_slide,
     sample_custom_geom_slide, sample_picture_slide, sample_table_slide, sample_charts_1_slide,
@@ -128,7 +128,7 @@ pub fn build_sample_deck() -> FixedArray[Byte] raise @presentation.PptxError {
 ///   1 — stock chart only
 ///   2 — of-pie chart only
 pub fn build_sample_chart_isolated(
-  chart_kind : Int,
+  chart_kind : Int32,
 ) -> FixedArray[Byte] raise @presentation.PptxError {
   let prs = @presentation.Presentation::new()
   prs.set_slide_size_mut(Widescreen)
@@ -217,7 +217,7 @@ pub fn build_sample_chart_isolated(
 /// would point at non-existent slides in a two-slide deck. The full
 /// deck (`build_sample_deck`) exercises the TOC.
 pub fn build_sample_isolated(
-  feature_idx : Int,
+  feature_idx : Int32,
 ) -> FixedArray[Byte] raise @presentation.PptxError {
   let prs = @presentation.Presentation::new()
   prs.set_slide_size_mut(Widescreen)
@@ -266,7 +266,7 @@ pub fn build_sample_isolated(
 /// Centralised so every slide carries the same look + feel.
 fn heading(
   prs : @presentation.Presentation,
-  id : Int,
+  id : Int32,
   text : String,
 ) -> @slide.AutoShape {
   @slide.AutoShape::textbox(
@@ -293,7 +293,7 @@ fn heading(
 ///|
 fn sample_title_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
 ) -> Unit raise @presentation.PptxError {
   // Title.
   let title_rp = @slide.RunProperties::default()
@@ -351,12 +351,12 @@ fn sample_title_slide(
 /// Slide 2 — table of contents with internal hyperlinks (A2 internal).
 fn sample_toc_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
 ) -> Unit raise @presentation.PptxError {
   let head = heading(prs, 2, "What's inside")
   let s_head = prs.slides()[idx].with_shape(AutoShape(head))
   prs.update_slide_mut(idx, s_head)
-  let entries : Array[(String, Int)] = [
+  let entries : Array[(String, Int32)] = [
     ("3 — Text features", 2),
     ("4 — Shapes + group + connector", 3),
     ("5 — Custom geometry", 4),
@@ -398,7 +398,7 @@ fn sample_toc_slide(
 /// Slide 3 — text features: multi-paragraph + alignment + bullet list.
 fn sample_text_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
 ) -> Unit raise @presentation.PptxError {
   let head = heading(prs, 2, "Text features")
   let p1 = @slide.Paragraph::of_styled_text(
@@ -456,7 +456,7 @@ fn sample_text_slide(
 /// connector, and a grouped sub-graphic.
 fn sample_shapes_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
 ) -> Unit raise @presentation.PptxError {
   let head = heading(prs, 2, "Shapes + group + connector")
   let row_y = prs.pct_h(20.0)
@@ -620,7 +620,7 @@ fn sample_shapes_slide(
 /// Slide 5 — a five-pointed star drawn via custom geometry path commands.
 fn sample_custom_geom_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
 ) -> Unit raise @presentation.PptxError {
   let head = heading(prs, 2, "Custom geometry (path commands)")
 
@@ -687,7 +687,7 @@ fn sample_custom_geom_slide(
 /// image header and a fluent crop applied on top.
 fn sample_picture_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
 ) -> Unit raise @presentation.PptxError {
   let head = heading(prs, 2, "Picture — auto-size + crop")
   let s_head = prs.slides()[idx].with_shape(AutoShape(head))
@@ -737,7 +737,7 @@ fn sample_picture_slide(
 /// borders + cell fill.
 fn sample_table_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
 ) -> Unit raise @presentation.PptxError {
   let head = heading(prs, 2, "Tables — merged + custom borders")
 
@@ -845,7 +845,7 @@ fn sample_table_slide(
 /// Slide 8 — bar / line / pie in a 3-up grid.
 fn sample_charts_1_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
 ) -> Unit raise @presentation.PptxError {
   let head = heading(prs, 2, "Charts — bar · line · pie")
   prs.update_slide_mut(idx, prs.slides()[idx].with_shape(AutoShape(head)))
@@ -882,7 +882,7 @@ fn sample_charts_1_slide(
 /// Slide 9 — area / radar / doughnut in a 3-up grid.
 fn sample_charts_2_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
 ) -> Unit raise @presentation.PptxError {
   let head = heading(prs, 2, "Charts — area · radar · doughnut")
   prs.update_slide_mut(idx, prs.slides()[idx].with_shape(AutoShape(head)))
@@ -920,7 +920,7 @@ fn sample_charts_2_slide(
 /// Slide 10 — scatter + bubble (the two value-axis families) in a 2-up grid.
 fn sample_charts_3_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
 ) -> Unit raise @presentation.PptxError {
   let head = heading(prs, 2, "Charts — scatter + bubble")
   prs.update_slide_mut(idx, prs.slides()[idx].with_shape(AutoShape(head)))
@@ -948,7 +948,7 @@ fn sample_charts_3_slide(
 /// Slide 11 — 3-D bar + stock + of-pie in a 3-up grid.
 fn sample_charts_4_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
 ) -> Unit raise @presentation.PptxError {
   let head = heading(prs, 2, "Charts — 3-D bar · stock · of-pie")
   prs.update_slide_mut(idx, prs.slides()[idx].with_shape(AutoShape(head)))
@@ -985,7 +985,7 @@ fn sample_charts_4_slide(
 /// Slide 12 — closing slide with a back-to-title hyperlink + notes.
 fn sample_closing_slide(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
 ) -> Unit raise @presentation.PptxError {
   let heading_rp = @slide.RunProperties::default()
     .with_font_size(Pt(40.0))
@@ -1054,7 +1054,7 @@ fn sample_closing_slide(
 /// · 5 % margin. Each chart occupies 28.3 % of the slide width.
 fn three_chart_grid(
   prs : @presentation.Presentation,
-  idx : Int,
+  idx : Int32,
   a : @chart.Chart,
   b : @chart.Chart,
   c : @chart.Chart,
@@ -1126,7 +1126,7 @@ fn sample_checkerboard_bmp() -> FixedArray[Byte] {
 }
 
 ///|
-fn write_u32_le(buf : FixedArray[Byte], offset : Int, value : Int) -> Unit {
+fn write_u32_le(buf : FixedArray[Byte], offset : Int32, value : Int32) -> Unit {
   buf[offset] = (value & 0xFF).to_byte()
   buf[offset + 1] = ((value >> 8) & 0xFF).to_byte()
   buf[offset + 2] = ((value >> 16) & 0xFF).to_byte()

@@ -63,17 +63,17 @@ pub struct RenderOptions {
 ///|
 /// Options for `render_pdf`; everything left out takes its default.
 pub fn RenderOptions::new(
-  fonts? : @fonts.FontRegistry = @fonts.FontRegistry::new(),
-  outline? : Array[OutlineEntry] = [],
-  info? : DocumentInfo = DocumentInfo::new(),
+  fonts~ : @fonts.FontRegistry = @fonts.FontRegistry::new(),
+  outline~ : Array[OutlineEntry] = [],
+  info~ : DocumentInfo = DocumentInfo::new(),
   initial_zoom? : InitialZoom,
   page_mode? : PageMode,
-  display_doc_title? : Bool = false,
-  page_boxes? : Bool = false,
-  page_labels? : Array[String] = [],
-  truncate_widths? : Bool = false,
-  notdef_text? : Bool = false,
-  typo_metrics? : Bool = false,
+  display_doc_title~ : Bool = false,
+  page_boxes~ : Bool = false,
+  page_labels~ : Array[String] = [],
+  truncate_widths~ : Bool = false,
+  notdef_text~ : Bool = false,
+  typo_metrics~ : Bool = false,
 ) -> RenderOptions {
   {
     fonts,
@@ -181,7 +181,7 @@ pub(all) enum OutlineDest {
   /// A place no anchor marks: page index `page` (0-based), with the point
   /// (`x`, `y` down from the page top, points) at the window's top left. A
   /// page the model does not have leaves the entry without a destination.
-  Position(page~ : Int, x~ : Double, y~ : Double)
+  Position(page~ : Int32, x~ : Double, y~ : Double)
 } derive(Eq, Debug)
 
 ///|
@@ -192,7 +192,7 @@ pub(all) enum OutlineDest {
 /// `/Count`); otherwise they start collapsed.
 pub(all) struct OutlineEntry {
   title : String
-  level : Int
+  level : Int32
   dest : OutlineDest
   open : Bool
 } derive(Eq, Debug)
@@ -245,7 +245,7 @@ pub fn DocumentInfo::new(
   creation_date? : String,
   mod_date? : String,
   trapped? : Trapped,
-  custom? : Array[(String, String)] = [],
+  custom~ : Array[(String, String)] = [],
 ) -> DocumentInfo {
   {
     title,
@@ -370,9 +370,11 @@ fn DocumentInfo::entries(
 pub fn is_pdf_date(text : String) -> Bool {
   let bytes = @utf8.encode(text)
   let length = bytes.length()
-  let digit = fn(i : Int) { i < length && bytes[i] >= b'0' && bytes[i] <= b'9' }
+  let digit = fn(i : Int32) {
+    i < length && bytes[i] >= b'0' && bytes[i] <= b'9'
+  }
   // the two-digit field at `i`, if there is one
-  let field = fn(i : Int) -> Int? {
+  let field = fn(i : Int32) -> Int32? {
     if digit(i) && digit(i + 1) {
       Some(
         (bytes[i].to_int() - '0'.to_int()) * 10 +
@@ -416,7 +418,7 @@ pub fn is_pdf_date(text : String) -> Bool {
     return false
   }
   i += 1
-  let apostrophe = fn(i : Int) { i < length && bytes[i] == b'\'' }
+  let apostrophe = fn(i : Int32) { i < length && bytes[i] == b'\'' }
   match field(i) {
     Some(hours) => {
       if hours > 23 || (zone == b'Z' && hours != 0) {
@@ -447,7 +449,7 @@ pub fn is_pdf_date(text : String) -> Bool {
 
 ///|
 /// The number of days in `month` (1–12) of the proleptic Gregorian `year`.
-fn days_in_month(year : Int, month : Int) -> Int {
+fn days_in_month(year : Int32, month : Int32) -> Int32 {
   match month {
     2 =>
       if (year % 4 == 0 && year % 100 != 0) || year % 400 == 0 {

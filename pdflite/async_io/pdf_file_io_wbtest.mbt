@@ -72,7 +72,7 @@ fn pdf_async_io_basename_for_test(path : String) -> String {
 }
 
 ///|
-fn pdf_async_io_bytes_for_test(values : ArrayView[Int]) -> @core.PdfBytes {
+fn pdf_async_io_bytes_for_test(values : ArrayView[Int32]) -> @core.PdfBytes {
   let output : Array[Byte] = []
   for value in values {
     output.push(try! @core.pdf_byte_of_int(value))
@@ -91,7 +91,7 @@ fn pdf_async_io_append_bytes_for_test(
 }
 
 ///|
-fn pdf_async_io_push_u32_for_test(output : Array[Byte], value : Int) -> Unit {
+fn pdf_async_io_push_u32_for_test(output : Array[Byte], value : Int32) -> Unit {
   output.push(try! @core.pdf_byte_of_int((value >> 24) & 0xFF))
   output.push(try! @core.pdf_byte_of_int((value >> 16) & 0xFF))
   output.push(try! @core.pdf_byte_of_int((value >> 8) & 0xFF))
@@ -100,7 +100,7 @@ fn pdf_async_io_push_u32_for_test(output : Array[Byte], value : Int) -> Unit {
 
 ///|
 fn pdf_async_io_png_chunk_for_test(
-  chunk_type : ArrayView[Int],
+  chunk_type : ArrayView[Int32],
   data : BytesView,
 ) -> @core.PdfBytes {
   let output : Array[Byte] = []
@@ -168,7 +168,7 @@ fn pdf_async_io_jpeg2000_for_test() -> @core.PdfBytes {
 fn pdf_async_io_bytes_start_with_at_for_test(
   haystack : BytesView,
   needle : BytesView,
-  start : Int,
+  start : Int32,
 ) -> Bool {
   if start < 0 || start + needle.length() > haystack.length() {
     false
@@ -187,7 +187,7 @@ fn pdf_async_io_bytes_start_with_at_for_test(
 fn pdf_async_io_find_bytes_for_test(
   haystack : BytesView,
   needle : BytesView,
-) -> Int {
+) -> Int32 {
   if needle.length() == 0 {
     0
   } else if haystack.length() < needle.length() {
@@ -207,7 +207,7 @@ fn pdf_async_io_find_bytes_for_test(
 fn pdf_async_io_find_last_bytes_for_test(
   haystack : BytesView,
   needle : BytesView,
-) -> Int {
+) -> Int32 {
   if needle.length() == 0 {
     0
   } else if haystack.length() < needle.length() {
@@ -236,8 +236,8 @@ fn pdf_async_io_push_ascii_for_test(
 ///|
 fn pdf_async_io_push_padded_decimal_for_test(
   output : Array[Byte],
-  value : Int,
-  width : Int,
+  value : Int32,
+  width : Int32,
 ) -> Unit {
   let text = value.to_string()
   if text.length() < width {
@@ -259,7 +259,7 @@ fn pdf_async_io_is_pdf_whitespace_for_test(byte : Byte) -> Bool {
 ///|
 fn pdf_async_io_corrupt_startxref_pointer_at_for_test(
   bytes : @core.PdfBytes,
-  marker_position : Int,
+  marker_position : Int32,
 ) -> @core.PdfBytes raise {
   let marker = b"startxref"
   if marker_position < 0 {
@@ -333,7 +333,7 @@ fn pdf_async_io_corrupt_first_in_use_xref_marker_for_test(
 ///|
 fn pdf_async_io_mark_classic_xref_entry_free_for_test(
   bytes : @core.PdfBytes,
-  object_number : Int,
+  object_number : Int32,
 ) -> @core.PdfBytes raise {
   if object_number < 0 {
     fail("expected non-negative classic xref object number")
@@ -363,9 +363,9 @@ fn pdf_async_io_mark_classic_xref_entry_free_for_test(
 ///|
 fn pdf_async_io_parse_positive_decimal_for_test(
   bytes : BytesView,
-  start : Int,
-  end : Int,
-) -> Int raise {
+  start : Int32,
+  end : Int32,
+) -> Int32 raise {
   if start >= end {
     fail("expected decimal digits")
   }
@@ -383,7 +383,7 @@ fn pdf_async_io_parse_positive_decimal_for_test(
 ///|
 fn pdf_async_io_keep_catalog_and_encrypt_xref_entries_for_test(
   bytes : @core.PdfBytes,
-  encrypt_object_number : Int,
+  encrypt_object_number : Int32,
 ) -> @core.PdfBytes raise {
   let header = b"xref\n0 "
   let header_position = pdf_async_io_find_bytes_for_test(bytes, header)
@@ -524,7 +524,7 @@ fn pdf_async_io_ocg_catalog_for_test() -> @pdflite.PdfDocument {
 
 ///|
 fn pdf_async_io_ocg_content_for_test(
-  number : Int,
+  number : Int32,
   name : String,
 ) -> @ocg.PdfOptionalContent {
   let name_bytes = @ascii.encode(name)
@@ -574,7 +574,7 @@ fn pdf_async_io_font_file_stream_for_test(data : String) -> @syntax.PdfObject {
 ///|
 fn pdf_async_io_font_descriptor_with_file_for_test(
   font_file_key : String,
-  font_file_number : Int,
+  font_file_number : Int32,
 ) -> @syntax.PdfObject {
   PdfDictionary([
     (pdf_async_io_name_for_test(font_file_key), PdfIndirect(font_file_number)),
@@ -651,7 +651,7 @@ fn pdf_async_io_font_extraction_document_for_test() -> @pdflite.PdfDocument {
 }
 
 ///|
-fn pdf_async_io_ascii_codepoints_for_test(text : String) -> Array[Int] {
+fn pdf_async_io_ascii_codepoints_for_test(text : String) -> Array[Int32] {
   [
     for byte in @ascii.encode(text) => byte.to_int()
   ]
@@ -659,8 +659,8 @@ fn pdf_async_io_ascii_codepoints_for_test(text : String) -> Array[Int] {
 
 ///|
 fn pdf_async_io_codepoints_contain_for_test(
-  haystack : ArrayView[Int],
-  needle : ArrayView[Int],
+  haystack : ArrayView[Int32],
+  needle : ArrayView[Int32],
 ) -> Bool {
   if needle.length() == 0 {
     true
@@ -697,7 +697,7 @@ fn pdf_async_io_font_resource_for_test(
 
 ///|
 fn pdf_async_io_push_text_codepoints_for_test(
-  output : Array[Int],
+  output : Array[Int32],
   extractor : @pdflite.PdfTextExtractor,
   text : @core.PdfBytes,
 ) -> Unit raise {
@@ -709,14 +709,14 @@ fn pdf_async_io_push_text_codepoints_for_test(
 ///|
 fn pdf_async_io_page_text_codepoints_for_test(
   doc : @pdflite.PdfDocument,
-  page_index : Int,
-) -> Array[Int] raise {
+  page_index : Int32,
+) -> Array[Int32] raise {
   let pages = doc.pages_of_pagetree()
   guard page_index >= 0 && page_index < pages.length() else {
     fail("expected page index inside document")
   }
   let page = pages[page_index]
-  let output : Array[Int] = []
+  let output : Array[Int32] = []
   let mut extractor : @pdflite.PdfTextExtractor? = None
   for op in doc.parse_content_ops_with_resources(page.resources, page.content) {
     match op {
@@ -767,7 +767,7 @@ fn pdf_async_io_page_text_codepoints_for_test(
 ///|
 fn pdf_async_io_assert_page_text_contains_for_test(
   doc : @pdflite.PdfDocument,
-  page_index : Int,
+  page_index : Int32,
   fragments : ArrayView[String],
 ) -> Unit raise {
   let text = pdf_async_io_page_text_codepoints_for_test(doc, page_index)
@@ -816,8 +816,8 @@ fn pdf_async_io_secret_object_for_test(text : String) -> @syntax.PdfObject {
 ///|
 fn pdf_async_io_push_big_endian_for_test(
   output : Array[Byte],
-  value : Int,
-  width : Int,
+  value : Int32,
+  width : Int32,
 ) -> Unit {
   let mut divisor = 1
   if width > 1 {
@@ -835,9 +835,9 @@ fn pdf_async_io_push_big_endian_for_test(
 ///|
 fn pdf_async_io_push_xref_stream_entry_for_test(
   output : Array[Byte],
-  kind : Int,
-  field2 : Int,
-  field3 : Int,
+  kind : Int32,
+  field2 : Int32,
+  field3 : Int32,
 ) -> Unit {
   output.push(kind.to_byte())
   pdf_async_io_push_big_endian_for_test(output, field2, 4)
@@ -847,7 +847,7 @@ fn pdf_async_io_push_xref_stream_entry_for_test(
 ///|
 fn pdf_async_io_png_none_predictor_rows_for_test(
   data : ArrayView[Byte],
-  columns : Int,
+  columns : Int32,
 ) -> @core.PdfBytes {
   let output : Array[Byte] = []
   let row_count = (data.length() + columns - 1) / columns
@@ -869,8 +869,8 @@ fn pdf_async_io_png_none_predictor_rows_for_test(
 ///|
 fn pdf_async_io_push_classic_xref_entry_for_test(
   output : Array[Byte],
-  offset : Int,
-  generation : Int,
+  offset : Int32,
+  generation : Int32,
 ) -> Unit {
   pdf_async_io_push_padded_decimal_for_test(output, offset, 10)
   output.push(b' ')
@@ -881,7 +881,7 @@ fn pdf_async_io_push_classic_xref_entry_for_test(
 ///|
 fn pdf_async_io_write_indirect_object_for_test(
   output : Array[Byte],
-  number : Int,
+  number : Int32,
   object : @syntax.PdfObject,
 ) -> Unit {
   for
@@ -898,10 +898,10 @@ fn pdf_async_io_write_indirect_object_for_test(
 ///|
 fn pdf_async_io_push_raw_indirect_object_for_test(
   output : Array[Byte],
-  number : Int,
-  generation : Int,
+  number : Int32,
+  generation : Int32,
   body : String,
-) -> Int {
+) -> Int32 {
   let offset = output.length()
   pdf_async_io_push_ascii_for_test(output, number.to_string())
   output.push(b' ')
@@ -924,7 +924,7 @@ fn pdf_async_io_classic_catalog_object_for_test() -> @syntax.PdfObject {
 
 ///|
 fn pdf_async_io_catalog_with_payload_for_test(
-  payload_number : Int,
+  payload_number : Int32,
 ) -> @syntax.PdfObject {
   @syntax.pdf_dictionary([
     (
@@ -936,7 +936,7 @@ fn pdf_async_io_catalog_with_payload_for_test(
 }
 
 ///|
-fn pdf_async_io_write_catalog_object_for_test(output : Array[Byte]) -> Int {
+fn pdf_async_io_write_catalog_object_for_test(output : Array[Byte]) -> Int32 {
   let offset = output.length()
   pdf_async_io_write_indirect_object_for_test(
     output,
@@ -1062,7 +1062,7 @@ fn pdf_async_io_xref_stream_with_type_for_test(
 
 ///|
 fn pdf_async_io_hybrid_xref_stream_pdf_for_test(
-  startxref_override : Int?,
+  startxref_override : Int32?,
   compressed : Bool,
 ) -> @core.PdfBytes {
   let output : Array[Byte] = []
@@ -1265,8 +1265,8 @@ fn pdf_async_io_classic_pdf_with_xref_body_for_test(
 ///|
 fn pdf_async_io_push_classic_trailer_for_test(
   output : Array[Byte],
-  xref_offset : Int,
-  size : Int,
+  xref_offset : Int32,
+  size : Int32,
 ) -> Unit {
   pdf_async_io_push_ascii_for_test(output, "trailer\n<< /Root 1 0 R /Size ")
   pdf_async_io_push_ascii_for_test(output, size.to_string())
@@ -2077,7 +2077,7 @@ fn pdf_async_io_xref_stream_pdf_with_prev_deleted_for_test() -> @core.PdfBytes {
 
 ///|
 fn pdf_async_io_compressed_xref_stream_pdf_with_prev_update_startxref_for_test(
-  startxref_override : Int?,
+  startxref_override : Int32?,
 ) -> @core.PdfBytes {
   let output : Array[Byte] = []
   pdf_async_io_push_ascii_for_test(output, "%PDF-1.5\n")

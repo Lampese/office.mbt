@@ -80,7 +80,7 @@ async test "every glyph run lands inside its page" {
 /// values, so ordinary layout changes do not churn the test but dropping
 /// a table, a list, or a run does fail it.
 async test "no corpus document silently loses text" {
-  let floors : ReadOnlyArray[Int] = [2000, 7900, 107000]
+  let floors : ReadOnlyArray[Int32] = [2000, 7900, 107000]
   for i, entry in corpus {
     let (name, path) = entry
     let model = render(path)
@@ -116,7 +116,7 @@ async test "the corpus exercises tables, lists and multiple faces" {
 ///|
 /// Characters the engine cannot draw, per document, asked of the face
 /// each run is actually set in.
-fn dropped_characters(model : @pagelayout.PageModel) -> Int {
+fn dropped_characters(model : @pagelayout.PageModel) -> Int32 {
   let mut total = 0
   for page in model.pages {
     for item in page.items {
@@ -145,7 +145,7 @@ async test "the corpus loses only the characters we have accounted for" {
   // face has U+2A01, and none has the mathematical italics — so a change
   // here means either the gap closed or a new one opened, and both are
   // worth stopping for.
-  let expected : ReadOnlyArray[Int] = [62, 0, 20]
+  let expected : ReadOnlyArray[Int32] = [62, 0, 20]
   for i, entry in corpus {
     let (name, path) = entry
     let dropped = dropped_characters(render(path))

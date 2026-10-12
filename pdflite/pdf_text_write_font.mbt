@@ -2,8 +2,8 @@
 fn PdfDocument::pdf_text_add_font_object(
   self : PdfDocument,
   object : @syntax.PdfObject,
-  objnum : Int?,
-) -> Int {
+  objnum : Int32?,
+) -> Int32 {
   match objnum {
     Some(number) => {
       self.add_object_given_number(number, object)
@@ -26,8 +26,8 @@ fn PdfDocument::pdf_text_add_font_object(
 pub fn PdfDocument::write_font(
   self : PdfDocument,
   font : PdfFont,
-  objnum? : Int? = None,
-) -> Int raise @core.PdfError {
+  objnum~ : Int32? = None,
+) -> Int32 raise @core.PdfError {
   match font {
     PdfFontStandard({ font, encoding, }) =>
       self.pdf_text_add_font_object(
@@ -87,7 +87,7 @@ pub fn PdfDocument::write_font(
 pub fn pdf_write_font(
   document : PdfDocument,
   font : PdfFont,
-  objnum? : Int? = None,
-) -> Int raise @core.PdfError {
+  objnum~ : Int32? = None,
+) -> Int32 raise @core.PdfError {
   document.write_font(font, objnum~)
 }

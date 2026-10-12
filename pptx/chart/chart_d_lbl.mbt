@@ -42,7 +42,7 @@
 /// - `tx_pr` — `<c:txPr>` (CT_TextBody). Captured.
 /// - `d_lbl_pos` (`<c:dLblPos val="…"/>`) — per-point label placement.
 pub(all) struct DLbl {
-  idx : Int
+  idx : Int32
   delete : Bool?
   layout : Layout?
   tx : @xml.XmlElement?
@@ -82,7 +82,7 @@ pub impl Show for DLbl with fn output(self, logger) {
 /// Walk a captured `<c:dLbl>` element into a typed `DLbl`. Raises
 /// `Malformed` if the schema-required `<c:idx>` leaf is absent.
 fn parse_d_lbl(el : @xml.XmlElement) -> DLbl raise ChartError {
-  let mut idx : Int? = None
+  let mut idx : Int32? = None
   let mut delete : Bool? = None
   let mut layout : Layout? = None
   let mut tx : @xml.XmlElement? = None

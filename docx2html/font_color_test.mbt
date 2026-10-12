@@ -12,10 +12,10 @@ test "DOCX font color reaches HTML" {
 ///|
 fn color_document(
   body : String,
-  styles? : String = "",
-  theme? : String = "",
-  strict? : Bool = false,
-  settings? : String = "",
+  styles~ : String = "",
+  theme~ : String = "",
+  strict~ : Bool = false,
+  settings~ : String = "",
 ) -> Bytes {
   let archive = @mbtzip.Archive()
   let ns = if strict {

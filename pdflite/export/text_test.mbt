@@ -4,8 +4,8 @@ fn text_page(
   font : @export.Font,
   glyphs : Array[@export.Glyph],
   text : String,
-  settings? : @export.SerializeSettings = plain_settings(),
-  before? : (@export.Surface) -> Unit = _ => (),
+  settings~ : @export.SerializeSettings = plain_settings(),
+  before~ : (@export.Surface) -> Unit = _ => (),
 ) -> Bytes raise {
   one_page(
     s => {
@@ -775,7 +775,7 @@ test "glyphs composed with seac are rejected like krilla's subsetter does" {
   // `seac` refers to its components by glyph names, which a CID-keyed font
   // doesn't have.
   let font = test_font(outlines="cff-seac")
-  let draw = (g : Int) => {
+  let draw = (g : Int32) => {
     export_result(() => text_page(font, [glyph(g, 0, 1)], "A"))
   }
   inspect(

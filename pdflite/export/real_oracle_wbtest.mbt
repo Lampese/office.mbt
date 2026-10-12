@@ -3,7 +3,7 @@
 // the bits of the value. Do not edit.
 
 ///|
-let real_oracle_cases : ReadOnlyArray[(UInt, String)] = [
+let real_oracle_cases : ReadOnlyArray[(UInt32, String)] = [
   (0x00000000U, "0"),
   (0x00000001U, "0.000000000000000000000000000000000000000000001"),
   (0x00000002U, "0.000000000000000000000000000000000000000000003"),

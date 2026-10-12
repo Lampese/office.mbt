@@ -10,10 +10,10 @@
 pub(all) struct ColorGlyphs {
   /// Whether the glyph must be drawn as a color glyph (krilla
   /// `!should_outline`).
-  is_color : (Int) -> Bool
+  is_color : (Int32) -> Bool
   /// Draw the glyph in font units (y-up) onto the surface, given the
   /// context color (`0xRRGGBB`); returns whether something was drawn.
-  draw : (Int, Int, Surface) -> Bool
+  draw : (Int32, Int32, Surface) -> Bool
 }
 
 ///|
@@ -27,15 +27,15 @@ pub fn Font::set_color_glyphs(self : Font, hook : ColorGlyphs) -> Unit {
 priv struct Type3Font {
   font : Font
   /// The glyphs (glyph ID and context color) in code order.
-  glyphs : Array[(Int, Int)]
+  glyphs : Array[(Int32, Int32)]
   widths : Array[Double]
   cmap_entries : CmapEntries
   /// The reference of the font dictionary.
-  ref_ : Int
+  ref_ : Int32
 }
 
 ///|
-fn Type3Font::get_code(self : Type3Font, glyph : (Int, Int)) -> Int? {
+fn Type3Font::get_code(self : Type3Font, glyph : (Int32, Int32)) -> Int32? {
   for i, g in self.glyphs {
     if g == glyph {
       return Some(i)
@@ -50,20 +50,20 @@ priv struct FontContainer {
   font : Font
   cid_font : CIDFont
   /// The reference of the `Type0` font.
-  ref_ : Int
+  ref_ : Int32
   type3 : Array[Type3Font]
   /// The Type 3 font and code of each colored glyph.
-  type3_cache : Map[(Int, Int), (Int, Int)]
+  type3_cache : Map[(Int32, Int32), (Int32, Int32)]
 }
 
 ///|
-fn FontContainer::new(font : Font, ref_ : Int) -> FontContainer {
+fn FontContainer::new(font : Font, ref_ : Int32) -> FontContainer {
   { font, cid_font: CIDFont::new(font), ref_, type3: [], type3_cache: {}, }
 }
 
 ///|
 /// Whether a glyph is drawn as an outline (in the CID font).
-fn FontContainer::should_outline(self : FontContainer, glyph : Int) -> Bool {
+fn FontContainer::should_outline(self : FontContainer, glyph : Int32) -> Bool {
   match self.font.color {
     Some(hook) => !(hook.is_color)(glyph)
     None => self.font.kind != NoOutlines
@@ -76,9 +76,9 @@ fn FontContainer::should_outline(self : FontContainer, glyph : Int) -> Bool {
 fn FontContainer::add_glyph(
   self : FontContainer,
   sc : SerializeContext,
-  glyph : Int,
-  context_color : Int,
-) -> (Int, Int) {
+  glyph : Int32,
+  context_color : Int32,
+) -> (Int32, Int32) {
   if self.should_outline(glyph) {
     return (-1, self.cid_font.add_glyph(glyph))
   }
@@ -111,8 +111,8 @@ fn FontContainer::add_glyph(
 ///|
 fn FontContainer::get_codepoints(
   self : FontContainer,
-  fid : Int,
-  code : Int,
+  fid : Int32,
+  code : Int32,
 ) -> String? {
   if fid < 0 {
     self.cid_font.get_codepoints(code)
@@ -127,8 +127,8 @@ fn FontContainer::get_codepoints(
 ///|
 fn FontContainer::set_codepoints(
   self : FontContainer,
-  fid : Int,
-  code : Int,
+  fid : Int32,
+  code : Int32,
   text : String,
   location : Location?,
 ) -> Unit {
@@ -141,7 +141,7 @@ fn FontContainer::set_codepoints(
 
 ///|
 /// The reference of a PDF font.
-fn FontContainer::font_ref(self : FontContainer, fid : Int) -> Int {
+fn FontContainer::font_ref(self : FontContainer, fid : Int32) -> Int32 {
   if fid < 0 {
     self.ref_
   } else {
@@ -151,7 +151,7 @@ fn FontContainer::font_ref(self : FontContainer, fid : Int) -> Int {
 
 ///|
 /// The units per em of a PDF font (1000 for CID fonts).
-fn FontContainer::units_per_em(self : FontContainer, fid : Int) -> Double {
+fn FontContainer::units_per_em(self : FontContainer, fid : Int32) -> Double {
   if fid < 0 {
     pdf_units_per_em
   } else {
@@ -161,7 +161,7 @@ fn FontContainer::units_per_em(self : FontContainer, fid : Int) -> Double {
 
 ///|
 /// Encode a code of a PDF font.
-fn write_code(buf : @buffer.Buffer, fid : Int, code : Int) -> Unit {
+fn write_code(buf : @buffer.Buffer, fid : Int32, code : Int32) -> Unit {
   if fid < 0 {
     buf.write_byte(((code >> 8) & 0xFF).to_byte())
   }
@@ -171,7 +171,7 @@ fn write_code(buf : @buffer.Buffer, fid : Int, code : Int) -> Unit {
 ///|
 /// The bytes of a code: two big-endian bytes for a CID, one for a Type 3
 /// code (see `write_code`).
-fn encode_code(fid : Int, code : Int) -> Bytes {
+fn encode_code(fid : Int32, code : Int32) -> Bytes {
   if fid < 0 {
     encode_cid(code)
   } else {

@@ -8,16 +8,16 @@ pub struct Slicer {
   table_name : String
   caption : String
   macro_name : String
-  width : Int
-  height : Int
+  width : Int32
+  height : Int32
   display_header : Bool?
   item_desc : Bool
   format : GraphicOptions
-  priv drawing_offset_x_emu : Int?
-  priv drawing_offset_y_emu : Int?
-  priv drawing_width_emu : Int?
-  priv drawing_height_emu : Int?
-  priv drawing_order : Int?
+  priv drawing_offset_x_emu : Int32?
+  priv drawing_offset_y_emu : Int32?
+  priv drawing_width_emu : Int32?
+  priv drawing_height_emu : Int32?
+  priv drawing_order : Int32?
 } derive(Debug)
 
 ///|
@@ -125,9 +125,9 @@ fn slicer_sort_order_attr(item_desc : Bool) -> String {
 fn write_slicer_cache_xml_pivot(
   cache_name : StringView,
   source_name : StringView,
-  table_sheet_id : Int,
+  table_sheet_id : Int32,
   pivot_table_name : StringView,
-  pivot_cache_id : Int,
+  pivot_cache_id : Int32,
   item_desc : Bool,
   budget? : WritePartBudget,
 ) -> String raise XlsxError {
@@ -160,8 +160,8 @@ fn write_slicer_cache_xml_pivot(
 fn write_slicer_cache_xml_table(
   cache_name : StringView,
   source_name : StringView,
-  table_id : Int,
-  column : Int,
+  table_id : Int32,
+  column : Int32,
   item_desc : Bool,
   budget? : WritePartBudget,
 ) -> String raise XlsxError {
@@ -189,7 +189,9 @@ fn write_slicer_cache_xml_table(
 }
 
 ///|
-fn parse_pivot_cache_slicer_id(cache_xml : StringView) -> Int? raise XlsxError {
+fn parse_pivot_cache_slicer_id(
+  cache_xml : StringView,
+) -> Int32? raise XlsxError {
   match tag_attributes_in(cache_xml, "x14:pivotCacheDefinition") {
     Some(tag) =>
       match attr_value(tag, "pivotCacheId") {
@@ -208,7 +210,7 @@ fn parse_pivot_cache_slicer_id(cache_xml : StringView) -> Int? raise XlsxError {
 ///|
 fn ensure_pivot_cache_slicer_id(
   cache_xml : String,
-  pivot_cache_id : Int,
+  pivot_cache_id : Int32,
   budget? : WritePartBudget,
 ) -> String raise XlsxError {
   if parse_pivot_cache_slicer_id(cache_xml) is Some(_) {
@@ -229,7 +231,7 @@ fn ensure_pivot_cache_slicer_id(
   } else {
     None
   }
-  let extension_insertion : (Int, String)? = if cache_xml.contains(
+  let extension_insertion : (Int32, String)? = if cache_xml.contains(
       "uri=\"\{slicer_ext_uri_pivot_cache_definition}\"",
     ) {
     None

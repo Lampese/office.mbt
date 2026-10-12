@@ -58,7 +58,7 @@ priv struct MceProcessAddition {
 priv struct MceElementScope {
   namespace_changes : Array[MceNamespaceChange]
   ignorable_additions : Array[String]
-  generation_changes : Array[(String, Int?)]
+  generation_changes : Array[(String, Int32?)]
   process_additions : Array[MceProcessAddition]
   must_understand_satisfied : Bool
 }
@@ -68,14 +68,14 @@ priv struct MceProcessor {
   budget : XmlReadBudget
   application_namespaces : @sorted_map.SortedMap[String, Bool]
   namespaces : @sorted_map.SortedMap[String, String]
-  ignorable_namespaces : @sorted_map.SortedMap[String, Int]
-  process_exact_names : @sorted_map.SortedMap[String, Int]
-  process_wildcard_namespaces : @sorted_map.SortedMap[String, Int]
+  ignorable_namespaces : @sorted_map.SortedMap[String, Int32]
+  process_exact_names : @sorted_map.SortedMap[String, Int32]
+  process_wildcard_namespaces : @sorted_map.SortedMap[String, Int32]
   // Re-declaring a namespace ignorable RESETS the inherited
   // process-content rules for it (ECMA-376 Part 3): each declaration
   // opens a new generation, and a rule matches only content in the
   // generation it was declared for.
-  process_generations : @sorted_map.SortedMap[String, Int]
+  process_generations : @sorted_map.SortedMap[String, Int32]
 }
 
 ///|
@@ -201,7 +201,7 @@ fn MceProcessor::application_understands(
 
 ///|
 fn increment_mce_count(
-  counts : @sorted_map.SortedMap[String, Int],
+  counts : @sorted_map.SortedMap[String, Int32],
   key : String,
 ) -> Unit {
   match counts.get(key) {
@@ -212,7 +212,7 @@ fn increment_mce_count(
 
 ///|
 fn decrement_mce_count(
-  counts : @sorted_map.SortedMap[String, Int],
+  counts : @sorted_map.SortedMap[String, Int32],
   key : String,
 ) -> Unit {
   match counts.get(key) {
@@ -405,7 +405,7 @@ fn MceProcessor::enter_element(
   // The generations open BEFORE the same element's own process-content
   // is read, so a re-declaration retires inherited rules while the
   // rules beside it apply.
-  let generation_changes : Array[(String, Int?)] = []
+  let generation_changes : Array[(String, Int32?)] = []
   for namespace_uri in ignorable_additions {
     let previous = self.process_generations.get(namespace_uri)
     generation_changes.push((namespace_uri, previous))

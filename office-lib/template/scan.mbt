@@ -34,10 +34,10 @@ pub extend TemplateScanError with @moonbitlang/core/debug.Debug::{to_repr}
 /// "nothing of segment i is covered". Only a span ending at the very end
 /// of the text uses (last segment, its length).
 pub(all) struct TemplateSpan {
-  start_segment : Int
-  start_offset : Int
-  end_segment : Int
-  end_offset : Int
+  start_segment : Int32
+  start_offset : Int32
+  end_segment : Int32
+  end_offset : Int32
 } derive(Eq, @debug.Debug)
 
 ///|
@@ -96,9 +96,9 @@ pub fn template_key_ok(key : String) -> Bool {
   }
   for index, unit in units {
     let ok = if index == 0 {
-      unit is ('A'..='Z' | 'a'..='z' | '_')
+      unit is ('A'..<='Z' | 'a'..<='z' | '_')
     } else {
-      unit is ('A'..='Z' | 'a'..='z' | '0'..='9' | '_' | '.' | '-')
+      unit is ('A'..<='Z' | 'a'..<='z' | '0'..<='9' | '_' | '.' | '-')
     }
     if !ok {
       return false
@@ -125,11 +125,11 @@ pub fn template_key_ok(key : String) -> Bool {
 pub fn scan_literal(
   segments : Array[String],
   needle : String,
-  budget : Ref[Int],
+  budget : Ref[Int32],
 ) -> Array[TemplateSpan] raise TemplateScanError {
   let needle_units = needle.code_units()
   let needle_length = needle_units.length()
-  let starts : Array[Int] = []
+  let starts : Array[Int32] = []
   let mut total = 0
   for segment in segments {
     starts.push(total)
@@ -172,12 +172,12 @@ priv struct ScanCursor {
   segments : Array[String]
   // flattened (segment, offset) pairs are recomputed from a linear
   // position so the scanner itself works over one logical text
-  starts : Array[Int]
-  total : Int
+  starts : Array[Int32]
+  total : Int32
 }
 
 ///|
-fn ScanCursor::unit_at(self : ScanCursor, position : Int) -> Int {
+fn ScanCursor::unit_at(self : ScanCursor, position : Int32) -> Int32 {
   // segments are typically few (runs of one paragraph region); a linear
   // segment lookup with a moving lower bound would complicate the caller
   // contract, so binary-search the owning segment
@@ -195,7 +195,7 @@ fn ScanCursor::unit_at(self : ScanCursor, position : Int) -> Int {
 }
 
 ///|
-fn ScanCursor::point(self : ScanCursor, position : Int) -> (Int, Int) {
+fn ScanCursor::point(self : ScanCursor, position : Int32) -> (Int32, Int32) {
   if self.total == 0 {
     return (0, 0)
   }
@@ -217,7 +217,11 @@ fn ScanCursor::point(self : ScanCursor, position : Int) -> (Int, Int) {
 }
 
 ///|
-fn ScanCursor::span(self : ScanCursor, start : Int, end : Int) -> TemplateSpan {
+fn ScanCursor::span(
+  self : ScanCursor,
+  start : Int32,
+  end : Int32,
+) -> TemplateSpan {
   let (start_segment, start_offset) = self.point(start)
   let (end_segment, end_offset) = self.point(end)
   { start_segment, start_offset, end_segment, end_offset, }
@@ -230,9 +234,9 @@ fn ScanCursor::span(self : ScanCursor, start : Int, end : Int) -> TemplateSpan {
 /// way the query surface bounds predicate work.
 pub fn scan_placeholders(
   segments : Array[String],
-  budget : Ref[Int],
+  budget : Ref[Int32],
 ) -> TemplateScan raise TemplateScanError {
-  let starts : Array[Int] = []
+  let starts : Array[Int32] = []
   let mut total = 0
   for segment in segments {
     starts.push(total)
@@ -271,13 +275,13 @@ pub fn scan_placeholders(
         reason = "unterminated placeholder at end of text"
       } else {
         let first = cursor.unit_at(probe)
-        if first is ('A'..='Z' | 'a'..='z' | '_') {
+        if first is ('A'..<='Z' | 'a'..<='z' | '_') {
           key.write_char(first.unsafe_to_char())
           let mut key_units = 1
           probe += 1
           while reason == "" && probe < total {
             let next = cursor.unit_at(probe)
-            if next is ('A'..='Z' | 'a'..='z' | '0'..='9' | '_' | '.' | '-') {
+            if next is ('A'..<='Z' | 'a'..<='z' | '0'..<='9' | '_' | '.' | '-') {
               if key_units >= 64 {
                 reason = "placeholder key exceeds 64 characters"
               } else {

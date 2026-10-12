@@ -258,9 +258,9 @@ pub(all) enum ValidationError {
   MissingCMYKProfile
   InconsistentSeparationFallback(SeparationColorant)
   ContainsNotDefGlyph(Font, Location?, String)
-  NoCodepointMapping(Font, Int, Location?)
-  InvalidCodepointMapping(Font, Int, Char, Location?)
-  UnicodePrivateArea(Font, Int, Char, Location?)
+  NoCodepointMapping(Font, Int32, Location?)
+  InvalidCodepointMapping(Font, Int32, Char, Location?)
+  UnicodePrivateArea(Font, Int32, Char, Location?)
   RestrictedLicense(Font)
   NoDocumentLanguage
   NoDocumentTitle

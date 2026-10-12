@@ -1,5 +1,5 @@
 ///|
-fn count_xml_tag_pivot_chart(xml : String, tag : String) -> Int {
+fn count_xml_tag_pivot_chart(xml : String, tag : String) -> Int32 {
   let mut count = 0
   let mut first = true
   for _ in xml.split(tag) {

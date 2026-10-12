@@ -1,8 +1,8 @@
 ///|
-let raw_cli_max_package_bytes : Int = 128 * 1024 * 1024
+let raw_cli_max_package_bytes : Int32 = 128 * 1024 * 1024
 
 ///|
-let raw_cli_max_xml_bytes : Int = 1024 * 1024
+let raw_cli_max_xml_bytes : Int32 = 1024 * 1024
 
 ///|
 fn repeated_values(matches : @argparse.Matches, name : String) -> Array[String] {
@@ -60,10 +60,10 @@ fn cli_file_error(code : String, message : String, path : String) -> CliFailure 
 ///|
 async fn read_bounded_file(
   path : String,
-  maximum : Int,
+  maximum : Int32,
   code : String,
   description : String,
-  limit_code? : String = "office.raw.resource_limit",
+  limit_code~ : String = "office.raw.resource_limit",
 ) -> Bytes {
   let kind = @afs.kind(path) catch {
     error if @async.is_being_cancelled() => raise error
@@ -341,7 +341,7 @@ async fn run_raw_read(matches : @argparse.Matches) -> Unit {
 ///|
 fn checked_transaction_options(
   matches : @argparse.Matches,
-  positional? : String = "file",
+  positional~ : String = "file",
 ) -> @transaction.TransactionOptions raise CliFailure {
   let file = required_value(matches, positional)
   let output = optional_value(matches, "out")

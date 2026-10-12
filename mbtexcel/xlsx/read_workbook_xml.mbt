@@ -1,7 +1,7 @@
 ///|
 priv struct WorkbookSheetInfo {
   name : String
-  sheet_id : UInt
+  sheet_id : UInt32
   state : SheetState
   rel_id : String
 }
@@ -76,12 +76,12 @@ fn workbook_scanner_has_exact_attributes(
 ///|
 fn parse_workbook_sheets(
   xml : StringView,
-  max_sheets : Int,
-  cancelled? : () -> Bool = () => false,
+  max_sheets : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> Array[WorkbookSheetInfo] raise XlsxError {
   let sheets : Array[WorkbookSheetInfo] = []
   let sheet_names : Map[String, Bool] = Map([])
-  let sheet_ids : Map[UInt, Bool] = Map([])
+  let sheet_ids : Map[UInt32, Bool] = Map([])
   let scanner = @ooxml.XmlStartTagScanner::new(xml, cancelled~)
   let mut workbook_namespace : String? = None
   while workbook_scanner_next(scanner) {
@@ -264,7 +264,7 @@ test "read workbook sheets accepts only exact visibility states" {
 }
 
 ///|
-fn parse_active_sheet_index(xml : StringView) -> Int? raise XlsxError {
+fn parse_active_sheet_index(xml : StringView) -> Int32? raise XlsxError {
   let xml_str = xml.to_owned()
   let marker = "<workbookView"
   match xml_str.find(marker) {

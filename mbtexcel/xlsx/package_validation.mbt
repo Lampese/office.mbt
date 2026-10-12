@@ -46,8 +46,8 @@ fn package_validation_content_types(
 fn charge_package_validation_xml_part(
   data : BytesView,
   limits : ReadLimits,
-  total_xml_bytes : Ref[Int],
-  markup_tokens : Ref[Int],
+  total_xml_bytes : Ref[Int32],
+  markup_tokens : Ref[Int32],
 ) -> Unit raise XlsxError {
   if data.length() > limits.max_xml_part_bytes {
     raise ResourceLimitExceeded(
@@ -157,7 +157,7 @@ fn enforce_package_validation_xml_limits(
 /// defects exist, so diagnostics cannot become an attacker-sized second tree.
 pub fn validate_ooxml_package(
   bytes : BytesView,
-  limits? : ReadLimits = ReadLimits::new(),
+  limits~ : ReadLimits = ReadLimits::new(),
 ) -> Array[String] raise XlsxError {
   let archive = read_limited_archive(bytes, limits) catch {
     InvalidPackage(_) => return ["archive is not a readable zip"]
@@ -175,7 +175,7 @@ pub fn validate_ooxml_package(
 /// applies.
 pub fn validate_ooxml_bounded_archive(
   archive : @zip.Archive,
-  limits? : ReadLimits = ReadLimits::new(),
+  limits~ : ReadLimits = ReadLimits::new(),
 ) -> Array[String] raise XlsxError {
   require_bounded_archive(archive, limits)
   enforce_package_validation_xml_limits(archive, limits)
@@ -188,7 +188,7 @@ fn validate_ooxml_archive(
   archive : @zip.Archive,
 ) -> Array[String] raise XlsxError {
   let problems : Array[String] = []
-  let parts : Map[String, Int] = Map([])
+  let parts : Map[String, Int32] = Map([])
   for entry in archive.entries() {
     let name = entry.name()
     parts[name] = parts.get(name).unwrap_or(0) + 1
@@ -391,7 +391,7 @@ fn rels_base_dir(rels_part : String) -> String {
 /// leading-slash absolute form and `.`/`..` segments. Returns "" when
 /// the path escapes the package root (which the caller treats as
 /// unresolvable rather than a definite error).
-fn package_diagnostic_excerpt(value : StringView, maximum : Int) -> String {
+fn package_diagnostic_excerpt(value : StringView, maximum : Int32) -> String {
   if value.length() <= maximum {
     value.to_owned()
   } else {

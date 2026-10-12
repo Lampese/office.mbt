@@ -171,7 +171,7 @@ fn capability_action(
   name : String,
   requires : Array[String],
   forbids : Array[String],
-  restrictions? : Array[String] = [],
+  restrictions~ : Array[String] = [],
 ) -> CapabilityAction {
   { name, requires, forbids, restrictions, }
 }
@@ -2435,7 +2435,7 @@ fn append_fingerprint_field(
 fn append_fingerprint_section(
   buffer : StringBuilder,
   name : String,
-  length : Int,
+  length : Int32,
 ) -> Unit {
   append_fingerprint_token(buffer, name)
   append_fingerprint_token(buffer, length.to_string())

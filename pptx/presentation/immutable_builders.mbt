@@ -37,7 +37,7 @@ pub fn Presentation::clone(self : Presentation) -> Presentation {
 /// raises `Malformed`.
 pub fn Presentation::with_added_slide(
   self : Presentation,
-  layout_index~ : Int,
+  layout_index~ : Int32,
 ) -> (Presentation, String) raise PptxError {
   let cloned = self.clone()
   let new_name = cloned.add_slide_mut(layout_index)
@@ -51,7 +51,7 @@ pub fn Presentation::with_added_slide(
 /// untouched.
 pub fn Presentation::with_slide_updated(
   self : Presentation,
-  slide_index : Int,
+  slide_index : Int32,
   new_slide : @slide.Slide,
 ) -> Presentation raise PptxError {
   let cloned = self.clone()

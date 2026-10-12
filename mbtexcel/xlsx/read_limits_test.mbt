@@ -10,10 +10,10 @@ fn bounded_workbook_fixture() -> Bytes raise @xlsx.XlsxError {
 ///|
 fn bounded_fixture_archive(
   bytes : BytesView,
-  max_entries? : Int = 8192,
-  max_entry_uncompressed_bytes? : Int = 64 * 1024 * 1024,
-  max_total_uncompressed_bytes? : Int = 256 * 1024 * 1024,
-  max_total_preserved_source_bytes? : Int = 128 * 1024 * 1024 + 65_535,
+  max_entries~ : Int32 = 8192,
+  max_entry_uncompressed_bytes~ : Int32 = 64 * 1024 * 1024,
+  max_total_uncompressed_bytes~ : Int32 = 256 * 1024 * 1024,
+  max_total_preserved_source_bytes~ : Int32 = 128 * 1024 * 1024 + 65_535,
 ) -> @zip.Archive raise @zip.ZipError {
   @zip.read(
     bytes,

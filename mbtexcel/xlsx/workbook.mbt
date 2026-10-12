@@ -137,7 +137,7 @@ pub fn Workbook::chart_sheet(self : Workbook, name : StringView) -> ChartSheet? 
 }
 
 ///|
-pub fn Workbook::sheet_name(self : Workbook, index : Int) -> String? {
+pub fn Workbook::sheet_name(self : Workbook, index : Int32) -> String? {
   if index < 0 || index >= self.sheet_order.length() {
     return None
   }
@@ -156,8 +156,8 @@ pub fn Workbook::get_sheet_list(self : Workbook) -> Array[String] {
 }
 
 ///|
-pub fn Workbook::get_sheet_map(self : Workbook) -> Map[Int, String] {
-  let mapping : Map[Int, String] = Map([])
+pub fn Workbook::get_sheet_map(self : Workbook) -> Map[Int32, String] {
+  let mapping : Map[Int32, String] = Map([])
   for index, entry in self.sheet_order {
     mapping[index + 1] = self.sheet_entry_name(entry)
   }
@@ -168,7 +168,7 @@ pub fn Workbook::get_sheet_map(self : Workbook) -> Map[Int, String] {
 pub fn Workbook::sheet_index(
   self : Workbook,
   name : StringView,
-) -> Int raise XlsxError {
+) -> Int32 raise XlsxError {
   match self.sheet_entry_index(name) {
     Some(value) => value
     None => raise SheetNotFound(name=name.to_owned())
@@ -186,7 +186,7 @@ pub fn Workbook::sheets(self : Workbook) -> ArrayView[Worksheet] {
 ///|
 /// Returns the number of concrete worksheet cell records currently retained
 /// by the workbook. Range metadata such as merges and validations is excluded.
-pub fn Workbook::materialized_cell_count(self : Workbook) -> Int {
+pub fn Workbook::materialized_cell_count(self : Workbook) -> Int32 {
   let mut count = 0
   for sheet in self.sheets {
     count = count + sheet.cells().length()
@@ -198,7 +198,7 @@ pub fn Workbook::materialized_cell_count(self : Workbook) -> Int {
 /// Returns the retained row and column dimension records across all worksheets.
 pub fn Workbook::materialized_row_column_dimension_count(
   self : Workbook,
-) -> Int {
+) -> Int32 {
   let mut count = 0
   for sheet in self.sheets {
     count = count +
@@ -314,7 +314,7 @@ pub fn Workbook::set_custom_props(
   if prop.name == "" {
     raise InvalidWorkbookProperty(msg="custom property name missing")
   }
-  let mut index : Int? = None
+  let mut index : Int32? = None
   for i, existing in self.custom_properties {
     if existing.name == prop.name {
       index = Some(i)
@@ -423,7 +423,7 @@ pub fn Workbook::set_zip_writer(
 ///|
 pub fn Workbook::protect_workbook(
   self : Workbook,
-  options? : WorkbookProtectionOptions = WorkbookProtectionOptions::new(),
+  options~ : WorkbookProtectionOptions = WorkbookProtectionOptions::new(),
 ) -> Unit raise XlsxError {
   self.workbook_protection = Some(workbook_protection_from_options(options))
 }
@@ -431,7 +431,7 @@ pub fn Workbook::protect_workbook(
 ///|
 pub fn Workbook::unprotect_workbook(
   self : Workbook,
-  password? : String = "",
+  password~ : String = "",
 ) -> Unit raise XlsxError {
   let protection = match self.workbook_protection {
     Some(value) => value
@@ -444,7 +444,7 @@ pub fn Workbook::unprotect_workbook(
 }
 
 ///|
-pub fn Workbook::active_sheet_index(self : Workbook) -> Int {
+pub fn Workbook::active_sheet_index(self : Workbook) -> Int32 {
   self.active_sheet_index
 }
 
@@ -452,7 +452,7 @@ pub fn Workbook::active_sheet_index(self : Workbook) -> Int {
 /// Marks the sheet at `index` (0-based, in tab order across worksheets and
 /// chart sheets) as the active sheet — the one Excel selects and shows when the
 /// workbook is opened. An out-of-range `index` falls back to the first sheet.
-pub fn Workbook::set_active_sheet(self : Workbook, index : Int) -> Unit {
+pub fn Workbook::set_active_sheet(self : Workbook, index : Int32) -> Unit {
   if self.sheet_order.length() == 0 {
     self.active_sheet_index = 0
     return
@@ -627,8 +627,8 @@ pub fn Workbook::move_sheet(
 ///|
 pub fn Workbook::copy_sheet(
   self : Workbook,
-  from_index : Int,
-  to_index : Int,
+  from_index : Int32,
+  to_index : Int32,
 ) -> Unit raise XlsxError {
   if from_index < 0 ||
     to_index < 0 ||
@@ -661,7 +661,7 @@ pub fn Workbook::set_sheet_visible(
   self : Workbook,
   name : StringView,
   visible : Bool,
-  very_hidden? : Bool = false,
+  very_hidden~ : Bool = false,
 ) -> Unit raise XlsxError {
   check_sheet_name(name)
   let index = self.sheet_index(name)
@@ -795,7 +795,7 @@ pub fn Workbook::get_sheet_props(
 pub fn Workbook::set_sheet_view(
   self : Workbook,
   sheet_name : StringView,
-  view_index : Int,
+  view_index : Int32,
   options : SheetViewOptions,
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
@@ -806,7 +806,7 @@ pub fn Workbook::set_sheet_view(
 pub fn Workbook::get_sheet_view(
   self : Workbook,
   sheet_name : StringView,
-  view_index : Int,
+  view_index : Int32,
 ) -> SheetViewOptions raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.get_sheet_view(view_index)
@@ -867,7 +867,7 @@ pub fn Workbook::protect_sheet(
 pub fn Workbook::unprotect_sheet(
   self : Workbook,
   sheet_name : StringView,
-  password? : String = "",
+  password~ : String = "",
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.unprotect_sheet(password~)
@@ -1059,7 +1059,7 @@ fn Workbook::stage_adjusted_defined_names_for_sheet(
   self : Workbook,
   sheet_name : String,
   adjust_fn : (StringView) -> String? raise XlsxError,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Array[DefinedName]? raise XlsxError {
   check_read_cancelled(cancelled)
   if self.defined_names.length() == 0 {
@@ -1115,9 +1115,9 @@ fn clone_strings(values : ArrayView[String]) -> Array[String] {
 
 ///|
 fn clone_row_dimensions(
-  values : Map[Int, RowDimension],
-) -> Map[Int, RowDimension] {
-  let out : Map[Int, RowDimension] = Map([])
+  values : Map[Int32, RowDimension],
+) -> Map[Int32, RowDimension] {
+  let out : Map[Int32, RowDimension] = Map([])
   for row, dim in values {
     out[row] = dim
   }
@@ -1126,9 +1126,9 @@ fn clone_row_dimensions(
 
 ///|
 fn clone_col_dimensions(
-  values : Map[Int, ColDimension],
-) -> Map[Int, ColDimension] {
-  let out : Map[Int, ColDimension] = Map([])
+  values : Map[Int32, ColDimension],
+) -> Map[Int32, ColDimension] {
+  let out : Map[Int32, ColDimension] = Map([])
   for col, dim in values {
     out[col] = dim
   }
@@ -1214,7 +1214,7 @@ fn clone_sparkline_groups(
 /// allocates fresh part numbers for the duplicated pivots.
 fn clone_pivot_tables(
   values : ArrayView[PivotTable],
-  preserve_ids? : Bool = false,
+  preserve_ids~ : Bool = false,
 ) -> Array[PivotTable] {
   let out : Array[PivotTable] = []
   for value in values {
@@ -1456,7 +1456,7 @@ fn clone_worksheet(
       sheet.preserved_drawing_parts,
     ),
     cell_vm: {
-      let copy : Map[String, Int] = Map([])
+      let copy : Map[String, Int32] = Map([])
       for reference, vm in sheet.cell_vm {
         copy[reference] = vm
       }
@@ -1475,7 +1475,7 @@ pub fn Workbook::row_stream(
 }
 
 ///|
-pub fn Workbook::add_style(self : Workbook, style : Style) -> Int {
+pub fn Workbook::add_style(self : Workbook, style : Style) -> Int32 {
   self.styles.push(style)
   self.styles.length() - 1
 }
@@ -1485,14 +1485,14 @@ pub fn Workbook::add_style(self : Workbook, style : Style) -> Int {
 /// that id to the styling APIs — e.g. `Worksheet::set_cell_style`,
 /// `Workbook::set_col_style`, or the `style_id` field of `RowOpts` — to apply
 /// the formatting to cells, columns, or rows.
-pub fn Workbook::new_style(self : Workbook, style : Style) -> Int {
+pub fn Workbook::new_style(self : Workbook, style : Style) -> Int32 {
   self.add_style(style)
 }
 
 ///|
 fn Workbook::check_style_id(
   self : Workbook,
-  style_id : Int,
+  style_id : Int32,
 ) -> Unit raise XlsxError {
   if style_id < 0 || style_id >= self.styles.length() {
     raise InvalidStyleId(index=style_id)
@@ -1502,7 +1502,7 @@ fn Workbook::check_style_id(
 ///|
 fn Workbook::check_conditional_style_id(
   self : Workbook,
-  style_id : Int,
+  style_id : Int32,
 ) -> Unit raise XlsxError {
   if style_id < 0 || style_id >= self.conditional_styles.length() {
     raise InvalidStyleId(index=style_id)
@@ -1512,14 +1512,14 @@ fn Workbook::check_conditional_style_id(
 ///|
 pub fn Workbook::get_style(
   self : Workbook,
-  style_id : Int,
+  style_id : Int32,
 ) -> Style raise XlsxError {
   self.check_style_id(style_id)
   self.styles[style_id]
 }
 
 ///|
-pub fn Workbook::new_conditional_style(self : Workbook, style : Style) -> Int {
+pub fn Workbook::new_conditional_style(self : Workbook, style : Style) -> Int32 {
   self.conditional_styles.push(style)
   self.conditional_styles.length() - 1
 }
@@ -1527,7 +1527,7 @@ pub fn Workbook::new_conditional_style(self : Workbook, style : Style) -> Int {
 ///|
 pub fn Workbook::get_conditional_style(
   self : Workbook,
-  style_id : Int,
+  style_id : Int32,
 ) -> Style raise XlsxError {
   self.check_conditional_style_id(style_id)
   self.conditional_styles[style_id]
@@ -1542,7 +1542,7 @@ pub fn Workbook::get_cell_value_styled(
   self : Workbook,
   sheet_name : StringView,
   reference : StringView,
-  style_id : Int,
+  style_id : Int32,
   options? : Options,
 ) -> String? raise XlsxError {
   check_sheet_name(sheet_name)
@@ -1586,7 +1586,7 @@ fn format_cell_value_for_workbook(
   cell : Cell,
   raw : Bool,
   options : Options,
-  use_1904_format? : Bool = false,
+  use_1904_format~ : Bool = false,
 ) -> String raise XlsxError {
   if raw || options.raw_cell_value {
     return cell.value
@@ -1611,8 +1611,8 @@ fn Workbook::uses_1904_date_system(self : Workbook) -> Bool {
 ///|
 fn normalize_cell_float_value(
   value : Double,
-  precision : Int,
-  bit_size : Int,
+  precision : Int32,
+  bit_size : Int32,
 ) -> Double {
   let normalized = if bit_size == 32 {
     Float::from_double(value).to_double()
@@ -1686,7 +1686,7 @@ pub fn Workbook::set_cell_int(
   self : Workbook,
   sheet_name : StringView,
   reference : String,
-  value : Int,
+  value : Int32,
 ) -> Unit raise XlsxError {
   self.set_cell_value(sheet_name, reference, Numeric(Double::from_int(value)))
 }
@@ -1696,7 +1696,7 @@ pub fn Workbook::set_cell_uint(
   self : Workbook,
   sheet_name : StringView,
   reference : String,
-  value : UInt,
+  value : UInt32,
 ) -> Unit raise XlsxError {
   self.set_cell_value(
     sheet_name,
@@ -1711,8 +1711,8 @@ pub fn Workbook::set_cell_float(
   sheet_name : StringView,
   reference : String,
   value : Double,
-  precision? : Int = -1,
-  bit_size? : Int = 64,
+  precision~ : Int32 = -1,
+  bit_size~ : Int32 = 64,
 ) -> Unit raise XlsxError {
   let normalized = normalize_cell_float_value(value, precision, bit_size)
   self.set_cell_value(sheet_name, reference, Numeric(normalized))
@@ -1756,8 +1756,8 @@ pub fn Workbook::set_cell_hyperlink(
   reference : String,
   target : String,
   link_type : HyperlinkType,
-  display? : String = "",
-  tooltip? : String = "",
+  display~ : String = "",
+  tooltip~ : String = "",
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.set_cell_hyperlink(reference, target, link_type, display~, tooltip~)
@@ -1770,7 +1770,7 @@ pub fn Workbook::set_cell_hyperlink_opts(
   reference : String,
   target : String,
   link_type : HyperlinkType,
-  opts? : HyperlinkOpts = HyperlinkOpts::new(),
+  opts~ : HyperlinkOpts = HyperlinkOpts::new(),
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.set_cell_hyperlink_opts(reference, target, link_type, opts~)
@@ -1783,8 +1783,8 @@ pub fn Workbook::set_cell_hyper_link(
   reference : String,
   target : String,
   link_type : HyperlinkType,
-  display? : String = "",
-  tooltip? : String = "",
+  display~ : String = "",
+  tooltip~ : String = "",
 ) -> Unit raise XlsxError {
   self.set_cell_hyperlink(
     sheet_name,
@@ -1901,7 +1901,7 @@ pub fn Workbook::get_cell_value(
   self : Workbook,
   sheet_name : StringView,
   reference : StringView,
-  raw? : Bool = false,
+  raw~ : Bool = false,
   options? : Options,
 ) -> String? raise XlsxError {
   check_sheet_name(sheet_name)
@@ -1946,9 +1946,9 @@ pub fn Workbook::get_cell_value(
 pub fn Workbook::get_cell_value_from_worksheet_rc(
   self : Workbook,
   worksheet : Worksheet,
-  row : Int,
-  col : Int,
-  raw? : Bool = false,
+  row : Int32,
+  col : Int32,
+  raw~ : Bool = false,
   options? : Options,
 ) -> String? raise XlsxError {
   self.require_owned_worksheet(worksheet)
@@ -1985,11 +1985,11 @@ pub fn Workbook::get_cell_value_from_worksheet_rc(
 pub fn Workbook::get_cell_value_styled_from_worksheet_rc(
   self : Workbook,
   worksheet : Worksheet,
-  row : Int,
-  col : Int,
-  style_id : Int,
+  row : Int32,
+  col : Int32,
+  style_id : Int32,
   options? : Options,
-  max_output_chars? : Int,
+  max_output_chars? : Int32,
 ) -> String? raise XlsxError {
   self.require_owned_worksheet(worksheet)
   ignore(cell_ref_from(row, col))
@@ -2027,10 +2027,10 @@ pub fn Workbook::calc_cell_value(
   self : Workbook,
   sheet_name : StringView,
   reference : StringView,
-  raw? : Bool = false,
+  raw~ : Bool = false,
   options? : Options,
-  formula_limits? : SharedFormulaLimits = SharedFormulaLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  formula_limits~ : SharedFormulaLimits = SharedFormulaLimits::new(),
+  cancelled~ : () -> Bool = () => false,
 ) -> String raise XlsxError {
   check_sheet_name(sheet_name)
   let resolved_options = match options {
@@ -2076,12 +2076,12 @@ pub fn Workbook::calc_cell_value(
 pub fn Workbook::calc_cell_value_rc(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
-  col : Int,
-  raw? : Bool = false,
+  row : Int32,
+  col : Int32,
+  raw~ : Bool = false,
   options? : Options,
-  formula_limits? : SharedFormulaLimits = SharedFormulaLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  formula_limits~ : SharedFormulaLimits = SharedFormulaLimits::new(),
+  cancelled~ : () -> Bool = () => false,
 ) -> String raise XlsxError {
   let reference = cell_ref_from(row, col)
   match options {
@@ -2120,8 +2120,8 @@ pub fn Workbook::calc_cell_typed(
   self : Workbook,
   sheet_name : StringView,
   reference : StringView,
-  formula_limits? : SharedFormulaLimits = SharedFormulaLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  formula_limits~ : SharedFormulaLimits = SharedFormulaLimits::new(),
+  cancelled~ : () -> Bool = () => false,
 ) -> CellValue? raise XlsxError {
   check_sheet_name(sheet_name)
   let sheet = match self.sheet(sheet_name) {
@@ -2144,10 +2144,10 @@ pub fn Workbook::calc_cell_typed(
 pub fn Workbook::calc_cell_typed_rc(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
-  col : Int,
-  formula_limits? : SharedFormulaLimits = SharedFormulaLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  row : Int32,
+  col : Int32,
+  formula_limits~ : SharedFormulaLimits = SharedFormulaLimits::new(),
+  cancelled~ : () -> Bool = () => false,
 ) -> CellValue? raise XlsxError {
   self.calc_cell_typed(
     sheet_name,
@@ -2163,7 +2163,7 @@ pub fn Workbook::set_cell_formula(
   sheet_name : StringView,
   reference : String,
   formula : String,
-  value? : String = "",
+  value~ : String = "",
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.set_cell_formula(reference, formula, value~)
@@ -2175,8 +2175,8 @@ pub fn Workbook::set_cell_formula_opts(
   sheet_name : StringView,
   reference : String,
   formula : String,
-  opts? : FormulaOpts = FormulaOpts::new(),
-  value? : String = "",
+  opts~ : FormulaOpts = FormulaOpts::new(),
+  value~ : String = "",
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.set_cell_formula_opts(reference, formula, opts~, value~)
@@ -2197,7 +2197,7 @@ pub fn Workbook::set_cell_style(
   self : Workbook,
   sheet_name : StringView,
   reference : String,
-  style_id : Int,
+  style_id : Int32,
 ) -> Unit raise XlsxError {
   check_sheet_name(sheet_name)
   self.check_style_id(style_id)
@@ -2210,7 +2210,7 @@ pub fn Workbook::get_cell_style(
   self : Workbook,
   sheet_name : StringView,
   reference : StringView,
-) -> Int? raise XlsxError {
+) -> Int32? raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.get_cell_style(reference)
 }
@@ -2223,20 +2223,20 @@ pub fn Workbook::add_image(
   data : Bytes,
   extension : String,
   content_type : String,
-  offset_x? : Int = 0,
-  offset_y? : Int = 0,
-  scale_x? : Double = 1.0,
-  scale_y? : Double = 1.0,
-  hyperlink? : String = "",
-  hyperlink_type? : HyperlinkType = Unset,
-  name? : String = "",
-  alt_text? : String = "",
-  lock_aspect_ratio? : Bool = false,
-  auto_fit? : Bool = false,
-  auto_fit_ignore_aspect? : Bool = false,
-  print_object? : Bool = true,
-  locked? : Bool = true,
-  positioning? : PicturePositioning = OneCell,
+  offset_x~ : Int32 = 0,
+  offset_y~ : Int32 = 0,
+  scale_x~ : Double = 1.0,
+  scale_y~ : Double = 1.0,
+  hyperlink~ : String = "",
+  hyperlink_type~ : HyperlinkType = Unset,
+  name~ : String = "",
+  alt_text~ : String = "",
+  lock_aspect_ratio~ : Bool = false,
+  auto_fit~ : Bool = false,
+  auto_fit_ignore_aspect~ : Bool = false,
+  print_object~ : Bool = true,
+  locked~ : Bool = true,
+  positioning~ : PicturePositioning = OneCell,
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.add_image(
@@ -2315,20 +2315,20 @@ pub async fn Workbook::add_picture(
   sheet_name : StringView,
   reference : String,
   path : String,
-  offset_x? : Int = 0,
-  offset_y? : Int = 0,
-  scale_x? : Double = 1.0,
-  scale_y? : Double = 1.0,
-  hyperlink? : String = "",
-  hyperlink_type? : HyperlinkType = Unset,
-  name? : String = "",
-  alt_text? : String = "",
-  lock_aspect_ratio? : Bool = false,
-  auto_fit? : Bool = false,
-  auto_fit_ignore_aspect? : Bool = false,
-  print_object? : Bool = true,
-  locked? : Bool = true,
-  positioning? : PicturePositioning = OneCell,
+  offset_x~ : Int32 = 0,
+  offset_y~ : Int32 = 0,
+  scale_x~ : Double = 1.0,
+  scale_y~ : Double = 1.0,
+  hyperlink~ : String = "",
+  hyperlink_type~ : HyperlinkType = Unset,
+  name~ : String = "",
+  alt_text~ : String = "",
+  lock_aspect_ratio~ : Bool = false,
+  auto_fit~ : Bool = false,
+  auto_fit_ignore_aspect~ : Bool = false,
+  print_object~ : Bool = true,
+  locked~ : Bool = true,
+  positioning~ : PicturePositioning = OneCell,
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.add_picture(
@@ -2371,20 +2371,20 @@ pub fn Workbook::add_picture_from_bytes(
   reference : String,
   data : Bytes,
   extension : String,
-  offset_x? : Int = 0,
-  offset_y? : Int = 0,
-  scale_x? : Double = 1.0,
-  scale_y? : Double = 1.0,
-  hyperlink? : String = "",
-  hyperlink_type? : HyperlinkType = Unset,
-  name? : String = "",
-  alt_text? : String = "",
-  lock_aspect_ratio? : Bool = false,
-  auto_fit? : Bool = false,
-  auto_fit_ignore_aspect? : Bool = false,
-  print_object? : Bool = true,
-  locked? : Bool = true,
-  positioning? : PicturePositioning = OneCell,
+  offset_x~ : Int32 = 0,
+  offset_y~ : Int32 = 0,
+  scale_x~ : Double = 1.0,
+  scale_y~ : Double = 1.0,
+  hyperlink~ : String = "",
+  hyperlink_type~ : HyperlinkType = Unset,
+  name~ : String = "",
+  alt_text~ : String = "",
+  lock_aspect_ratio~ : Bool = false,
+  auto_fit~ : Bool = false,
+  auto_fit_ignore_aspect~ : Bool = false,
+  print_object~ : Bool = true,
+  locked~ : Bool = true,
+  positioning~ : PicturePositioning = OneCell,
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.add_picture_from_bytes(
@@ -2932,7 +2932,7 @@ pub fn Workbook::get_auto_filter(
 }
 
 ///|
-fn abs_cell_ref_from_rc(row : Int, col : Int) -> String raise XlsxError {
+fn abs_cell_ref_from_rc(row : Int32, col : Int32) -> String raise XlsxError {
   let base = cell_ref_from(row, col)
   let chars = base.to_array()
   let mut split = 0
@@ -3029,7 +3029,7 @@ pub fn Workbook::add_data_validation_list(
   sheet_name : StringView,
   range_ref : String,
   values : ArrayView[String],
-  allow_blank? : Bool = true,
+  allow_blank~ : Bool = true,
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.add_data_validation_list(range_ref, values, allow_blank~)
@@ -3048,7 +3048,7 @@ pub fn Workbook::get_data_validations(
 pub fn Workbook::delete_data_validation(
   self : Workbook,
   sheet_name : StringView,
-  sqrefs? : Array[String] = [],
+  sqrefs~ : Array[String] = [],
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.delete_data_validation(sqrefs~)
@@ -3168,7 +3168,7 @@ pub fn Workbook::get_merge_cells(
 pub fn Workbook::get_merge_cells_info(
   self : Workbook,
   sheet_name : StringView,
-  without_values? : Bool = false,
+  without_values~ : Bool = false,
   options? : Options,
 ) -> Array[MergeCell] raise XlsxError {
   check_sheet_name(sheet_name)
@@ -3237,10 +3237,10 @@ pub fn Workbook::add_table(
 
   fn intersects_existing_tables(
     sheet : Worksheet,
-    min_row : Int,
-    min_col : Int,
-    max_row : Int,
-    max_col : Int,
+    min_row : Int32,
+    min_col : Int32,
+    max_row : Int32,
+    max_col : Int32,
   ) -> Bool raise XlsxError {
     for table in sheet.tables() {
       let (t_min_row, t_min_col, t_max_row, t_max_col) = parse_range_ref(
@@ -3333,13 +3333,13 @@ pub fn Workbook::add_table_with_columns(
   range_ref : String,
   name : String,
   columns : ArrayView[String],
-  display_name? : String = "",
-  style_name? : String = "TableStyleMedium9",
-  show_first_column? : Bool = false,
-  show_last_column? : Bool = false,
-  show_row_stripes? : Bool = true,
-  show_column_stripes? : Bool = false,
-  show_header_row? : Bool = true,
+  display_name~ : String = "",
+  style_name~ : String = "TableStyleMedium9",
+  show_first_column~ : Bool = false,
+  show_last_column~ : Bool = false,
+  show_row_stripes~ : Bool = true,
+  show_column_stripes~ : Bool = false,
+  show_header_row~ : Bool = true,
 ) -> Table raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.add_table(
@@ -3407,7 +3407,7 @@ pub fn Workbook::add_sparkline_group(
   sheet_name : StringView,
   locations : ArrayView[String],
   ranges : ArrayView[String],
-  sparkline_type? : SparklineType = Line,
+  sparkline_type~ : SparklineType = Line,
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.add_sparkline_group(locations, ranges, sparkline_type~)
@@ -3429,7 +3429,7 @@ pub fn Workbook::add_sparkline_basic(
   sheet_name : StringView,
   location : String,
   range_ref : String,
-  sparkline_type? : SparklineType = Line,
+  sparkline_type~ : SparklineType = Line,
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.add_sparkline(location, range_ref, sparkline_type~)
@@ -3441,8 +3441,8 @@ pub fn Workbook::add_pivot_table_xml(
   sheet_name : StringView,
   table_xml : String,
   cache_definition_xml : String,
-  cache_records_xml? : String = "",
-  name? : String = "",
+  cache_records_xml~ : String = "",
+  name~ : String = "",
 ) -> PivotTable raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.add_pivot_table_xml(
@@ -3512,33 +3512,33 @@ fn Workbook::add_pivot_table_with_options(
     }
     field_names.push(value)
   }
-  let field_index : Map[String, Int] = Map([])
+  let field_index : Map[String, Int32] = Map([])
   for i, name in field_names {
     field_index[name] = i
   }
   fn resolve_field_index(
-    field_index : Map[String, Int],
+    field_index : Map[String, Int32],
     name : String,
-  ) -> Int raise XlsxError {
+  ) -> Int32 raise XlsxError {
     match field_index.get(name) {
       Some(idx) => idx
       None => raise InvalidPivotTable(msg="pivot field not found: \{name}")
     }
   }
 
-  let row_fields : Array[(Int, PivotTableField)] = []
+  let row_fields : Array[(Int32, PivotTableField)] = []
   for field in opts.rows {
     row_fields.push((resolve_field_index(field_index, field.data), field))
   }
-  let col_fields : Array[(Int, PivotTableField)] = []
+  let col_fields : Array[(Int32, PivotTableField)] = []
   for field in opts.columns {
     col_fields.push((resolve_field_index(field_index, field.data), field))
   }
-  let page_fields : Array[(Int, PivotTableField)] = []
+  let page_fields : Array[(Int32, PivotTableField)] = []
   for field in opts.filter {
     page_fields.push((resolve_field_index(field_index, field.data), field))
   }
-  let data_fields : Array[(Int, PivotTableField)] = []
+  let data_fields : Array[(Int32, PivotTableField)] = []
   for field in opts.data {
     let idx = resolve_field_index(field_index, field.data)
     data_fields.push((idx, field))
@@ -3578,7 +3578,7 @@ fn Workbook::add_pivot_table_with_options(
 /// relationship and the workbook `<pivotCaches>` entry consistent, and can
 /// never collide with an id the writer allocates later because the writer
 /// always starts above the maximum id already assigned.
-fn Workbook::next_pivot_cache_id(self : Workbook) -> Int {
+fn Workbook::next_pivot_cache_id(self : Workbook) -> Int32 {
   let mut max_id = 0
   for sheet in self.sheets {
     for pivot in sheet.pivot_tables {
@@ -3613,8 +3613,8 @@ pub fn Workbook::delete_pivot_table(
 pub fn Workbook::set_cell_rc(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
-  col : Int,
+  row : Int32,
+  col : Int32,
   value : String,
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
@@ -3625,8 +3625,8 @@ pub fn Workbook::set_cell_rc(
 pub fn Workbook::set_cell_value_rc(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
-  col : Int,
+  row : Int32,
+  col : Int32,
   value : CellValue,
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
@@ -3637,8 +3637,8 @@ pub fn Workbook::set_cell_value_rc(
 pub fn Workbook::get_cell_rc(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
-  col : Int,
+  row : Int32,
+  col : Int32,
 ) -> String? raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.get_cell_rc(row, col)
@@ -3648,8 +3648,8 @@ pub fn Workbook::get_cell_rc(
 pub fn Workbook::get_cell_value_raw_rc(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
-  col : Int,
+  row : Int32,
+  col : Int32,
 ) -> CellValue? raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.get_cell_value_raw_rc(row, col)
@@ -3659,9 +3659,9 @@ pub fn Workbook::get_cell_value_raw_rc(
 pub fn Workbook::get_cell_value_rc(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
-  col : Int,
-  raw? : Bool = false,
+  row : Int32,
+  col : Int32,
+  raw~ : Bool = false,
   options? : Options,
 ) -> String? raise XlsxError {
   check_sheet_name(sheet_name)
@@ -3690,9 +3690,9 @@ pub fn Workbook::get_cell_value_rc(
 pub fn Workbook::set_cell_style_rc(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
-  col : Int,
-  style_id : Int,
+  row : Int32,
+  col : Int32,
+  style_id : Int32,
 ) -> Unit raise XlsxError {
   check_sheet_name(sheet_name)
   self.check_style_id(style_id)
@@ -3704,9 +3704,9 @@ pub fn Workbook::set_cell_style_rc(
 pub fn Workbook::get_cell_style_rc(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
-  col : Int,
-) -> Int? raise XlsxError {
+  row : Int32,
+  col : Int32,
+) -> Int32? raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.get_cell_style_rc(row, col)
 }
@@ -3715,10 +3715,10 @@ pub fn Workbook::get_cell_style_rc(
 pub fn Workbook::set_cell_formula_rc(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
-  col : Int,
+  row : Int32,
+  col : Int32,
   formula : String,
-  value? : String = "",
+  value~ : String = "",
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.set_cell_formula_rc(row, col, formula, value~)
@@ -3735,7 +3735,7 @@ pub fn Workbook::set_cell_formula_rc(
 pub fn Workbook::set_row(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
+  row : Int32,
   values : ArrayView[String],
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
@@ -3752,7 +3752,7 @@ pub fn Workbook::set_row(
 pub fn Workbook::get_row(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
+  row : Int32,
 ) -> Array[String] raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.get_row(row)
@@ -3768,7 +3768,7 @@ pub fn Workbook::get_row(
 pub fn Workbook::set_col(
   self : Workbook,
   sheet_name : StringView,
-  col : Int,
+  col : Int32,
   values : ArrayView[String],
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
@@ -3785,7 +3785,7 @@ pub fn Workbook::set_col(
 pub fn Workbook::get_col(
   self : Workbook,
   sheet_name : StringView,
-  col : Int,
+  col : Int32,
 ) -> Array[String] raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.get_col(col)
@@ -3800,7 +3800,7 @@ pub fn Workbook::get_col(
 pub fn Workbook::set_row_height(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
+  row : Int32,
   height : Double,
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
@@ -3816,7 +3816,7 @@ pub fn Workbook::set_row_height(
 pub fn Workbook::get_row_height(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
+  row : Int32,
 ) -> Double? raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.get_row_height(row)
@@ -3832,7 +3832,7 @@ pub fn Workbook::get_row_height(
 pub fn Workbook::set_row_visible(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
+  row : Int32,
   visible : Bool,
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
@@ -3848,7 +3848,7 @@ pub fn Workbook::set_row_visible(
 pub fn Workbook::row_visible(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
+  row : Int32,
 ) -> Bool raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.row_visible(row)
@@ -3864,8 +3864,8 @@ pub fn Workbook::row_visible(
 pub fn Workbook::set_row_outline_level(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
-  level : Int,
+  row : Int32,
+  level : Int32,
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.set_row_outline_level(row, level)
@@ -3880,8 +3880,8 @@ pub fn Workbook::set_row_outline_level(
 pub fn Workbook::row_outline_level(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
-) -> Int raise XlsxError {
+  row : Int32,
+) -> Int32 raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.row_outline_level(row)
 }
@@ -3897,8 +3897,8 @@ pub fn Workbook::row_outline_level(
 pub fn Workbook::set_row_style(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
-  style_id : Int,
+  row : Int32,
+  style_id : Int32,
 ) -> Unit raise XlsxError {
   self.set_row_style_range(sheet_name, row, row, style_id)
 }
@@ -3914,9 +3914,9 @@ pub fn Workbook::set_row_style(
 pub fn Workbook::set_row_style_range(
   self : Workbook,
   sheet_name : StringView,
-  start : Int,
-  end : Int,
-  style_id : Int,
+  start : Int32,
+  end : Int32,
+  style_id : Int32,
 ) -> Unit raise XlsxError {
   check_sheet_name(sheet_name)
   self.check_style_id(style_id)
@@ -3933,8 +3933,8 @@ pub fn Workbook::set_row_style_range(
 pub fn Workbook::get_row_style(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
-) -> Int? raise XlsxError {
+  row : Int32,
+) -> Int32? raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.get_row_style(row)
 }
@@ -3949,7 +3949,7 @@ pub fn Workbook::get_row_style(
 pub fn Workbook::set_col_width(
   self : Workbook,
   sheet_name : StringView,
-  col : Int,
+  col : Int32,
   width : Double,
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
@@ -3965,7 +3965,7 @@ pub fn Workbook::set_col_width(
 pub fn Workbook::get_col_width(
   self : Workbook,
   sheet_name : StringView,
-  col : Int,
+  col : Int32,
 ) -> Double? raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.get_col_width(col)
@@ -3981,7 +3981,7 @@ pub fn Workbook::get_col_width(
 pub fn Workbook::set_col_visible(
   self : Workbook,
   sheet_name : StringView,
-  col : Int,
+  col : Int32,
   visible : Bool,
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
@@ -3997,7 +3997,7 @@ pub fn Workbook::set_col_visible(
 pub fn Workbook::col_visible(
   self : Workbook,
   sheet_name : StringView,
-  col : Int,
+  col : Int32,
 ) -> Bool raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.col_visible(col)
@@ -4013,8 +4013,8 @@ pub fn Workbook::col_visible(
 pub fn Workbook::set_col_outline_level(
   self : Workbook,
   sheet_name : StringView,
-  col : Int,
-  level : Int,
+  col : Int32,
+  level : Int32,
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.set_col_outline_level(col, level)
@@ -4029,8 +4029,8 @@ pub fn Workbook::set_col_outline_level(
 pub fn Workbook::col_outline_level(
   self : Workbook,
   sheet_name : StringView,
-  col : Int,
-) -> Int raise XlsxError {
+  col : Int32,
+) -> Int32 raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.col_outline_level(col)
 }
@@ -4045,8 +4045,8 @@ pub fn Workbook::col_outline_level(
 pub fn Workbook::set_col_style(
   self : Workbook,
   sheet_name : StringView,
-  col : Int,
-  style_id : Int,
+  col : Int32,
+  style_id : Int32,
 ) -> Unit raise XlsxError {
   check_sheet_name(sheet_name)
   self.check_style_id(style_id)
@@ -4063,8 +4063,8 @@ pub fn Workbook::set_col_style(
 pub fn Workbook::get_col_style(
   self : Workbook,
   sheet_name : StringView,
-  col : Int,
-) -> Int? raise XlsxError {
+  col : Int32,
+) -> Int32? raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   sheet.get_col_style(col)
 }
@@ -4085,10 +4085,10 @@ pub fn Workbook::get_col_style(
 pub fn Workbook::insert_rows(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
-  count : Int,
-  formula_limits? : SharedFormulaLimits = SharedFormulaLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  row : Int32,
+  count : Int32,
+  formula_limits~ : SharedFormulaLimits = SharedFormulaLimits::new(),
+  cancelled~ : () -> Bool = () => false,
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   if count > cell_ref_max_rows {
@@ -4128,10 +4128,10 @@ pub fn Workbook::insert_rows(
 pub fn Workbook::remove_rows(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
-  count : Int,
-  formula_limits? : SharedFormulaLimits = SharedFormulaLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  row : Int32,
+  count : Int32,
+  formula_limits~ : SharedFormulaLimits = SharedFormulaLimits::new(),
+  cancelled~ : () -> Bool = () => false,
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   // Stage the defined-name adjustment before mutating the sheet, then commit it
@@ -4153,9 +4153,9 @@ pub fn Workbook::remove_rows(
 pub fn Workbook::remove_row(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
-  formula_limits? : SharedFormulaLimits = SharedFormulaLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  row : Int32,
+  formula_limits~ : SharedFormulaLimits = SharedFormulaLimits::new(),
+  cancelled~ : () -> Bool = () => false,
 ) -> Unit raise XlsxError {
   self.remove_rows(sheet_name, row, 1, formula_limits~, cancelled~)
 }
@@ -4174,10 +4174,10 @@ pub fn Workbook::remove_row(
 pub fn Workbook::insert_cols(
   self : Workbook,
   sheet_name : StringView,
-  col : Int,
-  count : Int,
-  formula_limits? : SharedFormulaLimits = SharedFormulaLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  col : Int32,
+  count : Int32,
+  formula_limits~ : SharedFormulaLimits = SharedFormulaLimits::new(),
+  cancelled~ : () -> Bool = () => false,
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   if count > cell_ref_max_cols {
@@ -4212,10 +4212,10 @@ pub fn Workbook::insert_cols(
 pub fn Workbook::remove_cols(
   self : Workbook,
   sheet_name : StringView,
-  col : Int,
-  count : Int,
-  formula_limits? : SharedFormulaLimits = SharedFormulaLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  col : Int32,
+  count : Int32,
+  formula_limits~ : SharedFormulaLimits = SharedFormulaLimits::new(),
+  cancelled~ : () -> Bool = () => false,
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   // Stage names before mutating the sheet (see remove_rows).
@@ -4235,9 +4235,9 @@ pub fn Workbook::remove_cols(
 pub fn Workbook::remove_col(
   self : Workbook,
   sheet_name : StringView,
-  col : Int,
-  formula_limits? : SharedFormulaLimits = SharedFormulaLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  col : Int32,
+  formula_limits~ : SharedFormulaLimits = SharedFormulaLimits::new(),
+  cancelled~ : () -> Bool = () => false,
 ) -> Unit raise XlsxError {
   self.remove_cols(sheet_name, col, 1, formula_limits~, cancelled~)
 }
@@ -4253,9 +4253,9 @@ pub fn Workbook::remove_col(
 pub fn Workbook::duplicate_row(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
-  formula_limits? : SharedFormulaLimits = SharedFormulaLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  row : Int32,
+  formula_limits~ : SharedFormulaLimits = SharedFormulaLimits::new(),
+  cancelled~ : () -> Bool = () => false,
 ) -> Unit raise XlsxError {
   // Bound `row` before forming `row + 1`, which would otherwise wrap Int for
   // `row == Int::max_value` (duplicate_row_to re-validates both rows too).
@@ -4282,10 +4282,10 @@ pub fn Workbook::duplicate_row(
 pub fn Workbook::duplicate_row_to(
   self : Workbook,
   sheet_name : StringView,
-  row : Int,
-  target_row : Int,
-  formula_limits? : SharedFormulaLimits = SharedFormulaLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  row : Int32,
+  target_row : Int32,
+  formula_limits~ : SharedFormulaLimits = SharedFormulaLimits::new(),
+  cancelled~ : () -> Bool = () => false,
 ) -> Unit raise XlsxError {
   let sheet = self.require_sheet(sheet_name)
   // Stage the defined-name shift (which raises if a name would leave the grid)

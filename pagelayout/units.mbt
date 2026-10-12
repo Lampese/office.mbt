@@ -7,7 +7,7 @@
 ///|
 /// Twentieths of a point — OOXML's unit for indents, spacing, margins,
 /// page sizes (`w:twip`).
-pub(all) struct Twips(Int) derive(Eq, Debug, ToJson)
+pub(all) struct Twips(Int32) derive(Eq, Debug, ToJson)
 
 ///|
 /// Convert to points (20 twips per point).
@@ -18,7 +18,7 @@ pub fn Twips::to_pt(self : Twips) -> Double {
 ///|
 /// English Metric Units — OOXML's unit for drawing/image extents
 /// (914400 per inch).
-pub(all) struct Emu(Int) derive(Eq, Debug, ToJson)
+pub(all) struct Emu(Int32) derive(Eq, Debug, ToJson)
 
 ///|
 /// Convert to points (12700 EMU per point).
@@ -28,7 +28,7 @@ pub fn Emu::to_pt(self : Emu) -> Double {
 
 ///|
 /// Half-points — OOXML's unit for font sizes (`w:sz`).
-pub(all) struct HalfPoints(Int) derive(Eq, Debug, ToJson)
+pub(all) struct HalfPoints(Int32) derive(Eq, Debug, ToJson)
 
 ///|
 /// Convert to points (2 half-points per point).
@@ -38,7 +38,7 @@ pub fn HalfPoints::to_pt(self : HalfPoints) -> Double {
 
 ///|
 /// Eighths of a point — OOXML's unit for border widths (`w:sz` on borders).
-pub(all) struct EighthPoints(Int) derive(Eq, Debug, ToJson)
+pub(all) struct EighthPoints(Int32) derive(Eq, Debug, ToJson)
 
 ///|
 /// Convert to points (8 eighth-points per point).

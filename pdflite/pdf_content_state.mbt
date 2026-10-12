@@ -22,8 +22,8 @@ pub(all) struct PdfContentPathState {
   colour_stroke : PdfContentColourValues
   colour_non_stroke : PdfContentColourValues
   line_width : Double
-  line_cap : Int
-  line_join : Int
+  line_cap : Int32
+  line_join : Int32
   dash_pattern : PdfContentDashPattern
   rendering_intent : String
 } derive(Debug, Eq, ToJson)
@@ -37,7 +37,7 @@ pub(all) struct PdfContentClippingState {
 ///|
 /// Text state fields exported alongside glyph content objects.
 pub(all) struct PdfContentGlyphState {
-  rendering_mode : Int
+  rendering_mode : Int32
   knockout : Bool
   font : String
   font_size : Double
@@ -47,7 +47,7 @@ pub(all) struct PdfContentGlyphState {
 ///|
 /// Content objects emitted by cpdfcontent's JSON exporter.
 pub(all) enum PdfContentObject {
-  PdfContentGlyphObject(Int, String, String)
+  PdfContentGlyphObject(Int32, String, String)
   PdfContentInlineImageObject
   PdfContentImageObject(String)
   PdfContentPathObject(@shape.PdfDrawnPath)

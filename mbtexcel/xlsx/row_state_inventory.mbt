@@ -20,7 +20,7 @@ pub(all) enum RowStateHandling {
 /// The row extent a class occupies.
 pub(all) enum RowStateExtent {
   /// Parsed positions; the highest 1-based row addressed.
-  RowsUpTo(Int)
+  RowsUpTo(Int32)
   /// Present but not row-interpretable (opaque markup, unparsable refs) —
   /// treat as touching every row.
   WholeSheet
@@ -78,7 +78,7 @@ pub struct RowStateEntry {
 
 ///|
 /// Highest 1-based row of a cell or range reference, None when unparsable.
-fn reference_max_row(reference : String) -> Int? {
+fn reference_max_row(reference : String) -> Int32? {
   let (_, _, max_row, _) = parse_range_ref(reference) catch { _ => return None }
   Some(max_row)
 }
@@ -86,7 +86,7 @@ fn reference_max_row(reference : String) -> Int? {
 ///|
 /// Highest row across a space-separated sqref list; None on any
 /// unparsable component (callers degrade to WholeSheet).
-fn sqref_max_row(sqref : String) -> Int? {
+fn sqref_max_row(sqref : String) -> Int32? {
   let mut best = 0
   for token in sqref.split(" ") {
     if token.length() == 0 {
@@ -109,7 +109,7 @@ fn sqref_max_row(sqref : String) -> Int? {
 /// any-unparsable) accumulator.
 priv struct ExtentAccumulator {
   mut present : Bool
-  mut max_row : Int
+  mut max_row : Int32
   mut is_opaque : Bool
 }
 
@@ -374,7 +374,7 @@ pub fn Worksheet::row_state_inventory(self : Worksheet) -> Array[RowStateEntry] 
 /// bound at all (column refs span every row but cannot overflow a row
 /// insertion), or opaque.
 priv enum DefinedRefRowBound {
-  BoundedRows(Int)
+  BoundedRows(Int32)
   NoRowBound
   OpaqueRef
 }
@@ -521,7 +521,7 @@ fn name_has_unqualified_content(
     // text by definition, even when the (literal-unaware, engine-
     // faithful) scan consumed a qualifier spelled inside it — the
     // "Data!" constant shape (codex round 3)
-    if unit is ('A'..='Z' | 'a'..='z' | '0'..='9' | '$' | '"' | '\'') {
+    if unit is ('A'..<='Z' | 'a'..<='z' | '0'..<='9' | '$' | '"' | '\'') {
       return true
     }
   }
@@ -607,7 +607,7 @@ pub struct RawDataValidationCriteria {
 } derive(Eq, @debug.Debug)
 
 ///|
-fn raw_tag_end(xml : String, from : Int) -> Int? {
+fn raw_tag_end(xml : String, from : Int32) -> Int32? {
   let mut index = from
   let mut quote : UInt16 = ' '
   let mut quoted = false
@@ -645,7 +645,7 @@ fn raw_name_boundary(unit : UInt16) -> Bool {
 /// the whole entry opaque).
 fn raw_direct_child_text(
   xml : String,
-  content_start : Int,
+  content_start : Int32,
   element : String,
 ) -> String? {
   let close = "</" + element + ">"

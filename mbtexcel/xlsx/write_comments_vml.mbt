@@ -8,7 +8,7 @@ fn write_comments_xml(
     normalized.push(normalize_comment(comment))
   }
   let authors : Array[String] = []
-  let author_ids : Map[String, Int] = Map([])
+  let author_ids : Map[String, Int32] = Map([])
   for comment in normalized {
     if !author_ids.contains(comment.author) {
       author_ids[comment.author] = authors.length()
@@ -51,7 +51,7 @@ fn write_comments_xml(
 }
 
 ///|
-fn vml_shape_id_range_is_valid(shape_id_start : Int, count : Int) -> Bool {
+fn vml_shape_id_range_is_valid(shape_id_start : Int32, count : Int32) -> Bool {
   if shape_id_start <= 0 || count < 0 {
     false
   } else if count == 0 {
@@ -63,9 +63,9 @@ fn vml_shape_id_range_is_valid(shape_id_start : Int, count : Int) -> Bool {
 
 ///|
 fn write_comments_vml(
-  sheet_id : Int,
+  sheet_id : Int32,
   comments : ArrayView[Comment],
-  shape_id_start? : Int = 1025,
+  shape_id_start~ : Int32 = 1025,
   budget? : WritePartBudget,
 ) -> String raise XlsxError {
   if !vml_shape_id_range_is_valid(shape_id_start, comments.length()) {
@@ -116,17 +116,17 @@ fn write_comments_vml(
 
 ///|
 priv struct VmlShapeSpan {
-  start : Int
-  close_start : Int
-  end : Int
+  start : Int32
+  close_start : Int32
+  end : Int32
 }
 
 ///|
 fn xml_sequence_end_after_from(
   xml : StringView,
-  start : Int,
+  start : Int32,
   sequence : StringView,
-) -> Int? {
+) -> Int32? {
   if start < 0 || start > xml.length() {
     return None
   }
@@ -137,7 +137,7 @@ fn xml_sequence_end_after_from(
 }
 
 ///|
-fn xml_declaration_end_after_from(xml : StringView, start : Int) -> Int? {
+fn xml_declaration_end_after_from(xml : StringView, start : Int32) -> Int32? {
   let mut index = start
   let mut quote : UInt16? = None
   let mut subset_depth = 0
@@ -165,7 +165,7 @@ fn xml_declaration_end_after_from(xml : StringView, start : Int) -> Int? {
 /// Returns `start` for element markup. Comments, CDATA, processing
 /// instructions, and declarations return the first index after that markup;
 /// malformed non-element markup consumes the remainder of the source.
-fn skip_vml_non_element_markup(xml : StringView, start : Int) -> Int {
+fn skip_vml_non_element_markup(xml : StringView, start : Int32) -> Int32 {
   if xml_sequence_at(xml, start, "<!--") {
     return xml_sequence_end_after_from(xml, start + 4, "-->").unwrap_or(
       xml.length(),
@@ -251,7 +251,7 @@ fn extract_vml_element_spans(
 ///|
 fn vml_element_open_at(
   xml : StringView,
-  start : Int,
+  start : Int32,
   element_name : StringView,
 ) -> Bool {
   let name_length = element_name.length()
@@ -379,7 +379,7 @@ fn vml_client_data_parts(
 }
 
 ///|
-fn parse_vml_coordinate(value : String?) -> Int? {
+fn parse_vml_coordinate(value : String?) -> Int32? {
   match value {
     Some(text) =>
       try @string.parse_int(text.trim(), base=10) catch {
@@ -394,7 +394,7 @@ fn parse_vml_coordinate(value : String?) -> Int? {
 ///|
 fn vml_client_data_coordinates(
   body : StringView,
-) -> (Int, Int)? raise XlsxError {
+) -> (Int32, Int32)? raise XlsxError {
   let row = parse_vml_coordinate(vml_live_element_text(body, "x:Row"))
   let column = parse_vml_coordinate(vml_live_element_text(body, "x:Column"))
   match (row, column) {
@@ -452,7 +452,7 @@ fn vml_has_shapetype_id(
 }
 
 ///|
-fn vml_xml_body_end(xml : StringView) -> Int? {
+fn vml_xml_body_end(xml : StringView) -> Int32? {
   let masked = mask_vml_non_element_markup(xml)
   match find_xml_close_tag_from(masked, "xml", 0) {
     Some((start, _)) => Some(start)
@@ -524,7 +524,7 @@ fn vml_comment_cell(shape_xml : StringView) -> String? raise XlsxError {
 }
 
 ///|
-fn parse_vml_shape_numeric_id(value : StringView) -> Int? {
+fn parse_vml_shape_numeric_id(value : StringView) -> Int32? {
   let prefix = "_x0000_s"
   if !value.has_prefix(prefix) {
     return None
@@ -539,8 +539,8 @@ fn parse_vml_shape_numeric_id(value : StringView) -> Int? {
 ///|
 fn vml_used_shape_numeric_ids(
   base_xml : StringView,
-) -> (Map[Int, Bool], Int) raise XlsxError {
-  let used : Map[Int, Bool] = Map([])
+) -> (Map[Int32, Bool], Int32) raise XlsxError {
+  let used : Map[Int32, Bool] = Map([])
   let mut maximum = 1024
   for span in extract_vml_shape_spans(base_xml) {
     let shape = base_xml[span.start:span.end]
@@ -570,9 +570,9 @@ fn vml_used_shape_numeric_ids(
 
 ///|
 fn vml_shape_id_range_is_free(
-  used : Map[Int, Bool],
-  start : Int,
-  count : Int,
+  used : Map[Int32, Bool],
+  start : Int32,
+  count : Int32,
 ) -> Bool {
   if !vml_shape_id_range_is_valid(start, count) {
     return false
@@ -587,9 +587,9 @@ fn vml_shape_id_range_is_free(
 
 ///|
 fn reserve_vml_shape_id_range(
-  used : Map[Int, Bool],
-  start : Int,
-  count : Int,
+  used : Map[Int32, Bool],
+  start : Int32,
+  count : Int32,
 ) -> Unit {
   for offset in 0..<count {
     used[start + offset] = true
@@ -598,11 +598,11 @@ fn reserve_vml_shape_id_range(
 
 ///|
 fn allocate_vml_shape_id_range(
-  used : Map[Int, Bool],
-  preferred_after : Int,
-  minimum : Int,
-  count : Int,
-) -> Int raise XlsxError {
+  used : Map[Int32, Bool],
+  preferred_after : Int32,
+  minimum : Int32,
+  count : Int32,
+) -> Int32 raise XlsxError {
   if count == 0 {
     return minimum
   }
@@ -618,7 +618,7 @@ fn allocate_vml_shape_id_range(
   let maximum_start = 0x7fffffff - (count - 1)
   let mut candidate = minimum
   while candidate <= maximum_start {
-    let mut collision : Int? = None
+    let mut collision : Int32? = None
     for offset in 0..<count {
       let id = candidate + offset
       if used.contains(id) {
@@ -674,7 +674,7 @@ fn reconcile_vml_comment_shapes(
   base_xml : String,
   comments : ArrayView[Comment],
   budget? : WritePartBudget,
-) -> (String, Array[Comment], Int) raise XlsxError {
+) -> (String, Array[Comment], Int32) raise XlsxError {
   let wanted : Map[String, Bool] = Map([])
   for comment in comments {
     wanted[comment.cell] = true
@@ -827,7 +827,7 @@ fn merge_vml_drawings_with_shapetype(
 
 ///|
 fn write_header_footer_vml(
-  sheet_id : Int,
+  sheet_id : Int32,
   images : ArrayView[HeaderFooterImage],
   budget? : WritePartBudget,
 ) -> String raise XlsxError {

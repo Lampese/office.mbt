@@ -2987,18 +2987,18 @@ test "calc math and text functions" {
     content="{1,\"a\";2,\"b\"}",
   )
   let dbcs_text = String::from_array([
-    Int::unsafe_to_char(0x00e9),
-    Int::unsafe_to_char('a'.to_int()),
-    Int::unsafe_to_char('b'.to_int()),
+    Int32::unsafe_to_char(0x00e9),
+    Int32::unsafe_to_char('a'.to_int()),
+    Int32::unsafe_to_char('b'.to_int()),
   ])
   let cn_text = String::from_array([
-    Int::unsafe_to_char(0x4f60),
-    Int::unsafe_to_char(0x597d),
-    Int::unsafe_to_char('W'.to_int()),
-    Int::unsafe_to_char('o'.to_int()),
-    Int::unsafe_to_char('r'.to_int()),
-    Int::unsafe_to_char('l'.to_int()),
-    Int::unsafe_to_char('d'.to_int()),
+    Int32::unsafe_to_char(0x4f60),
+    Int32::unsafe_to_char(0x597d),
+    Int32::unsafe_to_char('W'.to_int()),
+    Int32::unsafe_to_char('o'.to_int()),
+    Int32::unsafe_to_char('r'.to_int()),
+    Int32::unsafe_to_char('l'.to_int()),
+    Int32::unsafe_to_char('d'.to_int()),
   ])
   sheet.set_cell_value("C68", String(dbcs_text))
   sheet.set_cell_value("C69", String(cn_text))
@@ -7778,13 +7778,13 @@ test "calc text b functions use DBCS semantics without mojibake" {
   let sheet = workbook.add_sheet("Sheet1")
   // 你好World: two wide chars (2 DBCS bytes each) + 5 ASCII = 9 DBCS bytes
   let cn = String::from_array([
-    Int::unsafe_to_char(0x4f60),
-    Int::unsafe_to_char(0x597d),
-    Int::unsafe_to_char('W'.to_int()),
-    Int::unsafe_to_char('o'.to_int()),
-    Int::unsafe_to_char('r'.to_int()),
-    Int::unsafe_to_char('l'.to_int()),
-    Int::unsafe_to_char('d'.to_int()),
+    Int32::unsafe_to_char(0x4f60),
+    Int32::unsafe_to_char(0x597d),
+    Int32::unsafe_to_char('W'.to_int()),
+    Int32::unsafe_to_char('o'.to_int()),
+    Int32::unsafe_to_char('r'.to_int()),
+    Int32::unsafe_to_char('l'.to_int()),
+    Int32::unsafe_to_char('d'.to_int()),
   ])
   sheet.set_cell_value("C1", String(cn))
   sheet.set_cell_formula("A1", "LENB(C1)")

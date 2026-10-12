@@ -1,5 +1,5 @@
 ///|
-fn pdf_truetype_read_u16(data : BytesView, offset : Int) -> Int? {
+fn pdf_truetype_read_u16(data : BytesView, offset : Int32) -> Int32? {
   if offset < 0 || offset > data.length() - 2 {
     None
   } else {
@@ -8,7 +8,7 @@ fn pdf_truetype_read_u16(data : BytesView, offset : Int) -> Int? {
 }
 
 ///|
-fn pdf_truetype_read_i16(data : BytesView, offset : Int) -> Int? {
+fn pdf_truetype_read_i16(data : BytesView, offset : Int32) -> Int32? {
   match pdf_truetype_read_u16(data, offset) {
     Some(value) if value >= 0x8000 => Some(value - 0x10000)
     other => other
@@ -16,7 +16,7 @@ fn pdf_truetype_read_i16(data : BytesView, offset : Int) -> Int? {
 }
 
 ///|
-fn pdf_truetype_read_tag(data : BytesView, offset : Int) -> String? {
+fn pdf_truetype_read_tag(data : BytesView, offset : Int32) -> String? {
   if offset < 0 || offset > data.length() - 4 {
     None
   } else {
@@ -25,7 +25,7 @@ fn pdf_truetype_read_tag(data : BytesView, offset : Int) -> String? {
 }
 
 ///|
-fn pdf_truetype_read_u32(data : BytesView, offset : Int) -> UInt? {
+fn pdf_truetype_read_u32(data : BytesView, offset : Int32) -> UInt32? {
   if offset < 0 || offset > data.length() - 4 {
     None
   } else {
@@ -34,7 +34,7 @@ fn pdf_truetype_read_u32(data : BytesView, offset : Int) -> UInt? {
 }
 
 ///|
-fn pdf_truetype_read_u32_as_int(data : BytesView, offset : Int) -> Int? {
+fn pdf_truetype_read_u32_as_int(data : BytesView, offset : Int32) -> Int32? {
   if offset < 0 || offset > data.length() - 4 {
     None
   } else {
@@ -48,7 +48,7 @@ fn pdf_truetype_read_u32_as_int(data : BytesView, offset : Int) -> Int? {
 }
 
 ///|
-fn pdf_truetype_normalize_u16(value : Int) -> Int {
+fn pdf_truetype_normalize_u16(value : Int32) -> Int32 {
   let mut result = value % 0x10000
   if result < 0 {
     result += 0x10000
@@ -57,7 +57,7 @@ fn pdf_truetype_normalize_u16(value : Int) -> Int {
 }
 
 ///|
-fn pdf_truetype_pdf_unit(units_per_em : Int, value : Int) -> Int {
+fn pdf_truetype_pdf_unit(units_per_em : Int32, value : Int32) -> Int32 {
   if units_per_em == 0 {
     0
   } else {
@@ -66,13 +66,13 @@ fn pdf_truetype_pdf_unit(units_per_em : Int, value : Int) -> Int {
 }
 
 ///|
-fn pdf_truetype_sorted_unique(values : ArrayView[Int]) -> Array[Int] {
-  let output : Array[Int] = []
+fn pdf_truetype_sorted_unique(values : ArrayView[Int32]) -> Array[Int32] {
+  let output : Array[Int32] = []
   for value in values {
     output.push(value)
   }
   output.sort()
-  let unique : Array[Int] = []
+  let unique : Array[Int32] = []
   for value in output {
     if unique.length() == 0 || unique[unique.length() - 1] != value {
       unique.push(value)
@@ -82,7 +82,7 @@ fn pdf_truetype_sorted_unique(values : ArrayView[Int]) -> Array[Int] {
 }
 
 ///|
-fn pdf_truetype_table_padding(length : Int) -> Int {
+fn pdf_truetype_table_padding(length : Int32) -> Int32 {
   if length % 4 == 0 {
     0
   } else {
@@ -93,9 +93,9 @@ fn pdf_truetype_table_padding(length : Int) -> Int {
 ///|
 fn pdf_truetype_write_u16_at(
   output : Array[Byte],
-  position : Int,
-  value : Int,
-) -> Int raise @core.PdfError {
+  position : Int32,
+  value : Int32,
+) -> Int32 raise @core.PdfError {
   if value < 0 || value > 0xFFFF {
     raise SoftError("TrueType unsigned 16-bit value out of range")
   }
@@ -107,9 +107,9 @@ fn pdf_truetype_write_u16_at(
 ///|
 fn pdf_truetype_write_u32_at(
   output : Array[Byte],
-  position : Int,
-  value : Int,
-) -> Int raise @core.PdfError {
+  position : Int32,
+  value : Int32,
+) -> Int32 raise @core.PdfError {
   if value < 0 {
     raise SoftError("TrueType unsigned 32-bit value out of range")
   }
@@ -123,9 +123,9 @@ fn pdf_truetype_write_u32_at(
 ///|
 fn pdf_truetype_write_u32_uint_at(
   output : Array[Byte],
-  position : Int,
-  value : UInt,
-) -> Int raise @core.PdfError {
+  position : Int32,
+  value : UInt32,
+) -> Int32 raise @core.PdfError {
   output[position] = @core.pdf_byte_of_int((value >> 24).reinterpret_as_int())
   output[position + 1] = @core.pdf_byte_of_int(
     ((value >> 16) & 0xFFU).reinterpret_as_int(),
@@ -142,9 +142,9 @@ fn pdf_truetype_write_u32_uint_at(
 ///|
 fn pdf_truetype_write_tag_at(
   output : Array[Byte],
-  position : Int,
+  position : Int32,
   tag : String,
-) -> Int raise @core.PdfError {
+) -> Int32 raise @core.PdfError {
   let bytes = @ascii.encode(tag)
   for index in 0..<4 {
     output[position + index] = @core.pdf_byte_of_int(
@@ -161,9 +161,9 @@ fn pdf_truetype_write_tag_at(
 ///|
 fn pdf_truetype_write_view_at(
   output : Array[Byte],
-  position : Int,
+  position : Int32,
   bytes : BytesView,
-) -> Int {
+) -> Int32 {
   let mut position = position
   for byte in bytes {
     output[position] = byte
@@ -180,8 +180,8 @@ fn pdf_truetype_write_view_at(
 /// `rangeShift = table_count * 16 - searchRange`. A count below one is
 /// treated as one.
 fn pdf_truetype_table_directory_search_fields(
-  table_count : Int,
-) -> (Int, Int, Int) {
+  table_count : Int32,
+) -> (Int32, Int32, Int32) {
   for power = 1, log2 = 0; power * 2 <= table_count; {
     continue power * 2, log2 + 1
   } nobreak {

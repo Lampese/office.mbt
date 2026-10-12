@@ -9,7 +9,7 @@ priv struct Relationship {
 ///|
 priv struct Relationships {
   items : Array[Relationship]
-  mut next_id : Int
+  mut next_id : Int32
 }
 
 ///|
@@ -38,7 +38,7 @@ fn Relationships::to_xml(self : Relationships) -> String {
 ///|
 fn Relationships::to_xml_with_limit(
   self : Relationships,
-  maximum : Int?,
+  maximum : Int32?,
 ) -> String? {
   let sb = XmlOutputBuilder::new(maximum)
   sb.write_view("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")

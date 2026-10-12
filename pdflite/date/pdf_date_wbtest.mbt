@@ -1,6 +1,6 @@
 ///|
 test "private date two-digit parser rejects short input" {
-  let result : Result[Int, Error] = try pdf_date_two_digits(b"1", 0) catch {
+  let result : Result[Int32, Error] = try pdf_date_two_digits(b"1", 0) catch {
     err => Err(err)
   } noraise {
     value => Ok(value)

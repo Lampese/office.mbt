@@ -306,7 +306,7 @@ pub fn RunProperties::with_font_for_all_scripts(
 pub fn RunProperties::with_hyperlink(
   self : RunProperties,
   url : String,
-  tooltip? : String = "",
+  tooltip~ : String = "",
 ) -> RunProperties {
   let tt : String? = if !tooltip.is_empty() { Some(tooltip) } else { None }
   {
@@ -324,8 +324,8 @@ pub fn RunProperties::with_hyperlink(
 /// at serialisation time.
 pub fn RunProperties::with_hyperlink_to_slide(
   self : RunProperties,
-  slide_idx : Int,
-  tooltip? : String = "",
+  slide_idx : Int32,
+  tooltip~ : String = "",
 ) -> RunProperties {
   let tt : String? = if !tooltip.is_empty() { Some(tooltip) } else { None }
   {
@@ -347,7 +347,7 @@ pub fn RunProperties::with_hyperlink_to_slide(
 /// remains the lowest-level builder for callers that want to start
 /// from zero and layer their own styling.
 pub fn AutoShape::of_preset(
-  id~ : Int,
+  id~ : Int32,
   name~ : String,
   preset : PresetShape,
   x~ : @units.Emu,
@@ -402,7 +402,7 @@ fn default_shape_stroke() -> @oxml.Stroke {
 /// Rectangle shape with the canonical `prst="rect"` preset, the
 /// given placement, and visible default fill + 1pt outline.
 pub fn AutoShape::rect(
-  id~ : Int,
+  id~ : Int32,
   name~ : String,
   x~ : @units.Emu,
   y~ : @units.Emu,
@@ -420,7 +420,7 @@ pub fn AutoShape::rect(
 ///|
 /// Ellipse shape (`prst="ellipse"`) with visible default fill + outline.
 pub fn AutoShape::ellipse(
-  id~ : Int,
+  id~ : Int32,
   name~ : String,
   x~ : @units.Emu,
   y~ : @units.Emu,
@@ -439,7 +439,7 @@ pub fn AutoShape::ellipse(
 /// Rounded-rectangle (`prst="roundRect"`) with visible default
 /// fill + outline.
 pub fn AutoShape::round_rect(
-  id~ : Int,
+  id~ : Int32,
   name~ : String,
   x~ : @units.Emu,
   y~ : @units.Emu,
@@ -460,7 +460,7 @@ pub fn AutoShape::round_rect(
 /// renders as plain text without a background or border (matching
 /// the typical "TextBox" tool in PowerPoint).
 pub fn AutoShape::textbox(
-  id~ : Int,
+  id~ : Int32,
   name~ : String,
   x~ : @units.Emu,
   y~ : @units.Emu,
@@ -555,8 +555,8 @@ pub fn AutoShape::with_rotation(
 /// only. No-op when the shape has no explicit transform.
 pub fn AutoShape::with_flip(
   self : AutoShape,
-  h? : Bool = false,
-  v? : Bool = false,
+  h~ : Bool = false,
+  v~ : Bool = false,
 ) -> AutoShape {
   { ..self, transform: self.transform.map(t => t.with_flip(h~, v~)), }
 }
@@ -575,7 +575,7 @@ pub fn AutoShape::with_hyperlink(self : AutoShape, url~ : String) -> AutoShape {
 /// zero-based index (as in `Presentation::slides()`).
 pub fn AutoShape::with_hyperlink_to_slide(
   self : AutoShape,
-  slide_idx~ : Int,
+  slide_idx~ : Int32,
 ) -> AutoShape {
   { ..self, hyperlink: Some(ShapeHyperlink::to_slide(slide_idx)), }
 }
@@ -597,7 +597,7 @@ pub fn AutoShape::with_hyperlink_to_slide(
 /// inside a plain `prst="rect"` boundary — the standard "insert
 /// picture" result PowerPoint produces.
 pub fn Picture::of_image(
-  id~ : Int,
+  id~ : Int32,
   name~ : String,
   embed_id : String,
   x~ : @units.Emu,
@@ -636,7 +636,7 @@ pub fn Picture::of_image(
 /// extension pointing at the SVG; otherwise identical to
 /// `Picture::of_image` (stretched fit inside a `prst="rect"` boundary).
 pub fn Picture::of_svg_image(
-  id~ : Int,
+  id~ : Int32,
   name~ : String,
   png_embed_id~ : String,
   svg_embed_id~ : String,
@@ -668,10 +668,10 @@ pub fn Picture::of_svg_image(
 /// 0 % crop on every edge is the same as no crop.
 pub fn Picture::with_crop(
   self : Picture,
-  left? : @units.Percentage = Percentage(0.0),
-  top? : @units.Percentage = Percentage(0.0),
-  right? : @units.Percentage = Percentage(0.0),
-  bottom? : @units.Percentage = Percentage(0.0),
+  left~ : @units.Percentage = Percentage(0.0),
+  top~ : @units.Percentage = Percentage(0.0),
+  right~ : @units.Percentage = Percentage(0.0),
+  bottom~ : @units.Percentage = Percentage(0.0),
 ) -> Picture {
   let rect : @oxml.SrcRect = { left, top, right, bottom, }
   { ..self, blip_fill: { ..self.blip_fill, src_rect: Some(rect), }, }
@@ -689,8 +689,8 @@ pub fn Picture::with_rotation(self : Picture, angle : @units.Angle) -> Picture {
 /// (`flipV`). No-op when the picture has no explicit transform.
 pub fn Picture::with_flip(
   self : Picture,
-  h? : Bool = false,
-  v? : Bool = false,
+  h~ : Bool = false,
+  v~ : Bool = false,
 ) -> Picture {
   { ..self, transform: self.transform.map(t => t.with_flip(h~, v~)), }
 }
@@ -707,7 +707,7 @@ pub fn Picture::with_hyperlink(self : Picture, url~ : String) -> Picture {
 /// zero-based index.
 pub fn Picture::with_hyperlink_to_slide(
   self : Picture,
-  slide_idx~ : Int,
+  slide_idx~ : Int32,
 ) -> Picture {
   { ..self, hyperlink: Some(ShapeHyperlink::to_slide(slide_idx)), }
 }
@@ -729,8 +729,8 @@ pub fn GroupShape::with_rotation(
 /// No-op when the group has no explicit transform.
 pub fn GroupShape::with_flip(
   self : GroupShape,
-  h? : Bool = false,
-  v? : Bool = false,
+  h~ : Bool = false,
+  v~ : Bool = false,
 ) -> GroupShape {
   { ..self, transform: self.transform.map(t => t.with_flip(h~, v~)), }
 }
@@ -753,7 +753,7 @@ pub fn GroupShape::with_hyperlink(
 /// zero-based index (as in `Presentation::slides()`).
 pub fn GroupShape::with_hyperlink_to_slide(
   self : GroupShape,
-  slide_idx~ : Int,
+  slide_idx~ : Int32,
 ) -> GroupShape {
   { ..self, hyperlink: Some(ShapeHyperlink::to_slide(slide_idx)), }
 }
@@ -770,7 +770,7 @@ pub fn Connector::with_hyperlink(self : Connector, url~ : String) -> Connector {
 /// zero-based index.
 pub fn Connector::with_hyperlink_to_slide(
   self : Connector,
-  slide_idx~ : Int,
+  slide_idx~ : Int32,
 ) -> Connector {
   { ..self, hyperlink: Some(ShapeHyperlink::to_slide(slide_idx)), }
 }
@@ -791,7 +791,7 @@ pub fn GraphicFrame::with_hyperlink(
 /// zero-based index.
 pub fn GraphicFrame::with_hyperlink_to_slide(
   self : GraphicFrame,
-  slide_idx~ : Int,
+  slide_idx~ : Int32,
 ) -> GraphicFrame {
   { ..self, hyperlink: Some(ShapeHyperlink::to_slide(slide_idx)), }
 }

@@ -4,14 +4,14 @@
 /// `tm_year` is years since 1900 and `tm_mon` is zero-based, matching C/Unix
 /// `struct tm` and OCaml's `Unix.tm`.
 pub(all) struct PdfStrftimeTime {
-  tm_sec : Int
-  tm_min : Int
-  tm_hour : Int
-  tm_mday : Int
-  tm_mon : Int
-  tm_year : Int
-  tm_wday : Int
-  tm_yday : Int
+  tm_sec : Int32
+  tm_min : Int32
+  tm_hour : Int32
+  tm_mday : Int32
+  tm_mon : Int32
+  tm_year : Int32
+  tm_wday : Int32
+  tm_yday : Int32
   tm_isdst : Bool
 } derive(Debug, Eq, ToJson)
 
@@ -79,7 +79,7 @@ fn pdf_strftime_month_abbrev(time : PdfStrftimeTime) -> String {
 }
 
 ///|
-fn pdf_strftime_pad2(value : Int, pad : String) -> String {
+fn pdf_strftime_pad2(value : Int32, pad : String) -> String {
   let text = value.to_string()
   if text.length() == 1 {
     pad + text
@@ -89,7 +89,7 @@ fn pdf_strftime_pad2(value : Int, pad : String) -> String {
 }
 
 ///|
-fn pdf_strftime_pad3(value : Int) -> String {
+fn pdf_strftime_pad3(value : Int32) -> String {
   let text = value.to_string()
   match text.length() {
     1 => "00" + text

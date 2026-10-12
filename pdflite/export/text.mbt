@@ -59,7 +59,7 @@ fn use_text_spanner(
   sc : SerializeContext,
   glyphs : ArrayView[Glyph],
   text : String,
-  context_color : Int,
+  context_color : Int32,
   fc : FontContainer,
 ) -> Bool {
   if glyphs.is_empty() {
@@ -109,11 +109,11 @@ fn glyph_spans(
   text : String,
   reversed : Bool,
   forbid_invalid_codepoints : Bool,
-  context_color : Int,
+  context_color : Int32,
   fc : FontContainer,
 ) -> Array[GlyphSpan] {
   let out = []
-  let func = (g : Glyph, previous_range : (Int, Int)?) => {
+  let func = (g : Glyph, previous_range : (Int32, Int32)?) => {
     let (fid, code) = fc.add_glyph(sc, g.glyph_id, context_color)
     let range = (g.text_start, g.text_end)
     let t = glyph_text_view(text, g)
@@ -201,7 +201,7 @@ fn glyph_spans(
 fn glyph_groups(
   sc : SerializeContext,
   slice : ArrayView[Glyph],
-  context_color : Int,
+  context_color : Int32,
   fc : FontContainer,
 ) -> Array[ArrayView[Glyph]] {
   let out = []
@@ -279,7 +279,7 @@ fn ContentBuilder::draw_glyphs(
   start : Point,
   fill : Fill?,
   stroke : Stroke?,
-  context_color : Int,
+  context_color : Int32,
   glyphs : ArrayView[Glyph],
   font : Font,
   text : String,
@@ -370,7 +370,7 @@ fn ContentBuilder::fill_stroke_glyph_run(
   y : Double,
   mode : RenderMode,
   action : (ContentBuilder) -> Unit,
-  context_color : Int,
+  context_color : Int32,
   glyphs : ArrayView[Glyph],
   font : Font,
   text : String,
@@ -428,7 +428,7 @@ fn ContentBuilder::fill_stroke_glyph_span(
   cur_y : Ref[Double],
   span : GlyphSpan,
   mode : RenderMode,
-  context_color : Int,
+  context_color : Int32,
   fc : FontContainer,
   text : String,
   font_size : Double,
@@ -483,8 +483,8 @@ fn ContentBuilder::encode_consecutive_glyph_run(
   sc : SerializeContext,
   cur_x : Ref[Double],
   cur_y : Double,
-  fid : Int,
-  context_color : Int,
+  fid : Int32,
+  context_color : Int32,
   fc : FontContainer,
   size : Double,
   glyphs : ArrayView[Glyph],
@@ -555,7 +555,7 @@ fn ContentBuilder::encode_consecutive_glyph_run(
 }
 
 ///|
-fn encode_cid(cid : Int) -> Bytes {
+fn encode_cid(cid : Int32) -> Bytes {
   Bytes::from_array([((cid >> 8) & 0xFF).to_byte(), (cid & 0xFF).to_byte()])
 }
 

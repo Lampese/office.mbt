@@ -16,30 +16,30 @@ fn Writer::new() -> Writer {
 }
 
 ///|
-fn Writer::write_u8(self : Writer, v : Int) -> Unit {
+fn Writer::write_u8(self : Writer, v : Int32) -> Unit {
   self.buf.write_byte((v & 0xFF).to_byte())
 }
 
 ///|
-fn Writer::write_u16(self : Writer, v : Int) -> Unit {
+fn Writer::write_u16(self : Writer, v : Int32) -> Unit {
   self.buf.write_byte(((v >> 8) & 0xFF).to_byte())
   self.buf.write_byte((v & 0xFF).to_byte())
 }
 
 ///|
-fn Writer::write_i16(self : Writer, v : Int) -> Unit {
+fn Writer::write_i16(self : Writer, v : Int32) -> Unit {
   self.write_u16(v)
 }
 
 ///|
-fn Writer::write_u24(self : Writer, v : Int) -> Unit {
+fn Writer::write_u24(self : Writer, v : Int32) -> Unit {
   self.buf.write_byte(((v >> 16) & 0xFF).to_byte())
   self.buf.write_byte(((v >> 8) & 0xFF).to_byte())
   self.buf.write_byte((v & 0xFF).to_byte())
 }
 
 ///|
-fn Writer::write_u32(self : Writer, v : UInt) -> Unit {
+fn Writer::write_u32(self : Writer, v : UInt32) -> Unit {
   self.buf.write_byte(((v >> 24) & 0xFF).to_byte())
   self.buf.write_byte(((v >> 16) & 0xFF).to_byte())
   self.buf.write_byte(((v >> 8) & 0xFF).to_byte())
@@ -47,7 +47,7 @@ fn Writer::write_u32(self : Writer, v : UInt) -> Unit {
 }
 
 ///|
-fn Writer::write_i32(self : Writer, v : Int) -> Unit {
+fn Writer::write_i32(self : Writer, v : Int32) -> Unit {
   self.write_u32(v.reinterpret_as_uint())
 }
 
@@ -59,7 +59,7 @@ fn Writer::write_bytes(self : Writer, bytes : BytesView) -> Unit {
 
 ///|
 /// Align the contents to a byte boundary.
-fn Writer::align(self : Writer, to : Int) -> Unit {
+fn Writer::align(self : Writer, to : Int32) -> Unit {
   while self.buf.length() % to != 0 {
     self.buf.write_byte(0)
   }
@@ -67,7 +67,7 @@ fn Writer::align(self : Writer, to : Int) -> Unit {
 
 ///|
 /// The number of written bytes.
-fn Writer::len(self : Writer) -> Int {
+fn Writer::len(self : Writer) -> Int32 {
   self.buf.length()
 }
 

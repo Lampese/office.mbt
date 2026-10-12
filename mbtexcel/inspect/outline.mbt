@@ -56,7 +56,7 @@ pub fn outline(
 fn sheet_json(
   workbook : @xlsx.Workbook,
   name : String,
-  index : Int,
+  index : Int32,
 ) -> Json raise @xlsx.XlsxError {
   match find_worksheet(workbook, name) {
     Some(worksheet) => worksheet_json(workbook, worksheet, name, index)
@@ -112,7 +112,7 @@ fn worksheet_json(
   workbook : @xlsx.Workbook,
   worksheet : @xlsx.Worksheet,
   name : String,
-  index : Int,
+  index : Int32,
 ) -> Json raise @xlsx.XlsxError {
   let out : Map[String, Json] = {
     "kind": Json::string("worksheet"),
@@ -209,7 +209,7 @@ fn worksheet_json(
 fn conditional_format_range_count(
   workbook : @xlsx.Workbook,
   name : String,
-) -> Int raise @xlsx.XlsxError {
+) -> Int32 raise @xlsx.XlsxError {
   let mut count = 0
   for sqref, _ in workbook.get_conditional_formats(name) {
     for part in sqref.split(" ") {
@@ -225,7 +225,7 @@ fn conditional_format_range_count(
 fn chart_sheet_json(
   chart_sheet : @xlsx.ChartSheet,
   name : String,
-  index : Int,
+  index : Int32,
 ) -> Json {
   let chart : Map[String, Json] = Map([])
   chart_meta_into(chart, chart_sheet.chart_xml())

@@ -41,7 +41,7 @@ pub(all) struct Chart {
   date1904 : Bool?
   lang : String?
   rounded_corners : Bool?
-  style : Int?
+  style : Int32?
   chart : ChartBody
   extension : Array[@xml.XmlElement]
 } derive(Eq, Debug)

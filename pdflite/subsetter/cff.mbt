@@ -27,8 +27,8 @@ priv struct CffTable {
 /// written. `location` indicates where in the buffer the offset needs to be
 /// written to and `value` indicates the value of the offset.
 priv struct DeferredOffset {
-  mut location : Int
-  mut value : Int
+  mut location : Int32
+  mut value : Int32
 }
 
 ///|
@@ -45,7 +45,7 @@ fn DeferredOffset::is_dummy(self : DeferredOffset) -> Bool {
 ///|
 fn DeferredOffset::update_value(
   self : DeferredOffset,
-  value : Int,
+  value : Int32,
 ) -> Unit raise SubsetError {
   // (`i32::try_from(usize)`: buffer lengths are below 2^31.)
   if value < 0 {
@@ -57,7 +57,10 @@ fn DeferredOffset::update_value(
 ///|
 /// Adjust the location of an offset, if it has been set (i.e. it's not a
 /// dummy offset).
-fn DeferredOffset::adjust_location(self : DeferredOffset, delta : Int) -> Unit {
+fn DeferredOffset::adjust_location(
+  self : DeferredOffset,
+  delta : Int32,
+) -> Unit {
   if !self.is_dummy() {
     self.location += delta
   }
@@ -66,7 +69,7 @@ fn DeferredOffset::adjust_location(self : DeferredOffset, delta : Int) -> Unit {
 ///|
 fn DeferredOffset::update_location(
   self : DeferredOffset,
-  location : Int,
+  location : Int32,
 ) -> Unit {
   self.location = location
 }
@@ -108,7 +111,7 @@ priv struct Offsets {
 }
 
 ///|
-fn Offsets::new_cid(num_font_dicts : Int) -> Offsets {
+fn Offsets::new_cid(num_font_dicts : Int32) -> Offsets {
   {
     char_strings_offset: DeferredOffset::dummy(),
     charset_offset: DeferredOffset::dummy(),
@@ -244,7 +247,7 @@ fn subset_charstrings(
       })
     Sid(sid) => [SubroutineHandler::new(sid.local_subrs.items())]
   }
-  let used_fds : Map[Int, Unit] = Map([])
+  let used_fds : Map[Int32, Unit] = Map([])
   let char_strings = []
   for old_gid in remapper.remapped_gids() {
     let fd_index = match table.font_kind {
@@ -278,7 +281,7 @@ fn get_sid_remapper(table : CffTable, fd_remapper : Remapper) -> SidRemapper? {
   let sid_remapper = SidRemapper::new()
   sid_remapper.remap(b"Adobe") |> ignore
   sid_remapper.remap(b"Identity") |> ignore
-  let remap_sid = (sid : Int) => {
+  let remap_sid = (sid : Int32) => {
     if is_standard_string(sid) {
       Some(())
     } else {
@@ -362,13 +365,13 @@ fn CffTable::parse(ctx : Context) -> CffTable raise SubsetError {
 /// Remap old SIDs to new SIDs, and also allow the insertion of new strings.
 priv struct SidRemapper {
   /// Next SID to be assigned.
-  mut counter : Int
+  mut counter : Int32
   /// The strings, ordered by their SID.
   strings : Array[Bytes]
   /// A map from strings to their corresponding SID.
-  string_to_sid : Map[Bytes, Int]
+  string_to_sid : Map[Bytes, Int32]
   /// A map from old SIDs to new SIDs.
-  old_sid_to_new_sid : Map[Int, Int]
+  old_sid_to_new_sid : Map[Int32, Int32]
 }
 
 ///|
@@ -382,19 +385,19 @@ fn SidRemapper::new() -> SidRemapper {
 }
 
 ///|
-fn SidRemapper::get(self : SidRemapper, string : Bytes) -> Int? {
+fn SidRemapper::get(self : SidRemapper, string : Bytes) -> Int32? {
   self.string_to_sid.get(string)
 }
 
 ///|
 /// Get the new SID to a corresponding old SID.
-fn SidRemapper::get_new_sid(self : SidRemapper, sid : Int) -> Int? {
+fn SidRemapper::get_new_sid(self : SidRemapper, sid : Int32) -> Int32? {
   self.old_sid_to_new_sid.get(sid)
 }
 
 ///|
 /// Remap a string.
-fn SidRemapper::remap(self : SidRemapper, string : Bytes) -> Int {
+fn SidRemapper::remap(self : SidRemapper, string : Bytes) -> Int32 {
   match self.string_to_sid.get(string) {
     Some(sid) => sid
     None => {
@@ -414,9 +417,9 @@ fn SidRemapper::remap(self : SidRemapper, string : Bytes) -> Int {
 /// Remap an old SID and its corresponding string.
 fn SidRemapper::remap_with_old_sid(
   self : SidRemapper,
-  sid : Int,
+  sid : Int32,
   string : Bytes,
-) -> Int {
+) -> Int32 {
   match self.old_sid_to_new_sid.get(sid) {
     Some(new_sid) => new_sid
     None => {
@@ -458,13 +461,13 @@ fn rewrite_charset(gid_mapper : GlyphRemapper, w : Writer) -> Unit {
 
 ///|
 priv struct TopDictData {
-  mut char_strings : Int?
-  mut private : (Int, Int)?
-  mut fd_array : Int?
-  mut fd_select : Int?
-  mut notice : Int?
-  mut copyright : Int?
-  mut font_name : Int?
+  mut char_strings : Int32?
+  mut private : (Int32, Int32)?
+  mut fd_array : Int32?
+  mut fd_select : Int32?
+  mut notice : Int32?
+  mut copyright : Int32?
+  mut font_name : Int32?
   mut has_ros : Bool
   mut font_matrix : Array[Number]?
   mut font_bbox : Array[Number]?
@@ -665,7 +668,7 @@ priv struct FontDict {
   /// The underlying data of the private dict.
   mut private_dict : BytesView
   /// The StringID of the font name in this font DICT.
-  mut font_name : Int?
+  mut font_name : Int32?
   /// The font matrix.
   mut font_matrix : Array[Number]?
 }
@@ -809,7 +812,7 @@ fn generate_font_dict_index(
 
 ///|
 /// Parse the subroutine offset from a private dict.
-fn parse_subr_offset(data : BytesView) -> Int? {
+fn parse_subr_offset(data : BytesView) -> Int32? {
   let dict_parser = DictionaryParser::new(data)
   while dict_parser.parse_next() is Some(operator) {
     if operator == op_subrs {
@@ -839,7 +842,7 @@ fn rewrite_private_dict(
   offsets : Offsets,
   private_dict_data : BytesView,
   w : Writer,
-  dict_index : Int,
+  dict_index : Int32,
 ) -> Unit raise SubsetError {
   let private_dict_offset = w.len()
   let private_dict_data = {
@@ -888,7 +891,7 @@ priv struct CIDMetadata {
 fn parse_cid_metadata(
   data : BytesView,
   top_dict : TopDictData,
-  number_of_glyphs : Int,
+  number_of_glyphs : Int32,
 ) -> CIDMetadata? {
   guard top_dict.fd_array is Some(fd_array_offset) &&
     top_dict.fd_select is Some(fd_select_offset) else {
@@ -917,7 +920,7 @@ fn parse_cid_metadata(
 }
 
 ///|
-fn parse_fd_select(number_of_glyphs : Int, r : Reader) -> FDSelect? {
+fn parse_fd_select(number_of_glyphs : Int32, r : Reader) -> FDSelect? {
   guard r.read_u8() is Some(format) else { return None }
   match format {
     0 =>
@@ -942,7 +945,7 @@ priv enum FDSelect {
 
 ///|
 /// Get the font dict index for a glyph.
-fn FDSelect::font_dict_index(self : FDSelect, glyph_id : Int) -> Int? {
+fn FDSelect::font_dict_index(self : FDSelect, glyph_id : Int32) -> Int32? {
   match self {
     Format0(array) => array.get(glyph_id)
     Format3(data) => {

@@ -156,7 +156,7 @@ test "define_master: layout declares the placeholders so slides inherit geometry
 }
 
 ///|
-fn count_theme_parts(prs : @presentation.Presentation) -> Int {
+fn count_theme_parts(prs : @presentation.Presentation) -> Int32 {
   let mut n = 0
   for p in prs.opc_package().parts() {
     if p.name.contains("/ppt/theme/theme") {

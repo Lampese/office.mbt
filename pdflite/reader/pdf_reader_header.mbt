@@ -3,8 +3,8 @@
 ///
 /// The fields correspond to the digits in a `%PDF-major.minor` header.
 pub(all) struct PdfVersion {
-  major : Int
-  minor : Int
+  major : Int32
+  minor : Int32
 } derive(Debug, Eq, ToJson)
 
 ///|
@@ -12,7 +12,7 @@ pub(all) struct PdfVersion {
 pub let pdf_default_version : PdfVersion = { major: 2, minor: 0, }
 
 ///|
-fn pdf_header_at(cursor : @core.ByteCursor, position : Int) -> PdfVersion? {
+fn pdf_header_at(cursor : @core.ByteCursor, position : Int32) -> PdfVersion? {
   let header : Result[BytesView, Error] = try
     cursor.view_at_absolute(position, 8)
   catch {
@@ -43,7 +43,7 @@ fn pdf_header_at(cursor : @core.ByteCursor, position : Int) -> PdfVersion? {
 }
 
 ///|
-fn pdf_header_probe_length(length : Int) -> Int {
+fn pdf_header_probe_length(length : Int32) -> Int32 {
   if length < 1024 {
     length
   } else {
@@ -54,7 +54,7 @@ fn pdf_header_probe_length(length : Int) -> Int {
 ///|
 fn pdf_finish_header_at(
   cursor : @core.ByteCursor,
-  position : Int,
+  position : Int32,
   version : PdfVersion,
 ) -> PdfVersion raise @core.PdfError {
   cursor.set_offset(position)

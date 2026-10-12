@@ -3,7 +3,7 @@ pub(all) struct ConditionalFormatOptions {
   mut format_type : String
   mut above_average : Bool
   mut percent : Bool
-  mut format : Int?
+  mut format : Int32?
   mut criteria : String
   mut value : String
   mut min_type : String
@@ -109,7 +109,7 @@ pub fn ConditionalFormatOptions::set_percent(
 ///|
 pub fn ConditionalFormatOptions::set_format(
   self : ConditionalFormatOptions,
-  value : Int?,
+  value : Int32?,
 ) -> Unit {
   self.format = value
 }
@@ -533,7 +533,7 @@ fn prepare_conditional_format_range(
 ///|
 fn build_cell_rule(
   opt : ConditionalFormatOptions,
-  priority : Int,
+  priority : Int32,
   operator : StringView,
 ) -> String raise XlsxError {
   let sb = StringBuilder()
@@ -564,7 +564,7 @@ fn build_cell_rule(
 ///|
 fn build_time_period_rule(
   opt : ConditionalFormatOptions,
-  priority : Int,
+  priority : Int32,
   criteria : StringView,
   master_cell : StringView,
 ) -> String raise XlsxError {
@@ -586,7 +586,7 @@ fn build_time_period_rule(
 ///|
 fn build_text_rule(
   opt : ConditionalFormatOptions,
-  priority : Int,
+  priority : Int32,
   criteria : StringView,
   master_cell : StringView,
 ) -> String raise XlsxError {
@@ -620,7 +620,7 @@ fn build_text_rule(
 ///|
 fn build_top10_rule(
   opt : ConditionalFormatOptions,
-  priority : Int,
+  priority : Int32,
   bottom : Bool,
 ) -> String {
   let mut rank = 10
@@ -646,7 +646,7 @@ fn build_top10_rule(
 ///|
 fn build_above_average_rule(
   opt : ConditionalFormatOptions,
-  priority : Int,
+  priority : Int32,
 ) -> String {
   let above = if opt.above_average { "1" } else { "0" }
   let sb = StringBuilder()
@@ -663,7 +663,7 @@ fn build_above_average_rule(
 fn build_simple_rule(
   rule_type : StringView,
   opt : ConditionalFormatOptions,
-  priority : Int,
+  priority : Int32,
   formula? : String,
 ) -> String {
   let sb = StringBuilder()
@@ -685,7 +685,7 @@ fn build_simple_rule(
 ///|
 fn build_color_scale_rule(
   opt : ConditionalFormatOptions,
-  priority : Int,
+  priority : Int32,
   mid : Bool,
 ) -> String {
   let min_type = if opt.min_type == "" { "min" } else { opt.min_type }
@@ -724,7 +724,7 @@ fn build_color_scale_rule(
 ///|
 fn build_data_bar_rule(
   opt : ConditionalFormatOptions,
-  priority : Int,
+  priority : Int32,
 ) -> String {
   let min_type = if opt.min_type == "" { "min" } else { opt.min_type }
   let max_type = if opt.max_type == "" { "max" } else { opt.max_type }
@@ -757,7 +757,7 @@ fn build_data_bar_rule(
 ///|
 fn build_icon_set_rule(
   opt : ConditionalFormatOptions,
-  priority : Int,
+  priority : Int32,
 ) -> String raise XlsxError {
   let steps = match icon_set_steps(opt.icon_style) {
     Some(value) => value
@@ -790,7 +790,7 @@ fn build_icon_set_rule(
 ///|
 fn conditional_format_rules_xml(
   opts : ArrayView[ConditionalFormatOptions],
-  priority_start : Int,
+  priority_start : Int32,
   master_cell : StringView,
 ) -> Array[String] raise XlsxError {
   let rules : Array[String] = []

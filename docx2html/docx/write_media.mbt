@@ -213,7 +213,7 @@ fn write_image(image : Image, ctx : WriteContext) -> XmlElement raise DocxError 
 fn image_dimensions(
   content_type : String,
   data : Bytes,
-) -> (Int, Int) raise DocxError {
+) -> (Int32, Int32) raise DocxError {
   let dims = match content_type {
     "image/png" => png_dimensions(data)
     "image/jpeg" => jpeg_dimensions(data)
@@ -230,7 +230,7 @@ fn image_dimensions(
 }
 
 ///|
-fn png_dimensions(data : Bytes) -> (Int, Int)? {
+fn png_dimensions(data : Bytes) -> (Int32, Int32)? {
   // Full 8-byte signature, then the IHDR chunk: length(4)=13, 'IHDR'(4),
   // width(4), height(4).
   if data.length() < 24 {
@@ -264,7 +264,7 @@ fn png_dimensions(data : Bytes) -> (Int, Int)? {
 }
 
 ///|
-fn gif_dimensions(data : Bytes) -> (Int, Int)? {
+fn gif_dimensions(data : Bytes) -> (Int32, Int32)? {
   // Exactly 'GIF87a' or 'GIF89a', then the complete 7-byte logical screen
   // descriptor (little-endian u16 width, height lead it).
   if data.length() < 13 {
@@ -284,7 +284,7 @@ fn gif_dimensions(data : Bytes) -> (Int, Int)? {
 }
 
 ///|
-fn jpeg_dimensions(data : Bytes) -> (Int, Int)? {
+fn jpeg_dimensions(data : Bytes) -> (Int32, Int32)? {
   // Scan JPEG segments for a start-of-frame marker (SOF0..SOF15 except
   // DHT/JPG/DAC). Reads are bounded by each segment's DECLARED length —
   // dimension bytes must lie inside the SOF segment and inside the data —

@@ -13,16 +13,16 @@ pub struct DocxFormatReport {
   priv mode : String
   priv requested_text : String?
   priv requested_within : String?
-  priv requested_nth : Int?
-  priv requested_range : (Int, Int)?
+  priv requested_nth : Int32?
+  priv requested_range : (Int32, Int32)?
   priv resolved_within : String?
-  priv selected : Array[Int]
+  priv selected : Array[Int32]
   priv spans : Array[@word.DocxFormatSpan]
   priv affected : Array[@word.DocxFormatAffected]
-  priv runs_changed : Int
-  priv runs_already_satisfied : Int
-  priv splits : Int
-  priv byte_edits : Int
+  priv runs_changed : Int32
+  priv runs_already_satisfied : Int32
+  priv splits : Int32
+  priv byte_edits : Int32
 }
 
 ///|
@@ -45,7 +45,7 @@ pub fn DocxFormatReport::requested_within(self : DocxFormatReport) -> String? {
 
 ///|
 /// The ordinal the caller selected, if any.
-pub fn DocxFormatReport::requested_nth(self : DocxFormatReport) -> Int? {
+pub fn DocxFormatReport::requested_nth(self : DocxFormatReport) -> Int32? {
   self.requested_nth
 }
 
@@ -53,7 +53,7 @@ pub fn DocxFormatReport::requested_nth(self : DocxFormatReport) -> Int? {
 /// The explicit range the caller addressed, in range mode.
 pub fn DocxFormatReport::requested_range(
   self : DocxFormatReport,
-) -> (Int, Int)? {
+) -> (Int32, Int32)? {
   self.requested_range
 }
 
@@ -67,7 +67,7 @@ pub fn DocxFormatReport::resolved_within(self : DocxFormatReport) -> String? {
 
 ///|
 /// The candidate ordinals formatted, in document order.
-pub fn DocxFormatReport::selected(self : DocxFormatReport) -> Array[Int] {
+pub fn DocxFormatReport::selected(self : DocxFormatReport) -> Array[Int32] {
   self.selected.copy()
 }
 
@@ -97,26 +97,28 @@ pub fn DocxFormatReport::affected_paths(
 
 ///|
 /// How many runs were rewritten.
-pub fn DocxFormatReport::runs_changed(self : DocxFormatReport) -> Int {
+pub fn DocxFormatReport::runs_changed(self : DocxFormatReport) -> Int32 {
   self.runs_changed
 }
 
 ///|
 /// How many touched runs already held every requested property.
-pub fn DocxFormatReport::runs_already_satisfied(self : DocxFormatReport) -> Int {
+pub fn DocxFormatReport::runs_already_satisfied(
+  self : DocxFormatReport,
+) -> Int32 {
   self.runs_already_satisfied
 }
 
 ///|
 /// How many runs were clone-split.
-pub fn DocxFormatReport::splits(self : DocxFormatReport) -> Int {
+pub fn DocxFormatReport::splits(self : DocxFormatReport) -> Int32 {
   self.splits
 }
 
 ///|
 /// How many byte edits the plan carried. Zero means the document
 /// already held the request everywhere it was asked.
-pub fn DocxFormatReport::byte_edits(self : DocxFormatReport) -> Int {
+pub fn DocxFormatReport::byte_edits(self : DocxFormatReport) -> Int32 {
   self.byte_edits
 }
 
@@ -165,7 +167,7 @@ pub fn DocxFormatResult::transaction(
 /// hide-a-protection-in-a-branch construction at once.
 pub fn docx_mutation_preflight(
   archive : @zip.Archive,
-  tracking_waived? : Bool = false,
+  tracking_waived~ : Bool = false,
 ) -> Unit raise @transaction.TransactionError {
   // Signatures are identified by CONTENT TYPE, not by where they are
   // stored: OPC lets a package name its signature parts freely, so a
@@ -881,8 +883,8 @@ pub fn DocxEditSession::queue_format(
   format~ : @word.DocxDirectFormat,
   text? : String,
   within? : String,
-  nth? : Int,
-  range? : (Int, Int),
+  nth? : Int32,
+  range? : (Int32, Int32),
 ) -> (@word.DocxFormatReceipt, String?) raise @transaction.TransactionError {
   // A stable `p[id="…"]` scope resolves against THIS transaction's
   // snapshot, with the same typed refusals the read surfaces give.
@@ -1026,12 +1028,12 @@ fn format_readback_findings(
     }
   }
   // The spans of each affected paragraph, grouped once.
-  let by_paragraph : Map[String, Array[(Int, Int)]] = Map([])
+  let by_paragraph : Map[String, Array[(Int32, Int32)]] = Map([])
   for span in captured.spans {
     let ranges = match by_paragraph.get(span.path()) {
       Some(existing) => existing
       None => {
-        let created : Array[(Int, Int)] = []
+        let created : Array[(Int32, Int32)] = []
         by_paragraph[span.path()] = created
         created
       }
@@ -1039,7 +1041,7 @@ fn format_readback_findings(
     ranges.push((span.start(), span.end()))
   }
   // The batch every span-level question is asked in, in one order.
-  let requests : Array[(String, Array[(Int, Int)])] = []
+  let requests : Array[(String, Array[(Int32, Int32)])] = []
   for entry in by_paragraph {
     requests.push(entry)
   }
@@ -1160,10 +1162,10 @@ pub async fn transact_docx_format(
   format~ : @word.DocxDirectFormat,
   text? : String,
   within? : String,
-  nth? : Int,
-  range? : (Int, Int),
-  expect? : Int,
-  allow_zero? : Bool = false,
+  nth? : Int32,
+  range? : (Int32, Int32),
+  expect? : Int32,
+  allow_zero~ : Bool = false,
   preflight? : (DocxFormatReport) -> Unit raise,
 ) -> DocxFormatResult {
   let collected : Ref[DocxFormatReport?] = Ref(None)

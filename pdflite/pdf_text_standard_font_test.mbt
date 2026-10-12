@@ -4,14 +4,16 @@ fn text_standard_font_name_for_test(text : String) -> @core.PdfName {
 }
 
 ///|
-fn text_standard_font_bytes_for_test(values : ArrayView[Int]) -> @core.PdfBytes {
+fn text_standard_font_bytes_for_test(
+  values : ArrayView[Int32],
+) -> @core.PdfBytes {
   try! @core.pdf_bytes_of_int_array(values)
 }
 
 ///|
 fn text_standard_font_difference_for_test(
   name : String,
-  code : Int,
+  code : Int32,
 ) -> @pdflite.PdfEncodingDifference {
   { name: text_standard_font_name_for_test(name), code, }
 }
@@ -121,7 +123,7 @@ test "pdf_standard_font_of_name accepts CamlPDF aliases" {
 
 ///|
 test "PdfStandardFont exposes standard14 baseline stem and flags" {
-  let metrics : Array[(@pdflite.PdfStandardFont, Int, Int, Int)] = [
+  let metrics : Array[(@pdflite.PdfStandardFont, Int32, Int32, Int32)] = [
     (PdfTimesRoman, 331, 116, 32),
     (PdfTimesBold, 338, 122, 32),
     (PdfTimesItalic, 326, 105, 32),
@@ -158,7 +160,7 @@ test "PdfStandardFont exposes standard14 baseline stem and flags" {
 
 ///|
 test "PdfStandardFont exposes Standard14 AFM data tables" {
-  let counts : Array[(@pdflite.PdfStandardFont, Int, Int, Int, Int)] = [
+  let counts : Array[(@pdflite.PdfStandardFont, Int32, Int32, Int32, Int32)] = [
     (PdfTimesRoman, 25, 149, 315, 206),
     (PdfTimesBold, 25, 149, 315, 223),
     (PdfTimesItalic, 25, 149, 315, 213),

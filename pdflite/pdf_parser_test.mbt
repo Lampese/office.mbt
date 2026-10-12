@@ -1,10 +1,10 @@
 ///|
-fn parser_name_for_test(values : ArrayView[Int]) -> @core.PdfName {
+fn parser_name_for_test(values : ArrayView[Int32]) -> @core.PdfName {
   @core.pdf_name_of_bytes(try! @core.pdf_bytes_of_int_array(values))
 }
 
 ///|
-fn parser_bytes_for_test(values : ArrayView[Int]) -> @core.PdfBytes {
+fn parser_bytes_for_test(values : ArrayView[Int32]) -> @core.PdfBytes {
   try! @core.pdf_bytes_of_int_array(values)
 }
 

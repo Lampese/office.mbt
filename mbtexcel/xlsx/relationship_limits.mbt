@@ -36,7 +36,7 @@ fn relationship_scanner_attribute(
 fn for_each_relationship_start_tag(
   xml : StringView,
   visit : (@ooxml.XmlStartTagScanner) -> Bool raise XlsxError,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Unit raise XlsxError {
   let scanner = @ooxml.XmlStartTagScanner::new(xml, cancelled~)
   let mut scanning = true
@@ -62,9 +62,9 @@ fn for_each_relationship_start_tag(
 fn charge_relationship_attribute(
   value : StringView,
   kind : String,
-  maximum : Int,
-  total : Ref[Int],
-  total_maximum : Int,
+  maximum : Int32,
+  total : Ref[Int32],
+  total_maximum : Int32,
 ) -> Unit raise XlsxError {
   if value.length() > maximum {
     raise ResourceLimitExceeded(kind~, limit=maximum, actual=value.length())
@@ -91,7 +91,7 @@ fn preflight_archive_relationship_limits(
   transcoder? : (String, Bytes) -> String raise XlsxError,
   decode? : (BytesView) -> String raise XlsxError,
   budget? : ReadBudget,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Unit raise XlsxError {
   let records = Ref(0)
   let attribute_chars = Ref(0)

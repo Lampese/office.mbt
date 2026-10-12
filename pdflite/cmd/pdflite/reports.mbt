@@ -25,7 +25,7 @@ fn pdflite_cmd_pages_command() -> @argparse.Command {
 async fn pdflite_cmd_report(
   args : @argparse.Matches,
   per_page : Bool,
-  passwords? : PdflitePasswords = { user: None, owner: None, },
+  passwords~ : PdflitePasswords = { user: None, owner: None, },
 ) -> Unit {
   let document = pdflite_cmd_load(
     pdflite_cmd_single_value(args, "input"),
@@ -53,8 +53,8 @@ async fn pdflite_cmd_report(
 ///|
 async fn pdflite_cmd_pages_run(
   options : @argparse.Matches,
-  passwords? : PdflitePasswords = { user: None, owner: None, },
-) -> Int {
+  passwords~ : PdflitePasswords = { user: None, owner: None, },
+) -> Int32 {
   pdflite_cmd_report(options, true, passwords~) catch {
     err => return pdflite_cmd_operation_error(err)
   }
@@ -64,8 +64,8 @@ async fn pdflite_cmd_pages_run(
 ///|
 async fn pdflite_cmd_detailed_info_run(
   options : @argparse.Matches,
-  passwords? : PdflitePasswords = { user: None, owner: None, },
-) -> Int {
+  passwords~ : PdflitePasswords = { user: None, owner: None, },
+) -> Int32 {
   pdflite_cmd_report(options, false, passwords~) catch {
     err => return pdflite_cmd_operation_error(err)
   }

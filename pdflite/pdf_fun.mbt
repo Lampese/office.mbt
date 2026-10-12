@@ -130,12 +130,12 @@ pub(all) struct PdfInterpolationFunction {
 /// output values, and `samples` stores decoded integer samples with the first
 /// input dimension varying fastest.
 pub(all) struct PdfSampledFunction {
-  size : Array[Int]
-  order : Int
+  size : Array[Int32]
+  order : Int32
   encode : Array[Double]
   decode : Array[Double]
-  bits_per_sample : Int
-  samples : Array[Int]
+  bits_per_sample : Int32
+  samples : Array[Int32]
 } derive(Debug, Eq, ToJson)
 
 ///|
@@ -156,7 +156,7 @@ pub(all) struct PdfStitchingFunction {
 /// `PdfCalculatorIfElse` store nested procedure bodies; the remaining variants
 /// correspond to PDF calculator-language operators.
 pub(all) enum PdfCalculatorOp {
-  PdfCalculatorInt(Int)
+  PdfCalculatorInt(Int32)
   PdfCalculatorFloat(Double)
   PdfCalculatorAbs
   PdfCalculatorAdd

@@ -26,7 +26,7 @@ pub struct Workbook {
   mut io_context : WorkbookIOContext
   options : Options
   mut workbook_protection : WorkbookProtection?
-  mut active_sheet_index : Int
+  mut active_sheet_index : Int32
   /// Kingsoft WPS Office embedded cell images parsed from
   /// xl/cellimages.xml on read, keyed by their DISPIMG identifier.
   cell_images : Array[CellImage]
@@ -42,8 +42,8 @@ pub struct Workbook {
 
 ///|
 enum SheetEntry {
-  Worksheet(Int)
-  ChartSheet(Int)
+  Worksheet(Int32)
+  ChartSheet(Int32)
 } derive(Debug)
 
 ///|
@@ -86,7 +86,7 @@ fn sheet_name_equal(a : StringView, b : StringView) -> Bool {
 }
 
 ///|
-fn Workbook::sheet_entry_index(self : Workbook, name : StringView) -> Int? {
+fn Workbook::sheet_entry_index(self : Workbook, name : StringView) -> Int32? {
   let needle = normalize_sheet_name(name)
   for i, entry in self.sheet_order {
     match entry {
@@ -163,7 +163,7 @@ fn defined_name_scope_key(scope : StringView) -> String {
 }
 
 ///|
-pub fn Workbook::new(options? : Options = Options::new()) -> Workbook {
+pub fn Workbook::new(options~ : Options = Options::new()) -> Workbook {
   {
     worksheet_owner_token: [()],
     sheets: [],

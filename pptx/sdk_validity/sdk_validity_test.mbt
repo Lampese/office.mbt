@@ -10,7 +10,7 @@ async fn with_sdk_directory(run : async (String) -> Unit) -> Unit {
 }
 
 ///|
-async fn validate_pptx(path : String) -> (Int, String) {
+async fn validate_pptx(path : String) -> (Int32, String) {
   let (code, _, stderr) = @process.collect_output("bash", [
     "../scripts/validate_pptx.sh", path,
   ])

@@ -25,7 +25,7 @@ priv struct SkrifaInterjector {
 ///|
 fn SkrifaInterjector::new(
   data : Bytes,
-  index : Int,
+  index : Int32,
   location : ArrayView[(Tag, Float)],
 ) -> SkrifaInterjector? {
   let font_ref = @read_fonts.FontRef::from_index(data, index) catch {
@@ -60,8 +60,8 @@ fn SkrifaInterjector::is_default_location(self : SkrifaInterjector) -> Bool {
 fn SkrifaInterjector::interject(
   self : SkrifaInterjector,
   maxp_data : MaxpData,
-  glyph : Int,
-) -> (Int, Int, Bytes)? {
+  glyph : Int32,
+) -> (Int32, Int32, Bytes)? {
   let outline_builder = OutlinePath::new()
   let glyph_id = @font_types.GlyphId::from_int(glyph)
   if self.outlines.get(glyph_id) is Some(outline_glyph) {
@@ -122,7 +122,7 @@ fn round_f32(x : Float) -> Float {
 
 ///|
 /// Rust's saturating `as u16` of a float.
-fn saturating_u16(d : Double) -> Int {
+fn saturating_u16(d : Double) -> Int32 {
   if d.is_nan() || d <= 0.0 {
     0
   } else if d >= 65535.0 {
@@ -134,7 +134,7 @@ fn saturating_u16(d : Double) -> Int {
 
 ///|
 /// Rust's saturating `as i16` of a float.
-fn saturating_i16(d : Double) -> Int {
+fn saturating_i16(d : Double) -> Int32 {
   if d.is_nan() {
     0
   } else if d >= 32767.0 {
@@ -427,13 +427,13 @@ priv struct ContourPoint {
 /// A simple glyph: the bounding box `(x_min, y_min, x_max, y_max)` and the
 /// contours of rounded points.
 priv struct SimpleGlyph {
-  bbox : (Int, Int, Int, Int)
-  contours : Array[Array[(Int, Int, Bool)]]
+  bbox : (Int32, Int32, Int32, Int32)
+  contours : Array[Array[(Int32, Int32, Bool)]]
 }
 
 ///|
 /// Rust's `OtRound<i16> for f64`: `(v + 0.5).floor() as i16`.
-fn ot_round(v : Double) -> Int {
+fn ot_round(v : Double) -> Int32 {
   saturating_i16((v + 0.5).floor())
 }
 
@@ -494,7 +494,7 @@ fn simple_glyph_from_bezpath(path : BezPath) -> SimpleGlyph? {
 }
 
 ///|
-fn is_implicit_on_curve(points : Array[ContourPoint], idx : Int) -> Bool {
+fn is_implicit_on_curve(points : Array[ContourPoint], idx : Int32) -> Bool {
   let p1 = points[idx]
   if !p1.on_curve {
     return false
@@ -605,7 +605,7 @@ fn SimpleGlyph::dump(self : SimpleGlyph) -> Bytes? {
 }
 
 ///|
-fn wrap_i16(v : Int) -> Int {
+fn wrap_i16(v : Int32) -> Int32 {
   let v = v & 0xFFFF
   if v >= 0x8000 {
     v - 0x10000
@@ -619,8 +619,8 @@ fn wrap_i16(v : Int) -> Int {
 /// value.
 priv enum CoordDelta {
   Skip
-  Short(Int)
-  Long(Int)
+  Short(Int32)
+  Long(Int32)
 }
 
 ///|
@@ -634,10 +634,10 @@ fn write_coord_delta(w : Writer, d : CoordDelta) -> Unit {
 
 ///|
 fn flag_and_delta(
-  value : Int,
-  short_flag : Int,
-  same_or_pos : Int,
-) -> (Int, CoordDelta) {
+  value : Int32,
+  short_flag : Int32,
+  same_or_pos : Int32,
+) -> (Int32, CoordDelta) {
   if value == 0 {
     (same_or_pos, Skip)
   } else if value >= -255 && value <= -1 {
@@ -653,10 +653,10 @@ fn flag_and_delta(
 /// Flags with 'repeat' counts (`RepeatableFlag::iter_from_flags`): a flag
 /// repeated exactly once is written twice instead of with a repeat count
 /// of 1, like fontmake does.
-fn repeatable_flags(flags : Array[Int]) -> Array[(Int, Int)] {
+fn repeatable_flags(flags : Array[Int32]) -> Array[(Int32, Int32)] {
   let out = []
-  let mut prev : (Int, Int)? = None
-  let mut decompose_single_repeat : (Int, Int)? = None
+  let mut prev : (Int32, Int32)? = None
+  let mut decompose_single_repeat : (Int32, Int32)? = None
   let mut i = 0
   for ;; {
     if decompose_single_repeat is Some(repeat) {

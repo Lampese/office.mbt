@@ -27,7 +27,7 @@
 ///|
 /// `<p:animScale><p:by>` is expressed in 1000ths of a percent, so 150 % is
 /// `150000`. (`<p:animRot by>` reuses `@units.ooxml_per_degree` instead.)
-let anim_scale_per_percent : Int = 1000
+let anim_scale_per_percent : Int32 = 1000
 
 ///|
 /// The end of an animation's normalised time line — `<p:tav tm>` runs `0`
@@ -39,11 +39,11 @@ let anim_time_end : String = "100000"
 /// timing tree; PowerPoint emits them increasing in document order, which the
 /// build order here preserves.
 priv struct IdGen {
-  mut n : Int
+  mut n : Int32
 }
 
 ///|
-fn IdGen::next(self : IdGen) -> Int {
+fn IdGen::next(self : IdGen) -> Int32 {
   self.n = self.n + 1
   self.n
 }
@@ -106,7 +106,7 @@ fn group_anim_steps(steps : Array[AnimStep]) -> Array[AnimGroup] {
 ///|
 /// A `<p:tgtEl>` pointing at the shape with id `spid`, or — when `paragraph` is
 /// `Some(p)` — at that shape's `p`-th text paragraph (`<p:txEl><p:pRg>`).
-fn anim_tgt(spid : String, paragraph : Int?) -> @xml.XmlNode {
+fn anim_tgt(spid : String, paragraph : Int32?) -> @xml.XmlNode {
   let sp_children : Array[@xml.XmlNode] = match paragraph {
     Some(p) =>
       [
@@ -322,7 +322,7 @@ fn anim_effect_par(
   gen : IdGen,
   step : AnimStep,
   node_type : String,
-  grpid_of : (Int) -> Int,
+  grpid_of : (Int32) -> Int32,
 ) -> @xml.XmlNode {
   let (preset_class, preset_id) = match step.effect {
     Entrance(e) => ("entr", e.preset_id())
@@ -366,7 +366,7 @@ fn anim_effect_par(
 fn anim_group_par(
   gen : IdGen,
   group : AnimGroup,
-  grpid_of : (Int) -> Int,
+  grpid_of : (Int32) -> Int32,
 ) -> @xml.XmlNode {
   let trigger_id = gen.next()
   let holder_id = gen.next()
@@ -419,13 +419,13 @@ fn timing_element(timeline : Timeline) -> @xml.XmlElement {
   let groups = group_anim_steps(timeline.steps)
   // Shapes with a by-paragraph effect, in first-seen order; each gets a build
   // group id (its index + 1, so they never collide with the default group 0).
-  let build_shapes : Array[Int] = []
+  let build_shapes : Array[Int32] = []
   for step in timeline.steps {
     if step.paragraph is Some(_) && !build_shapes.contains(step.target_shape_id) {
       build_shapes.push(step.target_shape_id)
     }
   }
-  let grpid_of = (spid : Int) => {
+  let grpid_of = (spid : Int32) => {
     for i, s in build_shapes {
       if s == spid {
         return i + 1

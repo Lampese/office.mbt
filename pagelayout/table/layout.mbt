@@ -16,8 +16,8 @@ pub(all) struct PlacedCell {
   margins : CellMargins
   shading : @pagelayout.Color?
   /// Grid columns this cell covers, for border and merge geometry.
-  column : Int
-  grid_span : Int
+  column : Int32
+  grid_span : Int32
 } derive(Eq, Debug, ToJson)
 
 ///|

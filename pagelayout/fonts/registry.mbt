@@ -144,8 +144,8 @@ pub fn FontRegistry::register(
   self : FontRegistry,
   family : String,
   sfnt : Bytes,
-  bold? : Bool = false,
-  italic? : Bool = false,
+  bold~ : Bool = false,
+  italic~ : Bool = false,
 ) -> FaceMetrics raise {
   let key = face_key(family, bold, italic)
   if self.closed {
@@ -198,8 +198,8 @@ pub fn FontRegistry::register_standard(
   family : String,
   metrics : FaceMetrics,
   standard~ : String,
-  bold? : Bool = false,
-  italic? : Bool = false,
+  bold~ : Bool = false,
+  italic~ : Bool = false,
 ) -> FaceMetrics raise FontRegistryError {
   let key = face_key(family, bold, italic)
   if self.closed {
@@ -276,8 +276,8 @@ pub fn FontRegistry::resolve_family(
 pub fn FontRegistry::registered_face(
   self : FontRegistry,
   family : String,
-  bold? : Bool = false,
-  italic? : Bool = false,
+  bold~ : Bool = false,
+  italic~ : Bool = false,
 ) -> RegisteredFace? {
   self.closed = true
   let candidates = [
@@ -305,8 +305,8 @@ pub fn FontRegistry::registered_face(
 pub fn FontRegistry::face(
   self : FontRegistry,
   family : String,
-  bold? : Bool = false,
-  italic? : Bool = false,
+  bold~ : Bool = false,
+  italic~ : Bool = false,
 ) -> FaceMetrics {
   match self.registered_face(family, bold~, italic~) {
     Some(registered) => registered.metrics
@@ -327,8 +327,8 @@ pub fn FontRegistry::face(
 /// cannot name it apart from the registered face. See `uncovered`.
 pub fn FontRegistry::cjk_fallback(
   self : FontRegistry,
-  bold? : Bool = false,
-  italic? : Bool = false,
+  bold~ : Bool = false,
+  italic~ : Bool = false,
 ) -> FaceMetrics {
   let family = cjk_fallback().family
   self.face(self.resolve_family(family), bold~, italic~)
@@ -342,9 +342,9 @@ pub fn FontRegistry::uncovered(
   self : FontRegistry,
   text : String,
   family : String,
-  bold? : Bool = false,
-  italic? : Bool = false,
-) -> Array[(Int, Int)] {
+  bold~ : Bool = false,
+  italic~ : Bool = false,
+) -> Array[(Int32, Int32)] {
   uncovered_by(
     text,
     self.face(self.resolve_family(family), bold~, italic~),

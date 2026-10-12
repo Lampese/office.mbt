@@ -24,10 +24,10 @@ pub extend XlsxTemplateFinding with @moonbitlang/core/debug.Debug::{to_repr}
 ///|
 /// The complete merge outcome for one workbook.
 pub(all) struct XlsxTemplateReport {
-  mut placeholders_found : Int
-  mut replaced : Int
-  mut escapes_applied : Int
-  mut distinct_keys_used : Int
+  mut placeholders_found : Int32
+  mut replaced : Int32
+  mut escapes_applied : Int32
+  mut distinct_keys_used : Int32
   missing : Array[XlsxTemplateFinding]
   unused : Array[String]
   malformed : Array[XlsxTemplateFinding]
@@ -36,10 +36,10 @@ pub(all) struct XlsxTemplateReport {
   mut locations_truncated : Bool
   // full occurrence counts per class: the lists above are bounded, so a
   // consumer must be able to tell exactly-64 from more-than-64
-  mut missing_total : Int
-  mut malformed_total : Int
-  mut unsupported_total : Int
-  mut unused_total : Int
+  mut missing_total : Int32
+  mut malformed_total : Int32
+  mut unsupported_total : Int32
+  mut unused_total : Int32
   mut changed : Bool
 } derive(Eq, @debug.Debug)
 
@@ -60,11 +60,11 @@ pub suberror XlsxTemplateRefused {
 pub extend XlsxTemplateRefused with @moonbitlang/core/debug.Debug::{to_repr}
 
 ///|
-let template_finding_limit : Int = 64
+let template_finding_limit : Int32 = 64
 
 ///|
 /// Total scan work allowance per merge, in code units.
-let template_scan_budget : Int = 4 * 1024 * 1024
+let template_scan_budget : Int32 = 4 * 1024 * 1024
 
 ///|
 fn push_bounded(
@@ -86,9 +86,9 @@ priv struct CellSubstitution {
   missing_keys : Array[String]
   mut typed_edit : @engine.CellValue?
   mut new_text : String?
-  mut replaced : Int
-  mut escapes_applied : Int
-  mut placeholders_found : Int
+  mut replaced : Int32
+  mut escapes_applied : Int32
+  mut placeholders_found : Int32
 }
 
 ///|
@@ -102,7 +102,7 @@ priv struct CellSubstitution {
 fn substitute_cell_text(
   text : String,
   resolve : (String) -> @template.TemplateValue?,
-  budget : Ref[Int],
+  budget : Ref[Int32],
 ) -> CellSubstitution raise {
   let outcome : CellSubstitution = {
     malformed_reasons: [],
@@ -213,9 +213,9 @@ fn merge_template_workbook(
   workbook : @engine.Workbook,
   values : Map[String, @template.TemplateValue],
   allow_missing~ : Bool,
-  claimed_rows? : Set[String] = Set([]),
-  skipped_cells? : Ref[Int] = Ref(0),
-  pre_used_keys? : Set[String] = Set([]),
+  claimed_rows~ : Set[String] = Set([]),
+  skipped_cells~ : Ref[Int32] = Ref(0),
+  pre_used_keys~ : Set[String] = Set([]),
 ) -> XlsxTemplateReport raise {
   let budget = Ref(template_scan_budget)
   let report : XlsxTemplateReport = {

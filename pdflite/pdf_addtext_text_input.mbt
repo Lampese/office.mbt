@@ -79,7 +79,7 @@ pub fn pdf_addtext_split_at_newline(text : String) -> Array[String] {
 }
 
 ///|
-fn pdf_addtext_octal_value(a : Byte, b : Byte, c : Byte) -> Int {
+fn pdf_addtext_octal_value(a : Byte, b : Byte, c : Byte) -> Int32 {
   (a.to_int() - '0') * 64 + (b.to_int() - '0') * 8 + c.to_int() - '0'
 }
 
@@ -95,7 +95,7 @@ pub fn pdf_addtext_unescape_string(
   let output : Array[Byte] = Array(capacity=bytes.length())
   for index = 0; index < bytes.length(); {
     match bytes[index:] {
-      [b'\\', b'0'..=b'7' as a, b'0'..=b'7' as b, b'0'..=b'7' as c, ..] => {
+      [b'\\', b'0'..<=b'7' as a, b'0'..<=b'7' as b, b'0'..<=b'7' as c, ..] => {
         let value = pdf_addtext_octal_value(a, b, c)
         if value > 255 {
           raise SoftError("bad add-text octal escape")

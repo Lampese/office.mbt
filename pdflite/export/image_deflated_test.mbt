@@ -6,20 +6,20 @@
 
 ///|
 /// Samples that compress to something, other ones for every seed.
-fn test_samples(n : Int, seed : Int) -> Bytes {
+fn test_samples(n : Int32, seed : Int32) -> Bytes {
   Bytes::makei(n, i => ((i / 7 * seed + i % 5 * 31 + seed) % 251).to_byte())
 }
 
 ///|
 fn sampled_image(
   key : String,
-  seed : Int,
-  width? : Int = 40,
-  height? : Int = 30,
-  alpha? : Bool = false,
-  luma? : Bool = false,
-  icc? : Bytes? = None,
-  interpolate? : Bool = false,
+  seed : Int32,
+  width~ : Int32 = 40,
+  height~ : Int32 = 30,
+  alpha~ : Bool = false,
+  luma~ : Bool = false,
+  icc~ : Bytes? = None,
+  interpolate~ : Bool = false,
 ) -> @export.Image {
   let n = width * height
   {
@@ -59,7 +59,7 @@ fn export_outcome(f : () -> Bytes raise) -> Result[Bytes, String] {
 /// A document of one page that draws the images in their order.
 fn document_of(
   images : Array[@export.Image],
-  settings? : @export.SerializeSettings = plain_settings(),
+  settings~ : @export.SerializeSettings = plain_settings(),
 ) -> Result[Bytes, String] {
   export_outcome(() => {
     one_page(

@@ -18,18 +18,18 @@ priv struct VarcOutlines {
   var_store : FontData?
   regions : FontData?
   base : VarcBaseOutlines
-  axis_count : Int
+  axis_count : Int32
 }
 
 ///|
 /// A VARC outline (`varc::Outline`).
 priv struct VarcOutline {
   glyph_id : GlyphId
-  coverage_index : Int
+  coverage_index : Int32
   /// The size of the memory buffer for drawing (the maximum memory needed
   /// by the base glyphs of the components): base glyphs that need more
   /// fail to draw with `InsufficientMemory`, like upstream.
-  max_component_memory : Int
+  max_component_memory : Int32
 }
 
 ///|
@@ -107,9 +107,9 @@ fn VarcOutlines::outline(
 fn VarcOutlines::max_component_memory_for_glyph(
   self : VarcOutlines,
   glyph_id : GlyphId,
-  coverage_index : Int,
+  coverage_index : Int32,
   stack : Array[GlyphId],
-) -> Int raise ReadError {
+) -> Int32 raise ReadError {
   if stack.contains(glyph_id) {
     return 0
   }
@@ -141,7 +141,7 @@ fn VarcOutlines::max_component_memory_for_glyph(
 fn VarcOutlines::base_outline_memory(
   self : VarcOutlines,
   glyph_id : GlyphId,
-) -> Int {
+) -> Int32 {
   match self.base {
     VarcBaseGlyf(glyf) =>
       glyf_unhinted_buffer_size(glyf.outline(glyph_id)) catch {
@@ -153,7 +153,7 @@ fn VarcOutlines::base_outline_memory(
 
 ///|
 /// `glyf::Outline::required_buffer_size(Hinting::None)`.
-fn glyf_unhinted_buffer_size(outline : GlyfOutline) -> Int {
+fn glyf_unhinted_buffer_size(outline : GlyfOutline) -> Int32 {
   // Scaled and unscaled points, contour end points and point flags
   let mut size = outline.points * 8 +
     outline.max_other_points * 8 +
@@ -192,7 +192,7 @@ priv struct VarcContext {
   /// components like upstream).
   memory : FixedArray[Byte]
   deltas : Array[Float]
-  axis_indices : Array[Int]
+  axis_indices : Array[Int32]
   axis_values : Array[Float]
 }
 
@@ -234,7 +234,7 @@ fn VarcOutlines::draw(
 fn VarcOutlines::draw_glyph(
   self : VarcOutlines,
   glyph_id : GlyphId,
-  coverage_index : Int,
+  coverage_index : Int32,
   current_coords : Array[F2Dot14],
   parent_matrix : Affine,
   ctx : VarcContext,
@@ -408,7 +408,7 @@ fn VarcOutlines::component_coords(
 
 ///|
 /// `value.round().clamp(i16::MIN as f32, i16::MAX as f32) as i16`.
-fn f32_round_to_i16(value : Float) -> Int {
+fn f32_round_to_i16(value : Float) -> Int32 {
   let d = value.to_double()
   if d.is_nan() {
     return 0
@@ -429,9 +429,9 @@ fn f32_round_to_i16(value : Float) -> Int {
 /// `nth` of the axis indices list.
 fn VarcOutlines::axis_indices(
   self : VarcOutlines,
-  nth : UInt,
-  out : Array[Int],
-) -> Int raise DrawError {
+  nth : UInt32,
+  out : Array[Int32],
+) -> Int32 raise DrawError {
   let packed = varc_axis_indices(self.varc, nth) catch { e => raise Read(e) }
   out.clear()
   let iter = packed.iter()
@@ -444,7 +444,7 @@ fn VarcOutlines::axis_indices(
 ///|
 fn axis_values(
   component : VarcComponent,
-  count : Int,
+  count : Int32,
   out : Array[Float],
 ) -> Unit {
   guard component.axis_values is Some(packed) else {
@@ -552,7 +552,7 @@ fn VarcOutlines::component_condition_met(
 ///|
 /// The maximum nesting of conditions (upstream recurses without a limit and
 /// overflows the stack on cyclic conditions).
-const CONDITION_NESTING_LIMIT : Int = 256
+const CONDITION_NESTING_LIMIT : Int32 = 256
 
 ///|
 fn eval_condition(
@@ -562,7 +562,7 @@ fn eval_condition(
   regions : FontData,
   scalar_cache : Array[Float],
   ctx : VarcContext,
-  depth : Int,
+  depth : Int32,
 ) -> Bool raise ReadError {
   if depth > CONDITION_NESTING_LIMIT {
     raise MalformedData("condition nesting too deep")
@@ -646,7 +646,7 @@ fn eval_condition(
 ///|
 /// The `Offset24` array of a condition of format 3 or 4 (empty if out of
 /// bounds).
-fn condition_offsets24(condition : FontData) -> Array[Int] {
+fn condition_offsets24(condition : FontData) -> Array[Int32] {
   let count = condition.read_u8(2) catch { _ => 0 }
   if 3 + 3 * count > condition.len() {
     return []
@@ -656,7 +656,10 @@ fn condition_offsets24(condition : FontData) -> Array[Int] {
 
 ///|
 /// `Condition::read` at an offset from `data` (`ResolveOffset::resolve`).
-fn resolve_condition(data : FontData, offset : Int) -> FontData raise ReadError {
+fn resolve_condition(
+  data : FontData,
+  offset : Int32,
+) -> FontData raise ReadError {
   if offset == 0 {
     raise NullOffset
   }
@@ -676,7 +679,7 @@ fn resolve_condition(data : FontData, offset : Int) -> FontData raise ReadError 
 
 ///|
 /// `varc.condition_list()` (nullable) and `conditions().get(index)`.
-fn varc_condition(varc : FontData, index : UInt) -> FontData raise ReadError {
+fn varc_condition(varc : FontData, index : UInt32) -> FontData raise ReadError {
   let offset = varc.read_u32(12)
   if offset == 0 {
     raise NullOffset
@@ -721,7 +724,7 @@ const SCALAR_CACHE_INVALID : Float = 2.0
 ///|
 fn expand_coords(
   out : Array[F2Dot14],
-  axis_count : Int,
+  axis_count : Int32,
   coords : ArrayView[F2Dot14],
 ) -> Unit {
   resize_and_fill(out, axis_count, F2Dot14::zero())
@@ -733,7 +736,7 @@ fn expand_coords(
 
 ///|
 /// `SmallVec::resize_and_fill`: `len` copies of `value`.
-fn[T] resize_and_fill(out : Array[T], len : Int, value : T) -> Unit {
+fn[T] resize_and_fill(out : Array[T], len : Int32, value : T) -> Unit {
   out.clear()
   for _ in 0..<len {
     out.push(value)
@@ -747,9 +750,9 @@ fn[T] resize_and_fill(out : Array[T], len : Int, value : T) -> Unit {
 fn compute_tuple_deltas(
   store : FontData,
   regions : FontData,
-  var_idx : UInt,
+  var_idx : UInt32,
   coords : Array[F2Dot14],
-  tuple_len : Int,
+  tuple_len : Int32,
   cache : Array[Float],
   out : Array[Float],
 ) -> Unit raise ReadError {
@@ -808,7 +811,7 @@ fn compute_tuple_deltas(
 /// `MultiItemVariationStore::variation_data().get(index)`.
 fn multi_variation_data(
   store : FontData,
-  index : Int,
+  index : Int32,
 ) -> FontData raise ReadError {
   let count = store.read_u16(6)
   // `variation_data_offsets()`: empty if out of bounds
@@ -830,7 +833,7 @@ fn multi_variation_data(
 /// bounds).
 fn sparse_region(
   regions : FontData,
-  index : Int,
+  index : Int32,
 ) -> SparseRegion raise ReadError {
   let count = regions.read_u16(0)
   let count = if 2 + 4 * count > regions.len() { 0 } else { count }
@@ -863,7 +866,7 @@ fn SparseRegion::compute_scalar_f32(
 ) -> Float {
   let mut scalar : Float = 1.0
   for i in 0..<(self.axes.len() / 8) {
-    let at = (k : Int) => self.axes.read_i16(8 * i + k) catch { _ => 0 }
+    let at = (k : Int32) => self.axes.read_i16(8 * i + k) catch { _ => 0 }
     let peak = at(4)
     if peak == 0 {
       continue
@@ -909,13 +912,13 @@ fn SparseRegion::compute_scalar_f32(
 }
 
 ///|
-fn wrap_i16(v : Int) -> Int {
+fn wrap_i16(v : Int32) -> Int32 {
   v << 16 >> 16
 }
 
 ///|
 /// `Index2::read(data)?.get(nth)` (errors are `OutOfBounds`).
-fn index2_get(data : FontData, nth : Int) -> FontData raise ReadError {
+fn index2_get(data : FontData, nth : Int32) -> FontData raise ReadError {
   let index = @ps.Index1::read2(data.as_bytes()) catch {
     _ => raise OutOfBounds
   }
@@ -926,7 +929,7 @@ fn index2_get(data : FontData, nth : Int) -> FontData raise ReadError {
 
 ///|
 /// `Varc::glyph(nth)`: the components of a VARC glyph.
-fn varc_glyph(varc : FontData, nth : Int) -> FontData raise ReadError {
+fn varc_glyph(varc : FontData, nth : Int32) -> FontData raise ReadError {
   index2_get(resolve_varc_offset(varc, 20), nth)
 }
 
@@ -934,7 +937,7 @@ fn varc_glyph(varc : FontData, nth : Int) -> FontData raise ReadError {
 /// `Varc::axis_indices(nth)`.
 fn varc_axis_indices(
   varc : FontData,
-  nth : UInt,
+  nth : UInt32,
 ) -> PackedDeltas raise ReadError {
   if varc.read_u32(16) == 0 {
     raise NullOffset
@@ -949,7 +952,7 @@ fn varc_axis_indices(
 
 ///|
 /// Resolves the `Offset32` at `at` in `data` (`ResolveOffset::resolve`).
-fn resolve_varc_offset(data : FontData, at : Int) -> FontData raise ReadError {
+fn resolve_varc_offset(data : FontData, at : Int32) -> FontData raise ReadError {
   let offset = data.read_u32(at)
   if offset == 0 {
     raise NullOffset
@@ -965,7 +968,7 @@ fn resolve_varc_offset(data : FontData, at : Int) -> FontData raise ReadError {
 fn VarcOutlines::coverage_index(
   self : VarcOutlines,
   glyph_id : GlyphId,
-) -> Int? {
+) -> Int32? {
   let gid = glyph_id.to_u32()
   // `GlyphId16::try_from`
   if gid > 0xFFFF {
@@ -978,7 +981,7 @@ fn VarcOutlines::coverage_index(
   if format == 1 {
     // `glyph_array()`: empty if out of bounds
     let count = if 4 + 2 * count > data.len() { 0 } else { count }
-    let at = (i : Int) => data.read_u16(4 + 2 * i) catch { _ => 0 }
+    let at = (i : Int32) => data.read_u16(4 + 2 * i) catch { _ => 0 }
     match rust_binary_search_by(count, i => at(i).compare(gid)) {
       Ok(i) => Some(i)
       Err(_) => None
@@ -986,7 +989,7 @@ fn VarcOutlines::coverage_index(
   } else {
     // `range_records()`: (start, end, start coverage index) records
     let count = if 4 + 6 * count > data.len() { 0 } else { count }
-    let at = (i : Int, k : Int) => {
+    let at = (i : Int32, k : Int32) => {
       data.read_u16(4 + 6 * i + 2 * k) catch {
         _ => 0
       }
@@ -1012,7 +1015,10 @@ fn VarcOutlines::coverage_index(
 /// Rust's `slice::binary_search_by` (std 1.89) over indices `0..len`: the
 /// probed indices depend only on the length, which matters for unsorted or
 /// duplicate entries.
-fn rust_binary_search_by(len : Int, f : (Int) -> Int) -> Result[Int, Int] {
+fn rust_binary_search_by(
+  len : Int32,
+  f : (Int32) -> Int32,
+) -> Result[Int32, Int32] {
   let mut size = len
   if size == 0 {
     return Err(0)
@@ -1034,69 +1040,69 @@ fn rust_binary_search_by(len : Int, f : (Int) -> Int) -> Result[Int, Int] {
 }
 
 ///|
-const RESET_UNSPECIFIED_AXES : UInt = 0x0001
+const RESET_UNSPECIFIED_AXES : UInt32 = 0x0001
 
 ///|
-const HAVE_AXES : UInt = 0x0002
+const HAVE_AXES : UInt32 = 0x0002
 
 ///|
-const AXIS_VALUES_HAVE_VARIATION : UInt = 0x0004
+const AXIS_VALUES_HAVE_VARIATION : UInt32 = 0x0004
 
 ///|
-const TRANSFORM_HAS_VARIATION : UInt = 0x0008
+const TRANSFORM_HAS_VARIATION : UInt32 = 0x0008
 
 ///|
-const HAVE_TRANSLATE_X : UInt = 0x0010
+const HAVE_TRANSLATE_X : UInt32 = 0x0010
 
 ///|
-const HAVE_TRANSLATE_Y : UInt = 0x0020
+const HAVE_TRANSLATE_Y : UInt32 = 0x0020
 
 ///|
-const HAVE_ROTATION : UInt = 0x0040
+const HAVE_ROTATION : UInt32 = 0x0040
 
 ///|
-const HAVE_CONDITION : UInt = 0x0080
+const HAVE_CONDITION : UInt32 = 0x0080
 
 ///|
-const HAVE_SCALE_X : UInt = 0x0100
+const HAVE_SCALE_X : UInt32 = 0x0100
 
 ///|
-const HAVE_SCALE_Y : UInt = 0x0200
+const HAVE_SCALE_Y : UInt32 = 0x0200
 
 ///|
-const HAVE_TCENTER_X : UInt = 0x0400
+const HAVE_TCENTER_X : UInt32 = 0x0400
 
 ///|
-const HAVE_TCENTER_Y : UInt = 0x0800
+const HAVE_TCENTER_Y : UInt32 = 0x0800
 
 ///|
-const GID_IS_24BIT : UInt = 0x1000
+const GID_IS_24BIT : UInt32 = 0x1000
 
 ///|
-const HAVE_SKEW_X : UInt = 0x2000
+const HAVE_SKEW_X : UInt32 = 0x2000
 
 ///|
-const HAVE_SKEW_Y : UInt = 0x4000
+const HAVE_SKEW_Y : UInt32 = 0x4000
 
 ///|
-const RESERVED_MASK : UInt = 0xFFFF8000
+const RESERVED_MASK : UInt32 = 0xFFFF8000
 
 ///|
-const TRANSFORM_MASK : UInt = 0x7F70
+const TRANSFORM_MASK : UInt32 = 0x7F70
 
 ///|
-const SKEW_OR_CENTER : UInt = 0x6C00
+const SKEW_OR_CENTER : UInt32 = 0x6C00
 
 ///|
 /// A variable component record of a VARC glyph.
 priv struct VarcComponent {
-  flags : UInt
+  flags : UInt32
   gid : GlyphId
-  condition_index : UInt?
-  axis_indices_index : UInt?
+  condition_index : UInt32?
+  axis_indices_index : UInt32?
   axis_values : PackedDeltas?
-  axis_values_var_index : UInt?
-  transform_var_index : UInt?
+  axis_values_var_index : UInt32?
+  transform_var_index : UInt32?
   transform : DecomposedTransform
 }
 
@@ -1210,7 +1216,7 @@ fn VarcComponent::parse(
 
 ///|
 /// Reads a variable length `u32` (`Cursor::read_u32_var`).
-fn read_u32_var(cursor : @read_fonts.Cursor) -> UInt raise ReadError {
+fn read_u32_var(cursor : @read_fonts.Cursor) -> UInt32 raise ReadError {
   let b0 = cursor.read_u8().reinterpret_as_uint()
   if b0 < 0x80 {
     b0
@@ -1422,11 +1428,11 @@ impl OutlinePen for TransformPen with fn close(self) {
 /// available values.
 priv struct PackedDeltas {
   data : FontData
-  count : Int?
+  count : Int32?
 }
 
 ///|
-fn PackedDeltas::count_or_compute(self : PackedDeltas) -> Int {
+fn PackedDeltas::count_or_compute(self : PackedDeltas) -> Int32 {
   match self.count {
     Some(count) => count
     None => {
@@ -1446,7 +1452,7 @@ fn PackedDeltas::count_or_compute(self : PackedDeltas) -> Int {
 
 ///|
 /// The size of the values of a delta run (0 for zero runs).
-fn delta_run_type(control : Int) -> Int {
+fn delta_run_type(control : Int32) -> Int32 {
   match ((control & 0x80) != 0, (control & 0x40) != 0) {
     (false, false) => 1
     (false, true) => 2
@@ -1469,9 +1475,9 @@ fn PackedDeltas::iter(self : PackedDeltas) -> DeltaRunIter {
 /// An iterator over packed deltas (`DeltaRunIter`).
 priv struct DeltaRunIter {
   // when None, consume all available data
-  mut limit : Int?
-  mut remaining_in_run : Int
-  mut value_type : Int
+  mut limit : Int32?
+  mut remaining_in_run : Int32
+  mut value_type : Int32
   cursor : @read_fonts.Cursor
 }
 
@@ -1485,7 +1491,7 @@ fn DeltaRunIter::read_next_control(self : DeltaRunIter) -> Bool {
 }
 
 ///|
-fn DeltaRunIter::next(self : DeltaRunIter) -> Int? {
+fn DeltaRunIter::next(self : DeltaRunIter) -> Int32? {
   if self.limit is Some(limit) {
     if limit == 0 {
       return None
@@ -1505,7 +1511,7 @@ fn DeltaRunIter::next(self : DeltaRunIter) -> Int? {
 }
 
 ///|
-fn DeltaRunIter::skip_fast(self : DeltaRunIter, n : Int) -> Unit {
+fn DeltaRunIter::skip_fast(self : DeltaRunIter, n : Int32) -> Unit {
   let mut wanted = n
   let mut remaining = self.remaining_in_run
   let mut value_type = self.value_type
@@ -1559,15 +1565,18 @@ fn DeltaRunIter::end(self : DeltaRunIter) -> @read_fonts.Cursor {
 /// `PackedDeltaFetcher`.
 priv struct PackedDeltaFetcher {
   data : BytesView
-  mut pos : Int
-  end : Int
-  mut run_count : Int
-  mut value_type : Int
-  mut remaining_total : Int?
+  mut pos : Int32
+  end : Int32
+  mut run_count : Int32
+  mut value_type : Int32
+  mut remaining_total : Int32?
 }
 
 ///|
-fn PackedDeltaFetcher::new(data : FontData, count : Int?) -> PackedDeltaFetcher {
+fn PackedDeltaFetcher::new(
+  data : FontData,
+  count : Int32?,
+) -> PackedDeltaFetcher {
   let data = data.as_bytes()
   {
     data,
@@ -1602,7 +1611,7 @@ fn PackedDeltaFetcher::ensure_run(
 ///|
 fn PackedDeltaFetcher::skip(
   self : PackedDeltaFetcher,
-  n : Int,
+  n : Int32,
 ) -> Unit raise ReadError {
   let mut n = n
   if self.remaining_total is Some(remaining_total) {

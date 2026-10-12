@@ -1,33 +1,33 @@
 ///|
 /// Ceiling on bytes for one embedded DOCX preview image.
-let office_preview_max_image_bytes : Int = 4 * 1024 * 1024
+let office_preview_max_image_bytes : Int32 = 4 * 1024 * 1024
 
 ///|
 /// Ceiling on total embedded DOCX preview image bytes.
-let office_preview_max_total_image_bytes : Int = 16 * 1024 * 1024
+let office_preview_max_total_image_bytes : Int32 = 16 * 1024 * 1024
 
 ///|
 /// Ceiling on the published preview document size.
-let office_preview_max_output_bytes : Int = 32 * 1024 * 1024
+let office_preview_max_output_bytes : Int32 = 32 * 1024 * 1024
 
 ///|
 /// Row/column ceilings applied per XLSX sheet, mirrored into the report.
-let office_preview_max_rows : Int = 1000
+let office_preview_max_rows : Int32 = 1000
 
 ///|
-let office_preview_max_cols : Int = 256
+let office_preview_max_cols : Int32 = 256
 
 ///|
 /// Ceiling on converter warnings carried into the preview report.
-let office_preview_max_warnings : Int = 64
+let office_preview_max_warnings : Int32 = 64
 
 ///|
 priv struct OfficePreviewStats {
-  charts_rendered : Int
-  charts_placeholder : Int
+  charts_rendered : Int32
+  charts_placeholder : Int32
   truncated_sheets : Array[String]
-  images_embedded : Int
-  images_omitted : Int
+  images_embedded : Int32
+  images_omitted : Int32
   warnings : Array[String]
 }
 
@@ -41,7 +41,7 @@ fn office_preview_clean_text(text : String) -> String {
 }
 
 ///|
-fn office_preview_count_occurrences(text : String, needle : String) -> Int {
+fn office_preview_count_occurrences(text : String, needle : String) -> Int32 {
   guard needle.length() > 0 else { return 0 }
   let mut count = 0
   let mut position = 0
@@ -230,7 +230,7 @@ fn office_preview_render_docx(
 fn office_preview_report(
   source : OfficeReadPackage,
   output : String,
-  bytes_written : Int,
+  bytes_written : Int32,
   stats : OfficePreviewStats,
 ) -> Json {
   let truncation : Map[String, Json] = {

@@ -4,8 +4,8 @@
 /// does not rely on CRC collision resistance.
 pub struct DocxPartFingerprint {
   priv part : String
-  priv byte_length : Int
-  priv crc32 : UInt
+  priv byte_length : Int32
+  priv crc32 : UInt32
 }
 
 ///|
@@ -23,13 +23,13 @@ pub fn DocxPartFingerprint::part(self : DocxPartFingerprint) -> String {
 
 ///|
 /// Uncompressed source payload length.
-pub fn DocxPartFingerprint::byte_length(self : DocxPartFingerprint) -> Int {
+pub fn DocxPartFingerprint::byte_length(self : DocxPartFingerprint) -> Int32 {
   self.byte_length
 }
 
 ///|
 /// CRC-32 of the uncompressed source payload.
-pub fn DocxPartFingerprint::crc32(self : DocxPartFingerprint) -> UInt {
+pub fn DocxPartFingerprint::crc32(self : DocxPartFingerprint) -> UInt32 {
   self.crc32
 }
 
@@ -41,10 +41,10 @@ pub struct DocxEditSession {
   priv archive : @zip.Archive
   priv annotated : @word.DocxAnnotatedResult
   priv fingerprints : Array[DocxPartFingerprint]
-  priv max_candidate_package_bytes : Int
-  priv max_comment_fragment_bytes : Int
+  priv max_candidate_package_bytes : Int32
+  priv max_comment_fragment_bytes : Int32
   priv splice_limits : @splice.SpliceLimits
-  priv splice_materialized_allowance : Int
+  priv splice_materialized_allowance : Int32
   priv xml_budget : @xml.XmlReadBudget
   priv mut plan : @splice.SplicePlan
   priv mut plan_mode : DocxEditPlanMode
@@ -60,7 +60,7 @@ pub struct DocxEditSession {
 }
 
 ///|
-let candidate_xml_source_units : Int = 8 * 1024 * 1024
+let candidate_xml_source_units : Int32 = 8 * 1024 * 1024
 
 ///|
 /// Markup-token ceiling shared by the bounded package identifier, the package
@@ -86,25 +86,25 @@ let candidate_xml_source_units : Int = 8 * 1024 * 1024
 /// source unit, so it is once again the honest memory guard: real documents
 /// sit under it with headroom, and unique-name amplification — the shape
 /// interning cannot deduplicate — is what it refuses.
-let candidate_xml_tokens : Int = candidate_xml_source_units / 4
+let candidate_xml_tokens : Int32 = candidate_xml_source_units / 4
 
 ///|
-let candidate_xml_materialized_chars : Int = 8 * 1024 * 1024
+let candidate_xml_materialized_chars : Int32 = 8 * 1024 * 1024
 
 ///|
-let candidate_xml_token_chars : Int = 8 * 1024 * 1024
+let candidate_xml_token_chars : Int32 = 8 * 1024 * 1024
 
 ///|
 /// Absolute serialized-XML ceiling for one comment fragment. A transaction
 /// may supply a lower effective ceiling when its source package consumes more
 /// of the shared live-materialization budget.
-pub const MAX_COMMENT_FRAGMENT_BYTES : Int = 1024 * 1024
+pub const MAX_COMMENT_FRAGMENT_BYTES : Int32 = 1024 * 1024
 
 ///|
 let bounded_identifier_name : String = "office-docx-bounded"
 
 ///|
-fn bounded_docx_text(text : String, limit : Int) -> String {
+fn bounded_docx_text(text : String, limit : Int32) -> String {
   let output = StringBuilder()
   let mut count = 0
   for character in text {
@@ -527,8 +527,8 @@ pub fn DocxEditSession::queue_plan(
 pub fn DocxEditSession::queue_span_edit(
   self : DocxEditSession,
   part : String,
-  start~ : Int,
-  end~ : Int,
+  start~ : Int32,
+  end~ : Int32,
   replacement : Bytes,
 ) -> Unit raise @transaction.TransactionError {
   guard self.archive.get(part) is Some(source) else {
@@ -601,7 +601,7 @@ fn DocxEditSession::finish(
 /// An empty plan returns the archive unchanged with no declared parts.
 fn DocxEditSession::stage_to_archive(
   self : DocxEditSession,
-  remaining_materialized_bytes~ : Int,
+  remaining_materialized_bytes~ : Int32,
 ) -> (@zip.Archive, Array[String]) raise @transaction.TransactionError {
   if self.plan.is_empty() {
     return (self.archive, [])
@@ -705,7 +705,7 @@ fn package_identifier() -> @transaction.TransactionIdentifier raise @transaction
 /// operation that CHANGES the inventory refuses. Callers with no
 /// inventory (the Ref still None) fall back to the strict global gate.
 pub fn package_validator(
-  source_para_id_inventory? : Ref[Map[String, Array[String]]?] = Ref(None),
+  source_para_id_inventory~ : Ref[Map[String, Array[String]]?] = Ref(None),
 ) -> @transaction.TransactionValidator raise @transaction.TransactionError {
   @transaction.transaction_validator("office-docx-package", (
     format,
@@ -836,7 +836,7 @@ pub fn package_validator(
 pub async fn transact_docx(
   options : @transaction.TransactionOptions,
   edit : (DocxEditSession) -> Unit raise,
-  validators? : Array[@transaction.TransactionValidator] = [],
+  validators~ : Array[@transaction.TransactionValidator] = [],
 ) -> @transaction.TransactionReport {
   docx_transaction(options, edit, validators~, tracking_waived=false)
 }
@@ -900,6 +900,8 @@ async fn docx_transaction(
 /// The transaction-derived splice materialization ceiling, for callers
 /// that must refuse oversized constructions with a TYPED finding before
 /// allocating them (the queued-plan validation stays authoritative).
-fn DocxEditSession::construction_byte_allowance(self : DocxEditSession) -> Int {
+fn DocxEditSession::construction_byte_allowance(
+  self : DocxEditSession,
+) -> Int32 {
   self.splice_materialized_allowance
 }

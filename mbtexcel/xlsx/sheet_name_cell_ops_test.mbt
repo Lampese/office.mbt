@@ -169,7 +169,7 @@ test "cell APIs validate sheet name" {
     set_style_result is Err(@xlsx.XlsxError::InvalidSheetName(_)),
     content="true",
   )
-  let get_style_result : Result[Int?, Error] = Ok(
+  let get_style_result : Result[Int32?, Error] = Ok(
     workbook.get_cell_style("Sheet:1", "A1"),
   ) catch {
     e => Err(e)

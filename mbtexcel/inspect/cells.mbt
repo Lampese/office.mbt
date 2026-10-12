@@ -18,8 +18,8 @@ pub fn cells(
 ) -> Json raise {
   let parsed = parse_range(range)
   let entries = []
-  let style_order : Array[Int] = []
-  let style_seen : Map[Int, Unit] = Map([])
+  let style_order : Array[Int32] = []
+  let style_seen : Map[Int32, Unit] = Map([])
   for row in parsed.row_lo..<=parsed.row_hi {
     for col in parsed.col_lo..<=parsed.col_hi {
       let cell = @xlsx.coordinates_to_cell_name(col, row)
@@ -52,9 +52,9 @@ pub fn effective_style_id(
   workbook : @xlsx.Workbook,
   sheet : String,
   cell : String,
-  row~ : Int,
-  col~ : Int,
-) -> Int raise @xlsx.XlsxError {
+  row~ : Int32,
+  col~ : Int32,
+) -> Int32 raise @xlsx.XlsxError {
   match workbook.get_cell_style(sheet, cell) {
     Some(style_id) if style_id != 0 => style_id
     _ =>
@@ -77,10 +77,10 @@ fn cell_json(
   workbook : @xlsx.Workbook,
   sheet : String,
   cell : String,
-  row~ : Int,
-  col~ : Int,
-  style_order : Array[Int],
-  style_seen : Map[Int, Unit],
+  row~ : Int32,
+  col~ : Int32,
+  style_order : Array[Int32],
+  style_seen : Map[Int32, Unit],
 ) -> Json? raise @xlsx.XlsxError {
   // An empty-string cell is a synthetic blank — `set_cell_style` on a bare
   // cell and an uncached formula both store one — so it carries no `value`;

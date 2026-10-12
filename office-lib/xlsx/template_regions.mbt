@@ -21,11 +21,11 @@ pub(all) struct XlsxRegionOutcome {
   source_location : String
   /// Final coordinates after ALL insertions (upper regions shift lower
   /// ones down).
-  output_rows_start : Int
-  output_rows_count : Int
-  records : Int
-  replaced : Int
-  escapes_applied : Int
+  output_rows_start : Int32
+  output_rows_count : Int32
+  records : Int32
+  replaced : Int32
+  escapes_applied : Int32
 } derive(Eq, @debug.Debug)
 
 ///|
@@ -39,7 +39,7 @@ pub extend XlsxRegionOutcome with @moonbitlang/core/debug.Debug::{to_repr}
 pub struct XlsxTemplateDocumentResult {
   report : XlsxTemplateReport
   regions : Array[XlsxRegionOutcome]
-  scalar_cells_skipped : Int
+  scalar_cells_skipped : Int32
   transaction : @transaction.TransactionReport
 }
 
@@ -47,22 +47,22 @@ pub struct XlsxTemplateDocumentResult {
 priv struct RegionPlan {
   name : String
   sheet : String
-  row : Int
+  row : Int32
   records : Array[Map[String, @template.TemplateValue]]
   /// Distinct placeholder keys discovered on the template row, with the
   /// occurrence count of each (drives per-record missing accounting).
-  key_occurrences : Map[String, Int]
+  key_occurrences : Map[String, Int32]
 }
 
 ///|
 /// Rows of a plain `A5`/`A5:C9` range, None when unparsable.
-fn plain_range_rows(range : String) -> (Int, Int)? {
-  fn cell_row(part : String) -> Int? {
+fn plain_range_rows(range : String) -> (Int32, Int32)? {
+  fn cell_row(part : String) -> Int32? {
     let mut index = 0
     if index < part.length() && part[index] == '$' {
       index += 1
     }
-    while index < part.length() && part[index] is ('A'..='Z' | 'a'..='z') {
+    while index < part.length() && part[index] is ('A'..<='Z' | 'a'..<='z') {
       index += 1
     }
     if index < part.length() && part[index] == '$' {
@@ -70,7 +70,7 @@ fn plain_range_rows(range : String) -> (Int, Int)? {
     }
     let digit_start = index
     let mut row = 0
-    while index < part.length() && part[index] is ('0'..='9') {
+    while index < part.length() && part[index] is ('0'..<='9') {
       row = row * 10 + (part[index].to_int() - '0'.to_int())
       if row > 1048576 {
         return None
@@ -271,13 +271,13 @@ fn plain_number_literal(text : String) -> Bool {
     index += 1
   }
   let mut digits = 0
-  while index < text.length() && text[index] is ('0'..='9') {
+  while index < text.length() && text[index] is ('0'..<='9') {
     digits += 1
     index += 1
   }
   if index < text.length() && text[index] == '.' {
     index += 1
-    while index < text.length() && text[index] is ('0'..='9') {
+    while index < text.length() && text[index] is ('0'..<='9') {
       digits += 1
       index += 1
     }
@@ -369,7 +369,7 @@ fn cf_dv_policy_check(
   plans : Array[RegionPlan],
   report : XlsxTemplateReport,
 ) -> Unit {
-  let template_rows : Map[String, Array[Int]] = Map([])
+  let template_rows : Map[String, Array[Int32]] = Map([])
   for plan in plans {
     match template_rows.get(plan.sheet) {
       Some(rows) => rows.push(plan.row)
@@ -476,8 +476,8 @@ fn region_sheet_check(
   report : XlsxTemplateReport,
 ) -> Unit raise {
   // group inserted counts and template rows per sheet
-  let inserted_per_sheet : Map[String, Int] = Map([])
-  let rows_per_sheet : Map[String, Array[Int]] = Map([])
+  let inserted_per_sheet : Map[String, Int32] = Map([])
+  let rows_per_sheet : Map[String, Array[Int32]] = Map([])
   for plan in plans {
     let inserted = plan.records.length() - 1
     inserted_per_sheet[plan.sheet] = match inserted_per_sheet.get(plan.sheet) {
@@ -604,7 +604,7 @@ fn plan_template_regions(
   values : Map[String, @template.TemplateValue],
   allow_missing~ : Bool,
   report : XlsxTemplateReport,
-  budget : Ref[Int],
+  budget : Ref[Int32],
 ) -> (Array[RegionPlan], Set[String]) raise {
   let plans : Array[RegionPlan] = []
   let claimed : Set[String] = Set([])
@@ -637,7 +637,7 @@ fn plan_template_regions(
     }
     claimed.add(claim_key)
     // scan the template row's string cells
-    let key_occurrences : Map[String, Int] = Map([])
+    let key_occurrences : Map[String, Int32] = Map([])
     let mut malformed_here = false
     for cell in worksheet.cells {
       if cell.row != row {
@@ -733,7 +733,7 @@ fn apply_template_regions(
   plans : Array[RegionPlan],
   values : Map[String, @template.TemplateValue],
   report : XlsxTemplateReport,
-  budget : Ref[Int],
+  budget : Ref[Int32],
 ) -> Array[XlsxRegionOutcome] raise {
   // bottom-up per sheet so pending template rows never shift
   let order = plans.copy()
@@ -872,7 +872,7 @@ pub async fn transact_template_document(
 ) -> XlsxTemplateDocumentResult {
   let collected : Ref[XlsxTemplateReport?] = Ref(None)
   let region_outcomes : Ref[Array[XlsxRegionOutcome]] = Ref([])
-  let skipped_cells : Ref[Int] = Ref(0)
+  let skipped_cells : Ref[Int32] = Ref(0)
   let validator = xlsx_transaction_validator()
   let identifier = xlsx_transaction_identifier()
   let report = @transaction.transact(

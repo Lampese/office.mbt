@@ -319,10 +319,10 @@ test "PdfDocument object iteration visits sorted parsed objects" {
   let doc = @pdflite.pdf_document_empty()
   doc.add_object_given_number(4, PdfInteger(40), generation=2)
   doc.add_object_given_number(1, PdfInteger(10), generation=3)
-  let seen : Array[(Int, @syntax.PdfObject)] = []
+  let seen : Array[(Int32, @syntax.PdfObject)] = []
   try! doc.iter_objects(fn(number, object) { seen.push((number, object)) })
   @test.assert_eq(seen, [(1, PdfInteger(10)), (4, PdfInteger(40))])
-  let with_generation : Array[(Int, Int, @syntax.PdfObject)] = []
+  let with_generation : Array[(Int32, Int32, @syntax.PdfObject)] = []
   try! doc.iter_objects_with_generation(fn(number, generation, object) {
     with_generation.push((number, generation, object))
   })

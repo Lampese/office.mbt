@@ -2,7 +2,7 @@
 // Public text behavior belongs in `_test.mbt` files.
 
 ///|
-fn cmap_wbtest_text_bytes(values : ArrayView[Int]) -> @core.PdfBytes {
+fn cmap_wbtest_text_bytes(values : ArrayView[Int32]) -> @core.PdfBytes {
   try! @core.pdf_bytes_of_int_array(values)
 }
 
@@ -42,7 +42,7 @@ test "private text ToUnicode CMap helpers reject malformed ranges" {
     pdf_text_tounicode_bfrange_array_entries(1, 2, [cmap_wbtest_text_bytes([0])]),
     None,
   )
-  let bfchar_entries : Array[(Int, @core.PdfBytes)] = []
+  let bfchar_entries : Array[(Int32, @core.PdfBytes)] = []
   pdf_text_push_tounicode_bfchar_entry(
     bfchar_entries,
     Bytes::new(0),
@@ -50,7 +50,7 @@ test "private text ToUnicode CMap helpers reject malformed ranges" {
   )
   @test.assert_eq(bfchar_entries, [])
 
-  let invalid_bfrange_entries : Array[(Int, @core.PdfBytes)] = []
+  let invalid_bfrange_entries : Array[(Int32, @core.PdfBytes)] = []
   guard pdf_text_append_tounicode_bfrange_line(
       invalid_bfrange_entries, b"<02><01>[",
     )
@@ -77,7 +77,7 @@ test "private text ToUnicode CMap helpers reject malformed ranges" {
   }
   @test.assert_eq(invalid_bfrange_entries, [])
   let pending = PdfTextCMapBFRangeArray::{ first: 1, last: 2, unicodes: [], }
-  let pending_entries : Array[(Int, @core.PdfBytes)] = []
+  let pending_entries : Array[(Int32, @core.PdfBytes)] = []
   let append_result = pdf_text_append_pending_bfrange_array(
     pending_entries, pending, b"<0041>]",
   )
@@ -151,7 +151,7 @@ test "private external CMap helpers cover malformed and compact sections" {
     ),
     [0x1234],
   )
-  let truncated_ucs2 : Result[Array[Int], Error] = try
+  let truncated_ucs2 : Result[Array[Int32], Error] = try
     pdf_text_parsed_cmap_charcodes_of_text(
       ucs2_base_parsed,
       cmap_wbtest_text_bytes([0x12]),
@@ -171,7 +171,7 @@ test "private external CMap helpers cover malformed and compact sections" {
     ),
     [0x0102],
   )
-  let odd_identity : Result[Array[Int], Error] = try
+  let odd_identity : Result[Array[Int32], Error] = try
     pdf_text_parsed_cmap_charcodes_of_text(
       identity_base_parsed,
       cmap_wbtest_text_bytes([1]),
@@ -333,13 +333,13 @@ test "private external CMap helpers cover malformed and compact sections" {
   @test.assert_eq(pdf_text_parse_cmap_ascii_int_at(b" 7x", 0), Some((7, 2)))
   @test.assert_eq(pdf_text_parse_cmap_ascii_int_at(b" +7x", 0), None)
   @test.assert_eq(pdf_text_parse_cmap_ascii_int_at(b" +x", 0), None)
-  let cidchar_entries : Array[(Int, Int)] = []
+  let cidchar_entries : Array[(Int32, Int32)] = []
   pdf_text_push_cmap_cidchar_entries(cidchar_entries, b"<> 1 <41> 7 <42> +")
   @test.assert_eq(cidchar_entries, [(0x41, 7)])
   pdf_text_push_cmap_cidchar_entries(cidchar_entries, b"<43> +7")
   @test.assert_eq(cidchar_entries, [(0x41, 7)])
 
-  let cidrange_entries : Array[(Int, Int)] = []
+  let cidrange_entries : Array[(Int32, Int32)] = []
   pdf_text_push_cmap_cidrange_entries(cidrange_entries, b"<02><01> 5")
   @test.assert_eq(cidrange_entries, [])
   pdf_text_push_cmap_cidrange_entries(cidrange_entries, b"<10><11>")
@@ -474,7 +474,7 @@ test "private direct Unicode predefined CMap helpers cover malformed scalars" {
   @test.assert_eq(pdf_text_predefined_utf8_charcode(0x41), Some(0x41))
   @test.assert_eq(pdf_text_predefined_utf8_charcode(0xA2), Some(0xC2A2))
   @test.assert_eq(pdf_text_predefined_utf8_charcode(0xD800), None)
-  let truncated_utf8 : Result[Array[Int], Error] = try
+  let truncated_utf8 : Result[Array[Int32], Error] = try
     pdf_text_predefined_cmap_charcodes_of_text(
       utf8_name,
       cmap_wbtest_text_bytes([0xC2]),
@@ -487,7 +487,7 @@ test "private direct Unicode predefined CMap helpers cover malformed scalars" {
   guard truncated_utf8 is Err(_) else {
     fail("expected truncated UTF8 predefined CMap text to raise")
   }
-  let invalid_lead_utf8 : Result[Array[Int], Error] = try
+  let invalid_lead_utf8 : Result[Array[Int32], Error] = try
     pdf_text_predefined_cmap_charcodes_of_text(
       utf8_name,
       cmap_wbtest_text_bytes([0xFF]),
@@ -500,7 +500,7 @@ test "private direct Unicode predefined CMap helpers cover malformed scalars" {
   guard invalid_lead_utf8 is Err(_) else {
     fail("expected invalid leading UTF8 predefined CMap text to raise")
   }
-  let invalid_continuation_utf8 : Result[Array[Int], Error] = try
+  let invalid_continuation_utf8 : Result[Array[Int32], Error] = try
     pdf_text_predefined_cmap_charcodes_of_text(
       utf8_name,
       cmap_wbtest_text_bytes([0xC2, 0x41]),
@@ -522,7 +522,7 @@ test "private direct Unicode predefined CMap helpers cover malformed scalars" {
     None,
   )
   @test.assert_eq(pdf_text_predefined_utf16_codepoints(0x123456), None)
-  let low_surrogate_utf16 : Result[Array[Int], Error] = try
+  let low_surrogate_utf16 : Result[Array[Int32], Error] = try
     pdf_text_predefined_cmap_charcodes_of_text(
       cmap_wbtest_text_name("/UniJIS-UTF16-H"),
       cmap_wbtest_text_bytes([0xDC, 0x00]),
@@ -570,7 +570,7 @@ test "private direct Unicode predefined CMap helpers cover malformed scalars" {
     ),
     [0x41],
   )
-  let odd_fixed : Result[Array[Int], Error] = try
+  let odd_fixed : Result[Array[Int32], Error] = try
     two_byte_font.pdf_text_fixed_or_single_byte_charcodes_of_text(
       cmap_wbtest_text_bytes([0]),
     )

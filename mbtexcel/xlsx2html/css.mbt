@@ -15,13 +15,13 @@ const ROW_HEIGHT_PT_TO_PX : Double = 4.0 / 3.0
 ///|
 /// Open XML stored width -> pixels: Truncate(((256*width +
 /// Truncate(128/MDW)) / 256) * MDW). Width 16 is 112px at MDW 7.
-pub fn col_width_px(width : Double) -> Int {
+pub fn col_width_px(width : Double) -> Int32 {
   let fudge = (128.0 / MAX_DIGIT_WIDTH).floor()
   ((256.0 * width + fudge) / 256.0 * MAX_DIGIT_WIDTH).floor().to_int()
 }
 
 ///|
-pub fn row_height_px(points : Double) -> Int {
+pub fn row_height_px(points : Double) -> Int32 {
   (points * ROW_HEIGHT_PT_TO_PX + 0.5).to_int()
 }
 

@@ -22,16 +22,16 @@
 
 ///|
 /// Ceiling on one published artifact.
-let office_render_max_output_bytes : Int = 64 * 1024 * 1024
+let office_render_max_output_bytes : Int32 = 64 * 1024 * 1024
 
 ///|
 /// Ceiling on engine notices carried into the report.
-let office_render_max_notices : Int = 64
+let office_render_max_notices : Int32 = 64
 
 ///|
 /// Ceiling on pages one invocation may publish, so a pathological document
 /// cannot turn one command into thousands of files.
-let office_render_max_pages : Int = 2048
+let office_render_max_pages : Int32 = 2048
 
 ///|
 /// Ceiling on the total bytes one invocation may publish across every
@@ -45,7 +45,7 @@ let office_render_max_total_bytes : Int64 = 256L * 1024L * 1024L
 ///|
 /// Ceiling on one engine notice, so a pathological message cannot make the
 /// report unbounded through a field that is otherwise bounded only by count.
-let office_render_max_notice_chars : Int = 512
+let office_render_max_notice_chars : Int32 = 512
 
 ///|
 priv enum OfficeRenderBackend {
@@ -63,14 +63,14 @@ fn OfficeRenderBackend::name(self : OfficeRenderBackend) -> String {
 
 ///|
 priv struct OfficeRenderStats {
-  pages_total : Int
-  pages_rendered : Int
+  pages_total : Int32
+  pages_rendered : Int32
   width_pt : Double
   height_pt : Double
-  fonts_used : Int
+  fonts_used : Int32
   unsupported : Array[String]
-  unsupported_total : Int
-  images_dropped : Int
+  unsupported_total : Int32
+  images_dropped : Int32
 }
 
 ///|
@@ -95,7 +95,7 @@ fn office_render_backend(output : String) -> OfficeRenderBackend raise {
 ///|
 /// The one refusal every `--pages` rejection reports, so a caller sees the
 /// same message whether the spec was malformed, reversed, or out of range.
-fn office_render_pages_error(total : Int) -> @lib.ProtocolError {
+fn office_render_pages_error(total : Int32) -> @lib.ProtocolError {
   @lib.protocol_error(
     "office.invalid_arguments",
     "--pages must be 1-based pages or N-M ranges separated by commas, within the document's \{total} page(s)",
@@ -104,13 +104,13 @@ fn office_render_pages_error(total : Int) -> @lib.ProtocolError {
 
 ///|
 /// One page number from `--pages`, validated against the document length.
-fn office_render_page_number(text : StringView, total : Int) -> Int raise {
+fn office_render_page_number(text : StringView, total : Int32) -> Int32 raise {
   guard text.length() > 0 && text.length() <= 7 else {
     raise CliFailure(office_render_pages_error(total))
   }
   let mut value = 0
   for char in text {
-    guard char is ('0'..='9') else {
+    guard char is ('0'..<='9') else {
       raise CliFailure(office_render_pages_error(total))
     }
     value = value * 10 + (char.to_int() - '0'.to_int())
@@ -129,8 +129,11 @@ fn office_render_page_number(text : StringView, total : Int) -> Int raise {
 /// `3,1-2,3` and `1-3` select the same pages and publish the same files. An
 /// agent composing a range from other output should not have to normalise it
 /// first, and should not be able to publish page 3 twice by failing to.
-fn office_render_parse_pages(spec : String, total : Int) -> Array[Int] raise {
-  let selected : Map[Int, Unit] = Map([])
+fn office_render_parse_pages(
+  spec : String,
+  total : Int32,
+) -> Array[Int32] raise {
+  let selected : Map[Int32, Unit] = Map([])
   for part in spec.split(",") {
     let trimmed = part.trim()
     guard trimmed.length() > 0 else {
@@ -199,7 +202,7 @@ fn office_render_layout(
 /// the rest and repaint every remaining page in the wrong typeface.
 fn office_render_select(
   model : @pagelayout.PageModel,
-  pages : Array[Int],
+  pages : Array[Int32],
 ) -> @pagelayout.PageModel {
   let selected = []
   for page in pages {
@@ -215,8 +218,8 @@ fn office_render_select(
 /// whole so glyph runs keep their original indices, so its length describes
 /// the document rather than the selection. Rendering page 1 of a document
 /// whose later pages introduce other faces would otherwise report those too.
-fn office_render_font_count(selected : @pagelayout.PageModel) -> Int {
-  let seen : Map[Int, Unit] = Map([])
+fn office_render_font_count(selected : @pagelayout.PageModel) -> Int32 {
+  let seen : Map[Int32, Unit] = Map([])
   for page in selected.pages {
     for item in page.items {
       if item is Text(run) {
@@ -284,8 +287,8 @@ fn office_render_stats(
 /// these tools should not have to learn the other's file naming.
 fn office_render_page_path(
   output : String,
-  page : Int,
-  total : Int,
+  page : Int32,
+  total : Int32,
   suffix : String,
 ) -> String {
   if total <= 1 {
@@ -428,7 +431,7 @@ async fn office_render_publish(
 fn office_render_report(
   source : OfficeReadPackage,
   backend : OfficeRenderBackend,
-  outputs : Array[(String, Int)],
+  outputs : Array[(String, Int32)],
   written : Int64,
   stats : OfficeRenderStats,
 ) -> Json {
@@ -516,7 +519,7 @@ async fn run_render(matches : @argparse.Matches) -> Unit {
   }
   let selected = office_render_select(model, pages)
   let stats = office_render_stats(model, selected, backend, unsupported)
-  let outputs : Array[(String, Int)] = []
+  let outputs : Array[(String, Int32)] = []
   let published : Array[String] = []
   let mut written : Int64 = 0
   match backend {

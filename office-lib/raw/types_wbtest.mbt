@@ -1,5 +1,5 @@
 ///|
-fn raw_test_character_count(value : String) -> Int {
+fn raw_test_character_count(value : String) -> Int32 {
   let mut count = 0
   for _ in value {
     count = count + 1

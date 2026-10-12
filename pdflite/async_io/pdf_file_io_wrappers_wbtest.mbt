@@ -573,7 +573,7 @@ async test "async file wrappers attach files from paths" {
 fn pdf_async_io_assert_cpdf_source_attachment_for_test(
   document : @pdflite.PdfDocument,
   payload : @core.PdfBytes,
-  version : (Int, Int),
+  version : (Int32, Int32),
 ) -> Unit raise {
   @test.assert_eq(document.endpage(), 1)
   @test.assert_eq(document.version(), version)
@@ -1866,7 +1866,7 @@ async test "async file wrappers reconstruct classic objects missing from xref" {
   )
   @test.assert_eq(strict_pages.root(), 1)
   @test.assert_eq(strict_pages.object_numbers(), [1])
-  let strict_page_count : Result[Int, Error] = try
+  let strict_page_count : Result[Int32, Error] = try
     strict_pages.endpage()
   catch {
     err => Err(err)
@@ -1939,21 +1939,21 @@ async test "async file wrappers report malformed revision metadata" {
     permission=0o644,
   )
 
-  let missing_startxref : Result[Int, Error] = try
+  let missing_startxref : Result[Int32, Error] = try
     pdf_revisions_from_file(missing_startxref_path)
   catch {
     err => Err(err)
   } noraise {
     value => Ok(value)
   }
-  let malformed_prev : Result[Int, Error] = try
+  let malformed_prev : Result[Int32, Error] = try
     pdf_revisions_from_file(malformed_prev_path)
   catch {
     err => Err(err)
   } noraise {
     value => Ok(value)
   }
-  let cyclic_prev : Result[Int, Error] = try
+  let cyclic_prev : Result[Int32, Error] = try
     pdf_revisions_from_file(cyclic_prev_path)
   catch {
     err => Err(err)
@@ -4497,7 +4497,7 @@ async test "async file wrappers reconstruct compressed ARC4 encrypted documents 
 ///|
 async fn pdf_async_io_assert_legacy_arc4_recovery_for_test(
   label : String,
-  key_length_bits : Int,
+  key_length_bits : Int32,
   expected_encryption : @crypt_core.PdfEncryptionMethod,
 ) -> Unit {
   let encrypted_path = pdf_async_io_test_path_for_test(
@@ -5463,7 +5463,7 @@ async test "async file wrappers reconstruct encrypted page trees missing from cl
   )
   @test.assert_eq(strict.root(), 1)
   @test.assert_eq(strict.object_numbers(), [1, encrypt_object_number])
-  let strict_pages : Result[Int, Error] = try strict.endpage() catch {
+  let strict_pages : Result[Int32, Error] = try strict.endpage() catch {
     err => Err(err)
   } noraise {
     value => Ok(value)

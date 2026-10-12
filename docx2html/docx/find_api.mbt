@@ -16,11 +16,11 @@
 /// actionable here is one the mutation surface accepts, by construction
 /// rather than by a parallel classifier that could drift out of step.
 pub struct DocxMatch {
-  ordinal : Int
+  ordinal : Int32
   story : String
   path : String
-  start : Int
-  end : Int
+  start : Int32
+  end : Int32
   text : String
   context_before : String
   context_after : String
@@ -38,7 +38,7 @@ pub struct DocxMatch {
 
 ///|
 /// Position among all candidates in document order, from 1.
-pub fn DocxMatch::ordinal(self : DocxMatch) -> Int {
+pub fn DocxMatch::ordinal(self : DocxMatch) -> Int32 {
   self.ordinal
 }
 
@@ -59,13 +59,13 @@ pub fn DocxMatch::path(self : DocxMatch) -> String {
 ///|
 /// Paragraph-relative UTF-16 start of the match, over the PROJECTION --
 /// the text a reader sees, not the bytes.
-pub fn DocxMatch::start(self : DocxMatch) -> Int {
+pub fn DocxMatch::start(self : DocxMatch) -> Int32 {
   self.start
 }
 
 ///|
 /// Paragraph-relative UTF-16 end, exclusive.
-pub fn DocxMatch::end(self : DocxMatch) -> Int {
+pub fn DocxMatch::end(self : DocxMatch) -> Int32 {
   self.end
 }
 
@@ -164,7 +164,7 @@ pub fn DocxMatch::physical_para_ids(self : DocxMatch) -> Array[String] {
 /// list that was deliberately cut short.
 pub struct DocxMatchList {
   matches : Array[DocxMatch]
-  total : Int
+  total : Int32
 }
 
 ///|
@@ -175,7 +175,7 @@ pub fn DocxMatchList::matches(self : DocxMatchList) -> Array[DocxMatch] {
 
 ///|
 /// How many candidates EXIST, which may exceed the examined list.
-pub fn DocxMatchList::total(self : DocxMatchList) -> Int {
+pub fn DocxMatchList::total(self : DocxMatchList) -> Int32 {
   self.total
 }
 
@@ -215,7 +215,7 @@ fn find_paragraph_projection(paragraph : ReaderProjectionParagraph) -> String {
 /// on a permitted 1 MiB paragraph is on the order of 10^11 comparisons.
 /// `--limit` cannot help, because the cost is paid before a match is
 /// ever found. This table makes the scan O(n + m) instead.
-fn find_failure_table(needle : StringView) -> Array[Int] {
+fn find_failure_table(needle : StringView) -> Array[Int32] {
   let table = Array::make(needle.length(), 0)
   let mut prefix = 0
   for index in 1..<needle.length() {
@@ -235,7 +235,7 @@ fn find_failure_table(needle : StringView) -> Array[Int] {
 ///|
 /// Whether the code unit at `index` is the SECOND half of a surrogate
 /// pair, i.e. a position no slice boundary may land on.
-fn find_is_trailing_surrogate(text : StringView, index : Int) -> Bool {
+fn find_is_trailing_surrogate(text : StringView, index : Int32) -> Bool {
   if index < 0 || index >= text.length() {
     return false
   }
@@ -252,7 +252,7 @@ fn find_is_trailing_surrogate(text : StringView, index : Int) -> Bool {
 /// trapping, but it cannot be encoded: emitting it as JSON traps later,
 /// far from the cause. Snapping outward keeps the window well-formed and
 /// costs at most one character of context.
-fn find_snap_start(text : StringView, index : Int) -> Int {
+fn find_snap_start(text : StringView, index : Int32) -> Int32 {
   if find_is_trailing_surrogate(text, index) {
     index + 1
   } else {
@@ -263,7 +263,7 @@ fn find_snap_start(text : StringView, index : Int) -> Int {
 ///|
 /// The same, for an exclusive end: an end that lands on a trailing half
 /// would cut the pair and leave a lone leading half inside the window.
-fn find_snap_end(text : StringView, index : Int) -> Int {
+fn find_snap_end(text : StringView, index : Int32) -> Int32 {
   if find_is_trailing_surrogate(text, index) {
     index - 1
   } else {
@@ -283,7 +283,7 @@ fn find_snap_end(text : StringView, index : Int) -> Int {
 /// "crash while reading". The suppression is contained to this one
 /// helper so any OTHER deprecation in this file still surfaces.
 #warnings("-deprecated")
-fn find_slice(text : String, start : Int, end : Int) -> String {
+fn find_slice(text : String, start : Int32, end : Int32) -> String {
   text.substring(start~, end~)
 }
 
@@ -295,8 +295,8 @@ fn find_slice(text : String, start : Int, end : Int) -> String {
 /// the retained-source ceiling near a million elements that is a CPU
 /// denial-of-service on an absent needle — so the maps are built once
 /// and lookups are O(1).
-fn find_path_map(scan : StoryScan, kind : String) -> Map[Int, String] {
-  let paths : Map[Int, String] = Map([])
+fn find_path_map(scan : StoryScan, kind : String) -> Map[Int32, String] {
+  let paths : Map[Int32, String] = Map([])
   for node in scan.nodes() {
     if node.kind == kind {
       paths[node.byte_start] = node.path
@@ -345,11 +345,11 @@ fn find_reason_for(message : String) -> String {
 fn find_restricted_construct(
   elements : Array[ScannedElement],
   paragraph : ReaderProjectionParagraph,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> String {
   let base = paragraph.projection_start
-  let mut link : Int?? = None
+  let mut link : Int32?? = None
   let mut crossing = false
   let mut named : String? = None
   for contribution in paragraph.contributions {
@@ -415,14 +415,14 @@ pub fn find_docx_matches(
   story : DocxStoryPartSource,
   needle~ : String,
   within? : String,
-  context? : Int = 24,
+  context~ : Int32 = 24,
   // How many candidates to EXAMINE. Scanning is linear and cheap, but
   // every examined candidate runs the planner, so an unbounded needle
   // over a large story would do unbounded work for output the caller
   // then discards. Candidates past this are still COUNTED through
   // `ordinal`, so the caller learns they exist without paying for a
   // verdict it asked not to receive.
-  limit? : Int = 1000,
+  limit~ : Int32 = 1000,
 ) -> DocxMatchList raise DocxError {
   guard needle != "" else {
     raise Unsupported(
@@ -538,7 +538,7 @@ pub fn find_docx_matches(
       }
       // The runs and source kinds the match actually draws from.
       let runs : Array[String] = []
-      let seen_runs : Map[Int, Bool] = Map([])
+      let seen_runs : Map[Int32, Bool] = Map([])
       let kinds : Array[String] = []
       let base = paragraph.projection_start
       for contribution in paragraph.contributions {

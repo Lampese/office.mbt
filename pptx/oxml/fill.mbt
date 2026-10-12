@@ -347,8 +347,8 @@ pub fn Fill::solid(rgb : @units.RgbColor) -> Fill {
 pub fn Fill::linear_gradient(
   from : @units.RgbColor,
   to : @units.RgbColor,
-  via? : Array[@units.RgbColor] = [],
-  angle? : @units.Angle = Angle(90.0),
+  via~ : Array[@units.RgbColor] = [],
+  angle~ : @units.Angle = Angle(90.0),
 ) -> Fill {
   let colors = [from]
   for c in via {

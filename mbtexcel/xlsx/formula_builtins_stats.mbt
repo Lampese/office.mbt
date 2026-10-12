@@ -38,7 +38,7 @@ fn list_from_value(value : FormulaValue) -> Array[FormulaValue] {
 }
 
 ///|
-fn index_of_double(values : ArrayView[Double], target : Double) -> Int {
+fn index_of_double(values : ArrayView[Double], target : Double) -> Int32 {
   for i in 0..<values.length() {
     if values[i] == target {
       return i
@@ -1544,7 +1544,7 @@ fn type_value(value : FormulaValue) -> FormulaValue {
 }
 
 ///|
-fn sheet_index_opt(workbook : Workbook, name : String) -> Int? {
+fn sheet_index_opt(workbook : Workbook, name : String) -> Int32? {
   try workbook.sheet_index(name) catch {
     _ => None
   } noraise {
@@ -1855,8 +1855,8 @@ fn resolve_cell_value(
 fn spill_value_for_cell(
   workbook : Workbook,
   sheet_name : String,
-  target_row : Int,
-  target_col : Int,
+  target_row : Int32,
+  target_col : Int32,
   ctx : CalcContext,
 ) -> FormulaValue? raise XlsxError {
   let sheet = match workbook.sheet(sheet_name) {

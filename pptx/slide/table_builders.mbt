@@ -61,8 +61,8 @@ pub fn TableCell::empty() -> TableCell {
 /// `v_merge_covered` to fill the cells covered by the merge.
 pub fn TableCell::merged_origin(
   text : String,
-  grid_span? : Int = 1,
-  row_span? : Int = 1,
+  grid_span~ : Int32 = 1,
+  row_span~ : Int32 = 1,
 ) -> TableCell {
   {
     grid_span,
@@ -153,8 +153,8 @@ pub fn Table::of_rows(
 /// Useful for "give me an empty 3×4 grid" boilerplate before the
 /// caller mutates individual cells via field replacement.
 pub fn Table::of_grid(
-  rows~ : Int,
-  cols~ : Int,
+  rows~ : Int32,
+  cols~ : Int32,
   col_width~ : @units.Emu,
   row_height~ : @units.Emu,
 ) -> Table {
@@ -176,7 +176,7 @@ pub fn Table::of_grid(
 /// builders — accepts EMU values directly so the caller stays in
 /// the typed unit world.
 pub fn GraphicFrame::of_table(
-  id~ : Int,
+  id~ : Int32,
   name~ : String,
   x~ : @units.Emu,
   y~ : @units.Emu,
@@ -201,7 +201,7 @@ pub fn GraphicFrame::of_table(
 /// part. Pair with `@presentation.Presentation::add_chart_mut`
 /// for the full OPC plumbing.
 pub fn GraphicFrame::of_chart_ref(
-  id~ : Int,
+  id~ : Int32,
   name~ : String,
   x~ : @units.Emu,
   y~ : @units.Emu,
@@ -223,7 +223,7 @@ pub fn GraphicFrame::of_chart_ref(
 /// Same as `of_chart_ref` but for the Microsoft 2016 extended
 /// chart family (`chartEx`).
 pub fn GraphicFrame::of_chart_ex_ref(
-  id~ : Int,
+  id~ : Int32,
   name~ : String,
   x~ : @units.Emu,
   y~ : @units.Emu,

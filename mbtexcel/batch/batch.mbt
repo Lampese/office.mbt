@@ -12,12 +12,12 @@
 ///|
 /// Scripts are capped well above any real workload; the cap turns a
 /// runaway generator into a clean error instead of an OOM.
-pub const MAX_BATCH_OPS : Int = 10_000
+pub const MAX_BATCH_OPS : Int32 = 10_000
 
 ///|
 /// Maximum encoded size of one strict batch script. This is enforced before
 /// UTF-8 decode or JSON parsing by `parse_script_bytes`.
-pub const MAX_BATCH_SCRIPT_BYTES : Int = 8 * 1024 * 1024
+pub const MAX_BATCH_SCRIPT_BYTES : Int32 = 8 * 1024 * 1024
 
 ///|
 /// Aggregate cap on cells touched by `style` range expansions across one
@@ -35,20 +35,20 @@ pub const MAX_TOTAL_TOUCHED_CELLS : Int64 = 1_000_000
 ///|
 /// Aggregate cap on new workbook style/differential-style records requested by
 /// `style` and `cf` operations.
-pub const MAX_TOTAL_NEW_STYLES : Int = 4_096
+pub const MAX_TOTAL_NEW_STYLES : Int32 = 4_096
 
 ///|
 /// Maximum lexical length of a JSON number outside strings. Longer spellings
 /// hit known upstream rounding edge cases and are never useful workbook input.
-pub const MAX_BATCH_NUMBER_TOKEN_CHARS : Int = 40
+pub const MAX_BATCH_NUMBER_TOKEN_CHARS : Int32 = 40
 
 ///|
 /// The sheet grid limits (Excel's maximums), for the `row`/`col` ops' band
 /// validation. A band `[at, at+count-1]` must fit within `[1, max]`.
-const MAX_SHEET_ROWS : Int = 1_048_576
+const MAX_SHEET_ROWS : Int32 = 1_048_576
 
 ///|
-const MAX_SHEET_COLS : Int = 16_384
+const MAX_SHEET_COLS : Int32 = 16_384
 
 ///|
 /// Per-op cap on the band a single `row`/`col` hide/show/height op may touch.
@@ -56,7 +56,7 @@ const MAX_SHEET_COLS : Int = 16_384
 /// agent-supplied `count` is bounded to keep one op's latency in check.
 /// insert/delete are engine-bounded (they pass `count` straight through) and
 /// are not subject to this cap.
-pub const MAX_ROW_COLUMN_BAND : Int = 10_000
+pub const MAX_ROW_COLUMN_BAND : Int32 = 10_000
 
 ///|
 /// Aggregate cap on dimensions touched by width and `row`/`col`
@@ -212,13 +212,13 @@ priv enum OpKind {
   OpRow(
     sheet~ : String,
     action~ : String,
-    at~ : Int,
-    count~ : Int,
+    at~ : Int32,
+    count~ : Int32,
     height~ : Double?
   )
   // Column dimensions. `action` (hide/show) validated at apply; `at` a resolved
   // 1-based column and `count` the band size. Column width stays the `width` op.
-  OpCol(sheet~ : String, action~ : String, at~ : Int, count~ : Int)
+  OpCol(sheet~ : String, action~ : String, at~ : Int32, count~ : Int32)
 }
 
 ///|
@@ -231,11 +231,11 @@ struct BatchOp(OpKind)
 ///|
 /// Resource accounting retained with one parsed batch plan.
 pub struct BatchPlanStats {
-  operation_count : Int
+  operation_count : Int32
   touched_cells : Int64
   style_cells : Int64
   row_column_lines : Int64
-  new_style_records : Int
+  new_style_records : Int32
 }
 
 ///|
@@ -260,7 +260,7 @@ pub fn BatchPlan::stats(self : BatchPlan) -> BatchPlanStats {
 }
 
 ///|
-pub fn BatchPlan::operation_count(self : BatchPlan) -> Int {
+pub fn BatchPlan::operation_count(self : BatchPlan) -> Int32 {
   self.stats.operation_count
 }
 
@@ -287,7 +287,7 @@ pub fn BatchOp::name(self : BatchOp) -> String {
 }
 
 ///|
-fn op_error(index : Int, op : String, message : String) -> BatchError {
+fn op_error(index : Int32, op : String, message : String) -> BatchError {
   BatchError("op \{index} (\{op}): \{message}")
 }
 
@@ -428,9 +428,9 @@ fn is_looping_action(action : String) -> Bool {
 fn validate_rowcol_band(
   reader : ParamReader,
   action : String,
-  at : Int,
-  count : Int,
-  axis_max : Int,
+  at : Int32,
+  count : Int32,
+  axis_max : Int32,
   axis : String,
   rowcol_cells : Ref[Int64],
 ) -> Unit raise BatchError {
@@ -480,7 +480,7 @@ fn check_number_token_lengths(text : String) -> Unit raise BatchError {
     } else if character == '"' {
       in_string = true
       run = 0
-    } else if character is ('0'..='9' | '.' | 'e' | 'E' | '+' | '-') {
+    } else if character is ('0'..<='9' | '.' | 'e' | 'E' | '+' | '-') {
       run = run + 1
       if run > MAX_BATCH_NUMBER_TOKEN_CHARS {
         raise BatchError(
@@ -556,7 +556,7 @@ fn parse_plan(document : Json) -> BatchPlan raise BatchError {
   let style_cells : Ref[Int64] = Ref(0)
   let touched_cells : Ref[Int64] = Ref(0)
   let rowcol_cells : Ref[Int64] = Ref(0)
-  let new_styles : Ref[Int] = Ref(0)
+  let new_styles : Ref[Int32] = Ref(0)
   for index, item in items {
     ops.push(
       parse_op(
@@ -587,12 +587,12 @@ pub fn parse_script(document : Json) -> Array[BatchOp] raise BatchError {
 ///|
 fn parse_op(
   schema : String,
-  index : Int,
+  index : Int32,
   item : Json,
   style_cells : Ref[Int64],
   touched_cells : Ref[Int64],
   rowcol_cells : Ref[Int64],
-  new_styles : Ref[Int],
+  new_styles : Ref[Int32],
 ) -> BatchOp raise BatchError {
   let entry = match item {
     Object(map) => map
@@ -875,7 +875,7 @@ fn parse_op(
 /// Reads typed params for one op, tracking which keys were consumed so
 /// `finish` can reject unknown keys with the op's index and name.
 priv struct ParamReader {
-  index : Int
+  index : Int32
   op : String
   params : Map[String, Json]
   used : Map[String, Unit]
@@ -1199,7 +1199,7 @@ fn ParamReader::range(
 fn ParamReader::column(
   self : ParamReader,
   key : String,
-) -> (String, Int) raise BatchError {
+) -> (String, Int32) raise BatchError {
   let text = self.string(key)
   let count = match text.find(":") {
     None => {
@@ -1228,7 +1228,7 @@ fn ParamReader::column_number(
   key : String,
   letters : String,
   full : String,
-) -> Int raise BatchError {
+) -> Int32 raise BatchError {
   if letters.length() < 1 || letters.length() > 3 {
     raise op_error(
       self.index,
@@ -1265,7 +1265,7 @@ fn ParamReader::column_number(
 fn ParamReader::single_column_number(
   self : ParamReader,
   key : String,
-) -> Int raise BatchError {
+) -> Int32 raise BatchError {
   let text = self.string(key)
   if text.contains(":") {
     raise op_error(
@@ -1285,7 +1285,7 @@ fn ParamReader::positive_int_value(
   self : ParamReader,
   key : String,
   json : Json,
-) -> Int raise BatchError {
+) -> Int32 raise BatchError {
   match json {
     Number(value, repr~) => {
       // normalize_number recovers the exact literal and rejects non-finite.
@@ -1309,7 +1309,7 @@ fn ParamReader::positive_int_value(
 fn ParamReader::positive_int(
   self : ParamReader,
   key : String,
-) -> Int raise BatchError {
+) -> Int32 raise BatchError {
   match self.take(key) {
     Some(json) => self.positive_int_value(key, json)
     None => raise op_error(self.index, self.op, "missing param '\{key}'")
@@ -1320,8 +1320,8 @@ fn ParamReader::positive_int(
 fn ParamReader::optional_positive_int(
   self : ParamReader,
   key : String,
-  default~ : Int,
-) -> Int raise BatchError {
+  default~ : Int32,
+) -> Int32 raise BatchError {
   match self.take(key) {
     Some(json) => self.positive_int_value(key, json)
     None => default

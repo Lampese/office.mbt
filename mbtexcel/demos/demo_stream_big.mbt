@@ -1,5 +1,5 @@
 ///|
-fn parse_int(s : StringView) -> Int? {
+fn parse_int(s : StringView) -> Int32? {
   let text = s.to_owned().trim()
   if text == "" {
     return None
@@ -33,7 +33,7 @@ fn parse_int(s : StringView) -> Int? {
 
 ///|
 pub fn demo_stream_big_bytes(
-  rows? : Int = 20000,
+  rows~ : Int32 = 20000,
 ) -> Bytes raise @xlsx.XlsxError {
   let workbook = @excel.new_workbook()
   ignore(workbook.add_sheet("Big"))
@@ -99,7 +99,7 @@ pub fn demo_stream_big_bytes(
 }
 
 ///|
-pub fn demo_stream_big_rows_from_args(args : ArrayView[String]) -> Int {
+pub fn demo_stream_big_rows_from_args(args : ArrayView[String]) -> Int32 {
   match args {
     [] => 20000
     [value, ..] =>

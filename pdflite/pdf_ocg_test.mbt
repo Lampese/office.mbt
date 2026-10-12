@@ -9,7 +9,7 @@ fn ocg_bytes_for_test(text : String) -> @core.PdfBytes {
 }
 
 ///|
-fn ocg_json_int_for_test(value : Int) -> Json {
+fn ocg_json_int_for_test(value : Int32) -> Json {
   Json::number(value.to_double(), repr=value.to_string())
 }
 
@@ -69,11 +69,11 @@ fn ocg_conflicting_root_document_for_test(
 
 ///|
 fn ocg_merge_content_for_test(
-  number : Int,
+  number : Int32,
   layer_name : String,
   base_state : @ocg.PdfOcgState,
-  on_numbers : Array[Int],
-  off_numbers : Array[Int],
+  on_numbers : Array[Int32],
+  off_numbers : Array[Int32],
 ) -> @ocg.PdfOptionalContent {
   {
     ocgs: [

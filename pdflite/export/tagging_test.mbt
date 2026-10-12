@@ -1,7 +1,7 @@
 ///|
 fn tagged_settings(
-  version? : @export.PdfVersion = Pdf17,
-  ua? : @export.Accessibility? = None,
+  version~ : @export.PdfVersion = Pdf17,
+  ua~ : @export.Accessibility? = None,
 ) -> @export.SerializeSettings {
   { ..settings_with(version~, ua~), enable_tagging: true, }
 }
@@ -14,7 +14,7 @@ fn group(tag : @export.TagKind, children : Array[@export.Node]) -> @export.Node 
 ///|
 fn kind(
   name : @export.TagName,
-  attrs? : Array[@export.Attr] = [],
+  attrs~ : Array[@export.Attr] = [],
 ) -> @export.TagKind {
   let k = @export.TagKind::new(name)
   for a in attrs {
@@ -51,7 +51,7 @@ fn Parsed::struct_elem(
   self : Parsed,
   sb : StringBuilder,
   elem : @syntax.PdfObject,
-  depth : Int,
+  depth : Int32,
 ) -> Unit raise {
   for _ in 0..<depth {
     sb.write_string("  ")

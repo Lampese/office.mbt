@@ -270,7 +270,7 @@ fn map_insert_paragraph_failure(error : Error) -> CliFailure {
 fn insert_payload_duplicate_key(text : String) -> String? {
   let units = text.code_units()
   let seen : Map[String, Bool] = Map([])
-  let frames : Array[Int] = []
+  let frames : Array[Int32] = []
   let mut next_frame = 0
   let mut expecting_key = false
   let mut index = 0
@@ -380,7 +380,7 @@ fn render_duplicate_key(identity : String) -> String {
   // Decode the unit sequence first, then render: surrogate PAIRS
   // recombine to their scalar, lone halves and controls become
   // \uXXXX, and every other scalar shows as itself.
-  let units : Array[Int] = []
+  let units : Array[Int32] = []
   let mut value = 0
   let mut has_digit = false
   for character in identity {
@@ -434,7 +434,7 @@ fn render_duplicate_key(identity : String) -> String {
 }
 
 ///|
-fn render_unit_escape(value : Int) -> String {
+fn render_unit_escape(value : Int32) -> String {
   let digits = "0123456789ABCDEF"
   let units = digits.code_units()
   let builder = StringBuilder()

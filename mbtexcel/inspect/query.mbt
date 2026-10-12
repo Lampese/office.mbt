@@ -291,8 +291,8 @@ pub fn query(
     None => raise QueryError("sheet '\{sheet}' not found")
   }
   let matches = []
-  let style_order : Array[Int] = []
-  let style_seen : Map[Int, Unit] = Map([])
+  let style_order : Array[Int32] = []
+  let style_seen : Map[Int32, Unit] = Map([])
   let scanned = match query_scan_range(worksheet, range) {
     Some(scan) => {
       for row in scan.row_lo..<=scan.row_hi {

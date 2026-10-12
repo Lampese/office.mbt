@@ -104,8 +104,8 @@ pub fn pdf_text_extractor_of_font_real(font : PdfFont) -> PdfTextExtractor {
 /// CamlPDF API compatibility; this implementation does not write diagnostics.
 pub fn pdf_charcode_extractor_of_font_real(
   font : PdfFont,
-  debug? : Bool = false,
-) -> (Int) -> Int? {
+  debug~ : Bool = false,
+) -> (Int32) -> Int32? {
   // CamlPDF reports missing glyphs to stderr when debug is true; this wrapper
   // keeps the lookup pure while preserving the API shape.
   ignore(debug)

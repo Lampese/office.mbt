@@ -14,7 +14,7 @@ pub(all) struct PdfEncryptionValues {
   crypt_type : @core.PdfCryptType
   user_entry : @core.PdfBytes
   owner_entry : @core.PdfBytes
-  permissions : Int
+  permissions : Int32
   file_id : @core.PdfBytes
   encrypt_metadata : Bool
   permissions_entry : @core.PdfBytes?

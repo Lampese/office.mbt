@@ -161,7 +161,7 @@ test "private reconstructed classic xref reader rejects xref streams" {
       "7 0 obj\n<< /Type /XRef /Size 1 /W [1 4 2] /Length 7 >>\nstream\n\\u{0}\\u{0}\\u{0}\\u{0}\\u{0}\\u{255}\\u{255}\nendstream\nendobj",
     ),
   )
-  let result : Result[(@reader.PdfXRefSection, Int), Error] = try
+  let result : Result[(@reader.PdfXRefSection, Int32), Error] = try
     pdf_cursor_read_reconstructed_classic_xref_section_at(cursor, 0)
   catch {
     err => Err(err)
@@ -177,7 +177,7 @@ test "private reconstructed classic xref reader rejects xref streams" {
 test "private xref stream helpers cover malformed and deferred entries" {
   let key_w = @reader.pdf_reader_name("/W")
   let key_index = @reader.pdf_reader_name("/Index")
-  let negative_xrefstm : Result[Int?, Error] = try
+  let negative_xrefstm : Result[Int32?, Error] = try
     @reader.pdf_trailer_xref_stream_position(
       PdfDictionary([(@reader.pdf_reader_xrefstm_name(), PdfInteger(-1))]),
     )
@@ -190,7 +190,7 @@ test "private xref stream helpers cover malformed and deferred entries" {
     fail("expected @core.PdfError::XRefExpected")
   }
 
-  let malformed_array_value : Result[Array[Int]?, Error] = try
+  let malformed_array_value : Result[Array[Int32]?, Error] = try
     @reader.pdf_xref_stream_int_array(
       PdfDictionary([
         (key_w, PdfArray([PdfNameObject(@reader.pdf_reader_name("/Name"))])),
@@ -206,7 +206,7 @@ test "private xref stream helpers cover malformed and deferred entries" {
     fail("expected @core.PdfError::XRefEntryExpected")
   }
 
-  let malformed_non_array : Result[Array[Int]?, Error] = try
+  let malformed_non_array : Result[Array[Int32]?, Error] = try
     @reader.pdf_xref_stream_int_array(
       PdfDictionary([(key_w, PdfInteger(1))]),
       key_w,
@@ -220,7 +220,7 @@ test "private xref stream helpers cover malformed and deferred entries" {
     fail("expected @core.PdfError::XRefEntryExpected")
   }
 
-  let malformed_widths : Result[(Int, Int, Int), Error] = try
+  let malformed_widths : Result[(Int32, Int32, Int32), Error] = try
     @reader.pdf_xref_stream_widths(
       PdfDictionary([(key_w, PdfArray([PdfInteger(1), PdfInteger(2)]))]),
     )
@@ -233,7 +233,7 @@ test "private xref stream helpers cover malformed and deferred entries" {
     fail("expected @core.PdfError::XRefEntryExpected")
   }
 
-  let odd_index : Result[Array[(Int, Int)], Error] = try
+  let odd_index : Result[Array[(Int32, Int32)], Error] = try
     @reader.pdf_xref_stream_index_pairs(
       PdfDictionary([(key_index, PdfArray([PdfInteger(0)]))]),
     )
@@ -246,7 +246,7 @@ test "private xref stream helpers cover malformed and deferred entries" {
     fail("expected @core.PdfError::XRefEntryExpected")
   }
 
-  let negative_index : Result[Array[(Int, Int)], Error] = try
+  let negative_index : Result[Array[(Int32, Int32)], Error] = try
     @reader.pdf_xref_stream_index_pairs(
       PdfDictionary([(key_index, PdfArray([PdfInteger(0), PdfInteger(-1)]))]),
     )
@@ -259,7 +259,7 @@ test "private xref stream helpers cover malformed and deferred entries" {
     fail("expected @core.PdfError::XRefEntryExpected")
   }
 
-  let missing_size : Result[Array[(Int, Int)], Error] = try
+  let missing_size : Result[Array[(Int32, Int32)], Error] = try
     @reader.pdf_xref_stream_index_pairs(PdfDictionary([]))
   catch {
     err => Err(err)
@@ -271,7 +271,7 @@ test "private xref stream helpers cover malformed and deferred entries" {
   }
 
   @test.assert_eq(try! @reader.pdf_xref_stream_read_field(b"ab", 0, 0), (0, 0))
-  let short_field : Result[(Int, Int), Error] = try
+  let short_field : Result[(Int32, Int32), Error] = try
     @reader.pdf_xref_stream_read_field(b"a", 0, 2)
   catch {
     err => Err(err)
@@ -321,7 +321,7 @@ test "private object stream helpers cover malformed object streams" {
   let key_first = @reader.pdf_reader_name("/First")
   let key_length = @reader.pdf_reader_name("/Length")
 
-  let missing_required : Result[Int, Error] = try
+  let missing_required : Result[Int32, Error] = try
     pdf_document_empty().pdf_object_stream_required_int(
       PdfDictionary([]),
       key_n,
@@ -335,7 +335,7 @@ test "private object stream helpers cover malformed object streams" {
     fail("expected @core.PdfError::XRefEntryExpected")
   }
 
-  let bad_first : Result[Array[(Int, Int)], Error] = try
+  let bad_first : Result[Array[(Int32, Int32)], Error] = try
     @reader.pdf_object_stream_number_offsets(b"1 0", 4, 1)
   catch {
     err => Err(err)
@@ -346,7 +346,7 @@ test "private object stream helpers cover malformed object streams" {
     fail("expected @core.PdfError::StreamDataExpected")
   }
 
-  let short_header : Result[Array[(Int, Int)], Error] = try
+  let short_header : Result[Array[(Int32, Int32)], Error] = try
     @reader.pdf_object_stream_number_offsets(b"2 ", 2, 1)
   catch {
     err => Err(err)
@@ -357,7 +357,7 @@ test "private object stream helpers cover malformed object streams" {
     fail("expected @core.PdfError::XRefEntryExpected")
   }
 
-  let malformed_pair : Result[Array[(Int, Int)], Error] = try
+  let malformed_pair : Result[Array[(Int32, Int32)], Error] = try
     @reader.pdf_object_stream_number_offsets(b"/Name 0 ", 8, 1)
   catch {
     err => Err(err)
@@ -402,7 +402,7 @@ test "private object stream helpers cover malformed object streams" {
     try! context.read_reference({ object_stream_number: 7, index: 1, }),
     (3, PdfBoolean(false)),
   )
-  let bad_index : Result[(Int, @syntax.PdfObject), Error] = try
+  let bad_index : Result[(Int32, @syntax.PdfObject), Error] = try
     context.read_reference({ object_stream_number: 7, index: 9, })
   catch {
     err => Err(err)
@@ -586,7 +586,7 @@ test "private object stream helpers cover malformed object streams" {
     ),
   )
   let bad_offset_context = try! bad_offset_doc.read_object_stream_context(9)
-  let bad_offset : Result[(Int, @syntax.PdfObject), Error] = try
+  let bad_offset : Result[(Int32, @syntax.PdfObject), Error] = try
     bad_offset_context.read_reference({ object_stream_number: 9, index: 0, })
   catch {
     err => Err(err)
@@ -752,7 +752,7 @@ test "private reader xref helpers report malformed inputs" {
   let nested_bad_object = @ascii.encode(
     "1 0 obj\n]\n2 0 obj\n<< /Type /Catalog >>\nendobj\n3 0 obj\n42\nendobj\n",
   )
-  let endobj : ReadOnlyArray[Int] = [101, 110, 100, 111, 98, 106]
+  let endobj : ReadOnlyArray[Int32] = [101, 110, 100, 111, 98, 106]
   let nested_endobj = @core.pdf_find_ascii_from(nested_bad_object, 0, endobj)
   @test.assert_eq(
     @reader.pdf_reader_reconstruction_indirect_header_at(nested_bad_object, 0),

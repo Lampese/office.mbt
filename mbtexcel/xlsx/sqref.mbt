@@ -30,7 +30,7 @@ let max_structural_sqref_token_chars = 128
 ///|
 fn xml_whitespace_tokens_cancellable(
   value : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Array[String] raise XlsxError {
   let tokens : Array[String] = []
   let mut current = StringBuilder()
@@ -218,7 +218,7 @@ test "sqref read normalization charges tokens before materializing them" {
 }
 
 ///|
-fn sort_and_merge_sqref_row_intervals(entries : Array[(Int, Int)]) -> Unit {
+fn sort_and_merge_sqref_row_intervals(entries : Array[(Int32, Int32)]) -> Unit {
   if entries.length() < 2 {
     return
   }
@@ -237,7 +237,7 @@ fn sort_and_merge_sqref_row_intervals(entries : Array[(Int, Int)]) -> Unit {
       0
     }
   })
-  let merged : Array[(Int, Int)] = []
+  let merged : Array[(Int32, Int32)] = []
   let mut current_start = entries[0].0
   let mut current_end = entries[0].1
   for index in 1..<entries.length() {
@@ -269,8 +269,8 @@ let max_sqref_interval_entries = 65_536
 /// one by one, and aggregate column expansion is capped.
 fn flat_sqref(
   sqref : StringView,
-) -> Map[Int, Array[(Int, Int)]] raise XlsxError {
-  let intervals : Map[Int, Array[(Int, Int)]] = Map([])
+) -> Map[Int32, Array[(Int32, Int32)]] raise XlsxError {
+  let intervals : Map[Int32, Array[(Int32, Int32)]] = Map([])
   let seen_rectangles : Map[String, Bool] = Map([])
   let mut interval_entries = 0
   for text in xml_whitespace_tokens(sqref) {
@@ -312,10 +312,10 @@ fn flat_sqref(
 
 ///|
 fn subtract_sqref_row_intervals(
-  existing : Array[(Int, Int)],
-  deletions : Array[(Int, Int)],
-) -> Array[(Int, Int)] {
-  let updated : Array[(Int, Int)] = []
+  existing : Array[(Int32, Int32)],
+  deletions : Array[(Int32, Int32)],
+) -> Array[(Int32, Int32)] {
+  let updated : Array[(Int32, Int32)] = []
   let mut delete_index = 0
   for source in existing {
     let (source_start, source_end) = source
@@ -355,8 +355,8 @@ fn subtract_sqref_row_intervals(
 
 ///|
 fn range_ref_from_coords(
-  start_cell : (Int, Int),
-  end_cell : (Int, Int),
+  start_cell : (Int32, Int32),
+  end_cell : (Int32, Int32),
 ) -> String raise XlsxError {
   let (start_col, start_row) = start_cell
   let (end_col, end_row) = end_cell
@@ -371,7 +371,7 @@ fn range_ref_from_coords(
 ///|
 fn delete_cells_from_sqref(
   sqref : StringView,
-  del_intervals : Map[Int, Array[(Int, Int)]],
+  del_intervals : Map[Int32, Array[(Int32, Int32)]],
 ) -> String raise XlsxError {
   let col_intervals = flat_sqref(sqref)
   for col, deletions in del_intervals {
@@ -382,7 +382,7 @@ fn delete_cells_from_sqref(
     }
   }
   let refs : Array[String] = []
-  let cols : Array[Int] = []
+  let cols : Array[Int32] = []
   for col, _ in col_intervals {
     cols.push(col)
   }
@@ -445,7 +445,7 @@ test "sqref wb: aggregate full-width expansion has an explicit work bound" {
     let row = index * 2 + 1
     refs.push("A\{row}:XFD\{row}")
   }
-  let result : Result[Map[Int, Array[(Int, Int)]], Error] = Ok(
+  let result : Result[Map[Int32, Array[(Int32, Int32)]], Error] = Ok(
     flat_sqref(refs.join(" ")),
   ) catch {
     error => Err(error)

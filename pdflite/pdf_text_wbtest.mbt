@@ -5,7 +5,7 @@ fn text_wbtest_name(text : String) -> @core.PdfName {
 
 ///|
 fn text_wbtest_descriptor(
-  tounicode : Array[(Int, @core.PdfBytes)]?,
+  tounicode : Array[(Int32, @core.PdfBytes)]?,
 ) -> PdfFontDescriptor {
   {
     ascent: 0.0,

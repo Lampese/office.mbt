@@ -52,15 +52,15 @@ fn PdfDocument::pdf_util_document_params_json(
 }
 
 ///|
-fn pdf_util_document_json_entry(number : Int, object : Json) -> Json {
+fn pdf_util_document_json_entry(number : Int32, object : Json) -> Json {
   Json::array([pdf_util_json_number(number), object])
 }
 
 ///|
 fn PdfDocument::pdf_util_reachable_document_object_numbers(
   self : PdfDocument,
-) -> Array[Int] {
-  let referenced : @hashmap.HashMap[Int, Bool] = HashMap([])
+) -> Array[Int32] {
+  let referenced : @hashmap.HashMap[Int32, Bool] = HashMap([])
   if self.trailer_dict().lookup_immediate(pdf_util_cpdfjson_root_key()) is None &&
     self.root() > 0 {
     referenced[self.root()] = true
@@ -75,7 +75,7 @@ fn PdfDocument::pdf_util_reachable_document_object_numbers(
     referenced[number] = true
   }
   let object_numbers = self.object_numbers()
-  let numbers : Array[Int] = Array(capacity=object_numbers.length())
+  let numbers : Array[Int32] = Array(capacity=object_numbers.length())
   for number in object_numbers {
     if referenced.contains(number) {
       numbers.push(number)

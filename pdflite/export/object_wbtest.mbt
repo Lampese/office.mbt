@@ -164,7 +164,7 @@ test "object serialization" {
 
 ///|
 test "write_file produces a parseable classic file" {
-  let objects : Map[Int, Indirect] = {
+  let objects : Map[Int32, Indirect] = {
     1: Plain(Dict([("Type", Name("Catalog")), ("Pages", Ref(2))])),
     2: Plain(
       Dict([("Type", Name("Pages")), ("Count", Int(0)), ("Kids", Arr([]))]),
@@ -259,7 +259,7 @@ test "validator internals" {
 
 ///|
 test "streams get exactly one Length" {
-  let objects : Map[Int, Indirect] = {
+  let objects : Map[Int32, Indirect] = {
     1: Stream([("Length", Int(99)), ("Foo", Int(1))], b"abc"),
   }
   let text = wb_latin1(write_file("1.7", objects, 1, 1, None, None))

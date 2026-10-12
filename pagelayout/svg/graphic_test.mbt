@@ -419,7 +419,7 @@ fn path_parts(d : StringView) -> (String, Array[Double]) raise {
     }
   }
   for c in d {
-    if c is ('A'..='Z' | 'a'..='z') && c != 'e' {
+    if c is ('A'..<='Z' | 'a'..<='z') && c != 'e' {
       flush()
       letters.write_char(c)
     } else if c == ' ' {

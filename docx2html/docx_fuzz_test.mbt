@@ -21,7 +21,7 @@ fn docx_fuzz_rng(label : Bytes) -> @random.Rand {
 ///|
 /// A string drawn from an XML-heavy alphabet so the tokenizer's tag,
 /// attribute, entity, and comment paths are all exercised by malformed input.
-fn docx_fuzz_xmlish(rng : @random.Rand, len : Int) -> String {
+fn docx_fuzz_xmlish(rng : @random.Rand, len : Int32) -> String {
   let alphabet : Array[Char] = []
   for c in "<>/=\"'& ;\t\n?!-[]abcABC012xyz:" {
     alphabet.push(c)
@@ -34,7 +34,7 @@ fn docx_fuzz_xmlish(rng : @random.Rand, len : Int) -> String {
 }
 
 ///|
-fn docx_fuzz_bytes(rng : @random.Rand, len : Int) -> Bytes {
+fn docx_fuzz_bytes(rng : @random.Rand, len : Int32) -> Bytes {
   Bytes::from_array(Array::makei(len, fn(_) { rng.int(limit=256).to_byte() }))
 }
 

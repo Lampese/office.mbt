@@ -11,13 +11,13 @@
 /// no line; spaces hanging at a soft break stay in their line's range but
 /// are excluded from `width_pt` (they hang past the margin, per Word).
 pub(all) struct LineRange {
-  start : Int
-  end : Int
+  start : Int32
+  end : Int32
   width_pt : Double
 } derive(Eq, Debug, ToJson)
 
 ///|
-fn is_trail_surrogate(unit : Int) -> Bool {
+fn is_trail_surrogate(unit : Int32) -> Bool {
   unit >= 0xDC00 && unit <= 0xDFFF
 }
 

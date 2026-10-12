@@ -29,7 +29,7 @@
 /// ```
 pub fn Presentation::add_smartart_mut(
   self : Presentation,
-  slide_idx : Int,
+  slide_idx : Int32,
   smartart : @smartart.SmartArt,
   x~ : @units.Emu,
   y~ : @units.Emu,
@@ -186,7 +186,7 @@ fn add_diagram_rel(
 /// Next shared diagram index N — the max across all five diagram part prefixes
 /// plus one, so `dataN` / `layoutN` / `quickStyleN` / `colorsN` / `drawingN`
 /// all share one number (matching PowerPoint's per-diagram numbering).
-fn Presentation::next_diagram_index(self : Presentation) -> Int {
+fn Presentation::next_diagram_index(self : Presentation) -> Int32 {
   let mut m = self.max_part_index("/ppt/diagrams/data")
   for
     prefix in [

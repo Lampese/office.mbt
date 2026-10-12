@@ -55,7 +55,7 @@ pub(all) enum ChartOption {
   DataLabels(DLblPos)
   DataLabelsHidden
   DataTable(Bool)
-  Style(Int)
+  Style(Int32)
   RoundedCorners(Bool)
   PlotVisibleOnly(Bool)
   DisplayBlanks(DisplayBlanksAs)

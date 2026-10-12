@@ -13,13 +13,13 @@ fn xml_text(value : String) -> XmlNode {
 ///|
 fn convert_document_to_html(
   document : DocumentElement,
-  style_map? : Array[String] = [],
-  include_default_style_map? : Bool = true,
-  ignore_empty_paragraphs? : Bool = true,
-  id_prefix? : String = "",
-  pretty_print? : Bool = false,
-  convert_image? : (Image) -> ImageConversion = @converter.data_uri_image_converter,
-  transform_document? : (DocumentElement) -> DocumentElement = @document.identity_document_transform,
+  style_map~ : Array[String] = [],
+  include_default_style_map~ : Bool = true,
+  ignore_empty_paragraphs~ : Bool = true,
+  id_prefix~ : String = "",
+  pretty_print~ : Bool = false,
+  convert_image~ : (Image) -> ImageConversion = @converter.data_uri_image_converter,
+  transform_document~ : (DocumentElement) -> DocumentElement = @document.identity_document_transform,
 ) -> ConversionResult {
   @converter.convert_document_to_html(
     document,
@@ -203,7 +203,7 @@ fn relationship_part(relationship_type : String, target : String) -> String {
 ///|
 fn run_properties_from_xml(
   properties_xml : String,
-  styles? : Map[String, StyleInfo] = Map([]),
+  styles~ : Map[String, StyleInfo] = Map([]),
 ) -> RunProperties raise DocxError {
   let xml = "<w:r xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><w:rPr>" +
     properties_xml +
@@ -234,7 +234,7 @@ fn body_elements_from_xml(
 ///|
 fn paragraph_properties_from_xml(
   properties_xml : String,
-  styles? : Map[String, StyleInfo] = Map([]),
+  styles~ : Map[String, StyleInfo] = Map([]),
 ) -> ParagraphProperties raise DocxError {
   let xml = "<w:p xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><w:pPr>" +
     properties_xml +
@@ -593,8 +593,8 @@ test "docx relationships reader finds targets by id and type" {
 
 ///|
 fn docx_hash_clustered_relationship_ids(
-  count : Int,
-  bucket_mask : Int,
+  count : Int32,
+  bucket_mask : Int32,
 ) -> Array[String] {
   let ids : Array[String] = []
   let mut candidate = 0
@@ -3530,7 +3530,7 @@ test "docx structured checkbox replacement recurses through containers" {
 fn complex_field_checkbox_html(
   checkbox_children : String,
   separate~ : Bool,
-  instruction_text? : String = " FORMCHECKBOX ",
+  instruction_text~ : String = " FORMCHECKBOX ",
 ) -> String raise DocxError {
   let separate_xml = if separate {
     "<w:r><w:fldChar w:fldCharType=\"separate\" /></w:r>"

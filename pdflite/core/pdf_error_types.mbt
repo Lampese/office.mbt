@@ -4,7 +4,7 @@
 /// ARC4 carries key length in bits and security-handler revision. AESV3 carries
 /// whether the ISO/PDF 2.0 hash variant is in use.
 pub(all) enum PdfCryptType {
-  PdfCryptARC4(Int, Int)
+  PdfCryptARC4(Int32, Int32)
   PdfCryptAESV2
   PdfCryptAESV3(Bool)
 } derive(Debug, Eq, ToJson)
@@ -17,11 +17,11 @@ pub(all) enum PdfCryptType {
 /// distinguish malformed input classes, while most public APIs expose them
 /// through the ordinary `raise PdfError` flow.
 pub(all) suberror PdfError {
-  InvalidByte(Int)
-  InvalidCursorPosition(Int)
-  InvalidReadLength(Int)
-  InvalidBit(Int)
-  InvalidBitCount(Int)
+  InvalidByte(Int32)
+  InvalidCursorPosition(Int32)
+  InvalidReadLength(Int32)
+  InvalidBit(Int32)
+  InvalidBitCount(Int32)
   MatrixNotInvertable
   DictionaryExpected
   DictionaryKeyNotFound(PdfName)
@@ -37,10 +37,10 @@ pub(all) suberror PdfError {
   CCITTNotSupported(String)
   InvalidCCITTData
   PredictorExpected
-  PredictorNotSupported(Int)
+  PredictorNotSupported(Int32)
   InvalidLZWData
   InvalidFlateData
-  FlateOutputLimitExceeded(Int)
+  FlateOutputLimitExceeded(Int32)
   BadJPEGHeader
   BadJPEGString
   InvalidJPEGBlock
@@ -59,7 +59,7 @@ pub(all) suberror PdfError {
   StreamDataExpected
   ParsedObjectExpected
   PageTreeExpected
-  PageRotationExpected(Int)
+  PageRotationExpected(Int32)
   BadPageSpecification(String)
   BadCoordinateSpecification(String)
   BadRectangleSpecification(String)
@@ -71,7 +71,7 @@ pub(all) suberror PdfError {
   ContentOperatorExpected
   ContentOperandExpected
   FunctionExpected
-  FunctionNotSupported(Int)
+  FunctionNotSupported(Int32)
   BadFunctionEvaluation(String)
   StartXRefExpected
   XRefExpected
@@ -79,14 +79,14 @@ pub(all) suberror PdfError {
   TrailerExpected
   RootExpected
   BadRevision
-  InvalidObjectNumber(Int)
+  InvalidObjectNumber(Int32)
   BadDate
-  InvalidUnicodeCodepoint(Int)
+  InvalidUnicodeCodepoint(Int32)
   InvalidUTF16BE
   InvalidUTF8
-  InvalidPDFDocEncoding(Int)
+  InvalidPDFDocEncoding(Int32)
   CryptoKeyExpected
-  InvalidCryptoDataLength(Int)
+  InvalidCryptoDataLength(Int32)
   EncryptionExpected
   EncryptionMethodExpected
   EncryptionDictionaryEntryExpected(PdfName)
@@ -98,7 +98,7 @@ pub(all) suberror PdfError {
   EncryptionRecryptUnsupported(PdfCryptType)
   EncryptionRecryptFailed
   EncryptionPermissionsCorrupt
-  EncryptionPermissionsMismatch(Int, Int)
+  EncryptionPermissionsMismatch(Int32, Int32)
   RandomBytesUnavailable
   EncodingExpected
   EncodingDifferencesMalformed

@@ -464,7 +464,7 @@ test "PdfDocument list_attached_files keeps malformed page attachment without da
       relationship: None,
     },
   ])
-  let size_result : Result[Int, Error] = try
+  let size_result : Result[Int32, Error] = try
     document.size_attached_files()
   catch {
     err => Err(err)
@@ -579,7 +579,7 @@ test "PdfDocument list and size reject file specs with EF but no F stream" {
   guard list_result is Err(@core.PdfError::DictionaryKeyNotFound(_)) else {
     fail("expected missing /F to fail listing")
   }
-  let size_result : Result[Int, Error] = try
+  let size_result : Result[Int32, Error] = try
     document.size_attached_files()
   catch {
     err => Err(err)

@@ -21,8 +21,8 @@
 /// One end of a connector — references the target shape by `id` and
 /// chooses one of its connection-point indices.
 pub(all) struct ConnectionEnd {
-  shape_id : Int
-  idx : Int
+  shape_id : Int32
+  idx : Int32
 } derive(Eq, Debug)
 
 ///|
@@ -47,7 +47,7 @@ pub extend ConnectionEnd with Eq::{not_equal, equal}
 ///   `None` for a parsed connector (its `<a:hlinkClick>` round-trips via the
 ///   captured `<p:cNvPr>` in `extension`).
 pub(all) struct Connector {
-  id : Int
+  id : Int32
   name : String
   transform : Transform?
   geometry : Geometry?

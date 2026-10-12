@@ -10,8 +10,8 @@
 /// it from the completed paragraph segments. Each event follows a charged N0b2
 /// node visit, so the reader-order visit budget also bounds retained events.
 priv struct ReaderFieldCarrierEvent {
-  paragraph_identity : Int
-  carrier_identity : Int
+  paragraph_identity : Int32
+  carrier_identity : Int32
 }
 
 ///|
@@ -33,7 +33,7 @@ priv enum ReaderFieldBoundarySide {
 ///|
 #warnings("-unused_field")
 priv struct ReaderFieldBoundary {
-  carrier_identity : Int
+  carrier_identity : Int32
   side : ReaderFieldBoundarySide
 }
 
@@ -47,19 +47,19 @@ priv struct ReaderFieldInterval {
 ///|
 #warnings("-unused_field")
 priv struct ReaderField {
-  identity : Int
-  story_identity : Int
-  parent_identity : Int?
-  begin_marker_identity : Int
-  begin_carrier_identity : Int
+  identity : Int32
+  story_identity : Int32
+  parent_identity : Int32?
+  begin_marker_identity : Int32
+  begin_carrier_identity : Int32
   instruction : ReaderFieldInterval
-  mut separate_marker_identity : Int?
-  mut separate_carrier_identity : Int?
+  mut separate_marker_identity : Int32?
+  mut separate_carrier_identity : Int32?
   mut result : ReaderFieldInterval?
-  mut end_marker_identity : Int?
-  mut end_carrier_identity : Int?
+  mut end_marker_identity : Int32?
+  mut end_carrier_identity : Int32?
   instruction_text : StringBuilder
-  mut refusal_identity : Int?
+  mut refusal_identity : Int32?
 }
 
 ///|
@@ -78,12 +78,12 @@ priv enum ReaderFieldRefusalKind {
 ///|
 #warnings("-unused_field")
 priv struct ReaderFieldRefusal {
-  identity : Int
+  identity : Int32
   kind : ReaderFieldRefusalKind
-  story_identity : Int
-  carrier_identity : Int
-  offending_identity : Int?
-  field_identity : Int?
+  story_identity : Int32
+  carrier_identity : Int32
+  offending_identity : Int32?
+  field_identity : Int32?
   source_span : ReaderSourceSpan
 }
 
@@ -101,35 +101,35 @@ fn empty_reader_field_index() -> ReaderFieldIndex {
 
 ///|
 priv struct ReaderFieldBudget {
-  mut work_left : Int
-  mut transitions_left : Int
-  mut retained_state_left : Int
-  mut instruction_chars_left : Int
-  max_field_depth : Int
+  mut work_left : Int32
+  mut transitions_left : Int32
+  mut retained_state_left : Int32
+  mut instruction_chars_left : Int32
+  max_field_depth : Int32
 }
 
 ///|
-let max_reader_field_work : Int = 16_000_000
+let max_reader_field_work : Int32 = 16_000_000
 
 ///|
-let max_reader_field_transitions : Int = 1_000_000
+let max_reader_field_transitions : Int32 = 1_000_000
 
 ///|
-let max_reader_field_retained_state : Int = 8_000_000
+let max_reader_field_retained_state : Int32 = 8_000_000
 
 ///|
-let max_reader_field_instruction_chars : Int = 64 * 1024 * 1024
+let max_reader_field_instruction_chars : Int32 = 64 * 1024 * 1024
 
 ///|
-let max_reader_field_depth : Int = 256
+let max_reader_field_depth : Int32 = 256
 
 ///|
 fn reader_field_budget(
-  max_work? : Int = max_reader_field_work,
-  max_transitions? : Int = max_reader_field_transitions,
-  max_retained_state? : Int = max_reader_field_retained_state,
-  max_instruction_chars? : Int = max_reader_field_instruction_chars,
-  max_field_depth? : Int = max_reader_field_depth,
+  max_work~ : Int32 = max_reader_field_work,
+  max_transitions~ : Int32 = max_reader_field_transitions,
+  max_retained_state~ : Int32 = max_reader_field_retained_state,
+  max_instruction_chars~ : Int32 = max_reader_field_instruction_chars,
+  max_field_depth~ : Int32 = max_reader_field_depth,
 ) -> ReaderFieldBudget raise DocxError {
   guard max_work >= 0 &&
     max_transitions >= 0 &&
@@ -182,7 +182,7 @@ fn ReaderFieldBudget::charge_retained(
 ///|
 fn ReaderFieldBudget::charge_instruction(
   self : ReaderFieldBudget,
-  chars : Int,
+  chars : Int32,
 ) -> Unit raise DocxError {
   guard chars >= 0 && chars <= self.instruction_chars_left else {
     raise @core.docx_xml_resource_limit_error(DocxXmlMaterializedCharacters)
@@ -193,7 +193,7 @@ fn ReaderFieldBudget::charge_instruction(
 ///|
 fn ReaderFieldBudget::check_field_depth(
   self : ReaderFieldBudget,
-  depth : Int,
+  depth : Int32,
 ) -> Unit raise DocxError {
   guard depth > 0 && depth <= self.max_field_depth else {
     raise @core.docx_xml_resource_limit_error(DocxXmlNestingDepth)
@@ -202,48 +202,48 @@ fn ReaderFieldBudget::check_field_depth(
 
 ///|
 priv struct ReaderCarrierSummary {
-  marker_identity : Int?
-  marker_count : Int
+  marker_identity : Int32?
+  marker_count : Int32
   repeated_instruction : ReaderRepeatedInstruction?
 }
 
 ///|
 priv struct ReaderInstructionTarget {
-  field_identity : Int
+  field_identity : Int32
   instruction : StringBuilder
 }
 
 ///|
 priv struct ReaderRepeatedInstruction {
-  instruction_identity : Int
-  owner_field_identity : Int?
+  instruction_identity : Int32
+  owner_field_identity : Int32?
 }
 
 ///|
 priv struct ReaderInstructionObservation {
-  owner_field_identity : Int?
+  owner_field_identity : Int32?
 }
 
 ///|
 priv struct ReaderCarrierClass {
-  field_identity : Int?
+  field_identity : Int32?
   region : ReaderFieldRegion
-  refusal_identity : Int?
+  refusal_identity : Int32?
 }
 
 ///|
 priv struct ReaderFieldStoryState {
-  identity : Int
-  stack : Array[Int]
-  mut failed_refusal : Int?
+  identity : Int32
+  stack : Array[Int32]
+  mut failed_refusal : Int32?
 }
 
 ///|
 fn reader_field_story_identity(
   elements : Array[ScannedElement],
-  paragraph_identity : Int,
+  paragraph_identity : Int32,
   budget : ReaderFieldBudget,
-) -> Int raise DocxError {
+) -> Int32 raise DocxError {
   if elements.is_empty() {
     return 0
   }
@@ -278,16 +278,16 @@ fn reader_field_story_identity(
 ///|
 fn scan_reader_field_carrier(
   elements : Array[ScannedElement],
-  identity : Int,
-  story_identity : Int,
+  identity : Int32,
+  story_identity : Int32,
   instruction_target : ReaderInstructionTarget?,
-  seen_instructions : Map[Int, ReaderInstructionObservation],
+  seen_instructions : Map[Int32, ReaderInstructionObservation],
   budget : ReaderFieldBudget,
 ) -> ReaderCarrierSummary raise DocxError {
-  let mut marker_identity : Int? = None
+  let mut marker_identity : Int32? = None
   let mut marker_count = 0
   let mut repeated_instruction : ReaderRepeatedInstruction? = None
-  fn visit(current : Int) -> Unit raise DocxError {
+  fn visit(current : Int32) -> Unit raise DocxError {
     budget.charge_work()
     let element = elements[current]
     if is_wml_uri(element.uri) &&
@@ -346,7 +346,7 @@ fn reader_field_slot_carrier(
   elements : Array[ScannedElement],
   slot : ReaderFieldSlot,
   budget : ReaderFieldBudget,
-) -> Int? raise DocxError {
+) -> Int32? raise DocxError {
   let paragraph_identity = slot.paragraph_identity
   let mut current = slot.source_identity
   while current >= 0 &&
@@ -365,8 +365,8 @@ fn reader_field_slot_carrier(
 ///|
 fn reader_field_refusal_span(
   elements : Array[ScannedElement],
-  offending_identity : Int?,
-  carrier_identity : Int,
+  offending_identity : Int32?,
+  carrier_identity : Int32,
 ) -> ReaderSourceSpan {
   match offending_identity {
     Some(identity) => reader_element_span(elements[identity])
@@ -379,12 +379,12 @@ fn add_reader_field_refusal(
   index : ReaderFieldIndex,
   state : ReaderFieldStoryState,
   kind : ReaderFieldRefusalKind,
-  carrier_identity : Int,
-  offending_identity : Int?,
-  field_identity : Int?,
+  carrier_identity : Int32,
+  offending_identity : Int32?,
+  field_identity : Int32?,
   elements : Array[ScannedElement],
   budget : ReaderFieldBudget,
-) -> Int raise DocxError {
+) -> Int32 raise DocxError {
   budget.charge_retained()
   let identity = index.refusals.length()
   index.refusals.push({
@@ -406,8 +406,8 @@ fn add_reader_field_refusal(
 ///|
 fn mark_reader_field_failed(
   index : ReaderFieldIndex,
-  field_identity : Int,
-  refusal_identity : Int,
+  field_identity : Int32,
+  refusal_identity : Int32,
 ) -> Unit {
   if field_identity >= 0 && field_identity < index.fields.length() {
     let field = index.fields[field_identity]
@@ -421,8 +421,8 @@ fn mark_reader_field_failed(
 fn mark_reader_story_failed(
   index : ReaderFieldIndex,
   state : ReaderFieldStoryState,
-  implicated_field_identity : Int?,
-  refusal_identity : Int,
+  implicated_field_identity : Int32?,
+  refusal_identity : Int32,
 ) -> Unit {
   match implicated_field_identity {
     Some(field_identity) =>
@@ -475,9 +475,9 @@ fn fail_reader_field_story(
   index : ReaderFieldIndex,
   state : ReaderFieldStoryState,
   kind : ReaderFieldRefusalKind,
-  carrier_identity : Int,
-  offending_identity : Int?,
-  implicated_field_identity : Int?,
+  carrier_identity : Int32,
+  offending_identity : Int32?,
+  implicated_field_identity : Int32?,
   elements : Array[ScannedElement],
   budget : ReaderFieldBudget,
 ) -> ReaderCarrierClass raise DocxError {
@@ -498,9 +498,9 @@ fn classify_reader_carrier(
   index : ReaderFieldIndex,
   state : ReaderFieldStoryState,
   summary : ReaderCarrierSummary,
-  carrier_identity : Int,
+  carrier_identity : Int32,
   elements : Array[ScannedElement],
-  seen_markers : Map[Int, Int],
+  seen_markers : Map[Int32, Int32],
   budget : ReaderFieldBudget,
 ) -> ReaderCarrierClass raise DocxError {
   match state.failed_refusal {
@@ -751,11 +751,11 @@ fn finish_reader_field_story(
 /// reader-native one apply the machine through slots, so neither path
 /// fabricates the other's contribution type.
 priv struct ReaderFieldSlot {
-  source_identity : Int
-  paragraph_identity : Int
-  mut field_identity : Int?
+  source_identity : Int32
+  paragraph_identity : Int32
+  mut field_identity : Int32?
   mut field_region : ReaderFieldRegion
-  mut field_refusal : Int?
+  mut field_refusal : Int32?
 }
 
 ///|
@@ -768,7 +768,7 @@ fn classify_reader_field_slots(
   budget : ReaderFieldBudget,
 ) -> ReaderFieldIndex raise DocxError {
   let index = empty_reader_field_index()
-  let slots_by_carrier : Map[Int, Array[ReaderFieldSlot]] = Map([])
+  let slots_by_carrier : Map[Int32, Array[ReaderFieldSlot]] = Map([])
   for slot in slots {
     budget.charge_work()
     match reader_field_slot_carrier(source_elements, slot, budget) {
@@ -783,10 +783,10 @@ fn classify_reader_field_slots(
     }
   }
   let states : Array[ReaderFieldStoryState] = []
-  let state_by_story : Map[Int, ReaderFieldStoryState] = Map([])
-  let story_by_paragraph : Map[Int, Int] = Map([])
-  let seen_markers : Map[Int, Int] = Map([])
-  let seen_instructions : Map[Int, ReaderInstructionObservation] = Map([])
+  let state_by_story : Map[Int32, ReaderFieldStoryState] = Map([])
+  let story_by_paragraph : Map[Int32, Int32] = Map([])
+  let seen_markers : Map[Int32, Int32] = Map([])
+  let seen_instructions : Map[Int32, ReaderInstructionObservation] = Map([])
   for event in field_carriers {
     let paragraph_identity = event.paragraph_identity
     let carrier = event.carrier_identity

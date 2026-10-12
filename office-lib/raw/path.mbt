@@ -14,18 +14,18 @@ let raw_max_namespace_bindings = 32
 let raw_max_namespace_uri_length = 1024
 
 ///|
-let raw_max_namespace_binding_length : Int = raw_max_name_length +
+let raw_max_namespace_binding_length : Int32 = raw_max_name_length +
   1 +
   raw_max_namespace_uri_length
 
 ///|
-let raw_max_fragment_bytes : Int = 1024 * 1024
+let raw_max_fragment_bytes : Int32 = 1024 * 1024
 
 ///|
 let raw_max_matches = 256
 
 ///|
-let raw_max_attribute_value_bytes : Int = 1024 * 1024
+let raw_max_attribute_value_bytes : Int32 = 1024 * 1024
 
 ///|
 priv struct RawExpandedName {
@@ -37,7 +37,7 @@ priv struct RawExpandedName {
 
 ///|
 priv enum RawPathPredicate {
-  Position(Int)
+  Position(Int32)
   Attribute(RawExpandedName, String)
 }
 
@@ -56,12 +56,16 @@ priv struct RawPath {
 ///|
 priv struct RawPathParser {
   source : String
-  mut offset : Int
+  mut offset : Int32
   namespaces : Map[String, String]
 }
 
 ///|
-fn raw_path_error(source : String, offset : Int, message : String) -> RawError {
+fn raw_path_error(
+  source : String,
+  offset : Int32,
+  message : String,
+) -> RawError {
   raw_error(
     "office.raw.invalid_path",
     message,
@@ -540,8 +544,8 @@ pub fn raw_edit_request(
   xml? : String,
   attribute? : String,
   value? : String,
-  namespaces? : Array[(String, String)] = [],
-  all? : Bool = false,
+  namespaces~ : Array[(String, String)] = [],
+  all~ : Bool = false,
 ) -> RawEditRequest raise RawError {
   validate_part_selector(part)
   if !raw_text_within_scalar_limit(path, raw_max_path_length) ||

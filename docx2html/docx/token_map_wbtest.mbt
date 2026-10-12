@@ -29,8 +29,8 @@ fn assert_reader_oracle(source : String) -> Unit raise {
 ///|
 fn assert_refuses_bytes(
   source : Bytes,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
   fragment : String,
 ) -> Unit raise {
   let budget = token_map_budget(source.length(), source.length() + 1)
@@ -51,7 +51,7 @@ fn assert_refuses(source : String, fragment : String) -> Unit raise {
 fn splice_content(
   source : String,
   mapped : WtContentMap,
-  edits : Array[(Int, Int, String)],
+  edits : Array[(Int32, Int32, String)],
 ) -> String raise {
   let bytes = @utf8.encode(source)
   let output = Buffer()

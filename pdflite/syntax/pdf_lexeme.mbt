@@ -8,7 +8,7 @@
 pub(all) enum PdfLexeme {
   LexNull
   LexBool(Bool)
-  LexInt(Int)
+  LexInt(Int32)
   LexReal(Double)
   LexString(@core.PdfBytes)
   LexName(@core.PdfName)

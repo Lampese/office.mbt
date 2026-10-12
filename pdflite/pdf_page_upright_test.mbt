@@ -24,8 +24,8 @@ fn page_upright_stream_for_test(
 fn page_upright_page_for_test(
   ops : ArrayView[@content.PdfContentOp],
   mediabox : @syntax.PdfObject,
-  rotate? : @page.PdfPageRotation = Rotate0,
-  rest? : @syntax.PdfObject = PdfDictionary([]),
+  rotate~ : @page.PdfPageRotation = Rotate0,
+  rest~ : @syntax.PdfObject = PdfDictionary([]),
 ) -> @page.PdfPage {
   {
     content: [page_upright_stream_for_test(ops)],

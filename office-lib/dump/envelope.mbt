@@ -40,7 +40,7 @@ pub extend DumpWarning with ToJson::{to_json}
 /// them); replay does not reconstruct them.
 pub(all) struct DumpAsset {
   content_type : String
-  size : Int
+  size : Int32
   data : String
 } derive(Eq, ToJson)
 
@@ -57,7 +57,7 @@ pub extend DumpAsset with ToJson::{to_json}
 pub(all) struct DumpEnvelope {
   format : String
   source_file : String
-  source_bytes : Int
+  source_bytes : Int32
   source_sha256 : String?
   batch_schema : String
   create_sheet : String?

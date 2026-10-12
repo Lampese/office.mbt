@@ -168,7 +168,7 @@ fn format_on_off_option(
 /// surfaces report them.
 fn format_range_option(
   matches : @argparse.Matches,
-) -> (Int, Int)? raise CliFailure {
+) -> (Int32, Int32)? raise CliFailure {
   guard optional_value(matches, "range") is Some(value) else { return None }
   guard value.find(":") is Some(colon) &&
     colon > 0 &&
@@ -192,13 +192,13 @@ fn format_range_option(
 }
 
 ///|
-fn decimal_prefix_value(text : String) -> Int? {
+fn decimal_prefix_value(text : String) -> Int32? {
   if text == "" || text.length() > 7 {
     return None
   }
   let mut value = 0
   for ch in text {
-    guard ch is ('0'..='9') else { return None }
+    guard ch is ('0'..<='9') else { return None }
     value = value * 10 + (ch.to_int() - '0'.to_int())
   }
   Some(value)
@@ -291,9 +291,9 @@ fn format_scope_segment_kind(segment : String) -> String? {
   let kind = segment[:open].to_owned()
   guard kind is ("p" | "tbl" | "tr" | "tc") else { return None }
   let ordinal = segment[open + 1:segment.length() - 1].to_owned()
-  guard ordinal[0] is ('1'..='9') else { return None }
+  guard ordinal[0] is ('1'..<='9') else { return None }
   for ch in ordinal {
-    guard ch is ('0'..='9') else { return None }
+    guard ch is ('0'..<='9') else { return None }
   }
   if ordinal.length() <= 6 {
     Some(kind)
@@ -316,13 +316,13 @@ fn format_report_json(
   output : String,
   text : String?,
   within : String?,
-  range : (Int, Int)?,
-  nth : Int?,
+  range : (Int32, Int32)?,
+  nth : Int32?,
   bold : Bool?,
   italic : Bool?,
   underline : Bool?,
   color : String?,
-  expect : Int?,
+  expect : Int32?,
   allow_zero : Bool,
   dry_run : Bool,
   report : @office_docx.DocxFormatReport,
@@ -437,7 +437,7 @@ fn format_report_json(
 /// unchanged COUNT (the record never lists the unchanged names), and an
 /// allowance for the fixed publication warnings. A blanket constant
 /// refused reports that would in fact have fit.
-fn format_report_transaction_reserve(file : String, output : String) -> Int {
+fn format_report_transaction_reserve(file : String, output : String) -> Int32 {
   let validator_entries : Array[Json] = []
   for _ in 0..<6 {
     validator_entries.push(
@@ -499,7 +499,7 @@ fn format_report_transaction_reserve(file : String, output : String) -> Int {
 ///|
 fn ensure_format_report_budget(
   record : Json,
-  maximum : Int,
+  maximum : Int32,
 ) -> Unit raise @transaction.TransactionError {
   ignore(bounded_docx_payload(record, [], maximum)) catch {
     _ =>

@@ -6,7 +6,7 @@ fn opc_ascii_hex_digit(character : UInt16) -> Bool {
 }
 
 ///|
-fn opc_ascii_hex_value(character : UInt16) -> Int {
+fn opc_ascii_hex_value(character : UInt16) -> Int32 {
   if character >= '0' && character <= '9' {
     character.to_int() - ('0' : UInt16).to_int()
   } else if character >= 'A' && character <= 'F' {
@@ -17,7 +17,7 @@ fn opc_ascii_hex_value(character : UInt16) -> Int {
 }
 
 ///|
-fn opc_percent_byte(text : StringView, index : Int) -> Int? {
+fn opc_percent_byte(text : StringView, index : Int32) -> Int32? {
   if index + 2 >= text.length() ||
     text[index] != ('%' : UInt16) ||
     !opc_ascii_hex_digit(text[index + 1]) ||
@@ -42,7 +42,7 @@ fn opc_uri_unreserved(character : Char) -> Bool {
 }
 
 ///|
-fn opc_uri_unreserved_byte(value : Int) -> Bool {
+fn opc_uri_unreserved_byte(value : Int32) -> Bool {
   (value >= 'A'.to_int() && value <= 'Z'.to_int()) ||
   (value >= 'a'.to_int() && value <= 'z'.to_int()) ||
   (value >= '0'.to_int() && value <= '9'.to_int()) ||
@@ -90,7 +90,7 @@ fn opc_iri_ucschar(character : Char) -> Bool {
 }
 
 ///|
-fn opc_utf8_percent_length(first : Int) -> Int? {
+fn opc_utf8_percent_length(first : Int32) -> Int32? {
   if first >= 0xc2 && first <= 0xdf {
     Some(2)
   } else if first >= 0xe0 && first <= 0xef {
@@ -105,8 +105,8 @@ fn opc_utf8_percent_length(first : Int) -> Int? {
 ///|
 fn opc_decode_percent_scalar(
   text : StringView,
-  index : Int,
-) -> (String, Char, Int)? {
+  index : Int32,
+) -> (String, Char, Int32)? {
   guard opc_percent_byte(text, index) is Some(first) && first >= 0x80 else {
     return None
   }
@@ -190,7 +190,7 @@ pub fn is_valid_opc_part_segment(segment : StringView) -> Bool {
 /// Cancellation-aware form of `is_valid_opc_part_segment`.
 pub fn is_valid_opc_part_segment_cancellable(
   segment : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Bool raise ParseXmlError {
   is_valid_opc_part_segment_cancellable_impl(segment, cancelled)
 }
@@ -209,7 +209,7 @@ pub fn logical_opc_part_name_from_zip_item_name(name : StringView) -> String? {
 /// name into an intermediate character array.
 pub fn logical_opc_part_name_from_zip_item_name_cancellable(
   name : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String? raise ParseXmlError {
   if name == "" || name.has_prefix("/") || name.has_suffix("/") {
     return None
@@ -353,8 +353,8 @@ fn opc_part_name_identity_tokens(
 /// callers to reserve cumulative parser capacity before registration starts.
 pub fn opc_part_name_identity_node_count_cancellable(
   name : StringView,
-  cancelled? : () -> Bool = () => false,
-) -> Int raise ParseXmlError {
+  cancelled~ : () -> Bool = () => false,
+) -> Int32 raise ParseXmlError {
   let mut count = 0
   let mut segment_start = 0
   for index in 0..<=name.length() {
@@ -391,7 +391,7 @@ pub fn opc_part_name_identity_node_count_cancellable(
 }
 
 ///|
-type OpcPartNameChildren = @sorted_map.SortedMap[String, Int]
+type OpcPartNameChildren = @sorted_map.SortedMap[String, Int32]
 
 ///|
 priv struct OpcPartNameTrieNode {
@@ -422,14 +422,14 @@ pub(all) enum OpcPartNameConflict {
 /// string-hash behavior.
 pub struct OpcPartNameRegistry {
   priv nodes : Array[OpcPartNameTrieNode]
-  priv maximum_identity_nodes : Int
+  priv maximum_identity_nodes : Int32
 }
 
 ///|
 /// Creates an empty OPC PartName registry with a cumulative identity-node
 /// ceiling. The root bookkeeping node is not counted against the ceiling.
 pub fn OpcPartNameRegistry::new(
-  maximum_identity_nodes? : Int = 2_000_000,
+  maximum_identity_nodes~ : Int32 = 2_000_000,
 ) -> OpcPartNameRegistry {
   {
     nodes: [new_opc_part_name_trie_node()],
@@ -461,7 +461,7 @@ pub fn OpcPartNameRegistry::register_cancellable(
   self : OpcPartNameRegistry,
   name : StringView,
   display : String,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> OpcPartNameConflict? raise ParseXmlError {
   if cancelled() {
     raise ReadCancelled
@@ -469,7 +469,7 @@ pub fn OpcPartNameRegistry::register_cancellable(
   let tokens = opc_part_name_identity_tokens(name, cancelled)
   let mut node_index = 0
   let mut token_index = 0
-  let mut missing_token : Int? = None
+  let mut missing_token : Int32? = None
   while token_index < tokens.length() {
     if token_index % 4096 == 0 && cancelled() {
       raise ReadCancelled

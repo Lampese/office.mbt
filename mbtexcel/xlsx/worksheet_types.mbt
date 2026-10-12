@@ -1,22 +1,22 @@
 ///|
 pub struct Cell {
   reference : String
-  row : Int
-  col : Int
+  row : Int32
+  col : Int32
   value : String
   value_type : CellValueType
   rich_text : Array[RichTextRun]?
   formula : String?
   formula_type : FormulaType?
   formula_ref : String?
-  formula_shared_index : UInt?
+  formula_shared_index : UInt32?
   /// Whether this formula cell contained an OOXML `<v>` cached-result node.
   /// Empty cached strings are semantically distinct from a missing cache.
   formula_value_present : Bool
   /// Whether the OOXML cell explicitly specifies its style, including `s="0"`.
   /// An omitted cell style may inherit from its row or column.
   style_explicit : Bool
-  style_id : Int
+  style_id : Int32
 }
 
 ///|
@@ -30,7 +30,7 @@ pub struct CellFormulaInfo {
   formula : String
   formula_type : FormulaType?
   range_ref : String?
-  shared_index : UInt?
+  shared_index : UInt32?
   /// True when the formula has a cached `<v>` result, including `<v></v>`.
   cached_value_present : Bool
 }
@@ -41,12 +41,12 @@ pub struct Image {
   data : Bytes
   extension : String
   content_type : String
-  offset_x : Int
-  offset_y : Int
+  offset_x : Int32
+  offset_y : Int32
   scale_x : Double
   scale_y : Double
-  width_emu : Int
-  height_emu : Int
+  width_emu : Int32
+  height_emu : Int32
   print_object : Bool
   locked : Bool
   hyperlink : String
@@ -55,29 +55,29 @@ pub struct Image {
   alt_text : String
   lock_aspect_ratio : Bool
   positioning : PicturePositioning
-  priv drawing_offset_x_emu : Int?
-  priv drawing_offset_y_emu : Int?
-  priv drawing_width_emu : Int?
-  priv drawing_height_emu : Int?
-  priv drawing_order : Int?
+  priv drawing_offset_x_emu : Int32?
+  priv drawing_offset_y_emu : Int32?
+  priv drawing_width_emu : Int32?
+  priv drawing_height_emu : Int32?
+  priv drawing_order : Int32?
 }
 
 ///|
 pub struct Chart {
   reference : String
   xml : String
-  offset_x : Int
-  offset_y : Int
-  width_emu : Int
-  height_emu : Int
+  offset_x : Int32
+  offset_y : Int32
+  width_emu : Int32
+  height_emu : Int32
   print_object : Bool
   locked : Bool
   positioning : PicturePositioning
-  priv drawing_offset_x_emu : Int?
-  priv drawing_offset_y_emu : Int?
-  priv drawing_width_emu : Int?
-  priv drawing_height_emu : Int?
-  priv drawing_order : Int?
+  priv drawing_offset_x_emu : Int32?
+  priv drawing_offset_y_emu : Int32?
+  priv drawing_width_emu : Int32?
+  priv drawing_height_emu : Int32?
+  priv drawing_order : Int32?
   priv drawing_frame_canonical : Bool
 }
 
@@ -101,16 +101,16 @@ pub enum SheetState {
 pub struct RowDimension {
   height : Double?
   hidden : Bool
-  outline_level : Int
-  style_id : Int?
+  outline_level : Int32
+  style_id : Int32?
 } derive(Eq, Debug)
 
 ///|
 pub struct ColDimension {
   width : Double?
   hidden : Bool
-  outline_level : Int
-  style_id : Int?
+  outline_level : Int32
+  style_id : Int32?
 } derive(Eq, Debug)
 
 ///|
@@ -122,9 +122,9 @@ pub struct Worksheet {
   sheet_views : Array[SheetView]
   mut dimension_ref : String?
   cells : Array[Cell]
-  cell_index : Map[String, Int]
+  cell_index : Map[String, Int32]
   mut cell_index_valid : Bool
-  shared_formula_masters_index : Map[UInt, SharedFormulaMaster]
+  shared_formula_masters_index : Map[UInt32, SharedFormulaMaster]
   mut shared_formula_masters_index_valid : Bool
   merged_cells : Array[String]
   hyperlinks : Array[Hyperlink]
@@ -141,7 +141,7 @@ pub struct Worksheet {
   conditional_formats : Array[String]
   x14_data_bars : Map[String, X14DataBarProps]
   unknown_ext_blocks : Array[String]
-  mut x14_cf_rule_id_counter : Int
+  mut x14_cf_rule_id_counter : Int32
   ignored_errors : Array[IgnoredError]
   comments : Array[Comment]
   mut auto_filter : AutoFilter?
@@ -153,22 +153,22 @@ pub struct Worksheet {
   mut sheet_background : SheetBackground?
   row_breaks : Array[PageBreak]
   col_breaks : Array[PageBreak]
-  row_dimensions : Map[Int, RowDimension]
-  col_dimensions : Map[Int, ColDimension]
+  row_dimensions : Map[Int32, RowDimension]
+  col_dimensions : Map[Int32, ColDimension]
   mut state : SheetState
   mut stream_state : StreamState
   mut vml_drawing_xml : String?
   mut vml_drawing_hf_xml : String?
   /// Next stable cross-type drawing order. Source anchors occupy the initial
   /// range; newly added objects append after them regardless of object kind.
-  priv mut next_drawing_order : Int
+  priv mut next_drawing_order : Int32
   priv preserved_drawing_anchors : Array[PreservedDrawingAnchor]
   priv preserved_drawing_relationships : Array[PreservedDrawingRelationship]
   priv preserved_drawing_parts : Array[PreservedDrawingPart]
   /// Cell value-metadata (`vm`) indices captured on read, keyed by
   /// canonical cell reference. Links a cell to its rich-value embedded
   /// image; lives on the worksheet so it survives rename/copy/delete.
-  cell_vm : Map[String, Int]
+  cell_vm : Map[String, Int32]
 }
 
 ///|
@@ -324,7 +324,7 @@ fn Worksheet::stored_comments(self : Worksheet) -> ArrayView[Comment] {
 
 ///|
 /// Returns the retained hyperlink count without copying cell references.
-pub fn Worksheet::hyperlink_count(self : Worksheet) -> Int {
+pub fn Worksheet::hyperlink_count(self : Worksheet) -> Int32 {
   self.hyperlinks.length()
 }
 

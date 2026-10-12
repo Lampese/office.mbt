@@ -71,7 +71,7 @@
 ///   is a `Double` but we want to dodge float-format drift, matching how
 ///   `OfPieChartBody.split_pos` is handled).
 pub(all) struct AxisCore {
-  ax_id : Int
+  ax_id : Int32
   scaling : Scaling?
   delete : Bool?
   ax_pos : AxPos?
@@ -84,7 +84,7 @@ pub(all) struct AxisCore {
   tick_lbl_pos : TickLblPos?
   sp_pr : @xml.XmlElement?
   tx_pr : @xml.XmlElement?
-  cross_ax : Int?
+  cross_ax : Int32?
   crosses : Crosses?
   crosses_at : String?
   extension : Array[@xml.XmlElement]
@@ -452,7 +452,7 @@ pub impl Show for NumFmt with fn output(self, logger) {
 /// `<c:crossAx>`) are stored optional so leniently-built fixtures
 /// round-trip cleanly.
 fn parse_axis_core(el : @xml.XmlElement) -> AxisCore raise ChartError {
-  let mut ax_id : Int? = None
+  let mut ax_id : Int32? = None
   let mut scaling : Scaling? = None
   let mut delete : Bool? = None
   let mut ax_pos : AxPos? = None
@@ -465,7 +465,7 @@ fn parse_axis_core(el : @xml.XmlElement) -> AxisCore raise ChartError {
   let mut tick_lbl_pos : TickLblPos? = None
   let mut sp_pr : @xml.XmlElement? = None
   let mut tx_pr : @xml.XmlElement? = None
-  let mut cross_ax : Int? = None
+  let mut cross_ax : Int32? = None
   let mut crosses : Crosses? = None
   let mut crosses_at : String? = None
   let extension : Array[@xml.XmlElement] = []

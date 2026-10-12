@@ -4,7 +4,7 @@ fn fun_name_for_test(text : String) -> @core.PdfName {
 }
 
 ///|
-fn fun_bytes_for_test(values : ArrayView[Int]) -> @core.PdfBytes {
+fn fun_bytes_for_test(values : ArrayView[Int32]) -> @core.PdfBytes {
   try! @core.pdf_bytes_of_int_array(values)
 }
 

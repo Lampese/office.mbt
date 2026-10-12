@@ -51,7 +51,7 @@
 /// WinAnsi is an 8-bit encoding: a simple font can only address 256
 /// codes. Characters outside it (CJK, most symbols) need a composite
 /// Type0 font, which needs embedded outlines — see the module comment.
-fn winansi_code(codepoint : Int) -> Int? {
+fn winansi_code(codepoint : Int32) -> Int32? {
   if codepoint >= 0x20 && codepoint <= 0x7E {
     // ASCII maps directly
     Some(codepoint)
@@ -82,7 +82,7 @@ fn winansi_code(codepoint : Int) -> Int? {
 /// but the face measures codepoints, and the two differ in 0x80–0x9F:
 /// looking up 0x92 itself would declare the width of a C1 control (the
 /// face's .notdef) for a right single quote.
-fn winansi_unicode(code : Int) -> Int {
+fn winansi_unicode(code : Int32) -> Int32 {
   match code {
     0x85 => 0x2026
     0x91 => 0x2018
@@ -123,7 +123,7 @@ priv struct PdfFace {
   /// character the face lacks, one no glyph the document shows takes, drawn
   /// with glyph 0 (see `notdef_cids`). Decided with the document's
   /// character set.
-  notdef_cids : Map[Int, Int]
+  notdef_cids : Map[Int32, Int32]
   /// The PDF standard font the face is (`Helvetica`, ...), when it is one
   /// (`@fonts.FontRegistry::register_standard`): a Type1 font declared by
   /// name, whose text is encoded in the whole of WinAnsi.
@@ -132,7 +132,7 @@ priv struct PdfFace {
 
 ///|
 /// The characters of WinAnsi's 0x80–0x9F range, by code (0: unused).
-let winansi_high : Array[Int] = [
+let winansi_high : Array[Int32] = [
   0x20AC, 0, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021, 0x02C6, 0x2030, 0x0160,
   0x2039, 0x0152, 0, 0x017D, 0, 0, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013,
   0x2014, 0x02DC, 0x2122, 0x0161, 0x203A, 0x0153, 0, 0x017E, 0x0178,
@@ -141,7 +141,7 @@ let winansi_high : Array[Int] = [
 ///|
 /// The WinAnsi code of `codepoint` over the whole encoding (a standard
 /// font's text): ASCII, Latin-1 and the characters of 0x80–0x9F.
-fn winansi_code_full(codepoint : Int) -> Int? {
+fn winansi_code_full(codepoint : Int32) -> Int32? {
   if (codepoint >= 0x20 && codepoint <= 0x7E) ||
     (codepoint >= 0xA0 && codepoint <= 0xFF) {
     return Some(codepoint)
@@ -156,7 +156,7 @@ fn winansi_code_full(codepoint : Int) -> Int? {
 
 ///|
 /// The character WinAnsi `code` stands for, over the whole encoding.
-fn winansi_unicode_full(code : Int) -> Int {
+fn winansi_unicode_full(code : Int32) -> Int32 {
   if code >= 0x80 && code <= 0x9F && winansi_high[code - 0x80] != 0 {
     winansi_high[code - 0x80]
   } else {
@@ -166,7 +166,7 @@ fn winansi_unicode_full(code : Int) -> Int {
 
 ///|
 /// The WinAnsi code of `codepoint` in `face`'s simple font.
-fn PdfFace::simple_code(self : PdfFace, codepoint : Int) -> Int? {
+fn PdfFace::simple_code(self : PdfFace, codepoint : Int32) -> Int32? {
   if self.standard is Some(_) {
     winansi_code_full(codepoint)
   } else {
@@ -176,7 +176,7 @@ fn PdfFace::simple_code(self : PdfFace, codepoint : Int) -> Int? {
 
 ///|
 /// The character `code` stands for in `face`'s simple font.
-fn PdfFace::simple_unicode(self : PdfFace, code : Int) -> Int {
+fn PdfFace::simple_unicode(self : PdfFace, code : Int32) -> Int32 {
   if self.standard is Some(_) {
     winansi_unicode_full(code)
   } else {
@@ -187,7 +187,7 @@ fn PdfFace::simple_unicode(self : PdfFace, code : Int) -> Int {
 ///|
 /// The width the font dictionary declares for `codepoint`, in thousandths
 /// of an em: rounded, or truncated when `truncate_widths`.
-fn PdfFace::declared_width(self : PdfFace, codepoint : Int) -> Double {
+fn PdfFace::declared_width(self : PdfFace, codepoint : Int32) -> Double {
   let width = self.metrics.advance_pt(codepoint, 1000.0)
   if self.truncate_widths {
     (width + 1.0e-9).floor()
@@ -223,7 +223,7 @@ fn PdfFace::is_composite(self : PdfFace) -> Bool {
 /// And a face without a program never goes composite, whatever it can
 /// draw: Identity-H codes are glyph indices into an embedded program, and
 /// there is none to index.
-fn needs_composite(face : PdfFace, codepoints : Array[Int]) -> Bool {
+fn needs_composite(face : PdfFace, codepoints : Array[Int32]) -> Bool {
   if face.program is None {
     return false
   }
@@ -243,7 +243,7 @@ fn needs_composite(face : PdfFace, codepoints : Array[Int]) -> Bool {
 /// render differently on a second call; this derives the tag from the
 /// font's position in the model instead, so the output stays a function
 /// of the input.
-fn subset_tag(index : Int) -> String {
+fn subset_tag(index : Int32) -> String {
   let sb = StringBuilder()
   let mut remaining = index
   for _ in 0..<6 {
@@ -266,15 +266,15 @@ fn composite_font_object(
   document : @pdflite.PdfDocument,
   face : PdfFace,
   program : Bytes,
-  index : Int,
-  codepoints : Array[Int],
-) -> Int raise {
+  index : Int32,
+  codepoints : Array[Int32],
+) -> Int32 raise {
   let metrics = face.metrics
   let fontfile = embedded_program(document, program, codepoints)
   // widths and ToUnicode are keyed by CID, which here is the glyph id
-  let widths : Array[(Int, Double)] = []
-  let tounicode : Array[(Int, @core.PdfBytes)] = []
-  let seen : Map[Int, Unit] = Map([])
+  let widths : Array[(Int32, Double)] = []
+  let tounicode : Array[(Int32, @core.PdfBytes)] = []
+  let seen : Map[Int32, Unit] = Map([])
   for codepoint in codepoints {
     let glyph = metrics.glyph_id(codepoint).unwrap_or(0)
     if glyph == 0 || seen.contains(glyph) {
@@ -334,7 +334,7 @@ fn composite_font_object(
 ///|
 /// The number of glyphs in a TrueType program (`maxp.numGlyphs`), or 0 when
 /// it has no `maxp`.
-fn glyph_count(program : Bytes) -> Int {
+fn glyph_count(program : Bytes) -> Int32 {
   match @pdflite.pdf_truetype_table(program, "maxp") {
     Some(maxp) if maxp.offset + 6 <= program.length() =>
       (program[maxp.offset + 4].to_int() << 8) |
@@ -361,13 +361,13 @@ fn glyph_count(program : Bytes) -> Int {
 ///
 /// Characters in ascending order, so the codes are a function of the
 /// character set.
-fn notdef_cids(face : PdfFace, codepoints : Array[Int]) -> Map[Int, Int] {
-  let cids : Map[Int, Int] = Map([])
+fn notdef_cids(face : PdfFace, codepoints : Array[Int32]) -> Map[Int32, Int32] {
+  let cids : Map[Int32, Int32] = Map([])
   guard face.program is Some(program) else { return cids }
   let missing = codepoints.filter(codepoint => !face.metrics.has_char(codepoint))
   missing.sort()
   // the codes the document's own glyphs take (Identity: a code is a glyph)
-  let taken : Set[Int] = Set([])
+  let taken : Set[Int32] = Set([])
   for codepoint in codepoints {
     match face.metrics.glyph_id(codepoint) {
       Some(glyph) if glyph != 0 => taken.add(glyph)
@@ -377,7 +377,7 @@ fn notdef_cids(face : PdfFace, codepoints : Array[Int]) -> Map[Int, Int] {
   let glyphs = glyph_count(program)
   let first = if glyphs < 1 { 1 } else { glyphs }
   // the `k`th candidate code: `first` up to 0xFFFF, then 1 up to `first`
-  let candidate = fn(k : Int) {
+  let candidate = fn(k : Int32) {
     if first + k <= 0xFFFF {
       first + k
     } else {
@@ -407,10 +407,10 @@ fn notdef_cids(face : PdfFace, codepoints : Array[Int]) -> Map[Int, Int] {
 /// would have it).
 fn add_cid_to_gid_map(
   document : @pdflite.PdfDocument,
-  font : Int,
-  notdef_cids : Map[Int, Int],
+  font : Int32,
+  notdef_cids : Map[Int32, Int32],
 ) -> Unit raise {
-  let notdef : Set[Int] = Set([])
+  let notdef : Set[Int32] = Set([])
   let mut last = 0
   for _, cid in notdef_cids {
     notdef.add(cid)
@@ -458,14 +458,14 @@ fn add_cid_to_gid_map(
 /// by the file's. A version 0 table may end at byte 68, before the
 /// typographic metrics, and whatever follows it there belongs to another
 /// table.
-fn os2_int16(program : Bytes, at : Int, version~ : Int) -> Int? {
+fn os2_int16(program : Bytes, at : Int32, version~ : Int32) -> Int32? {
   guard @pdflite.pdf_truetype_table(program, "OS/2") is Some(os2) &&
     os2.offset >= 0 &&
     os2.length >= at + 2 &&
     os2.offset + at + 2 <= program.length() else {
     return None
   }
-  let u16 = fn(offset : Int) {
+  let u16 = fn(offset : Int32) {
     (program[offset].to_int() << 8) | program[offset + 1].to_int()
   }
   guard u16(os2.offset) >= version else { return None }
@@ -514,7 +514,7 @@ fn descriptor_metrics(face : PdfFace) -> (Double, Double, Double) {
     }
   }
   // Ruby's Integer(): toward zero
-  let truncate = fn(value : Int) {
+  let truncate = fn(value : Int32) {
     let value = value.to_double() * scale
     if value < 0.0 {
       -(-value).floor()
@@ -540,7 +540,7 @@ fn descriptor_metrics(face : PdfFace) -> (Double, Double, Double) {
 fn font_descriptor(
   face : PdfFace,
   fontfile : @pdflite.PdfFontFile?,
-  tounicode : Array[(Int, @core.PdfBytes)]?,
+  tounicode : Array[(Int32, @core.PdfBytes)]?,
 ) -> @pdflite.PdfFontDescriptor {
   let (ascent, descent, capheight) = descriptor_metrics(face)
   {
@@ -575,7 +575,7 @@ fn font_descriptor(
 
 ///|
 /// A codepoint as UTF-16BE, the encoding a ToUnicode CMap maps to.
-fn utf16be(codepoint : Int) -> Bytes {
+fn utf16be(codepoint : Int32) -> Bytes {
   if codepoint > 0xFFFF {
     let value = codepoint - 0x10000
     let high = 0xD800 + (value >> 10)
@@ -605,9 +605,9 @@ fn name(text : String) -> @core.PdfName {
 fn font_object(
   document : @pdflite.PdfDocument,
   face : PdfFace,
-  index : Int,
-  codepoints : Array[Int],
-) -> Int raise {
+  index : Int32,
+  codepoints : Array[Int32],
+) -> Int32 raise {
   // a standard font: declared by name, explicitly WinAnsi-encoded (its
   // built-in encoding is StandardEncoding, which differs), nothing
   // embedded; its widths are the viewer's own
@@ -618,7 +618,7 @@ fn font_object(
   }
   let first = 32
   let last = 255
-  let widths : Array[Int] = []
+  let widths : Array[Int32] = []
   for code = first; code <= last; code = code + 1 {
     // advance_pt at 1000pt is exactly the 1/1000-em width PDF wants
     widths.push(face.declared_width(winansi_unicode(code)).to_int())
@@ -680,8 +680,8 @@ fn font_object(
 ///|
 /// A ToUnicode CMap for a simple WinAnsi font: every code the document
 /// shows in it, mapped to the character that code stands for.
-fn simple_tounicode_stream(codepoints : Array[Int]) -> @syntax.PdfObject {
-  let codes : Array[Int] = []
+fn simple_tounicode_stream(codepoints : Array[Int32]) -> @syntax.PdfObject {
+  let codes : Array[Int32] = []
   for codepoint in codepoints {
     match winansi_code(codepoint) {
       Some(code) => if !codes.contains(code) { codes.push(code) }
@@ -689,7 +689,7 @@ fn simple_tounicode_stream(codepoints : Array[Int]) -> @syntax.PdfObject {
     }
   }
   codes.sort()
-  let hex = fn(value : Int, digits : Int) {
+  let hex = fn(value : Int32, digits : Int32) {
     let text = value.to_string(radix=16).to_upper()
     "0".repeat(digits - text.length()) + text
   }
@@ -731,14 +731,14 @@ fn simple_tounicode_stream(codepoints : Array[Int]) -> @syntax.PdfObject {
 /// which is what a PDF's `/BaseFont` should carry: `NotoSerif-Bold`,
 /// `mplus1mn-regular`. None when the program has no usable one.
 fn postscript_name(program : Bytes) -> String? {
-  let u16 = fn(offset : Int) -> Int {
+  let u16 = fn(offset : Int32) -> Int32 {
     if offset < 0 || offset + 2 > program.length() {
       -1
     } else {
       (program[offset].to_int() << 8) | program[offset + 1].to_int()
     }
   }
-  let u32 = fn(offset : Int) -> Int {
+  let u32 = fn(offset : Int32) -> Int32 {
     if offset < 0 || offset + 4 > program.length() {
       -1
     } else {
@@ -819,8 +819,8 @@ fn postscript_name(program : Bytes) -> String? {
 fn embedded_program(
   document : @pdflite.PdfDocument,
   program : Bytes,
-  codepoints : Array[Int],
-) -> Int raise {
+  codepoints : Array[Int32],
+) -> Int32 raise {
   let subset = @pdflite.pdf_truetype_subset_font(
     program,
     codepoints,

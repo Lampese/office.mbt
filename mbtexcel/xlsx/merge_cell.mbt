@@ -31,7 +31,10 @@ pub fn MergeCell::get_end_axis(self : MergeCell) -> String {
 }
 
 ///|
-fn rects_overlap(a : (Int, Int, Int, Int), b : (Int, Int, Int, Int)) -> Bool {
+fn rects_overlap(
+  a : (Int32, Int32, Int32, Int32),
+  b : (Int32, Int32, Int32, Int32),
+) -> Bool {
   let (a_min_row, a_min_col, a_max_row, a_max_col) = a
   let (b_min_row, b_min_col, b_max_row, b_max_col) = b
   !(a_max_row < b_min_row ||
@@ -42,9 +45,9 @@ fn rects_overlap(a : (Int, Int, Int, Int), b : (Int, Int, Int, Int)) -> Bool {
 
 ///|
 fn rect_union(
-  a : (Int, Int, Int, Int),
-  b : (Int, Int, Int, Int),
-) -> (Int, Int, Int, Int) {
+  a : (Int32, Int32, Int32, Int32),
+  b : (Int32, Int32, Int32, Int32),
+) -> (Int32, Int32, Int32, Int32) {
   let (a_min_row, a_min_col, a_max_row, a_max_col) = a
   let (b_min_row, b_min_col, b_max_row, b_max_col) = b
   (
@@ -72,7 +75,7 @@ fn rect_union(
 }
 
 ///|
-fn rect_to_range(rect : (Int, Int, Int, Int)) -> String raise XlsxError {
+fn rect_to_range(rect : (Int32, Int32, Int32, Int32)) -> String raise XlsxError {
   let (min_row, min_col, max_row, max_col) = rect
   let start_ref = cell_ref_from(min_row, min_col)
   let end_ref = cell_ref_from(max_row, max_col)
@@ -83,7 +86,7 @@ fn rect_to_range(rect : (Int, Int, Int, Int)) -> String raise XlsxError {
 fn merge_overlap_ranges(
   ranges : ArrayView[String],
 ) -> Array[String] raise XlsxError {
-  let rects : Array[(Int, Int, Int, Int)] = []
+  let rects : Array[(Int32, Int32, Int32, Int32)] = []
   for range_ref in ranges {
     rects.push(parse_range_ref(range_ref))
   }
@@ -92,7 +95,7 @@ fn merge_overlap_ranges(
   while merged {
     merged = false
     let used : Array[Bool] = Array::make(rect_list.length(), false)
-    let merged_rects : Array[(Int, Int, Int, Int)] = []
+    let merged_rects : Array[(Int32, Int32, Int32, Int32)] = []
     for i in 0..<rect_list.length() {
       if used[i] {
         continue

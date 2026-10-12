@@ -1,10 +1,10 @@
 ///|
-fn column_name_from_number(col : Int) -> String raise XlsxError {
+fn column_name_from_number(col : Int32) -> String raise XlsxError {
   column_number_to_name(col)
 }
 
 ///|
-fn parse_column_ref(text : StringView) -> (Int, Bool)? {
+fn parse_column_ref(text : StringView) -> (Int32, Bool)? {
   let mut idx = 0
   let mut abs_col = false
   if idx < text.length() && text[idx] == '$' {
@@ -18,7 +18,7 @@ fn parse_column_ref(text : StringView) -> (Int, Bool)? {
 }
 
 ///|
-fn parse_row_ref(text : StringView) -> (Int, Bool)? {
+fn parse_row_ref(text : StringView) -> (Int32, Bool)? {
   let mut idx = 0
   let mut abs_row = false
   if idx < text.length() && text[idx] == '$' {
@@ -32,7 +32,7 @@ fn parse_row_ref(text : StringView) -> (Int, Bool)? {
 }
 
 ///|
-fn parse_cell_ref(text : StringView) -> (Int, Int, Bool, Bool)? {
+fn parse_cell_ref(text : StringView) -> (Int32, Int32, Bool, Bool)? {
   match try_parse_cell_ref_parts(text) {
     Some((row, col, abs_col, abs_row)) => Some((row, col, abs_row, abs_col))
     None => None
@@ -40,7 +40,7 @@ fn parse_cell_ref(text : StringView) -> (Int, Int, Bool, Bool)? {
 }
 
 ///|
-fn format_column_ref(col : Int, abs_col : Bool) -> String raise XlsxError {
+fn format_column_ref(col : Int32, abs_col : Bool) -> String raise XlsxError {
   if col < 1 || col > cell_ref_max_cols {
     raise InvalidCellRef(value="\{col}")
   }
@@ -52,7 +52,7 @@ fn format_column_ref(col : Int, abs_col : Bool) -> String raise XlsxError {
 ///|
 // Raises when a shift pushes the row past the grid, so an out-of-grid defined
 // name (e.g. `Sheet1!$A$1048577`) is rejected instead of silently serialized.
-fn format_row_ref(row : Int, abs_row : Bool) -> String raise XlsxError {
+fn format_row_ref(row : Int32, abs_row : Bool) -> String raise XlsxError {
   if row < 1 || row > cell_ref_max_rows {
     raise InvalidCellRef(value="\{row}")
   }
@@ -62,8 +62,8 @@ fn format_row_ref(row : Int, abs_row : Bool) -> String raise XlsxError {
 
 ///|
 fn format_cell_ref(
-  row : Int,
-  col : Int,
+  row : Int32,
+  col : Int32,
   abs_row : Bool,
   abs_col : Bool,
 ) -> String raise XlsxError {
@@ -83,49 +83,49 @@ fn is_ref_char(ch : Char) -> Bool {
 
 ///|
 fn adjust_range_rows_after_insert(
-  min_row : Int,
-  max_row : Int,
-  row : Int,
-  count : Int,
-) -> (Int, Int) {
+  min_row : Int32,
+  max_row : Int32,
+  row : Int32,
+  count : Int32,
+) -> (Int32, Int32) {
   adjust_bounds_for_insert(min_row, max_row, row, count)
 }
 
 ///|
 fn adjust_range_rows_after_remove(
-  min_row : Int,
-  max_row : Int,
-  row : Int,
-  count : Int,
-) -> (Int, Int)? {
+  min_row : Int32,
+  max_row : Int32,
+  row : Int32,
+  count : Int32,
+) -> (Int32, Int32)? {
   adjust_bounds_for_remove(min_row, max_row, row, count)
 }
 
 ///|
 fn adjust_range_cols_after_insert(
-  min_col : Int,
-  max_col : Int,
-  col : Int,
-  count : Int,
-) -> (Int, Int) {
+  min_col : Int32,
+  max_col : Int32,
+  col : Int32,
+  count : Int32,
+) -> (Int32, Int32) {
   adjust_bounds_for_insert(min_col, max_col, col, count)
 }
 
 ///|
 fn adjust_range_cols_after_remove(
-  min_col : Int,
-  max_col : Int,
-  col : Int,
-  count : Int,
-) -> (Int, Int)? {
+  min_col : Int32,
+  max_col : Int32,
+  col : Int32,
+  count : Int32,
+) -> (Int32, Int32)? {
   adjust_bounds_for_remove(min_col, max_col, col, count)
 }
 
 ///|
 fn adjust_ref_after_row_insert(
   ref_text : StringView,
-  row : Int,
-  count : Int,
+  row : Int32,
+  count : Int32,
 ) -> String? raise XlsxError {
   let text = ref_text.to_owned()
   match text.find(":") {
@@ -176,8 +176,8 @@ fn adjust_ref_after_row_insert(
 ///|
 fn adjust_ref_after_row_remove(
   ref_text : StringView,
-  row : Int,
-  count : Int,
+  row : Int32,
+  count : Int32,
 ) -> String? raise XlsxError {
   let text = ref_text.to_owned()
   match text.find(":") {
@@ -232,8 +232,8 @@ fn adjust_ref_after_row_remove(
 ///|
 fn adjust_ref_after_col_insert(
   ref_text : StringView,
-  col : Int,
-  count : Int,
+  col : Int32,
+  count : Int32,
 ) -> String? raise XlsxError {
   let text = ref_text.to_owned()
   match text.find(":") {
@@ -284,8 +284,8 @@ fn adjust_ref_after_col_insert(
 ///|
 fn adjust_ref_after_col_remove(
   ref_text : StringView,
-  col : Int,
-  count : Int,
+  col : Int32,
+  count : Int32,
 ) -> String? raise XlsxError {
   let text = ref_text.to_owned()
   match text.find(":") {
@@ -342,7 +342,7 @@ fn adjust_defined_name_refers_to_for_sheet(
   refers_to : StringView,
   sheet_name : StringView,
   adjust_fn : (StringView) -> String? raise XlsxError,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String raise XlsxError {
   check_read_cancelled(cancelled)
   let raw_chars = refers_to.to_array()
@@ -355,8 +355,8 @@ fn adjust_defined_name_refers_to_for_sheet(
   let find_prefix = fn(
     text : Array[Char],
     prefix : Array[Char],
-    start : Int,
-  ) -> Int? raise XlsxError {
+    start : Int32,
+  ) -> Int32? raise XlsxError {
     if prefix.length() == 0 {
       return None
     }

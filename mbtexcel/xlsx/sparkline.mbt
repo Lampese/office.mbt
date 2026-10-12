@@ -8,7 +8,7 @@ pub(all) enum SparklineType {
 ///|
 pub struct SparklineColor {
   rgb : String?
-  theme : Int?
+  theme : Int32?
   tint : Double?
 } derive(Debug)
 
@@ -35,7 +35,7 @@ fn rgb(value : StringView) -> SparklineColor raise XlsxError {
 }
 
 ///|
-fn theme(theme : Int, tint? : Double = 0.0) -> SparklineColor {
+fn theme(theme : Int32, tint~ : Double = 0.0) -> SparklineColor {
   let tint_opt = if tint == 0.0 { None } else { Some(tint) }
   { rgb: None, theme: Some(theme), tint: tint_opt, }
 }
@@ -51,8 +51,8 @@ pub struct SparklineGroupOptions {
   mut display_empty_cells_as : String
   mut date_axis : Bool
   mut line_weight : Double?
-  mut manual_max : Int?
-  mut manual_min : Int?
+  mut manual_max : Int32?
+  mut manual_min : Int32?
   mut markers : Bool
   mut high : Bool
   mut low : Bool
@@ -114,7 +114,7 @@ pub struct SparklineOptions {
   location : Array[String]
   range : Array[String]
   mut sparkline_type : SparklineType
-  mut style : Int
+  mut style : Int32
   mut weight : Double?
   mut date_axis : Bool
   mut markers : Bool
@@ -133,12 +133,12 @@ pub struct SparklineOptions {
   mut last_color : String?
   mut high_color : String?
   mut low_color : String?
-  mut max : Int
-  mut cust_max : Int
-  mut min : Int
-  mut cust_min : Int
-  mut manual_max : Int?
-  mut manual_min : Int?
+  mut max : Int32
+  mut cust_max : Int32
+  mut min : Int32
+  mut cust_min : Int32
+  mut manual_max : Int32?
+  mut manual_min : Int32?
   mut empty_cells : String?
 } derive(Debug)
 
@@ -207,7 +207,7 @@ pub fn SparklineOptions::set_type(
 ///|
 pub fn SparklineOptions::set_style(
   self : SparklineOptions,
-  style : Int,
+  style : Int32,
 ) -> Unit {
   self.style = style
 }
@@ -329,7 +329,7 @@ pub fn SparklineOptions::set_low_color(
 ///|
 pub fn SparklineOptions::set_manual_max(
   self : SparklineOptions,
-  max : Int,
+  max : Int32,
 ) -> Unit {
   self.max = max
   self.cust_max = max
@@ -346,7 +346,7 @@ pub fn SparklineOptions::clear_manual_max(self : SparklineOptions) -> Unit {
 ///|
 pub fn SparklineOptions::set_manual_min(
   self : SparklineOptions,
-  min : Int,
+  min : Int32,
 ) -> Unit {
   self.min = min
   self.cust_min = min
@@ -739,7 +739,7 @@ let sparkline_presets : Array[SparklinePreset] = [
 ]
 
 ///|
-fn sparkline_preset(style : Int) -> SparklinePreset raise XlsxError {
+fn sparkline_preset(style : Int32) -> SparklinePreset raise XlsxError {
   if style < 0 || style > 35 {
     raise InvalidSparkline(msg="sparkline style out of range")
   }

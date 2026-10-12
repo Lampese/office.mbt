@@ -36,7 +36,7 @@
 /// built from.
 pub fn Presentation::add_chart_mut(
   self : Presentation,
-  slide_idx : Int,
+  slide_idx : Int32,
   chart : @chart.Chart,
   x~ : @units.Emu,
   y~ : @units.Emu,
@@ -137,7 +137,7 @@ fn Presentation::attach_chart_workbook(
 /// `GraphicFrameContent::ChartExContent`.
 pub fn Presentation::add_chart_ex_mut(
   self : Presentation,
-  slide_idx : Int,
+  slide_idx : Int32,
   chart_ex : @chart_ex.ChartEx,
   x~ : @units.Emu,
   y~ : @units.Emu,
@@ -170,7 +170,7 @@ pub fn Presentation::add_chart_ex_mut(
 /// type Override, slide relationship, and graphicFrame shape.
 fn insert_chart_internal(
   prs : Presentation,
-  slide_idx : Int,
+  slide_idx : Int32,
   chart_bytes : FixedArray[Byte],
   chart_name : String,
   content_type : String,

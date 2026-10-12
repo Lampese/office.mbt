@@ -4,8 +4,8 @@
 /// PDF destination arrays may refer either to a page object or to a page number
 /// in another document.
 pub(all) enum PdfTargetPage {
-  TargetPageObject(Int)
-  TargetOtherDocPageNumber(Int)
+  TargetPageObject(Int32)
+  TargetOtherDocPageNumber(Int32)
 } derive(Debug, Eq, ToJson)
 
 ///|

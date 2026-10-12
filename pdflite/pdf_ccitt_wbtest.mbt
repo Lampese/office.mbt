@@ -1,10 +1,10 @@
 ///|
-fn ccitt_wb_bytes(values : ArrayView[Int]) -> @core.PdfBytes {
+fn ccitt_wb_bytes(values : ArrayView[Int32]) -> @core.PdfBytes {
   try! @core.pdf_bytes_of_int_array(values)
 }
 
 ///|
-fn ccitt_wb_bits(bits : ArrayView[Int]) -> @core.PdfBytes {
+fn ccitt_wb_bits(bits : ArrayView[Int32]) -> @core.PdfBytes {
   let writer = @core.bit_writer_new()
   for bit in bits {
     try! writer.put_bit(bit)
@@ -31,7 +31,7 @@ test "CCITT private helpers handle EOL spans and reference lookups" {
   let eol = @core.bitstream_of_bytes(ccitt_wb_bytes([0x00, 0x10]))
   @test.assert_eq(pdf_ccitt_read_run(eol, true), -1)
 
-  let bad_span : Result[Int, Error] = try
+  let bad_span : Result[Int32, Error] = try
     pdf_ccitt_output_span([1, 1], 1, 2, 0)
   catch {
     err => Err(err)
@@ -176,7 +176,7 @@ test "CCITT Group 3 encoder covers white black long runs and malformed input" {
     fail("expected invalid private CCITT run length")
   }
 
-  let bad_read : Result[(Bool, Int), Error] = try
+  let bad_read : Result[(Bool, Int32), Error] = try
     pdf_ccitt_encode_read_run(
       @core.bitstream_of_bytes(ccitt_wb_bytes([0xFF])),
       0,
@@ -415,7 +415,7 @@ test "CCITT Group 4 encoder roundtrips mixed rows and malformed input" {
     fail("expected invalid Group 4 vertical write mode")
   }
 
-  let missing_row : Result[Array[Int], Error] = try
+  let missing_row : Result[Array[Int32], Error] = try
     pdf_ccitt_line_from_data(ccitt_wb_bytes([]), 4, 0)
   catch {
     err => Err(err)

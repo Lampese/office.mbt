@@ -139,7 +139,7 @@ pub fn Presentation::slides(
 /// of range.
 pub fn Presentation::slide_at(
   self : Presentation,
-  index : Int,
+  index : Int32,
 ) -> @slide.Slide raise PptxError {
   let names = self.ordered_slide_part_names()
   if index < 0 || index >= names.length() {
@@ -156,7 +156,7 @@ pub fn Presentation::slide_at(
 
 ///|
 /// How many slides the deck has, without parsing any of them.
-pub fn Presentation::slide_count(self : Presentation) -> Int raise PptxError {
+pub fn Presentation::slide_count(self : Presentation) -> Int32 raise PptxError {
   self.ordered_slide_part_names().length()
 }
 

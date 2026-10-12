@@ -1,23 +1,23 @@
 ///|
-let xlsx_cli_hard_max_scan_cells : Int = 100_000
+let xlsx_cli_hard_max_scan_cells : Int32 = 100_000
 
 ///|
-let xlsx_cli_max_cell_string_chars : Int = 1024 * 1024
+let xlsx_cli_max_cell_string_chars : Int32 = 1024 * 1024
 
 ///|
-let xlsx_cli_max_scanned_string_chars : Int = 16 * 1024 * 1024
+let xlsx_cli_max_scanned_string_chars : Int32 = 16 * 1024 * 1024
 
 ///|
-let xlsx_cli_max_format_work_units : Int = 16 * 1024 * 1024
+let xlsx_cli_max_format_work_units : Int32 = 16 * 1024 * 1024
 
 ///|
-let xlsx_cli_max_formula_work_units : Int = 64 * 1024 * 1024
+let xlsx_cli_max_formula_work_units : Int32 = 64 * 1024 * 1024
 
 ///|
-let xlsx_cli_max_metadata_items : Int = 10_000
+let xlsx_cli_max_metadata_items : Int32 = 10_000
 
 ///|
-let xlsx_cli_max_metadata_string_chars : Int = 8 * 1024 * 1024
+let xlsx_cli_max_metadata_string_chars : Int32 = 8 * 1024 * 1024
 
 ///|
 priv enum XlsxSheetContent {
@@ -28,7 +28,7 @@ priv enum XlsxSheetContent {
 ///|
 priv struct XlsxSheetTarget {
   name : String
-  index : Int
+  index : Int32
   path : String
   content : XlsxSheetContent
 }
@@ -38,17 +38,17 @@ priv struct XlsxProjection {
   file : String
   workbook : @xlsx.Workbook
   sheets : Array[XlsxSheetTarget]
-  sheet_index : Map[String, Int]
-  max_scan_cells : Int
+  sheet_index : Map[String, Int32]
+  max_scan_cells : Int32
   cancelled : () -> Bool
 }
 
 ///|
 priv struct XlsxRect {
-  col_lo : Int
-  row_lo : Int
-  col_hi : Int
-  row_hi : Int
+  col_lo : Int32
+  row_lo : Int32
+  col_hi : Int32
+  row_hi : Int32
 }
 
 ///|
@@ -63,13 +63,13 @@ priv enum XlsxResolvedSelector {
 priv struct XlsxCellSnapshot {
   path : String
   reference : String
-  row : Int
-  column : Int
+  row : Int32
+  column : Int32
   raw : @xlsx.CellValue?
   mut formatted : String?
   mut formatted_ready : Bool
   formula : String?
-  style_id : Int
+  style_id : Int32
   worksheet : @xlsx.Worksheet
 }
 
@@ -81,39 +81,39 @@ priv struct XlsxScanRegion {
 
 ///|
 priv struct XlsxStringBudget {
-  maximum : Int
-  per_value_maximum : Int
-  mut used : Int
+  maximum : Int32
+  per_value_maximum : Int32
+  mut used : Int32
 }
 
 ///|
 priv struct XlsxScanBudget {
-  maximum : Int
+  maximum : Int32
   strings : XlsxStringBudget
   formatting : XlsxFormatBudget
   formulas : XlsxFormulaBudget
-  mut scanned : Int
+  mut scanned : Int32
   cancelled : () -> Bool
 }
 
 ///|
 priv struct XlsxFormatBudget {
-  maximum : Int
-  mut used : Int
+  maximum : Int32
+  mut used : Int32
 }
 
 ///|
 priv struct XlsxFormulaBudget {
-  maximum : Int
-  mut used : Int
+  maximum : Int32
+  mut used : Int32
 }
 
 ///|
 priv struct XlsxMetadataBudget {
-  maximum_items : Int
-  maximum_string_chars : Int
-  mut items : Int
-  mut string_chars : Int
+  maximum_items : Int32
+  maximum_string_chars : Int32
+  mut items : Int32
+  mut string_chars : Int32
 }
 
 ///|
@@ -121,18 +121,18 @@ priv struct XlsxMetadataBudget {
 /// worksheet used ranges. One instance must be shared across every worksheet
 /// participating in a single command result.
 priv struct XlsxStoredCellBudget {
-  maximum : Int
-  mut used : Int
+  maximum : Int32
+  mut used : Int32
 }
 
 ///|
 /// Command-wide budget for conditional-format metadata inspected while
 /// producing workbook and sheet summaries.
 priv struct XlsxConditionalFormatBudget {
-  maximum_ranges : Int
-  maximum_work_units : Int
-  mut ranges : Int
-  mut work_units : Int
+  maximum_ranges : Int32
+  maximum_work_units : Int32
+  mut ranges : Int32
+  mut work_units : Int32
 }
 
 ///|
@@ -147,8 +147,8 @@ fn xlsx_cli_failure(
 ///|
 fn xlsx_resource_failure(
   resource : String,
-  limit : Int,
-  actual? : Int,
+  limit : Int32,
+  actual? : Int32,
 ) -> CliFailure {
   format_resource_failure("xlsx", resource, limit, actual?)
 }
@@ -165,7 +165,7 @@ fn XlsxProjection::checkpoint(self : XlsxProjection) -> Unit raise CliFailure {
 ///|
 fn xlsx_scan_resource_failure(
   resource : String,
-  limit : Int,
+  limit : Int32,
   actual : Int64,
 ) -> CliFailure {
   xlsx_cli_failure(
@@ -218,7 +218,7 @@ fn canonical_xlsx_range_path(
 }
 
 ///|
-fn validate_xlsx_max_elements(max_elements : Int) -> Unit raise CliFailure {
+fn validate_xlsx_max_elements(max_elements : Int32) -> Unit raise CliFailure {
   if max_elements < 1 || max_elements > xlsx_cli_hard_max_scan_cells {
     raise xlsx_cli_failure(
       "office.invalid_arguments",
@@ -236,8 +236,8 @@ fn validate_xlsx_max_elements(max_elements : Int) -> Unit raise CliFailure {
 fn make_xlsx_projection(
   file : String,
   workbook : @xlsx.Workbook,
-  max_elements : Int,
-  cancelled? : () -> Bool = () => false,
+  max_elements : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> XlsxProjection raise CliFailure {
   if cancelled() {
     raise xlsx_cli_failure("office.cancelled", "XLSX read was cancelled")
@@ -258,7 +258,7 @@ fn make_xlsx_projection(
     chart_sheets[chart_sheet.name()] = chart_sheet
   }
   let sheets : Array[XlsxSheetTarget] = []
-  let sheet_index : Map[String, Int] = Map([])
+  let sheet_index : Map[String, Int32] = Map([])
   for index, name in workbook.get_sheet_list() {
     if cancelled() {
       raise xlsx_cli_failure("office.cancelled", "XLSX read was cancelled")
@@ -308,8 +308,8 @@ fn make_xlsx_projection(
 ///|
 fn open_xlsx_projection(
   source : OfficeReadPackage,
-  max_elements : Int,
-  cancelled? : () -> Bool = () => false,
+  max_elements : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> XlsxProjection raise {
   // Reject format-specific limits before parsing any workbook parts.
   validate_xlsx_max_elements(max_elements)
@@ -388,14 +388,14 @@ fn xlsx_used_rect(
 }
 
 ///|
-fn XlsxStoredCellBudget::new(maximum : Int) -> XlsxStoredCellBudget {
+fn XlsxStoredCellBudget::new(maximum : Int32) -> XlsxStoredCellBudget {
   { maximum, used: 0, }
 }
 
 ///|
 fn XlsxStoredCellBudget::charge(
   self : XlsxStoredCellBudget,
-  count : Int,
+  count : Int32,
 ) -> Unit raise CliFailure {
   let actual = self.used.to_int64() + count.to_int64()
   if actual > self.maximum.to_int64() {
@@ -485,7 +485,7 @@ fn XlsxSheetTarget::shared_formula_master(
   self : XlsxSheetTarget,
   projection : XlsxProjection,
   worksheet : @xlsx.Worksheet,
-  shared_index : UInt,
+  shared_index : UInt32,
 ) -> @xlsx.SharedFormulaMaster raise CliFailure {
   projection.checkpoint()
   match
@@ -617,8 +617,8 @@ fn xlsx_scan_regions(
 
 ///|
 fn XlsxStringBudget::new(
-  maximum? : Int = xlsx_cli_max_scanned_string_chars,
-  per_value_maximum? : Int = xlsx_cli_max_cell_string_chars,
+  maximum~ : Int32 = xlsx_cli_max_scanned_string_chars,
+  per_value_maximum~ : Int32 = xlsx_cli_max_cell_string_chars,
 ) -> XlsxStringBudget {
   { maximum, per_value_maximum, used: 0, }
 }
@@ -650,13 +650,13 @@ fn XlsxStringBudget::charge(
 ///|
 /// Returns the largest formatted value that can still satisfy both the
 /// per-value and aggregate retained-string ceilings.
-fn XlsxStringBudget::remaining_for_value(self : XlsxStringBudget) -> Int {
+fn XlsxStringBudget::remaining_for_value(self : XlsxStringBudget) -> Int32 {
   self.per_value_maximum.min(self.maximum - self.used)
 }
 
 ///|
 fn XlsxFormatBudget::new(
-  maximum? : Int = xlsx_cli_max_format_work_units,
+  maximum~ : Int32 = xlsx_cli_max_format_work_units,
 ) -> XlsxFormatBudget {
   { maximum, used: 0, }
 }
@@ -668,7 +668,7 @@ fn XlsxFormatBudget::new(
 fn XlsxFormatBudget::charge_style(
   self : XlsxFormatBudget,
   projection : XlsxProjection,
-  style_id : Int,
+  style_id : Int32,
 ) -> Unit raise CliFailure {
   projection.checkpoint()
   let style = xlsx_call(projection.file, () => {
@@ -691,20 +691,20 @@ fn XlsxFormatBudget::charge_style(
 
 ///|
 fn XlsxFormulaBudget::new(
-  maximum? : Int = xlsx_cli_max_formula_work_units,
+  maximum~ : Int32 = xlsx_cli_max_formula_work_units,
 ) -> XlsxFormulaBudget {
   { maximum, used: 0, }
 }
 
 ///|
-fn XlsxFormulaBudget::remaining(self : XlsxFormulaBudget) -> Int {
+fn XlsxFormulaBudget::remaining(self : XlsxFormulaBudget) -> Int32 {
   self.maximum - self.used
 }
 
 ///|
 fn XlsxFormulaBudget::charge(
   self : XlsxFormulaBudget,
-  amount : Int,
+  amount : Int32,
 ) -> Unit raise CliFailure {
   if amount < 0 || amount > self.maximum - self.used {
     let actual = if amount < 0 || amount > 0x7fffffff - self.used {
@@ -723,10 +723,10 @@ fn XlsxFormulaBudget::charge(
 
 ///|
 fn XlsxScanBudget::new(
-  maximum : Int,
-  format_work_maximum? : Int = xlsx_cli_max_format_work_units,
-  formula_work_maximum? : Int = xlsx_cli_max_formula_work_units,
-  cancelled? : () -> Bool = () => false,
+  maximum : Int32,
+  format_work_maximum~ : Int32 = xlsx_cli_max_format_work_units,
+  formula_work_maximum~ : Int32 = xlsx_cli_max_formula_work_units,
+  cancelled~ : () -> Bool = () => false,
 ) -> XlsxScanBudget {
   {
     maximum,
@@ -774,8 +774,8 @@ fn xlsx_cell_formula(
   projection : XlsxProjection,
   sheet : XlsxSheetTarget,
   worksheet : @xlsx.Worksheet,
-  row : Int,
-  column : Int,
+  row : Int32,
+  column : Int32,
   budget : XlsxScanBudget,
 ) -> (String?, Bool) raise CliFailure {
   projection.checkpoint()
@@ -828,8 +828,8 @@ fn xlsx_cell_formula(
 fn xlsx_cell_snapshot(
   projection : XlsxProjection,
   sheet : XlsxSheetTarget,
-  row : Int,
-  column : Int,
+  row : Int32,
+  column : Int32,
   budget : XlsxScanBudget,
 ) -> XlsxCellSnapshot raise CliFailure {
   budget.charge_cell()

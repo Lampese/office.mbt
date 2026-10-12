@@ -24,8 +24,8 @@
 /// declarations are handled.
 #warnings("-struct_never_constructed")
 priv struct ParagraphTextEdit {
-  start : Int
-  end : Int
+  start : Int32
+  end : Int32
   replacement : String
 }
 
@@ -181,10 +181,10 @@ priv struct PartialSurgeryLogicalEdit {
 /// logical edits can share one `xml:space` edit.
 #warnings("-unused_field")
 priv struct PartialSurgeryReceipt {
-  paragraph_index : Int
+  paragraph_index : Int32
   expected_projection : String
   logical_edits : Array[PartialSurgeryLogicalEdit]
-  touched_source_count : Int
+  touched_source_count : Int32
 }
 
 ///|
@@ -193,20 +193,20 @@ priv struct PartialSurgeryReceipt {
 /// range, an end host's consumed head. One element accumulates parts from
 /// several edits; its xml:space is decided once from the post-batch whole.
 priv struct PartialSurgeryHost {
-  source_identity : Int
+  source_identity : Int32
   contribution_value : String
   // (local_start, local_end, replacement, request_sequence): the sequence
   // makes every sort stable in request order — Array::sort_by_key is
   // documented unstable, so ties must never depend on it.
-  local_edits : Array[(Int, Int, String, Int)]
+  local_edits : Array[(Int32, Int32, String, Int32)]
 }
 
 ///|
 /// One projecting contribution with paragraph-local coordinates.
 priv struct PartialProjectingPart {
   contribution : ReaderProjectionContribution
-  local_start : Int
-  local_end : Int
+  local_start : Int32
+  local_end : Int32
   is_text : Bool
 }
 
@@ -231,7 +231,7 @@ priv struct PartialProjectingPart {
 fn plan_paragraph_text_edits(
   projection : ReaderProjection,
   source : BytesView,
-  paragraph_index : Int,
+  paragraph_index : Int32,
   requested : Array[ParagraphTextEdit],
 ) -> (Array[RunSurgeryEdit], PartialSurgeryReceipt) raise DocxError {
   // Phase 1a: every range is valid.
@@ -299,22 +299,22 @@ fn plan_paragraph_text_edits(
   // all share. Barriers strictly inside the interval refuse; transparent
   // seams pass and are never touched.
   let touched : Array[PartialSurgeryHost] = []
-  let atom_deletions : Array[Int] = []
+  let atom_deletions : Array[Int32] = []
   // (run identity, anchor, consumed, replacement, request ordinal,
   //  anchor atom identity)
-  let syntheses : Array[(Int, Int, Int, String, Int, Int)] = []
+  let syntheses : Array[(Int32, Int32, Int32, String, Int32, Int32)] = []
   let logical_edits : Array[PartialSurgeryLogicalEdit] = []
-  let involved_elements : Array[Int] = []
+  let involved_elements : Array[Int32] = []
   // (element identity, wt-local offset): no-op endpoints that phase 4 must
   // still resolve through the token map.
-  let noop_endpoint_checks : Array[(Int, Int)] = []
+  let noop_endpoint_checks : Array[(Int32, Int32)] = []
   fn touch_wt(
-    identity : Int,
+    identity : Int32,
     value : String,
-    local_from : Int,
-    local_to : Int,
+    local_from : Int32,
+    local_to : Int32,
     replacement : String,
-    sequence : Int,
+    sequence : Int32,
   ) -> Unit {
     let mut record : PartialSurgeryHost? = None
     for host in touched {
@@ -336,7 +336,7 @@ fn plan_paragraph_text_edits(
 
   fn require_supported_run(
     run : ReaderProjectionRun,
-    ordinal : Int,
+    ordinal : Int32,
   ) -> Unit raise DocxError {
     match run.field_region {
       FieldInstruction =>
@@ -370,7 +370,7 @@ fn plan_paragraph_text_edits(
 
   fn require_supported_contribution(
     contribution : ReaderProjectionContribution,
-    ordinal : Int,
+    ordinal : Int32,
   ) -> Unit raise DocxError {
     match contribution.field_region {
       FieldInstruction =>
@@ -394,7 +394,7 @@ fn plan_paragraph_text_edits(
 
   fn require_singly_projected(
     contribution : ReaderProjectionContribution,
-    ordinal : Int,
+    ordinal : Int32,
   ) -> Unit raise DocxError {
     let mut count = 0
     for part in parts {
@@ -412,7 +412,7 @@ fn plan_paragraph_text_edits(
 
   fn resolve_run(
     run_source : SourceElementId?,
-    ordinal : Int,
+    ordinal : Int32,
   ) -> ReaderProjectionRun raise DocxError {
     guard run_source is Some(source_id) else {
       raise partial_surgery_refuse(
@@ -436,8 +436,8 @@ fn plan_paragraph_text_edits(
   }
 
   fn require_host_element(
-    identity : Int,
-    ordinal : Int,
+    identity : Int32,
+    ordinal : Int32,
   ) -> Unit raise DocxError {
     let element = elements[identity]
     if run_surgery_inside_checkbox_control(elements, element) {
@@ -518,7 +518,7 @@ fn plan_paragraph_text_edits(
     // not considered here; its carrier resolution already decides where
     // a boundary position belongs.
     if edit.start < edit.end {
-      let mut anchor : Int?? = None
+      let mut anchor : Int32?? = None
       for part in parts {
         if part.local_start < edit.end && part.local_end > edit.start {
           let SourceElementId(identity) = part.contribution.source
@@ -1238,7 +1238,7 @@ fn plan_paragraph_text_edits(
   // the same offset, so emitting them separately would collide in phase 7
   // instead of composing. Replacements concatenate in request order, the
   // same rule equal-offset insertions into a `w:t` follow.
-  let coalesced : Array[(Int, Int, Int, String, Int, Int)] = []
+  let coalesced : Array[(Int32, Int32, Int32, String, Int32, Int32)] = []
   for synthesis in syntheses {
     let (run_identity, anchor, consumed, replacement, ordinal, carrier) = synthesis
     let mut merged = false
@@ -1297,7 +1297,7 @@ fn plan_paragraph_text_edits(
   // A zero-width edit at a consuming edit's start must splice FIRST; the
   // sort key says so explicitly instead of leaning on an unstable sort's
   // accidental order (the trap run_surgery.mbt documents).
-  let ordered : Array[(RunSurgeryEdit, Int)] = []
+  let ordered : Array[(RunSurgeryEdit, Int32)] = []
   for index, edit in edits {
     ordered.push((edit, index))
   }
@@ -1358,11 +1358,11 @@ fn plan_paragraph_text_edits(
 /// counted once each regardless of how many logical edits involved them.
 fn distinct_touched_sources(
   touched : Array[PartialSurgeryHost],
-  atom_deletions : Array[Int],
-  syntheses : Array[(Int, Int, Int, String, Int, Int)],
-) -> Int {
-  let seen : Array[Int] = []
-  fn note(identity : Int) -> Unit {
+  atom_deletions : Array[Int32],
+  syntheses : Array[(Int32, Int32, Int32, String, Int32, Int32)],
+) -> Int32 {
+  let seen : Array[Int32] = []
+  fn note(identity : Int32) -> Unit {
     if !seen.contains(identity) {
       seen.push(identity)
     }

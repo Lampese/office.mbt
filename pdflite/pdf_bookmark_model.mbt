@@ -126,7 +126,7 @@ fn PdfDocument::pdf_bookmark_catalog(
 
 ///|
 struct PdfBookmarkNode {
-  number : Int
+  number : Int32
   object : @syntax.PdfObject
   children : Array[PdfBookmarkNode]
   is_open : Bool

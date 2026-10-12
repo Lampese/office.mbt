@@ -26,10 +26,10 @@ pub(all) struct BubbleChartBody {
   series : Array[BubbleSeriesCore]
   d_lbls : DLbls?
   bubble_3d : Bool?
-  bubble_scale : Int?
+  bubble_scale : Int32?
   show_neg_bubbles : Bool?
   size_represents : SizeRepresents?
-  ax_ids : Array[Int]
+  ax_ids : Array[Int32]
   extension : Array[@xml.XmlElement]
 } derive(Eq, Debug)
 

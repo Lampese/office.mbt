@@ -22,10 +22,10 @@ pub fn HeaderFooterImageOptions::new(
   position : HeaderFooterImagePosition,
   data : Bytes,
   extension : String,
-  is_footer? : Bool = false,
-  first_page? : Bool = false,
-  width? : String = "",
-  height? : String = "",
+  is_footer~ : Bool = false,
+  first_page~ : Bool = false,
+  width~ : String = "",
+  height~ : String = "",
 ) -> HeaderFooterImageOptions {
   {
     position,
@@ -43,10 +43,10 @@ pub fn HeaderFooterImageOptions::new(
 pub fn HeaderFooterImageOptions::from_file(
   position : HeaderFooterImagePosition,
   file : String,
-  is_footer? : Bool = false,
-  first_page? : Bool = false,
-  width? : String = "",
-  height? : String = "",
+  is_footer~ : Bool = false,
+  first_page~ : Bool = false,
+  width~ : String = "",
+  height~ : String = "",
 ) -> HeaderFooterImageOptions raise XlsxError {
   let extension = match extension_from_path(file) {
     Some(value) => ".\{value}"

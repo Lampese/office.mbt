@@ -5,8 +5,8 @@
 /// OCaml cpdf's `String.length` accounting.
 pub(all) struct PdfAddTextUrl {
   url : String
-  start : Int
-  end : Int
+  start : Int32
+  end : Int32
 } derive(Debug, Eq, ToJson)
 
 ///|
@@ -72,12 +72,12 @@ pub(all) struct PdfAddTextResourceSetup {
 ///|
 /// Values used to build cpdf add-text replacement callbacks.
 pub(all) struct PdfAddTextReplacementValues {
-  page_number : Int
-  end_page : Int
+  page_number : Int32
+  end_page : Int32
   filename : String
   page_label : String
   end_label : String
-  bates : Int
-  bates_pad : Int?
+  bates : Int32
+  bates_pad : Int32?
   bookmarks : Array[String]
 } derive(Debug, Eq, ToJson)

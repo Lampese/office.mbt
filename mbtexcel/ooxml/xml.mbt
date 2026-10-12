@@ -20,18 +20,18 @@ pub fn xml_needs_escape(value : StringView, attr~ : Bool) -> Bool {
 /// callers can reject oversized generated metadata without first retaining it.
 priv struct XmlOutputBuilder {
   builder : StringBuilder
-  maximum : Int?
-  mut encoded_bytes : Int
+  maximum : Int32?
+  mut encoded_bytes : Int32
   mut exceeded : Bool
 }
 
 ///|
-fn XmlOutputBuilder::new(maximum : Int?) -> XmlOutputBuilder {
+fn XmlOutputBuilder::new(maximum : Int32?) -> XmlOutputBuilder {
   { builder: StringBuilder(), maximum, encoded_bytes: 0, exceeded: false, }
 }
 
 ///|
-fn xml_output_utf8_length_within(value : StringView, maximum : Int) -> Int? {
+fn xml_output_utf8_length_within(value : StringView, maximum : Int32) -> Int32? {
   let mut length = 0
   for character in value {
     let scalar = character.to_int()

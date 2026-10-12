@@ -10,7 +10,7 @@ fn flag(m : @argparse.Matches, name : String) -> Bool {
 
 ///|
 /// Index of the first `:` in `s`, or `None`.
-fn colon_index(s : String) -> Int? {
+fn colon_index(s : String) -> Int32? {
   for i in 0..<s.length() {
     if s[i] == (':' : UInt16) {
       return Some(i)

@@ -4,7 +4,7 @@ fn approx_eq(a : Double, b : Double, eps : Double) -> Bool {
 }
 
 ///|
-fn rgb_close(a : @units.RgbColor, b : @units.RgbColor, tol : Int) -> Bool {
+fn rgb_close(a : @units.RgbColor, b : @units.RgbColor, tol : Int32) -> Bool {
   (a.r - b.r).abs() <= tol &&
   (a.g - b.g).abs() <= tol &&
   (a.b - b.b).abs() <= tol

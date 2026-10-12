@@ -4,7 +4,7 @@
 
 ///|
 /// Generated predefined CMap lookup data.
-let pdf_text_cns1_unicode_table_flat : ReadOnlyArray[Int] = [
+let pdf_text_cns1_unicode_table_flat : ReadOnlyArray[Int32] = [
   0x0000, 0x0020, 0x0021, 0x0022, 0x0023, 0x0024, 0x0025, 0x0026, 0x0027, 0x0028,
   0x0029, 0x002A, 0x002B, 0x002C, 0x002D, 0x002E, 0x002F, 0x0030, 0x0031, 0x0032,
   0x0033, 0x0034, 0x0035, 0x0036, 0x0037, 0x0038, 0x0039, 0x003A, 0x003B, 0x003C,
@@ -1928,7 +1928,7 @@ let pdf_text_cns1_unicode_table_flat : ReadOnlyArray[Int] = [
 
 ///|
 /// Predefined CMap lookup table, unpacked at load from the flat static data above.
-pub let pdf_text_cns1_unicode_table : Array[Int] = pdf_cmap_unpack1(
+pub let pdf_text_cns1_unicode_table : Array[Int32] = pdf_cmap_unpack1(
   pdf_text_cns1_unicode_table_flat,
 )
 
@@ -1937,7 +1937,7 @@ pub let pdf_text_cns1_unicode_table : Array[Int] = pdf_cmap_unpack1(
 
 ///|
 /// Generated predefined CMap lookup data.
-let pdf_text_hkdla_b5_cid_ranges_flat : ReadOnlyArray[Int] = [
+let pdf_text_hkdla_b5_cid_ranges_flat : ReadOnlyArray[Int32] = [
   0x0020, 0x007E, 1, 0xA140, 0xA158, 99, 0xA159, 0xA15C, 13743, 0xA15D, 0xA17E, 128,
   0xA1A1, 0xA1F5, 162, 0xA1F6, 0xA1F6, 248, 0xA1F7, 0xA1F7, 247, 0xA1F8, 0xA1FE,
   249, 0xA240, 0xA27E, 256, 0xA2A1, 0xA2FE, 319, 0xA340, 0xA37E, 413, 0xA3A1, 0xA3BB,
@@ -2221,7 +2221,7 @@ let pdf_text_hkdla_b5_cid_ranges_flat : ReadOnlyArray[Int] = [
 
 ///|
 /// Predefined CMap lookup table, unpacked at load from the flat static data above.
-pub let pdf_text_hkdla_b5_cid_ranges : Array[(Int, Int, Int)] = pdf_cmap_unpack3(
+pub let pdf_text_hkdla_b5_cid_ranges : Array[(Int32, Int32, Int32)] = pdf_cmap_unpack3(
   pdf_text_hkdla_b5_cid_ranges_flat,
 )
 
@@ -2230,7 +2230,7 @@ pub let pdf_text_hkdla_b5_cid_ranges : Array[(Int, Int, Int)] = pdf_cmap_unpack3
 
 ///|
 /// Generated predefined CMap lookup data.
-let pdf_text_hkdlb_b5_cid_ranges_flat : ReadOnlyArray[Int] = [
+let pdf_text_hkdlb_b5_cid_ranges_flat : ReadOnlyArray[Int32] = [
   0x0020, 0x007E, 1, 0x8E40, 0x8E40, 15735, 0x8E41, 0x8E41, 15724, 0x8E42, 0x8E42,
   16217, 0x8E43, 0x8E43, 14617, 0x8E44, 0x8E44, 15984, 0x8E45, 0x8E45, 14162, 0x8E46,
   0x8E46, 14511, 0x8E47, 0x8E47, 14214, 0x8E48, 0x8E48, 16155, 0x8E49, 0x8E49, 15708,
@@ -2482,7 +2482,7 @@ let pdf_text_hkdlb_b5_cid_ranges_flat : ReadOnlyArray[Int] = [
 
 ///|
 /// Predefined CMap lookup table, unpacked at load from the flat static data above.
-pub let pdf_text_hkdlb_b5_cid_ranges : Array[(Int, Int, Int)] = pdf_cmap_unpack3(
+pub let pdf_text_hkdlb_b5_cid_ranges : Array[(Int32, Int32, Int32)] = pdf_cmap_unpack3(
   pdf_text_hkdlb_b5_cid_ranges_flat,
 )
 
@@ -2491,7 +2491,7 @@ pub let pdf_text_hkdlb_b5_cid_ranges : Array[(Int, Int, Int)] = pdf_cmap_unpack3
 
 ///|
 /// Generated predefined CMap lookup data.
-let pdf_text_hkgccs_b5_cid_ranges_flat : ReadOnlyArray[Int] = [
+let pdf_text_hkgccs_b5_cid_ranges_flat : ReadOnlyArray[Int32] = [
   0x0020, 0x007E, 1, 0x8A40, 0x8A7E, 17160, 0x8AA1, 0x8AE5, 17223, 0x8B41, 0x8B42,
   17292, 0x8B45, 0x8B45, 17294, 0x8B47, 0x8B47, 17295, 0x8B49, 0x8B49, 17296, 0x8B4B,
   0x8B4B, 17297, 0x8B4D, 0x8B50, 17298, 0x8B54, 0x8B54, 17302, 0x8B58, 0x8B58, 17303,
@@ -2647,7 +2647,7 @@ let pdf_text_hkgccs_b5_cid_ranges_flat : ReadOnlyArray[Int] = [
 
 ///|
 /// Predefined CMap lookup table, unpacked at load from the flat static data above.
-pub let pdf_text_hkgccs_b5_cid_ranges : Array[(Int, Int, Int)] = pdf_cmap_unpack3(
+pub let pdf_text_hkgccs_b5_cid_ranges : Array[(Int32, Int32, Int32)] = pdf_cmap_unpack3(
   pdf_text_hkgccs_b5_cid_ranges_flat,
 )
 
@@ -2656,7 +2656,7 @@ pub let pdf_text_hkgccs_b5_cid_ranges : Array[(Int, Int, Int)] = pdf_cmap_unpack
 
 ///|
 /// Generated predefined CMap lookup data.
-let pdf_text_hkm314_b5_cid_ranges_flat : ReadOnlyArray[Int] = [
+let pdf_text_hkm314_b5_cid_ranges_flat : ReadOnlyArray[Int32] = [
   0x0020, 0x007E, 1, 0xA140, 0xA158, 99, 0xA159, 0xA15C, 13743, 0xA15D, 0xA17E, 128,
   0xA1A1, 0xA1F5, 162, 0xA1F6, 0xA1F6, 248, 0xA1F7, 0xA1F7, 247, 0xA1F8, 0xA1FE,
   249, 0xA240, 0xA27E, 256, 0xA2A1, 0xA2FE, 319, 0xA340, 0xA37E, 413, 0xA3A1, 0xA3BB,
@@ -2809,7 +2809,7 @@ let pdf_text_hkm314_b5_cid_ranges_flat : ReadOnlyArray[Int] = [
 
 ///|
 /// Predefined CMap lookup table, unpacked at load from the flat static data above.
-pub let pdf_text_hkm314_b5_cid_ranges : Array[(Int, Int, Int)] = pdf_cmap_unpack3(
+pub let pdf_text_hkm314_b5_cid_ranges : Array[(Int32, Int32, Int32)] = pdf_cmap_unpack3(
   pdf_text_hkm314_b5_cid_ranges_flat,
 )
 
@@ -2818,7 +2818,7 @@ pub let pdf_text_hkm314_b5_cid_ranges : Array[(Int, Int, Int)] = pdf_cmap_unpack
 
 ///|
 /// Generated predefined CMap lookup data.
-let pdf_text_hkm471_b5_cid_ranges_flat : ReadOnlyArray[Int] = [
+let pdf_text_hkm471_b5_cid_ranges_flat : ReadOnlyArray[Int32] = [
   0x0020, 0x007E, 1, 0xA140, 0xA158, 99, 0xA159, 0xA15C, 13743, 0xA15D, 0xA17E, 128,
   0xA1A1, 0xA1F5, 162, 0xA1F6, 0xA1F6, 248, 0xA1F7, 0xA1F7, 247, 0xA1F8, 0xA1FE,
   249, 0xA240, 0xA27E, 256, 0xA2A1, 0xA2FE, 319, 0xA340, 0xA37E, 413, 0xA3A1, 0xA3BB,
@@ -3011,6 +3011,6 @@ let pdf_text_hkm471_b5_cid_ranges_flat : ReadOnlyArray[Int] = [
 
 ///|
 /// Predefined CMap lookup table, unpacked at load from the flat static data above.
-pub let pdf_text_hkm471_b5_cid_ranges : Array[(Int, Int, Int)] = pdf_cmap_unpack3(
+pub let pdf_text_hkm471_b5_cid_ranges : Array[(Int32, Int32, Int32)] = pdf_cmap_unpack3(
   pdf_text_hkm471_b5_cid_ranges_flat,
 )

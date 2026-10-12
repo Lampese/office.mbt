@@ -1,11 +1,11 @@
 ///|
-let xlsx_cli_max_query_selector_chars : Int = 4096
+let xlsx_cli_max_query_selector_chars : Int32 = 4096
 
 ///|
-let xlsx_cli_max_query_predicates : Int = 16
+let xlsx_cli_max_query_predicates : Int32 = 16
 
 ///|
-let xlsx_cli_max_query_value_chars : Int = 1024
+let xlsx_cli_max_query_value_chars : Int32 = 1024
 
 ///|
 priv enum XlsxCellKind {
@@ -50,8 +50,8 @@ priv enum PreparedXlsxCellPredicate {
 priv struct XlsxQuerySpec {
   selector : String
   predicates : Array[XlsxCellPredicate]
-  offset : Int
-  limit : Int
+  offset : Int32
+  limit : Int32
 }
 
 ///|
@@ -85,7 +85,7 @@ fn require_xlsx_query_number_value(
 }
 
 ///|
-fn xlsx_query_quoted_literal_end(value : String) -> Int? {
+fn xlsx_query_quoted_literal_end(value : String) -> Int32? {
   let mut escaped = false
   for index in 1..<value.length() {
     if escaped {
@@ -248,7 +248,7 @@ fn parse_xlsx_predicate(
 fn xlsx_query_predicate_close(
   rest : String,
   selector : String,
-) -> Int raise CliFailure {
+) -> Int32 raise CliFailure {
   let mut depth = 0
   let mut in_string = false
   let mut escaped = false

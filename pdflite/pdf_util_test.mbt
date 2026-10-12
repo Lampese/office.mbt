@@ -1004,7 +1004,7 @@ fn util_cpdfjson_document_for_test() -> Json {
 }
 
 ///|
-fn util_cpdfjson_entry_for_test(json : Json, number : Int) -> Json? {
+fn util_cpdfjson_entry_for_test(json : Json, number : Int32) -> Json? {
   match json {
     Array(items) =>
       for item in items {
@@ -1311,7 +1311,7 @@ test "PdfDocument json_of_document precombines split content before parsing" {
   @test.assert_eq(document.lookup_object_or_null(2) is PdfStreamObject(_), true)
   @test.assert_eq(document.lookup_object_or_null(3) is PdfStreamObject(_), true)
 
-  let parsed_streams : Array[(Int, Array[Json])] = []
+  let parsed_streams : Array[(Int32, Array[Json])] = []
   match exported {
     Array(items) =>
       for item in items {

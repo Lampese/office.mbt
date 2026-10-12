@@ -5,7 +5,7 @@
 ///|
 fn identity_fixture(
   body : String,
-  extra_namespaces? : String = "",
+  extra_namespaces~ : String = "",
 ) -> @docx.DocxAnnotatedResult raise {
   let document = "<w:document xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\"\{extra_namespaces}><w:body>\{body}<w:sectPr/></w:body></w:document>"
   @docx.read_docx_annotated(fixture_docx(document))

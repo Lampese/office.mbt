@@ -19,7 +19,7 @@ let fat_sector = -3
 let dif_sector = -4
 
 ///|
-fn read_u16_le(bytes : BytesView, offset : Int) -> Int raise XlsxError {
+fn read_u16_le(bytes : BytesView, offset : Int32) -> Int32 raise XlsxError {
   if offset < 0 || offset > bytes.length() {
     raise InvalidEncryptionInfo(msg="cfb read out of bounds")
   }
@@ -30,7 +30,7 @@ fn read_u16_le(bytes : BytesView, offset : Int) -> Int raise XlsxError {
 }
 
 ///|
-fn read_u32_le(bytes : BytesView, offset : Int) -> UInt raise XlsxError {
+fn read_u32_le(bytes : BytesView, offset : Int32) -> UInt32 raise XlsxError {
   if offset < 0 || offset > bytes.length() {
     raise InvalidEncryptionInfo(msg="cfb read out of bounds")
   }
@@ -41,14 +41,14 @@ fn read_u32_le(bytes : BytesView, offset : Int) -> UInt raise XlsxError {
 }
 
 ///|
-fn read_i32_le(bytes : BytesView, offset : Int) -> Int raise XlsxError {
+fn read_i32_le(bytes : BytesView, offset : Int32) -> Int32 raise XlsxError {
   let value = read_u32_le(bytes, offset)
   let signed = value.reinterpret_as_int()
   signed
 }
 
 ///|
-fn read_u64_le(bytes : BytesView, offset : Int) -> UInt64 raise XlsxError {
+fn read_u64_le(bytes : BytesView, offset : Int32) -> UInt64 raise XlsxError {
   if offset < 0 || offset > bytes.length() {
     raise InvalidEncryptionInfo(msg="cfb read out of bounds")
   }
@@ -63,20 +63,20 @@ priv struct CfbSector {
   mut cls_id : Bytes
   content : Bytes
   mut name : String
-  mut c : Int
-  mut l : Int
-  mut r : Int
-  mut color : Int
-  mut size : Int
-  mut start : Int
-  state : Int
-  mut type_id : Int
+  mut c : Int32
+  mut l : Int32
+  mut r : Int32
+  mut color : Int32
+  mut size : Int32
+  mut start : Int32
+  state : Int32
+  mut type_id : Int32
 }
 
 ///|
 priv struct CfbBuilder {
   mut stream : Array[Byte]
-  mut position : Int
+  mut position : Int32
   mut paths : Array[String]
   mut sectors : Array[CfbSector]
 }
@@ -119,12 +119,12 @@ fn CfbBuilder::write_bytes(self : CfbBuilder, value : BytesView) -> Unit {
 }
 
 ///|
-fn CfbBuilder::write_uint16(self : CfbBuilder, value : Int) -> Unit {
+fn CfbBuilder::write_uint16(self : CfbBuilder, value : Int32) -> Unit {
   self.write_bytes([(value & 0xff).to_byte(), ((value >> 8) & 0xff).to_byte()])
 }
 
 ///|
-fn CfbBuilder::write_uint32(self : CfbBuilder, value : Int) -> Unit {
+fn CfbBuilder::write_uint32(self : CfbBuilder, value : Int32) -> Unit {
   self.write_bytes([
     (value & 0xff).to_byte(),
     ((value >> 8) & 0xff).to_byte(),
@@ -134,7 +134,7 @@ fn CfbBuilder::write_uint32(self : CfbBuilder, value : Int) -> Unit {
 }
 
 ///|
-fn CfbBuilder::write_uint64(self : CfbBuilder, value : Int) -> Unit {
+fn CfbBuilder::write_uint64(self : CfbBuilder, value : Int32) -> Unit {
   // Builder inputs are non-negative MoonBit Int values, so the high 32 bits
   // are always zero. Shifting an Int by 32 is not a widening conversion.
   self.write_uint32(value)
@@ -176,7 +176,7 @@ fn CfbBuilder::put(self : CfbBuilder, name : String, content : Bytes) -> Unit {
 }
 
 ///|
-fn cfb_compare(left : String, right : String) -> Int {
+fn cfb_compare(left : String, right : String) -> Int32 {
   let left_parts = Array::from_iter(left.split("/"))
   let right_parts = Array::from_iter(right.split("/"))
   let left_len = left_parts.length()
@@ -261,7 +261,7 @@ fn CfbBuilder::prepare(self : CfbBuilder) -> Unit {
 }
 
 ///|
-fn CfbBuilder::locate(self : CfbBuilder) -> Array[Int] {
+fn CfbBuilder::locate(self : CfbBuilder) -> Array[Int32] {
   let mut mini_stream_sector_size = 0
   let mut fat_sector_size = 0
   for sector in self.sectors {
@@ -297,7 +297,7 @@ fn CfbBuilder::locate(self : CfbBuilder) -> Array[Int] {
       (fat_sectors - 109 + 0x7e) >> 7
     }
   }
-  let location : Array[Int] = [
+  let location : Array[Int32] = [
     1, difat_sectors, fat_sectors, mini_fat_sectors, directory_sectors, fat_sector_size,
     mini_stream_sector_size, 0,
   ]
@@ -313,7 +313,7 @@ fn CfbBuilder::locate(self : CfbBuilder) -> Array[Int] {
 }
 
 ///|
-fn CfbBuilder::write_msat(self : CfbBuilder, location : Array[Int]) -> Unit {
+fn CfbBuilder::write_msat(self : CfbBuilder, location : Array[Int32]) -> Unit {
   for i in 0..<109 {
     if i < location[2] {
       self.write_uint32(location[1] + i)
@@ -346,7 +346,7 @@ fn CfbBuilder::write_msat(self : CfbBuilder, location : Array[Int]) -> Unit {
 ///|
 fn CfbBuilder::write_directory_entry(
   self : CfbBuilder,
-  location : Array[Int],
+  location : Array[Int32],
 ) -> Unit {
   let mut i = 0
   while i < location[4] << 2 {
@@ -405,10 +405,10 @@ fn CfbBuilder::write_directory_entry(
 ///|
 fn cfb_write_chain(
   builder : CfbBuilder,
-  head : Int,
-  offset : Int,
-  i : Int,
-) -> (Int, Int) {
+  head : Int32,
+  offset : Int32,
+  i : Int32,
+) -> (Int32, Int32) {
   let mut local_i = i
   let local_offset = offset + head
   while local_i < local_offset - 1 {
@@ -425,7 +425,7 @@ fn cfb_write_chain(
 ///|
 fn CfbBuilder::write_sector_chains(
   self : CfbBuilder,
-  location : Array[Int],
+  location : Array[Int32],
 ) -> CfbSector {
   let mut i = 0
   let mut offset = 0
@@ -572,37 +572,37 @@ fn CfbBuilder::write(self : CfbBuilder) -> Bytes {
 ///|
 priv struct CfbEntry {
   name : String
-  type_id : Int
-  start : Int
-  size : Int
+  type_id : Int32
+  start : Int32
+  size : Int32
 }
 
 ///|
 priv struct CfbReader {
   bytes : BytesView
-  sector_size : Int
-  mini_sector_size : Int
-  fat : Array[Int]
-  mini_fat : Array[Int]
+  sector_size : Int32
+  mini_sector_size : Int32
+  fat : Array[Int32]
+  mini_fat : Array[Int32]
   entries : Array[CfbEntry]
   mini_stream : Bytes
 }
 
 ///|
-fn sector_offset(sector_size : Int, index : Int) -> Int {
+fn sector_offset(sector_size : Int32, index : Int32) -> Int32 {
   (index + 1) * sector_size
 }
 
 ///|
 fn read_sector_chain(
-  fat : Array[Int],
-  start : Int,
-  sector_count? : Int = fat.length(),
-  maximum_length? : Int = fat.length(),
-  cancelled? : () -> Bool = () => false,
-) -> Array[Int] raise XlsxError {
+  fat : Array[Int32],
+  start : Int32,
+  sector_count~ : Int32 = fat.length(),
+  maximum_length~ : Int32 = fat.length(),
+  cancelled~ : () -> Bool = () => false,
+) -> Array[Int32] raise XlsxError {
   check_read_cancelled(cancelled)
-  let chain : Array[Int] = []
+  let chain : Array[Int32] = []
   let visited = Array::make(sector_count, false)
   let mut current = start
   while current != end_of_chain && current != free_sector {
@@ -626,7 +626,7 @@ fn read_sector_chain(
 ///|
 fn cfb_read(
   bytes : BytesView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> CfbReader raise XlsxError {
   check_read_cancelled(cancelled)
   if bytes.length() < 512 {
@@ -678,7 +678,7 @@ fn cfb_read(
     raise InvalidEncryptionInfo(msg="cfb DIFAT sector count exceeds package")
   }
   let num_difat = num_difat_u64.to_int()
-  let fat_sectors : Array[Int] = []
+  let fat_sectors : Array[Int32] = []
   let fat_sector_seen = Array::make(sector_count, false)
   let mut pos = 0x4c
   for _ in 0..<=108 {
@@ -745,7 +745,7 @@ fn cfb_read(
   if fat_sectors.length() != num_fat {
     raise InvalidEncryptionInfo(msg="cfb FAT sector count mismatch")
   }
-  let fat : Array[Int] = []
+  let fat : Array[Int32] = []
   for sector in fat_sectors {
     check_read_cancelled(cancelled)
     let offset = sector_offset(sector_size, sector)
@@ -804,7 +804,7 @@ fn cfb_read(
     entries.push(entry)
     offset = offset + 128
   }
-  let mini_fat : Array[Int] = []
+  let mini_fat : Array[Int32] = []
   if num_mini_fat > 0 && mini_fat_start != end_of_chain {
     let mini_chain = read_sector_chain(
       fat,
@@ -870,7 +870,7 @@ fn cfb_read(
 fn CfbReader::read_stream(
   self : CfbReader,
   name : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Bytes raise XlsxError {
   check_read_cancelled(cancelled)
   let mut entry : CfbEntry? = None
@@ -959,7 +959,7 @@ fn CfbReader::read_stream(
 }
 
 ///|
-fn wb_write_i32_le(buf : Array[Byte], offset : Int, value : Int) -> Unit {
+fn wb_write_i32_le(buf : Array[Byte], offset : Int32, value : Int32) -> Unit {
   let v = value.reinterpret_as_uint()
   buf[offset] = (v & 0xFF).to_byte()
   buf[offset + 1] = ((v >> 8) & 0xFF).to_byte()
@@ -968,7 +968,7 @@ fn wb_write_i32_le(buf : Array[Byte], offset : Int, value : Int) -> Unit {
 }
 
 ///|
-fn wb_write_u16_le(buf : Array[Byte], offset : Int, value : Int) -> Unit {
+fn wb_write_u16_le(buf : Array[Byte], offset : Int32, value : Int32) -> Unit {
   let v = value.reinterpret_as_uint()
   buf[offset] = (v & 0xFF).to_byte()
   buf[offset + 1] = ((v >> 8) & 0xFF).to_byte()
@@ -976,12 +976,12 @@ fn wb_write_u16_le(buf : Array[Byte], offset : Int, value : Int) -> Unit {
 
 ///|
 test "cfb wb: primitive guards and helper branches" {
-  let bad16 : Result[Int, Error] = Ok(read_u16_le(b"\x00", 0)) catch {
+  let bad16 : Result[Int32, Error] = Ok(read_u16_le(b"\x00", 0)) catch {
     e => Err(e)
   }
   inspect(bad16 is Err(XlsxError::InvalidEncryptionInfo(_)), content="true")
 
-  let bad32 : Result[UInt, Error] = Ok(read_u32_le(b"\x00\x01", 0)) catch {
+  let bad32 : Result[UInt32, Error] = Ok(read_u32_le(b"\x00\x01", 0)) catch {
     e => Err(e)
   }
   inspect(bad32 is Err(XlsxError::InvalidEncryptionInfo(_)), content="true")
@@ -1023,12 +1023,12 @@ test "cfb wb: prepare and read-chain guard branches" {
   }
   inspect(found_b, content="true")
 
-  let chain_oob : Result[Array[Int], Error] = Ok(read_sector_chain([5], 2)) catch {
+  let chain_oob : Result[Array[Int32], Error] = Ok(read_sector_chain([5], 2)) catch {
     e => Err(e)
   }
   inspect(chain_oob is Err(XlsxError::InvalidEncryptionInfo(_)), content="true")
 
-  let chain_cycle : Result[Array[Int], Error] = Ok(read_sector_chain([0], 0)) catch {
+  let chain_cycle : Result[Array[Int32], Error] = Ok(read_sector_chain([0], 0)) catch {
     e => Err(e)
   }
   inspect(
@@ -1036,7 +1036,7 @@ test "cfb wb: prepare and read-chain guard branches" {
     content="true",
   )
 
-  let chain_long : Result[Array[Int], Error] = Ok(
+  let chain_long : Result[Array[Int32], Error] = Ok(
     read_sector_chain([1, 2, 1], 0, maximum_length=2),
   ) catch {
     e => Err(e)

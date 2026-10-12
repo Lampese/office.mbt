@@ -21,7 +21,7 @@ fn body(text : String) -> @paragraph.ParagraphInput {
 ///|
 /// A section shaped to hold exactly `lines` 12pt Carlito lines
 /// (line height 14.6484375) in its content box, 200pt wide.
-fn tiny_section(lines : Int) -> @paginate.SectionProps {
+fn tiny_section(lines : Int32) -> @paginate.SectionProps {
   let line_h = 14.6484375
   {
     page_width_pt: 272,
@@ -36,7 +36,7 @@ fn tiny_section(lines : Int) -> @paginate.SectionProps {
 }
 
 ///|
-fn long_text(words : Int) -> String {
+fn long_text(words : Int32) -> String {
   let sb = StringBuilder()
   for i in 0..<words {
     if i > 0 {

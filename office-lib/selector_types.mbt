@@ -8,7 +8,7 @@ pub enum SelectorStability {
 ///|
 /// The optional selector attached to a named path segment.
 pub enum SegmentSelection {
-  Position(Int)
+  Position(Int32)
   Key(String, String)
 }
 
@@ -24,8 +24,8 @@ pub struct SelectorSegment {
 /// One validated XLSX A1 cell coordinate. Columns and rows are 1-based;
 /// construction stays package-private so invalid coordinates cannot render.
 pub struct CellAddress {
-  column : Int
-  row : Int
+  column : Int32
+  row : Int32
 }
 
 ///|
@@ -52,7 +52,7 @@ pub struct OfficeSelector {
 pub(all) suberror SelectorError {
   SelectorError(
     code~ : String,
-    offset~ : Int,
+    offset~ : Int32,
     input~ : String,
     message~ : String
   )
@@ -70,7 +70,7 @@ pub impl Show for SelectorError with fn output(self, logger) {
 
 ///|
 /// Returns a positional selection when this segment uses one.
-pub fn SelectorSegment::position(self : SelectorSegment) -> Int? {
+pub fn SelectorSegment::position(self : SelectorSegment) -> Int32? {
   match self.selection {
     Some(Position(index)) => Some(index)
     _ => None
@@ -128,7 +128,7 @@ pub fn OfficeSelector::stability(self : OfficeSelector) -> SelectorStability {
 }
 
 ///|
-fn selector_column_name(column : Int) -> String {
+fn selector_column_name(column : Int32) -> String {
   let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".to_array()
   let reversed : Array[Char] = []
   let mut value = column
@@ -154,13 +154,13 @@ pub fn CellAddress::render(self : CellAddress) -> String {
 
 ///|
 /// Returns the validated 1-based column index (`A` = 1, `XFD` = 16384).
-pub fn CellAddress::column(self : CellAddress) -> Int {
+pub fn CellAddress::column(self : CellAddress) -> Int32 {
   self.column
 }
 
 ///|
 /// Returns the validated 1-based row index (`1` through `1048576`).
-pub fn CellAddress::row(self : CellAddress) -> Int {
+pub fn CellAddress::row(self : CellAddress) -> Int32 {
   self.row
 }
 

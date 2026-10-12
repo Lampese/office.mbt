@@ -81,7 +81,7 @@ pub fn PdfDrawControl::current_frame_name(
 
 ///|
 /// Return the current stack depth.
-pub fn PdfDrawControl::depth(self : PdfDrawControl) -> Int {
+pub fn PdfDrawControl::depth(self : PdfDrawControl) -> Int32 {
   self.frames.length()
 }
 
@@ -151,7 +151,7 @@ fn pdf_draw_control_read_floats(
 ///|
 fn pdf_draw_control_expect_floats(
   text : String,
-  count : Int,
+  count : Int32,
   count_message : String,
   parse_message : String,
 ) -> Array[Double] raise @core.PdfError {

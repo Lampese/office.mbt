@@ -123,7 +123,7 @@ test "worksheet set_cell_style and set_cell_style_rc" {
   debug_inspect(sheet.get_cell_style_rc(1, 2), content="Some(2)")
 
   // get_cell_style_rc validates row/col.
-  let bad_rc : Result[Int?, Error] = Ok(sheet.get_cell_style_rc(0, 1)) catch {
+  let bad_rc : Result[Int32?, Error] = Ok(sheet.get_cell_style_rc(0, 1)) catch {
     e => Err(e)
   }
   inspect(bad_rc is Err(@xlsx.XlsxError::InvalidCellRef(_)), content="true")

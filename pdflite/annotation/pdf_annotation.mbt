@@ -20,7 +20,7 @@ pub(all) struct PdfAnnotationBorder {
   vertical_radius : Double
   horizontal_radius : Double
   style : PdfAnnotationStyle
-  dash_array : Array[Int]
+  dash_array : Array[Int32]
 } derive(Debug, Eq, ToJson)
 
 ///|
@@ -28,9 +28,9 @@ pub(all) struct PdfAnnotationBorder {
 ///
 /// Components are stored as integer channel values after parsing PDF numbers.
 pub(all) struct PdfAnnotationColour {
-  red : Int
-  green : Int
-  blue : Int
+  red : Int32
+  green : Int32
+  blue : Int32
 } derive(Debug, Eq, ToJson)
 
 ///|
@@ -103,10 +103,10 @@ fn pdf_annotation_zero_rectangle() -> PdfRectangle {
 /// Build an annotation border, copying the supplied dash array.
 pub fn pdf_annotation_make_border(
   width : Double,
-  vertical_radius? : Double = 0.0,
-  horizontal_radius? : Double = 0.0,
-  style? : PdfAnnotationStyle = AnnotationNoStyle,
-  dash_array? : ArrayView[Int] = [],
+  vertical_radius~ : Double = 0.0,
+  horizontal_radius~ : Double = 0.0,
+  style~ : PdfAnnotationStyle = AnnotationNoStyle,
+  dash_array~ : ArrayView[Int32] = [],
 ) -> PdfAnnotationBorder {
   {
     width,
@@ -126,11 +126,11 @@ pub fn pdf_annotation_make_border(
 /// colour, and no preserved extra dictionary entries.
 pub fn pdf_annotation_make(
   subtype : PdfAnnotationSubtype,
-  contents? : PdfBytes? = None,
-  border? : PdfAnnotationBorder = pdf_annotation_default_border(),
-  rectangle? : PdfRectangle = pdf_annotation_zero_rectangle(),
-  colour? : PdfAnnotationColour? = None,
-  subject? : PdfBytes? = None,
+  contents~ : PdfBytes? = None,
+  border~ : PdfAnnotationBorder = pdf_annotation_default_border(),
+  rectangle~ : PdfRectangle = pdf_annotation_zero_rectangle(),
+  colour~ : PdfAnnotationColour? = None,
+  subject~ : PdfBytes? = None,
 ) -> PdfAnnotation {
   { subtype, contents, subject, rectangle, border, colour, rest: PdfNull, }
 }

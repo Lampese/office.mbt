@@ -193,7 +193,7 @@ priv struct DeleteReadbackExpectation {
   predecessor_path : String?
   predecessor_para_id : String?
   predecessor_text : String?
-  old_count : Int
+  old_count : Int32
   // What the published part must be. This leg proves the splice
   // APPLIED as planned; it cannot prove the plan addressed the right
   // paragraph, because the witness and the edit are built from one

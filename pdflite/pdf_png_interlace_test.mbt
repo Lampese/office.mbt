@@ -9,7 +9,7 @@
 // misreading of the pass geometry could not make these pass.
 
 ///|
-fn png_interlace_bytes_for_test(values : ArrayView[Int]) -> @core.PdfBytes {
+fn png_interlace_bytes_for_test(values : ArrayView[Int32]) -> @core.PdfBytes {
   try! @core.pdf_bytes_of_int_array(values)
 }
 
@@ -92,7 +92,7 @@ fn png_interlace_tiny_for_test() -> (@core.PdfBytes, @core.PdfBytes) {
 /// would read it.
 fn png_interlace_raster_of_test(
   png : @pdflite.PdfPNG,
-  colors : Int,
+  colors : Int32,
 ) -> @core.PdfBytes {
   try! @pdflite.pdf_decode_predictor(
     15,

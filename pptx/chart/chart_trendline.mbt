@@ -62,8 +62,8 @@ pub(all) struct Trendline {
   name : String?
   sp_pr : @xml.XmlElement?
   trendline_type : TrendlineType
-  order : Int?
-  period : Int?
+  order : Int32?
+  period : Int32?
   forward : String?
   backward : String?
   intercept : String?
@@ -160,8 +160,8 @@ fn parse_trendline(el : @xml.XmlElement) -> Trendline raise ChartError {
   let mut name : String? = None
   let mut sp_pr : @xml.XmlElement? = None
   let mut trendline_type : TrendlineType? = None
-  let mut order : Int? = None
-  let mut period : Int? = None
+  let mut order : Int32? = None
+  let mut period : Int32? = None
   let mut forward : String? = None
   let mut backward : String? = None
   let mut intercept : String? = None

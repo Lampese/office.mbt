@@ -3,15 +3,15 @@
 
 ///|
 /// A 32-bit glyph identifier.
-pub(all) struct GlyphId(UInt) derive(Eq, Compare, Hash, Debug)
+pub(all) struct GlyphId(UInt32) derive(Eq, Compare, Hash, Debug)
 
 ///|
-pub fn GlyphId::new(raw : UInt) -> GlyphId {
+pub fn GlyphId::new(raw : UInt32) -> GlyphId {
   GlyphId(raw)
 }
 
 ///|
-pub fn GlyphId::from_int(raw : Int) -> GlyphId {
+pub fn GlyphId::from_int(raw : Int32) -> GlyphId {
   GlyphId(raw.reinterpret_as_uint())
 }
 
@@ -21,18 +21,18 @@ pub fn GlyphId::notdef() -> GlyphId {
 }
 
 ///|
-pub fn GlyphId::to_u32(self : GlyphId) -> UInt {
+pub fn GlyphId::to_u32(self : GlyphId) -> UInt32 {
   self.0
 }
 
 ///|
-pub fn GlyphId::to_int(self : GlyphId) -> Int {
+pub fn GlyphId::to_int(self : GlyphId) -> Int32 {
   self.0.reinterpret_as_int()
 }
 
 ///|
 /// Converts to a 16-bit glyph identifier if the value fits.
-pub fn GlyphId::to_u16(self : GlyphId) -> Int? {
+pub fn GlyphId::to_u16(self : GlyphId) -> Int32? {
   if self.0 <= 0xFFFFU {
     Some(self.0.reinterpret_as_int())
   } else {
@@ -118,7 +118,7 @@ pub(all) struct BoundingBox[T] {
 
 ///|
 /// A 4-byte OpenType tag, stored as a big-endian `UInt`.
-pub(all) struct Tag(UInt) derive(Eq, Compare, Hash, Debug)
+pub(all) struct Tag(UInt32) derive(Eq, Compare, Hash, Debug)
 
 ///|
 /// Creates a tag from a 4 character ASCII string.
@@ -132,12 +132,12 @@ pub fn Tag::new(s : String) -> Tag {
 }
 
 ///|
-pub fn Tag::from_u32(v : UInt) -> Tag {
+pub fn Tag::from_u32(v : UInt32) -> Tag {
   Tag(v)
 }
 
 ///|
-pub fn Tag::to_u32(self : Tag) -> UInt {
+pub fn Tag::to_u32(self : Tag) -> UInt32 {
   self.0
 }
 
@@ -145,6 +145,6 @@ pub fn Tag::to_u32(self : Tag) -> UInt {
 pub impl Show for Tag with fn output(self, logger) {
   for i in 0..<4 {
     let c = ((self.0 >> ((3 - i) * 8)) & 0xFFU).reinterpret_as_int()
-    logger.write_char(Int::unsafe_to_char(c))
+    logger.write_char(Int32::unsafe_to_char(c))
   }
 }

@@ -148,7 +148,7 @@ fn parse_list_style(r : @xml.XmlReader) -> ListStyle raise SlideError {
 ///|
 /// Map `"lvl1pPr"` → `Some(0)` … `"lvl9pPr"` → `Some(8)`. Returns
 /// `None` for any other local name.
-fn match_level_name(name : String) -> Int? {
+fn match_level_name(name : String) -> Int32? {
   match name {
     "lvl1pPr" => Some(0)
     "lvl2pPr" => Some(1)

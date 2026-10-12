@@ -39,13 +39,13 @@ fn render_ascii_table(rows : Array[Array[String]]) -> String {
 
 ///|
 /// A `+---+---+` horizontal rule sized to the given column widths.
-fn ascii_border(widths : Array[Int]) -> String {
+fn ascii_border(widths : Array[Int32]) -> String {
   "+" + widths.map(w => "-".repeat(w + 2)).join("+") + "+"
 }
 
 ///|
 /// A `| a | b |` table row, padding each cell to its column width.
-fn ascii_row(cells : Array[String], widths : Array[Int]) -> String {
+fn ascii_row(cells : Array[String], widths : Array[Int32]) -> String {
   let segs = []
   for c in 0..<widths.length() {
     let cell = if c < cells.length() { cells[c] } else { "" }

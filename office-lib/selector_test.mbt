@@ -202,7 +202,7 @@ test "selector rejects isolated UTF-16 surrogates" {
 ///|
 test "bounded selector parser does not panic on deterministic fuzz input" {
   let alphabet = "/[]=_-\"\\:Aaz09财".to_array()
-  let mut state : UInt = 0xC0FFEE
+  let mut state : UInt32 = 0xC0FFEE
   for _ in 0..<500 {
     state = state * 1664525 + 1013904223
     let length = (state % 96).reinterpret_as_int()

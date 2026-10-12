@@ -161,20 +161,20 @@ fn ContentTag::write_properties(
 /// Identifies a piece of content in the structure tree.
 pub(all) enum Identifier {
   /// Marked content on a page: page index and MCID.
-  PageContent(Int, Int)
+  PageContent(Int32, Int32)
   /// An annotation: page index and annotation index.
-  Annotation(Int, Int)
+  Annotation(Int32, Int32)
   /// Marked content in a layer (a form XObject drawn on a page): page index,
   /// stream ID and MCID within the stream.
-  StreamContent(Int, Int, Int)
+  StreamContent(Int32, Int32, Int32)
   /// Content that is not part of the structure tree.
   Dummy
 } derive(Eq, Debug)
 
 ///|
 priv struct AnnotationIdentifier {
-  page_index : Int
-  annot_index : Int
+  page_index : Int32
+  annot_index : Int32
 }
 
 ///|
@@ -344,9 +344,9 @@ fn[T : Eq] Sides::to_obj(self : Sides[T], f : (T) -> Obj) -> Obj {
 ///|
 /// An RGB color with 8-bit components.
 pub(all) struct NaiveRgbColor {
-  red : Int
-  green : Int
-  blue : Int
+  red : Int32
+  green : Int32
+  blue : Int32
 } derive(Eq, Debug)
 
 ///|
@@ -368,18 +368,18 @@ pub(all) enum Attr {
   Expanded(String)
   ActualText(String)
   Title(String)
-  HeadingLevel(Int)
+  HeadingLevel(Int32)
   // List attributes.
   ListNumbering(ListNumbering)
   // Table attributes.
   Summary(String)
   HeaderScope(TableHeaderScope)
   CellHeaders(Array[Bytes])
-  RowSpan(Int)
-  ColSpan(Int)
+  RowSpan(Int32)
+  ColSpan(Int32)
   // Layout attributes.
   Placement(Placement)
-  BBox(Int, Rect)
+  BBox(Int32, Rect)
   Width(Double)
   Height(Double)
   BackgroundColor(NaiveRgbColor)
@@ -396,7 +396,7 @@ pub(all) enum Attr {
 }
 
 ///|
-fn Attr::ordinal(self : Attr) -> Int {
+fn Attr::ordinal(self : Attr) -> Int32 {
   match self {
     Id(_) => 0
     Lang(_) => 1
@@ -498,7 +498,7 @@ pub fn TagKind::get_id(self : TagKind) -> Bytes? {
 }
 
 ///|
-pub fn TagKind::heading_level(self : TagKind) -> Int {
+pub fn TagKind::heading_level(self : TagKind) -> Int32 {
   for a in self.attrs {
     if a is HeadingLevel(l) {
       return l
@@ -652,7 +652,7 @@ pub fn TagTree::push(self : TagTree, child : Node) -> Unit {
 ///|
 /// A serialized child of a structure element.
 priv enum Reference {
-  RefTo(Int)
+  RefTo(Int32)
   Content(Identifier)
 }
 
@@ -660,10 +660,10 @@ priv enum Reference {
 priv struct TagSerializer {
   sc : SerializeContext
   /// The parent structure element of each piece of content.
-  parent_tree_map : Map[String, Int]
+  parent_tree_map : Map[String, Int32]
   /// The structure elements by ID.
-  id_tree : Map[String, (Bytes, Int)]
-  mut note_id : Int
+  id_tree : Map[String, (Bytes, Int32)]
+  mut note_id : Int32
 }
 
 ///|
@@ -689,7 +689,7 @@ fn bytes_key(b : Bytes) -> String {
 fn TagSerializer::node(
   self : TagSerializer,
   node : Node,
-  parent : Int,
+  parent : Int32,
 ) -> Reference? raise ExportError {
   match node {
     Group(g) => Some(RefTo(self.group(g, parent)))
@@ -702,8 +702,8 @@ fn TagSerializer::node(
 fn TagSerializer::group(
   self : TagSerializer,
   group : TagGroup,
-  parent_ref : Int,
-) -> Int raise ExportError {
+  parent_ref : Int32,
+) -> Int32 raise ExportError {
   let sc = self.sc
   let elem_ref = sc.new_ref()
   let children_refs = []
@@ -904,12 +904,12 @@ fn TagSerializer::group(
 ///|
 fn TagSerializer::children(
   self : TagSerializer,
-  parent_ref : Int,
+  parent_ref : Int32,
   children : Array[Reference],
   d : DictBuilder,
 ) -> Unit {
   let sc = self.sc
-  let mut struct_page_ref : Int? = None
+  let mut struct_page_ref : Int32? = None
   let kids = []
   for child in children {
     match child {
@@ -1020,7 +1020,7 @@ fn TagSerializer::validate(
 fn SerializeContext::serialize_tag_tree(
   self : SerializeContext,
   tree : TagTree,
-) -> Int raise ExportError {
+) -> Int32 raise ExportError {
   let ts = TagSerializer::{
     sc: self,
     parent_tree_map: {},
@@ -1135,7 +1135,7 @@ fn SerializeContext::serialize_tag_tree(
 }
 
 ///|
-fn compare_bytes(a : Bytes, b : Bytes) -> Int {
+fn compare_bytes(a : Bytes, b : Bytes) -> Int32 {
   let n = if a.length() < b.length() { a.length() } else { b.length() }
   for i in 0..<n {
     if a[i] != b[i] {

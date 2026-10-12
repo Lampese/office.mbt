@@ -1,7 +1,7 @@
 ///|
 
 ///|
-fn find_chart_index_or_fail(xml : String, needle : String) -> Int raise Error {
+fn find_chart_index_or_fail(xml : String, needle : String) -> Int32 raise Error {
   match xml.find(needle) {
     Some(value) => value
     None => fail("missing needle: \{needle}")

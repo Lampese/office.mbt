@@ -16,7 +16,7 @@ fn eval_function(
         [arg] =>
           ref_bounds_opt(arg).map_or(Error(formula_error_value), bounds => {
             let (row1, _col1, row2, _col2) = bounds
-            Number(Double::from_int(Int::min(row1, row2)))
+            Number(Double::from_int(Int32::min(row1, row2)))
           })
         _ => Error(formula_error_value)
       }
@@ -29,7 +29,7 @@ fn eval_function(
         [arg] =>
           ref_bounds_opt(arg).map_or(Error(formula_error_value), bounds => {
             let (_row1, col1, _row2, col2) = bounds
-            Number(Double::from_int(Int::min(col1, col2)))
+            Number(Double::from_int(Int32::min(col1, col2)))
           })
         _ => Error(formula_error_value)
       }
@@ -39,7 +39,9 @@ fn eval_function(
           ref_bounds_opt(arg).map_or(Error(formula_error_value), bounds => {
             let (row1, _col1, row2, _col2) = bounds
             Number(
-              Double::from_int(Int::max(row1, row2) - Int::min(row1, row2) + 1),
+              Double::from_int(
+                Int32::max(row1, row2) - Int32::min(row1, row2) + 1,
+              ),
             )
           })
         _ => Error(formula_error_value)
@@ -50,7 +52,9 @@ fn eval_function(
           ref_bounds_opt(arg).map_or(Error(formula_error_value), bounds => {
             let (_row1, col1, _row2, col2) = bounds
             Number(
-              Double::from_int(Int::max(col1, col2) - Int::min(col1, col2) + 1),
+              Double::from_int(
+                Int32::max(col1, col2) - Int32::min(col1, col2) + 1,
+              ),
             )
           })
         _ => Error(formula_error_value)
@@ -950,13 +954,16 @@ fn eval_function_unknown(
 ///|
 fn range_column_required(
   range : RangeValues,
-  index : Int,
+  index : Int32,
 ) -> Array[FormulaValue] {
   range_column(range, index).unwrap_or([])
 }
 
 ///|
-fn range_row_required(range : RangeValues, index : Int) -> Array[FormulaValue] {
+fn range_row_required(
+  range : RangeValues,
+  index : Int32,
+) -> Array[FormulaValue] {
   range_row(range, index).unwrap_or([])
 }
 
@@ -1247,7 +1254,7 @@ let roman_table : Array[Array[RomanNumeral]] = [
 ]
 
 ///|
-fn roman_string(value : Double, form : Int) -> String {
+fn roman_string(value : Double, form : Int32) -> String {
   let table = roman_table[form]
   let sb = StringBuilder()
   let mut remaining = trunc_double(value)
@@ -1301,9 +1308,9 @@ fn bitwise_values(
         let a = Double::to_int(trunc_double(num1))
         let b = Double::to_int(trunc_double(num2))
         let result = match name {
-          "BITAND" => Int::land(a, b)
-          "BITOR" => Int::lor(a, b)
-          "BITXOR" => Int::lxor(a, b)
+          "BITAND" => Int32::land(a, b)
+          "BITOR" => Int32::lor(a, b)
+          "BITXOR" => Int32::lxor(a, b)
           "BITLSHIFT" => a << b
           "BITRSHIFT" => a >> b
           _ => 0
@@ -1316,7 +1323,7 @@ fn bitwise_values(
 }
 
 ///|
-fn arabic_char_value(ch : Char) -> Int {
+fn arabic_char_value(ch : Char) -> Int32 {
   match ch {
     'I' => 1
     'V' => 5
@@ -1415,7 +1422,7 @@ fn base_values(values : ArrayView[FormulaValue]) -> FormulaValue {
     }
   }
   let number_int = Double::to_int(trunc_double(number))
-  let mut text = Int::to_string(number_int, radix=base).to_upper()
+  let mut text = Int32::to_string(number_int, radix=base).to_upper()
   if min_length > text.length() {
     let pad = "0".repeat(min_length - text.length())
     text = pad + text
@@ -1424,7 +1431,7 @@ fn base_values(values : ArrayView[FormulaValue]) -> FormulaValue {
 }
 
 ///|
-fn dec2x_limits(name : String) -> (Double, Double, Int) {
+fn dec2x_limits(name : String) -> (Double, Double, Int32) {
   match name {
     "DEC2BIN" | "HEX2BIN" | "OCT2BIN" => (511.0, -512.0, 2)
     "BIN2HEX" | "DEC2HEX" | "OCT2HEX" => (549755813887.0, -549755813888.0, 16)
@@ -1507,7 +1514,7 @@ fn bin2dec_string(text : String) -> FormulaValue {
 }
 
 ///|
-fn hex_digit_value(ch : Char) -> Int? {
+fn hex_digit_value(ch : Char) -> Int32? {
   if ch >= '0' && ch <= '9' {
     Some(ch.to_int() - '0'.to_int())
   } else if ch >= 'A' && ch <= 'F' {
@@ -1784,10 +1791,10 @@ fn averagea_values(values : ArrayView[FormulaValue]) -> FormulaValue {
 ///|
 fn stdev_add(
   sum : Double,
-  count : Int,
+  count : Int32,
   value : Double,
   mean : Double,
-) -> (Double, Int) {
+) -> (Double, Int32) {
   let delta = value - mean
   let next_sum = if sum < 0.0 { delta * delta } else { sum + delta * delta }
   (next_sum, count + 1)

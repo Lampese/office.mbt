@@ -13,7 +13,7 @@ fn parse_plan_json(document : Json) -> @batch.BatchPlan raise @batch.BatchError 
 }
 
 ///|
-fn apply_script(workbook : @xlsx.Workbook, script : String) -> Int raise {
+fn apply_script(workbook : @xlsx.Workbook, script : String) -> Int32 raise {
   let ops = parse_ops(script)
   for op in ops {
     @batch.apply_op(workbook, op)
@@ -405,7 +405,7 @@ test "a style op applies borders, per-side overriding the all-sides default" {
   let style_id = workbook.get_cell_style("Data", "B2").unwrap_or(0)
   assert_true(style_id != 0)
   let style = workbook.get_style(style_id)
-  let sides : Map[String, Int] = Map([])
+  let sides : Map[String, Int32] = Map([])
   let colors : Map[String, String] = Map([])
   match style.border {
     Some(borders) =>

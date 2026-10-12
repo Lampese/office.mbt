@@ -5,7 +5,7 @@ test "column name conversions" {
   inspect(@xlsx.column_name_to_number("AA"), content="27")
   inspect(@xlsx.column_number_to_name(1), content="A")
   inspect(@xlsx.column_number_to_name(27), content="AA")
-  let bad : Result[Int, Error] = Ok(@xlsx.column_name_to_number("A1")) catch {
+  let bad : Result[Int32, Error] = Ok(@xlsx.column_name_to_number("A1")) catch {
     e => Err(e)
   }
   guard bad is Err(_) else { fail("expected invalid column name") }

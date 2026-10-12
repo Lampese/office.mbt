@@ -1,5 +1,5 @@
 ///|
-fn pdf_truetype_is_cmap_tag(data : BytesView, offset : Int) -> Bool {
+fn pdf_truetype_is_cmap_tag(data : BytesView, offset : Int32) -> Bool {
   offset >= 0 &&
   offset <= data.length() - 4 &&
   data[offset].to_int() == 0x63 &&
@@ -11,8 +11,8 @@ fn pdf_truetype_is_cmap_tag(data : BytesView, offset : Int) -> Bool {
 ///|
 fn pdf_truetype_collect_cmap_records(
   data : BytesView,
-  cmap_offset : Int,
-  records : Array[(Int, Int)],
+  cmap_offset : Int32,
+  records : Array[(Int32, Int32)],
 ) -> Unit {
   match pdf_truetype_read_u16(data, cmap_offset + 2) {
     Some(record_count) => {
@@ -41,8 +41,8 @@ fn pdf_truetype_collect_cmap_records(
 ///|
 fn pdf_truetype_cmap_glyph_from_entries(
   entries : ArrayView[@truetype.PdfTrueTypeCMapGlyph],
-  codepoint : Int,
-) -> Int? {
+  codepoint : Int32,
+) -> Int32? {
   for entry in entries {
     if entry.codepoint == codepoint {
       break Some(entry.glyph_index)
@@ -59,18 +59,18 @@ fn pdf_truetype_cmap_glyph_from_entries(
 /// the mappings so far for each one made quadratic.
 priv struct PdfTrueTypeCMapBuilder {
   entries : Array[@truetype.PdfTrueTypeCMapGlyph]
-  positions : Map[Int, Int]
+  positions : Map[Int32, Int32]
   /// The steps the reading has left: a mapping read is one, and so is a
   /// record, segment or group looked at. A cmap's tables overlap, and map
   /// a codepoint a few times over; a hostile one (its records, segments or
   /// groups the same again and again, mapping or not) would be read
   /// without end.
-  mut budget : Int
+  mut budget : Int32
 }
 
 ///|
 /// The steps a cmap is read for: every codepoint eight times over.
-let pdf_truetype_cmap_budget : Int = 8 * 0x110000
+let pdf_truetype_cmap_budget : Int32 = 8 * 0x110000
 
 ///|
 /// Spend a step of the reading's budget: false once it is spent.
@@ -89,8 +89,8 @@ fn PdfTrueTypeCMapBuilder::step(self : PdfTrueTypeCMapBuilder) -> Bool {
 /// mapped.
 fn pdf_truetype_push_cmap_glyph(
   entries : PdfTrueTypeCMapBuilder,
-  codepoint : Int,
-  glyph_index : Int,
+  codepoint : Int32,
+  glyph_index : Int32,
 ) -> Bool {
   if !entries.step() {
     return false
@@ -110,7 +110,7 @@ fn pdf_truetype_push_cmap_glyph(
 ///|
 fn pdf_truetype_cmap_format0_glyphs(
   data : BytesView,
-  subtable_offset : Int,
+  subtable_offset : Int32,
   entries : PdfTrueTypeCMapBuilder,
 ) -> Unit {
   for codepoint in 0..<256 {
@@ -127,7 +127,7 @@ fn pdf_truetype_cmap_format0_glyphs(
 ///|
 fn pdf_truetype_cmap_format6_glyphs(
   data : BytesView,
-  subtable_offset : Int,
+  subtable_offset : Int32,
   entries : PdfTrueTypeCMapBuilder,
 ) -> Unit {
   match
@@ -156,7 +156,7 @@ fn pdf_truetype_cmap_format6_glyphs(
 ///|
 fn pdf_truetype_cmap_format4_glyphs(
   data : BytesView,
-  subtable_offset : Int,
+  subtable_offset : Int32,
   entries : PdfTrueTypeCMapBuilder,
 ) -> Unit {
   match pdf_truetype_read_u16(data, subtable_offset + 6) {
@@ -231,11 +231,11 @@ fn pdf_truetype_cmap_format4_glyphs(
 /// `declared`: within the length it gives itself, and within the data.
 fn pdf_truetype_cmap32_entries(
   data : BytesView,
-  subtable_offset : Int,
-  header : Int,
-  size : Int,
-  declared : Int,
-) -> Int {
+  subtable_offset : Int32,
+  header : Int32,
+  size : Int32,
+  declared : Int32,
+) -> Int32 {
   guard pdf_truetype_read_u32_as_int(data, subtable_offset + 4) is Some(length) else {
     return 0
   }
@@ -260,7 +260,7 @@ fn pdf_truetype_cmap32_entries(
 /// 0xFFFF) is passed over.
 fn pdf_truetype_cmap_groups_glyphs(
   data : BytesView,
-  subtable_offset : Int,
+  subtable_offset : Int32,
   entries : PdfTrueTypeCMapBuilder,
   many_to_one~ : Bool,
 ) -> Unit {
@@ -313,7 +313,7 @@ fn pdf_truetype_cmap_groups_glyphs(
 /// first one, which may be beyond the BMP.
 fn pdf_truetype_cmap_format10_glyphs(
   data : BytesView,
-  subtable_offset : Int,
+  subtable_offset : Int32,
   entries : PdfTrueTypeCMapBuilder,
 ) -> Unit {
   guard (
@@ -348,7 +348,7 @@ fn pdf_truetype_cmap_format10_glyphs(
 ///|
 fn pdf_truetype_cmap_subtable_glyphs(
   data : BytesView,
-  subtable_offset : Int,
+  subtable_offset : Int32,
   entries : PdfTrueTypeCMapBuilder,
 ) -> Unit {
   match pdf_truetype_read_u16(data, subtable_offset) {
@@ -450,7 +450,7 @@ pub fn pdf_truetype_cmap_glyphs(
 
 ///|
 /// Look up one Unicode codepoint in the merged TrueType cmap mappings.
-pub fn pdf_truetype_cmap_glyph(data : BytesView, codepoint : Int) -> Int? {
+pub fn pdf_truetype_cmap_glyph(data : BytesView, codepoint : Int32) -> Int32? {
   let entries = pdf_truetype_cmap_glyphs(data)
   for entry in entries {
     if entry.codepoint == codepoint {
@@ -468,8 +468,8 @@ pub fn pdf_truetype_cmap_glyph(data : BytesView, codepoint : Int) -> Int? {
 /// helper. The source function catches parse failures and returns the records
 /// collected before the failure; this function likewise ignores malformed or
 /// incomplete parts of the font after complete cmap records have been read.
-pub fn pdf_truetype_cmaps(data : BytesView) -> Array[(Int, Int)] {
-  let records : Array[(Int, Int)] = []
+pub fn pdf_truetype_cmaps(data : BytesView) -> Array[(Int32, Int32)] {
+  let records : Array[(Int32, Int32)] = []
   match pdf_truetype_read_u16(data, 4) {
     Some(table_count) => {
       let mut index = 0

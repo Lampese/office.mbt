@@ -33,7 +33,7 @@ let ct_xlsx_worksheet : String = "application/vnd.openxmlformats-officedocument.
 ///|
 /// Spreadsheet column letter for a 0-based index: 0 → `A`, 25 → `Z`,
 /// 26 → `AA`.
-fn column_letter(idx : Int) -> String {
+fn column_letter(idx : Int32) -> String {
   let mut n = idx
   let mut out = ""
   while true {
@@ -52,7 +52,7 @@ fn column_letter(idx : Int) -> String {
 fn write_inline_str_cell(
   w : @xml.XmlWriter,
   column : String,
-  row : Int,
+  row : Int32,
   text : String,
 ) -> Unit raise @xml.XmlError {
   w.start_element(@xml.QName::new(spreadsheet_ml_ns, "c"))
@@ -71,7 +71,7 @@ fn write_inline_str_cell(
 fn write_number_cell(
   w : @xml.XmlWriter,
   column : String,
-  row : Int,
+  row : Int32,
   value : Double,
 ) -> Unit raise @xml.XmlError {
   w.start_element(@xml.QName::new(spreadsheet_ml_ns, "c"))

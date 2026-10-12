@@ -5,7 +5,7 @@ let transitional_office_relationship_prefix = "http://schemas.openxmlformats.org
 let strict_office_relationship_prefix = "http://purl.oclc.org/ooxml/officeDocument/relationships/"
 
 ///|
-let max_relationship_part_path_chars : Int = 64 * 1024
+let max_relationship_part_path_chars : Int32 = 64 * 1024
 
 ///|
 let max_relationship_part_path_segments = 4096
@@ -14,7 +14,7 @@ let max_relationship_part_path_segments = 4096
 fn parse_internal_relationship_targets_exact(
   xml : StringView,
   rel_type : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Map[String, String] raise XlsxError {
   @ooxml.parse_internal_relationship_targets(xml, rel_type, cancelled~) catch {
     InvalidXml(msg~) => raise InvalidXml(msg~)
@@ -26,7 +26,7 @@ fn parse_internal_relationship_targets_exact(
 fn parse_internal_relationship_targets_exact_types(
   xml : StringView,
   rel_types : ArrayView[String],
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Map[String, String] raise XlsxError {
   @ooxml.parse_internal_relationship_targets_by_types(
     xml,
@@ -42,7 +42,7 @@ fn parse_internal_relationship_targets_exact_types(
 fn parse_external_relationship_targets_exact(
   xml : StringView,
   rel_type : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Map[String, String] raise XlsxError {
   @ooxml.parse_external_relationship_targets(xml, rel_type, cancelled~) catch {
     InvalidXml(msg~) => raise InvalidXml(msg~)
@@ -54,7 +54,7 @@ fn parse_external_relationship_targets_exact(
 fn parse_external_relationship_targets_exact_types(
   xml : StringView,
   rel_types : ArrayView[String],
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Map[String, String] raise XlsxError {
   @ooxml.parse_external_relationship_targets_by_types(
     xml,
@@ -74,7 +74,7 @@ fn parse_internal_relationship_targets(
   xml : StringView,
   rel_type : StringView,
   budget? : ReadBudget,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Map[String, String] raise XlsxError {
   match budget {
     Some(value) => {
@@ -105,7 +105,7 @@ fn parse_external_relationship_targets(
   xml : StringView,
   rel_type : StringView,
   budget? : ReadBudget,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Map[String, String] raise XlsxError {
   match budget {
     Some(value) => {
@@ -150,7 +150,7 @@ fn rels_path_for(path : StringView, folder : StringView) -> String {
 }
 
 ///|
-fn parse_id_from_path(path : StringView, prefix : StringView) -> Int {
+fn parse_id_from_path(path : StringView, prefix : StringView) -> Int32 {
   let path_str = path.to_owned()
   let num = match path_str.strip_prefix(prefix) {
     Some(rest) =>
@@ -194,7 +194,7 @@ fn relationship_target_has_ambiguous_first_segment_colon(
 ///|
 fn validate_relationship_target_uri(
   target : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Unit raise XlsxError {
   check_read_cancelled(cancelled)
   if target == "" ||
@@ -211,7 +211,7 @@ fn validate_relationship_target_uri(
 ///|
 fn normalize_rel_part_path(
   path : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String raise XlsxError {
   check_read_cancelled(cancelled)
   if path == "" || path.length() > max_relationship_part_path_chars {
@@ -281,7 +281,7 @@ fn normalize_rel_part_path(
 fn resolve_part_rel_target(
   source_part : StringView,
   target : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String raise XlsxError {
   let source = source_part.to_owned()
   let target_str = target.to_owned()
@@ -308,7 +308,7 @@ fn resolve_part_rel_target(
 fn resolve_rel_target(
   target : StringView,
   base_folder : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String raise XlsxError {
   let target_str = target.to_owned()
   validate_relationship_target_uri(target_str, cancelled~)
@@ -336,7 +336,7 @@ fn resolve_rel_target(
 ///|
 fn resolve_workbook_rel_target(
   target : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String raise XlsxError {
   resolve_part_rel_target(workbook_part_path, target, cancelled~)
 }

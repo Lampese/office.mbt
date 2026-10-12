@@ -24,7 +24,7 @@ fn validate_frequency(freq : Double) -> Bool {
 }
 
 ///|
-fn get_year_days(year : Int, basis : Int) -> Int {
+fn get_year_days(year : Int32, basis : Int32) -> Int32 {
   match basis {
     1 => if is_leap_year(year) { 366 } else { 365 }
     3 => 365
@@ -33,12 +33,12 @@ fn get_year_days(year : Int, basis : Int) -> Int {
 }
 
 ///|
-fn is_30_basis_method(basis : Int) -> Bool {
+fn is_30_basis_method(basis : Int32) -> Bool {
   basis == 0 || basis == 4
 }
 
 ///|
-fn get_days_in_month_range(from_month : Int, to_month : Int) -> Int {
+fn get_days_in_month_range(from_month : Int32, to_month : Int32) -> Int32 {
   if from_month > to_month {
     return 0
   }
@@ -46,7 +46,12 @@ fn get_days_in_month_range(from_month : Int, to_month : Int) -> Int {
 }
 
 ///|
-fn get_day_on_basis(year : Int, month : Int, day : Int, basis : Int) -> Int {
+fn get_day_on_basis(
+  year : Int32,
+  month : Int32,
+  day : Int32,
+  basis : Int32,
+) -> Int32 {
   if !is_30_basis_method(basis) {
     return day
   }
@@ -62,8 +67,8 @@ fn get_day_on_basis(year : Int, month : Int, day : Int, basis : Int) -> Int {
 fn coupdays_between(
   from_serial : Double,
   to_serial : Double,
-  basis : Int,
-  use_1904_dates? : Bool = false,
+  basis : Int32,
+  use_1904_dates~ : Bool = false,
 ) -> Double {
   let (from_year, from_month, from_day_raw) = match
     date_parts_from_serial(from_serial, use_1904_dates~) {
@@ -135,7 +140,7 @@ fn coupon_date_serial(
   settlement_serial : Double,
   maturity_serial : Double,
   frequency : Double,
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> Result[Double, FormulaValue] {
   let (settle_year, settle_month, settle_day) = match
     date_parts_from_serial(settlement_serial, use_1904_dates~) {
@@ -180,8 +185,8 @@ fn coupon_date_serial(
 ///|
 fn prepare_coupon_args(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
-) -> Result[(Double, Double, Double, Int), FormulaValue] {
+  use_1904_dates~ : Bool = false,
+) -> Result[(Double, Double, Double, Int32), FormulaValue] {
   if values.length() != 3 && values.length() != 4 {
     return Err(Error(formula_error_value))
   }
@@ -219,8 +224,8 @@ fn coupdaybs_value(
   settlement : Double,
   maturity : Double,
   frequency : Double,
-  basis : Int,
-  use_1904_dates? : Bool = false,
+  basis : Int32,
+  use_1904_dates~ : Bool = false,
 ) -> Result[Double, FormulaValue] {
   let pcd = match
     coupon_date_serial(
@@ -241,8 +246,8 @@ fn coupdays_value(
   settlement : Double,
   maturity : Double,
   frequency : Double,
-  basis : Int,
-  use_1904_dates? : Bool = false,
+  basis : Int32,
+  use_1904_dates~ : Bool = false,
 ) -> Result[Double, FormulaValue] {
   if basis == 1 {
     let pcd = match
@@ -283,8 +288,8 @@ fn coupdaysnc_value(
   settlement : Double,
   maturity : Double,
   frequency : Double,
-  basis : Int,
-  use_1904_dates? : Bool = false,
+  basis : Int32,
+  use_1904_dates~ : Bool = false,
 ) -> Result[Double, FormulaValue] {
   let ncd = match
     coupon_date_serial(
@@ -305,7 +310,7 @@ fn coupnum_value(
   settlement : Double,
   maturity : Double,
   frequency : Double,
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> Result[Double, FormulaValue] {
   match yearfrac_value(settlement, maturity, 0, use_1904_dates~) {
     Number(num) => Ok(Double::ceil(num * frequency))
@@ -318,8 +323,8 @@ fn coupnum_value(
 fn yearfrac_number(
   start_serial : Double,
   end_serial : Double,
-  basis : Int,
-  use_1904_dates? : Bool = false,
+  basis : Int32,
+  use_1904_dates~ : Bool = false,
 ) -> Result[Double, FormulaValue] {
   match yearfrac_value(start_serial, end_serial, basis, use_1904_dates~) {
     Number(num) => Ok(num)
@@ -340,7 +345,7 @@ fn round_half_up(value : Double) -> Double {
 ///|
 fn amor_date_serial(
   value : FormulaValue,
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> Result[Double, FormulaValue] {
   let normalized = normalize_scalar(value)
   match normalized {
@@ -362,15 +367,15 @@ priv struct AmorArgs {
   date_purchased : Double
   first_period : Double
   salvage : Double
-  period : Int
+  period : Int32
   rate : Double
-  basis : Int
+  basis : Int32
 }
 
 ///|
 fn prepare_amor_args(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> Result[AmorArgs, FormulaValue] {
   if values.length() != 6 && values.length() != 7 {
     return Err(Error(formula_error_value))
@@ -436,7 +441,7 @@ fn prepare_amor_args(
 ///|
 fn amordegrc_values(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   let args = match prepare_amor_args(values, use_1904_dates~) {
     Ok(value) => value
@@ -492,7 +497,7 @@ fn amordegrc_values(
 ///|
 fn amorlinc_values(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   let args = match prepare_amor_args(values, use_1904_dates~) {
     Ok(value) => value
@@ -530,7 +535,7 @@ fn amorlinc_values(
 
 ///|
 priv struct ConversionUnit {
-  group : Int
+  group : Int32
   allow_prefix : Bool
 }
 
@@ -728,8 +733,8 @@ let conversion_multipliers : Map[String, Double] = {
 }
 
 ///|
-fn build_unit_conversions() -> Map[Int, Map[String, Double]] {
-  let conversions : Map[Int, Map[String, Double]] = Map([])
+fn build_unit_conversions() -> Map[Int32, Map[String, Double]] {
+  let conversions : Map[Int32, Map[String, Double]] = Map([])
   conversions[category_weight_and_mass] = {
     "g": 1.0,
     "sg": 6.85217658567918e-05,
@@ -897,10 +902,10 @@ fn build_unit_conversions() -> Map[Int, Map[String, Double]] {
 }
 
 ///|
-let unit_conversions : Map[Int, Map[String, Double]] = build_unit_conversions()
+let unit_conversions : Map[Int32, Map[String, Double]] = build_unit_conversions()
 
 ///|
-fn get_unit_details(uom_text : String) -> (String, Int, Double, Bool) {
+fn get_unit_details(uom_text : String) -> (String, Int32, Double, Bool) {
   if uom_text.length() == 0 {
     return ("", 0, 0.0, false)
   }
@@ -1058,7 +1063,7 @@ fn euroconvert_values(values : ArrayView[FormulaValue]) -> FormulaValue {
       Err(err) => return err
     }
   }
-  let convert_table : Map[String, (Double, Int)] = {
+  let convert_table : Map[String, (Double, Int32)] = {
     "EUR": (1.0, 2),
     "ATS": (13.7603, 2),
     "BEF": (40.3399, 0),
@@ -2423,7 +2428,7 @@ fn pduration_values(values : ArrayView[FormulaValue]) -> FormulaValue {
 ///|
 fn accrint_values(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   if values.length() < 6 || values.length() > 8 {
     return Error(formula_error_value)
@@ -2476,7 +2481,7 @@ fn accrint_values(
 ///|
 fn accrintm_values(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   if values.length() != 4 && values.length() != 5 {
     return Error(formula_error_value)
@@ -2522,7 +2527,7 @@ fn accrintm_values(
 ///|
 fn coupdaybs_values(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   let (settlement, maturity, frequency, basis) = match
     prepare_coupon_args(values, use_1904_dates~) {
@@ -2540,7 +2545,7 @@ fn coupdaybs_values(
 ///|
 fn coupdays_values(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   let (settlement, maturity, frequency, basis) = match
     prepare_coupon_args(values, use_1904_dates~) {
@@ -2558,7 +2563,7 @@ fn coupdays_values(
 ///|
 fn coupdaysnc_values(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   let (settlement, maturity, frequency, basis) = match
     prepare_coupon_args(values, use_1904_dates~) {
@@ -2576,7 +2581,7 @@ fn coupdaysnc_values(
 ///|
 fn coupncd_values(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   let (settlement, maturity, frequency, _basis) = match
     prepare_coupon_args(values, use_1904_dates~) {
@@ -2600,7 +2605,7 @@ fn coupncd_values(
 ///|
 fn coupnum_values(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   let (settlement, maturity, frequency, _basis) = match
     prepare_coupon_args(values, use_1904_dates~) {
@@ -2618,7 +2623,7 @@ fn coupnum_values(
 ///|
 fn couppcd_values(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   let (settlement, maturity, frequency, _basis) = match
     prepare_coupon_args(values, use_1904_dates~) {
@@ -2643,7 +2648,7 @@ fn couppcd_values(
 fn disc_intrate_values(
   name : String,
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   if values.length() != 4 && values.length() != 5 {
     return Error(formula_error_value)
@@ -2697,7 +2702,7 @@ fn disc_intrate_values(
 ///|
 fn received_values(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   if values.length() != 4 && values.length() != 5 {
     return Error(formula_error_value)
@@ -2744,8 +2749,8 @@ fn received_values(
 ///|
 fn prepare_duration_args(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
-) -> Result[(Double, Double, Double, Double, Double, Int), FormulaValue] {
+  use_1904_dates~ : Bool = false,
+) -> Result[(Double, Double, Double, Double, Double, Int32), FormulaValue] {
   if values.length() != 5 && values.length() != 6 {
     return Err(Error(formula_error_value))
   }
@@ -2799,8 +2804,8 @@ fn duration_calc(
   coupon : Double,
   yld : Double,
   frequency : Double,
-  basis : Int,
-  use_1904_dates? : Bool = false,
+  basis : Int32,
+  use_1904_dates~ : Bool = false,
 ) -> Result[Double, FormulaValue] {
   let frac = match
     yearfrac_number(settlement, maturity, basis, use_1904_dates~) {
@@ -2835,7 +2840,7 @@ fn duration_calc(
 ///|
 fn duration_values(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   let (settlement, maturity, coupon, yld, frequency, basis) = match
     prepare_duration_args(values, use_1904_dates~) {
@@ -2861,7 +2866,7 @@ fn duration_values(
 ///|
 fn mduration_values(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   let (settlement, maturity, coupon, yld, frequency, basis) = match
     prepare_duration_args(values, use_1904_dates~) {
@@ -2893,8 +2898,8 @@ fn price_value(
   yld : Double,
   redemption : Double,
   frequency : Double,
-  basis : Int,
-  use_1904_dates? : Bool = false,
+  basis : Int32,
+  use_1904_dates~ : Bool = false,
 ) -> Result[Double, FormulaValue] {
   if settlement >= maturity {
     return Err(Error(formula_error_num))
@@ -2954,8 +2959,8 @@ fn yield_value(
   pr : Double,
   redemption : Double,
   frequency : Double,
-  basis : Int,
-  use_1904_dates? : Bool = false,
+  basis : Int32,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   if settlement >= maturity {
     return Error(formula_error_num)
@@ -3075,7 +3080,7 @@ fn check_price_yield_args(
 fn price_yield_values(
   name : String,
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   if values.length() != 6 && values.length() != 7 {
     return Error(formula_error_value)
@@ -3149,7 +3154,7 @@ fn price_yield_values(
 ///|
 fn pricedisc_values(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   if values.length() != 4 && values.length() != 5 {
     return Error(formula_error_value)
@@ -3199,7 +3204,7 @@ fn pricedisc_values(
 ///|
 fn pricemat_values(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   if values.length() != 5 && values.length() != 6 {
     return Error(formula_error_value)
@@ -3264,7 +3269,7 @@ fn pricemat_values(
 ///|
 fn tbilleq_values(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   guard values is [v0, v1, v2] else { return Error(formula_error_value) }
   let settlement = match value_as_date_serial(v0, use_1904_dates~) {
@@ -3293,7 +3298,7 @@ fn tbilleq_values(
 ///|
 fn tbillprice_values(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   guard values is [v0, v1, v2] else { return Error(formula_error_value) }
   let settlement = match value_as_date_serial(v0, use_1904_dates~) {
@@ -3322,7 +3327,7 @@ fn tbillprice_values(
 ///|
 fn tbillyield_values(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   guard values is [v0, v1, v2] else { return Error(formula_error_value) }
   let settlement = match value_as_date_serial(v0, use_1904_dates~) {
@@ -3351,7 +3356,7 @@ fn tbillyield_values(
 ///|
 fn yielddisc_values(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   if values.length() != 4 && values.length() != 5 {
     return Error(formula_error_value)
@@ -3398,7 +3403,7 @@ fn yielddisc_values(
 ///|
 fn yieldmat_values(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   if values.length() != 5 && values.length() != 6 {
     return Error(formula_error_value)
@@ -3486,7 +3491,7 @@ fn change_month_serial(
   serial : Double,
   num_months : Double,
   return_last_month : Bool,
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> Double {
   let (year, month, day) = match
     date_parts_from_serial(serial, use_1904_dates~) {
@@ -3524,7 +3529,7 @@ fn dates_aggregate(
   f : (Double, Double) -> Double,
   acc : Double,
   return_last_month : Bool,
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> (Double, Double, Double) {
   let mut front_date = start_date
   let mut trailing_date = end_date
@@ -3557,7 +3562,7 @@ fn coup_number(
   maturity : Double,
   settlement : Double,
   num_months : Double,
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> Double {
   let (mat_year, mat_month, mat_day) = match
     date_parts_from_serial(maturity, use_1904_dates~) {
@@ -3628,9 +3633,9 @@ fn prepare_odd_yld_or_pr_arg(
 fn prepare_oddf_args(
   name : String,
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> Result[
-  (Double, Double, Double, Double, Double, Double, Double, Double, Int),
+  (Double, Double, Double, Double, Double, Double, Double, Double, Int32),
   FormulaValue,
 ] {
   let settlement = match value_as_date_serial(values[0], use_1904_dates~) {
@@ -3709,8 +3714,8 @@ fn oddfprice_calc(
   yld : Double,
   redemption : Double,
   frequency : Double,
-  basis : Int,
-  use_1904_dates? : Bool = false,
+  basis : Int32,
+  use_1904_dates~ : Bool = false,
 ) -> Result[Double, FormulaValue] {
   if basis < 0 || basis > 4 {
     return Err(Error(formula_error_num))
@@ -3874,7 +3879,7 @@ fn oddfprice_calc(
 ///|
 fn oddfprice_values(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   if values.length() != 8 && values.length() != 9 {
     return Error(formula_error_value)
@@ -3934,7 +3939,7 @@ fn get_oddfprice(
 ///|
 fn oddfyield_values(
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   if values.length() != 8 && values.length() != 9 {
     return Error(formula_error_value)
@@ -3991,9 +3996,9 @@ fn oddfyield_values(
 fn prepare_oddl_args(
   name : String,
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> Result[
-  (Double, Double, Double, Double, Double, Double, Double, Int),
+  (Double, Double, Double, Double, Double, Double, Double, Int32),
   FormulaValue,
 ] {
   let settlement = match value_as_date_serial(values[0], use_1904_dates~) {
@@ -4059,7 +4064,7 @@ fn prepare_oddl_args(
 fn oddl_values(
   name : String,
   values : ArrayView[FormulaValue],
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   if values.length() != 7 && values.length() != 8 {
     return Error(formula_error_value)

@@ -5,7 +5,7 @@ fn text_cmap_predefined_name_for_test(text : String) -> @core.PdfName {
 
 ///|
 fn text_cmap_predefined_bytes_for_test(
-  values : ArrayView[Int],
+  values : ArrayView[Int32],
 ) -> @core.PdfBytes {
   try! @core.pdf_bytes_of_int_array(values)
 }
@@ -324,7 +324,7 @@ test "PdfTextExtractor reads identity CMap text as two-byte character codes" {
     fail("expected malformed UTF32 predefined CMap text error")
   }
   let direct_unicode_predefined_cases : Array[
-    (String, Array[Int], Array[Int], Int, Int),
+    (String, Array[Int32], Array[Int32], Int32, Int32),
   ] = [
     (
       "/UniAKR-UTF8-H",
@@ -757,7 +757,7 @@ test "PdfTextExtractor reads identity CMap text as two-byte character codes" {
   guard etenms_b5_truncated is Err(BadText) else {
     fail("expected @core.PdfError::BadText for truncated ETenms-B5 charcode")
   }
-  let hk_b5_cases : Array[(String, Array[Int], Array[Int], Int, Int)] = [
+  let hk_b5_cases : Array[(String, Array[Int32], Array[Int32], Int32, Int32)] = [
     (
       "/HKdla-B5-H",
       [0x41, 0xFA, 0x41, 0x80],
@@ -1286,7 +1286,9 @@ test "PdfTextExtractor reads identity CMap text as two-byte character codes" {
   guard kscpc_euc_truncated is Err(BadText) else {
     fail("expected @core.PdfError::BadText for truncated KSCpc-EUC charcode")
   }
-  let vertical_builtin_cases : Array[(String, Array[Int], Array[Int], Int, Int)] = [
+  let vertical_builtin_cases : Array[
+    (String, Array[Int32], Array[Int32], Int32, Int32),
+  ] = [
     ("/GB-EUC-V", [0xA1, 0xA2], [0x3001], 0x3001, 0xA1A2),
     ("/GBpc-EUC-V", [0xA1, 0xA2], [0x3001], 0x3001, 0xA1A2),
     ("/GBK-EUC-V", [0xA1, 0xA2], [0x3001], 0x3001, 0xA1A2),

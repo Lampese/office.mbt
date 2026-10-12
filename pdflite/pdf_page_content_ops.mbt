@@ -64,7 +64,7 @@ pub fn PdfDocument::prepend_operators(
   self : PdfDocument,
   page : @page.PdfPage,
   ops : ArrayView[@content.PdfContentOp],
-  fast? : Bool = false,
+  fast~ : Bool = false,
 ) -> @page.PdfPage raise @core.PdfError {
   if fast {
     { ..page, content: [pdf_content_stream_of_ops(ops), ..page.content], }
@@ -83,7 +83,7 @@ pub fn pdf_prepend_operators(
   document : PdfDocument,
   operators : ArrayView[@content.PdfContentOp],
   page : @page.PdfPage,
-  fast? : Bool = false,
+  fast~ : Bool = false,
 ) -> @page.PdfPage raise @core.PdfError {
   document.prepend_operators(page, operators, fast~)
 }
@@ -98,7 +98,7 @@ pub fn PdfDocument::postpend_operators(
   self : PdfDocument,
   page : @page.PdfPage,
   ops : ArrayView[@content.PdfContentOp],
-  fast? : Bool = false,
+  fast~ : Bool = false,
 ) -> @page.PdfPage raise @core.PdfError {
   if fast {
     {
@@ -140,7 +140,7 @@ pub fn pdf_postpend_operators(
   document : PdfDocument,
   operators : ArrayView[@content.PdfContentOp],
   page : @page.PdfPage,
-  fast? : Bool = false,
+  fast~ : Bool = false,
 ) -> @page.PdfPage raise @core.PdfError {
   document.postpend_operators(page, operators, fast~)
 }

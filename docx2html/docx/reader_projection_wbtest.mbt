@@ -321,7 +321,7 @@ test "a separator inside one paragraph does not split it" {
 /// provenance.
 test "projection partitions generated documents like the reader" {
   @quickcheck.check(
-    (seeds : Array[Int]) => {
+    (seeds : Array[Int32]) => {
       let source = hostile_document(seeds)
       guard join_text_story(source) is Joined(story) else {
         fail("expected the story to join")

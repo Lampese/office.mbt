@@ -1,5 +1,5 @@
 ///|
-fn cell_index_key(row : Int, col : Int) -> String {
+fn cell_index_key(row : Int32, col : Int32) -> String {
   "\{row}:\{col}"
 }
 
@@ -10,7 +10,7 @@ fn Worksheet::invalidate_cell_index(self : Worksheet) -> Unit {
 
 ///|
 fn populate_worksheet_cell_index(
-  index : Map[String, Int],
+  index : Map[String, Int32],
   cells : Array[Cell],
 ) -> Unit {
   for i, cell in cells {
@@ -25,8 +25,8 @@ fn populate_worksheet_cell_index(
 }
 
 ///|
-fn build_worksheet_cell_index(cells : Array[Cell]) -> Map[String, Int] {
-  let index : Map[String, Int] = Map([])
+fn build_worksheet_cell_index(cells : Array[Cell]) -> Map[String, Int32] {
+  let index : Map[String, Int32] = Map([])
   populate_worksheet_cell_index(index, cells)
   index
 }
@@ -35,12 +35,12 @@ fn build_worksheet_cell_index(cells : Array[Cell]) -> Map[String, Int] {
 fn build_bounded_worksheet_cell_index(
   cells : Array[Cell],
   budget : ReadBudget,
-) -> Map[String, Int] raise XlsxError {
+) -> Map[String, Int32] raise XlsxError {
   // Index construction is part of workbook parsing, not deferred command
   // work. Charge it before allocating and retain cancellation checkpoints for
   // large but valid sheets.
   budget.charge_work(cells.length())
-  let index : Map[String, Int] = Map([])
+  let index : Map[String, Int32] = Map([])
   for i, cell in cells {
     if i % 4096 == 0 {
       budget.checkpoint()
@@ -65,7 +65,11 @@ fn Worksheet::ensure_cell_index(self : Worksheet) -> Unit {
 }
 
 ///|
-fn Worksheet::cell_index_of(self : Worksheet, row : Int, col : Int) -> Int? {
+fn Worksheet::cell_index_of(
+  self : Worksheet,
+  row : Int32,
+  col : Int32,
+) -> Int32? {
   self.ensure_cell_index()
   self.cell_index.get(cell_index_key(row, col))
 }
@@ -73,9 +77,9 @@ fn Worksheet::cell_index_of(self : Worksheet, row : Int, col : Int) -> Int? {
 ///|
 fn Worksheet::record_cell_index_if_valid(
   self : Worksheet,
-  row : Int,
-  col : Int,
-  index : Int,
+  row : Int32,
+  col : Int32,
+  index : Int32,
 ) -> Unit {
   if self.cell_index_valid {
     self.cell_index[cell_index_key(row, col)] = index
@@ -85,7 +89,12 @@ fn Worksheet::record_cell_index_if_valid(
 // White-box tests for the lazy worksheet cell index.
 
 ///|
-fn raw_cell(reference : String, row : Int, col : Int, value : String) -> Cell {
+fn raw_cell(
+  reference : String,
+  row : Int32,
+  col : Int32,
+  value : String,
+) -> Cell {
   {
     reference,
     row,

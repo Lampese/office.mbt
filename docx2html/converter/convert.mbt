@@ -29,7 +29,7 @@ pub(all) struct ImageConversion {
 /// Builds an image conversion result from rendered nodes and diagnostics.
 pub fn image_conversion(
   nodes : Array[HtmlNode],
-  messages? : Array[Message] = [],
+  messages~ : Array[Message] = [],
 ) -> ImageConversion {
   { nodes, messages, }
 }
@@ -38,13 +38,13 @@ pub fn image_conversion(
 /// Converts a document tree to HTML.
 pub fn convert_document_to_html(
   document : DocumentElement,
-  style_map? : Array[String] = [],
-  include_default_style_map? : Bool = true,
-  ignore_empty_paragraphs? : Bool = true,
-  id_prefix? : String = "",
-  pretty_print? : Bool = false,
-  convert_image? : (Image) -> ImageConversion = data_uri_image_converter,
-  transform_document? : (DocumentElement) -> DocumentElement = identity_document_transform,
+  style_map~ : Array[String] = [],
+  include_default_style_map~ : Bool = true,
+  ignore_empty_paragraphs~ : Bool = true,
+  id_prefix~ : String = "",
+  pretty_print~ : Bool = false,
+  convert_image~ : (Image) -> ImageConversion = data_uri_image_converter,
+  transform_document~ : (DocumentElement) -> DocumentElement = identity_document_transform,
 ) -> ConversionResult {
   convert_document(
     document,
@@ -63,12 +63,12 @@ pub fn convert_document_to_html(
 /// Converts a document tree to Markdown.
 pub fn convert_document_to_markdown(
   document : DocumentElement,
-  style_map? : Array[String] = [],
-  include_default_style_map? : Bool = true,
-  ignore_empty_paragraphs? : Bool = true,
-  id_prefix? : String = "",
-  convert_image? : (Image) -> ImageConversion = data_uri_image_converter,
-  transform_document? : (DocumentElement) -> DocumentElement = identity_document_transform,
+  style_map~ : Array[String] = [],
+  include_default_style_map~ : Bool = true,
+  ignore_empty_paragraphs~ : Bool = true,
+  id_prefix~ : String = "",
+  convert_image~ : (Image) -> ImageConversion = data_uri_image_converter,
+  transform_document~ : (DocumentElement) -> DocumentElement = identity_document_transform,
 ) -> ConversionResult {
   convert_document(
     document,
@@ -86,14 +86,14 @@ pub fn convert_document_to_markdown(
 /// Converts a document tree using the requested output format.
 pub fn convert_document(
   document : DocumentElement,
-  output_format? : OutputFormat = Html,
-  style_map? : Array[String] = [],
-  include_default_style_map? : Bool = true,
-  ignore_empty_paragraphs? : Bool = true,
-  id_prefix? : String = "",
-  pretty_print? : Bool = false,
-  convert_image? : (Image) -> ImageConversion = data_uri_image_converter,
-  transform_document? : (DocumentElement) -> DocumentElement = identity_document_transform,
+  output_format~ : OutputFormat = Html,
+  style_map~ : Array[String] = [],
+  include_default_style_map~ : Bool = true,
+  ignore_empty_paragraphs~ : Bool = true,
+  id_prefix~ : String = "",
+  pretty_print~ : Bool = false,
+  convert_image~ : (Image) -> ImageConversion = data_uri_image_converter,
+  transform_document~ : (DocumentElement) -> DocumentElement = identity_document_transform,
 ) -> ConversionResult {
   let converted = convert_document_to_nodes(
     document,
@@ -115,12 +115,12 @@ pub fn convert_document(
 ///|
 fn convert_document_to_nodes(
   document : DocumentElement,
-  style_map? : Array[String] = [],
-  include_default_style_map? : Bool = true,
-  ignore_empty_paragraphs? : Bool = true,
-  id_prefix? : String = "",
-  convert_image? : (Image) -> ImageConversion = data_uri_image_converter,
-  transform_document? : (DocumentElement) -> DocumentElement = identity_document_transform,
+  style_map~ : Array[String] = [],
+  include_default_style_map~ : Bool = true,
+  ignore_empty_paragraphs~ : Bool = true,
+  id_prefix~ : String = "",
+  convert_image~ : (Image) -> ImageConversion = data_uri_image_converter,
+  transform_document~ : (DocumentElement) -> DocumentElement = identity_document_transform,
 ) -> ConvertedNodes {
   let document = transform_document(document)
   let all_style_lines : Array[String] = []
@@ -155,10 +155,10 @@ priv struct DocumentConverter {
   options : ConvertOptions
   messages : Array[Message]
   note_references : Array[NoteReferenceInfo]
-  mut note_number : Int
+  mut note_number : Int32
   comments : Array[Comment]
   comment_references : Array[CommentReferenceInfo]
-  mut comment_number : Int
+  mut comment_number : Int32
   image_converter : (Image) -> ImageConversion
 }
 
@@ -565,7 +565,7 @@ fn DocumentConverter::convert_table_children(
 }
 
 ///|
-fn first_body_row_index(children : Array[DocumentElement]) -> Int {
+fn first_body_row_index(children : Array[DocumentElement]) -> Int32 {
   let mut index = 0
   for child in children {
     match child {
@@ -580,8 +580,8 @@ fn first_body_row_index(children : Array[DocumentElement]) -> Int {
 fn DocumentConverter::convert_table_segment(
   self : DocumentConverter,
   children : Array[DocumentElement],
-  start~ : Int,
-  end~ : Int,
+  start~ : Int32,
+  end~ : Int32,
   as_header~ : Bool,
 ) -> Array[HtmlNode] {
   let nodes : Array[HtmlNode] = []
@@ -623,8 +623,8 @@ fn DocumentConverter::convert_table_row(
 fn DocumentConverter::convert_table_cell(
   self : DocumentConverter,
   children : Array[DocumentElement],
-  col_span~ : Int,
-  row_span~ : Int,
+  col_span~ : Int32,
+  row_span~ : Int32,
   as_header~ : Bool,
 ) -> HtmlNode {
   let attrs : Map[String, String] = Map([])

@@ -72,8 +72,8 @@ fn write_form_control_properties(
 fn write_worksheet_controls(
   sb : LimitedXmlBuilder,
   sheet : Worksheet,
-  shape_id_start : Int,
-  rel_id_start : Int,
+  shape_id_start : Int32,
+  rel_id_start : Int32,
 ) -> Unit raise XlsxError {
   // Office 2010 controls keep a VML fallback for older consumers.
   sb.write_view(

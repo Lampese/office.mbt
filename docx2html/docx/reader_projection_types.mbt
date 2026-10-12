@@ -6,8 +6,8 @@
 ///|
 #warnings("-unused_field")
 priv struct ReaderSourceSpan {
-  byte_start : Int
-  byte_end : Int
+  byte_start : Int32
+  byte_end : Int32
 }
 
 ///|
@@ -52,15 +52,15 @@ priv struct ReaderProjectionContribution {
   source_span : ReaderSourceSpan
   /// Half-open UTF-16 interval in the reader's story text; zero-width
   /// contributions get an empty interval at the position they sit.
-  mut projection_start : Int
-  mut projection_end : Int
+  mut projection_start : Int32
+  mut projection_end : Int32
   /// Index of this contribution's run within its paragraph by order of
   /// first appearance, or -1 when it belongs to no run.
-  mut logical_run_index : Int
+  mut logical_run_index : Int32
   /// Field annotations, populated by `classify_reader_projection_fields`.
-  mut field_identity : Int?
+  mut field_identity : Int32?
   mut field_region : ReaderFieldRegion
-  mut field_refusal : Int?
+  mut field_refusal : Int32?
 }
 
 ///|
@@ -73,7 +73,7 @@ priv struct ReaderProjectionRun {
   /// Position among the paragraph's runs in first-appearance order -- the
   /// r[j] a surgery address names. Atomless runs participate, exactly as
   /// the legacy walker's zero-width run-open seams made them.
-  mut logical_index : Int
+  mut logical_index : Int32
   /// The run's own field region and refusal, populated by
   /// `classify_reader_projection_fields` through a run slot: a run with
   /// NO contributions still sits somewhere, and surgery must refuse an
@@ -83,7 +83,7 @@ priv struct ReaderProjectionRun {
   /// are assigned, so a truncated field's result run keeps FieldResult
   /// and carries the refusal alone.
   mut field_region : ReaderFieldRegion
-  mut field_refusal : Int?
+  mut field_refusal : Int32?
 }
 
 ///|
@@ -102,9 +102,9 @@ priv struct ReaderProjectionParagraph {
   sources : Array[ReaderProjectionParagraphSource]
   runs : Array[ReaderProjectionRun]
   contributions : Array[ReaderProjectionContribution]
-  mut logical_index : Int
-  mut projection_start : Int
-  mut projection_end : Int
+  mut logical_index : Int32
+  mut projection_start : Int32
+  mut projection_end : Int32
 }
 
 ///|
@@ -162,7 +162,7 @@ fn ReaderProjectionRefusal::describe(self : ReaderProjectionRefusal) -> String {
 ///|
 /// The `"\n\n"` BodyReader writes between paragraphs, in UTF-16 units --
 /// the same constant the legacy projection uses.
-let reader_projection_separator_units : Int = 2
+let reader_projection_separator_units : Int32 = 2
 
 ///|
 /// Assigns logical indices, first-appearance run numbering, and UTF-16
@@ -175,7 +175,7 @@ fn assign_reader_projection_coordinates(projection : ReaderProjection) -> Unit {
     paragraph.projection_start = offset
     // seed the numbering from the runs list: an atomless run occupies its
     // first-appearance position even though no contribution names it
-    let run_indices : Map[Int, Int] = Map([])
+    let run_indices : Map[Int32, Int32] = Map([])
     for run in paragraph.runs {
       let SourceElementId(identity) = run.source
       run.logical_index = run_indices.length()
@@ -208,9 +208,9 @@ fn assign_reader_projection_coordinates(projection : ReaderProjection) -> Unit {
 /// transformed subtrees can multiply occurrences, so the adapter carries
 /// its own caps rather than inheriting the reader's.
 priv struct ReaderProjectionBudget {
-  mut visits_left : Int
-  mut contributions_left : Int
-  mut retained_left : Int
+  mut visits_left : Int32
+  mut contributions_left : Int32
+  mut retained_left : Int32
 }
 
 ///|
@@ -218,7 +218,7 @@ priv struct ReaderProjectionBudget {
 /// count, far above any real document's fan-out.
 fn reader_projection_budget(scan : StoryScan) -> ReaderProjectionBudget {
   let elements = scan.elements().length()
-  let scaled = fn(factor : Int) -> Int {
+  let scaled = fn(factor : Int32) -> Int32 {
     let value = elements * factor + 1024
     if value < 0 {
       2147483647

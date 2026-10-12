@@ -67,16 +67,16 @@ pub(all) enum Block {
 /// A paragraph block with Word's defaults (widow control on, no keeps).
 pub fn Block::paragraph(
   input : @paragraph.ParagraphInput,
-  keep_lines? : Bool = false,
-  keep_next? : Bool = false,
-  widow_control? : Bool = true,
+  keep_lines~ : Bool = false,
+  keep_next~ : Bool = false,
+  widow_control~ : Bool = true,
 ) -> Block {
   Paragraph(input~, keep_lines~, keep_next~, widow_control~)
 }
 
 ///|
 /// A table block with Word's defaults.
-pub fn Block::table(table : @table.Table, keep_next? : Bool = false) -> Block {
+pub fn Block::table(table : @table.Table, keep_next~ : Bool = false) -> Block {
   TableBlock(table~, keep_next~)
 }
 
@@ -252,9 +252,9 @@ fn PageCursor::place_slot(self : PageCursor, slot : LineSlot) -> Unit {
 /// and their total height.
 fn fitting_lines(
   para : LaidParagraph,
-  start : Int,
+  start : Int32,
   room : Double,
-) -> (Int, Double) {
+) -> (Int32, Double) {
   let mut used = 0.0
   let mut n = 0
   for i in start..<para.slots.length() {
@@ -297,7 +297,7 @@ fn place_table(
   cursor : PageCursor,
   tbl : LaidTable,
   blocks : Array[LaidBlock],
-  index : Int,
+  index : Int32,
 ) -> Unit {
   let layout = tbl.layout
   let total = layout.rows.length()
@@ -412,7 +412,7 @@ pub fn PageFurniture::none() -> PageFurniture {
 /// The header and footer a given page carries, by zero-based index.
 fn PageFurniture::for_page(
   self : PageFurniture,
-  index : Int,
+  index : Int32,
 ) -> (Array[Block], Array[Block]) {
   // page numbers are 1-based, so an even page is an odd index
   if self.title_page && index == 0 {
@@ -483,8 +483,8 @@ fn furniture_items(
   model : @pagelayout.PageModel,
   blocks : Array[Block],
   width : Double,
-  page_number : Int,
-  page_count : Int,
+  page_number : Int32,
+  page_count : Int32,
 ) -> Array[(Double, @pagelayout.PageItem)] {
   let out : Array[(Double, @pagelayout.PageItem)] = []
   // paragraphs stack, so each one's lines are offset by what came before
@@ -606,8 +606,8 @@ fn offset_item(
 /// once and stamped onto every page.
 pub fn paginate(
   blocks : Array[Block],
-  section? : SectionProps = SectionProps::default(),
-  furniture? : PageFurniture = PageFurniture::none(),
+  section~ : SectionProps = SectionProps::default(),
+  furniture~ : PageFurniture = PageFurniture::none(),
 ) -> @pagelayout.PageModel {
   let cursor = PageCursor::{
     model: @pagelayout.PageModel::new(),

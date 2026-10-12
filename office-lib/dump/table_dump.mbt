@@ -33,7 +33,7 @@ fn same_payload_kind(a : ObjectPayload, b : ObjectPayload) -> Bool {
 /// in the stream, the sheet, and the source object to compare readback
 /// against.
 priv struct TableCandidate {
-  op_index : Int
+  op_index : Int32
   sheet : String
   payload : ObjectPayload
 }
@@ -205,7 +205,7 @@ fn table_replayed_faithfully(
 }
 
 ///|
-fn table_header_span(table : @xlsx.Table) -> (Int, Int, Int) raise {
+fn table_header_span(table : @xlsx.Table) -> (Int32, Int32, Int32) raise {
   let (start, end) = match table.range_ref.find(":") {
     Some(colon) =>
       (
@@ -242,7 +242,7 @@ fn validate_table_ops(
   // (e.g. a range at the grid boundary the expansion refuses) can never
   // replay; residualize it here so a chunk parse failure below always
   // means a non-candidate dump bug
-  let parse_dropped : Set[Int] = Set([])
+  let parse_dropped : Set[Int32] = Set([])
   for candidate in candidates {
     let script = Json::object({
       "schema": Json::string(XLSX_BATCH_SCHEMA),
@@ -266,7 +266,7 @@ fn validate_table_ops(
   // even after the last candidate was dropped
   for ;; {
     check_cancelled(cancelled)
-    let dropped : Set[Int] = Set([])
+    let dropped : Set[Int32] = Set([])
     match replay_ops_traced(create_sheet, current_ops) {
       FailedAt(index, message) => {
         // only a candidate table op may fail in context; anything else is
@@ -336,10 +336,10 @@ fn validate_table_ops(
 fn remove_dropped(
   ops : Array[Json],
   candidates : Array[TableCandidate],
-  dropped : Set[Int],
+  dropped : Set[Int32],
 ) -> (Array[Json], Array[TableCandidate]) {
   let next_ops : Array[Json] = []
-  let index_map : Map[Int, Int] = Map([])
+  let index_map : Map[Int32, Int32] = Map([])
   for index, op in ops {
     if !dropped.contains(index) {
       index_map[index] = next_ops.length()

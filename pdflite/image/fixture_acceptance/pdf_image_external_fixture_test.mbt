@@ -47,7 +47,7 @@ async fn image_external_fixture_bytes_for_test(path : String) -> Bytes? {
 fn image_external_bytes_start_with_at_for_test(
   haystack : BytesView,
   needle : BytesView,
-  start : Int,
+  start : Int32,
 ) -> Bool {
   if start < 0 || start + needle.length() > haystack.length() {
     false
@@ -66,7 +66,7 @@ fn image_external_bytes_start_with_at_for_test(
 fn image_external_find_last_bytes_for_test(
   haystack : BytesView,
   needle : BytesView,
-) -> Int {
+) -> Int32 {
   if needle.length() == 0 {
     haystack.length()
   } else if haystack.length() < needle.length() {
@@ -88,7 +88,7 @@ fn image_external_find_last_bytes_for_test(
 fn image_external_find_bytes_for_test(
   haystack : BytesView,
   needle : BytesView,
-) -> Int {
+) -> Int32 {
   if needle.length() == 0 {
     0
   } else if haystack.length() < needle.length() {
@@ -108,8 +108,8 @@ fn image_external_find_bytes_for_test(
 fn image_external_find_bytes_after_for_test(
   haystack : BytesView,
   needle : BytesView,
-  start : Int,
-) -> Int {
+  start : Int32,
+) -> Int32 {
   if needle.length() == 0 {
     start
   } else if start < 0 || haystack.length() < needle.length() {
@@ -175,7 +175,7 @@ fn image_external_corrupt_startxref_pointer_for_test(
 }
 
 ///|
-fn image_external_startxref_offset_for_test(bytes : Bytes) -> Int raise {
+fn image_external_startxref_offset_for_test(bytes : Bytes) -> Int32 raise {
   let marker = b"startxref"
   let marker_position = image_external_find_last_bytes_for_test(bytes, marker)
   if marker_position < 0 {
@@ -243,7 +243,7 @@ fn image_external_corrupt_startxref_trailer_keyword_for_test(
 ///|
 fn image_external_first_in_use_xref_row_start_for_test(
   bytes : Bytes,
-) -> Int raise {
+) -> Int32 raise {
   let free_row = b"0000000000 65535 f"
   let free_row_position = image_external_find_bytes_for_test(bytes, free_row)
   if free_row_position < 0 {
@@ -318,7 +318,7 @@ fn image_external_corrupt_first_in_use_xref_generation_for_test(
 ///|
 fn image_external_first_xref_subsection_spans_for_test(
   bytes : Bytes,
-) -> (Int, Int, Int, Int) raise {
+) -> (Int32, Int32, Int32, Int32) raise {
   let header = b"xref"
   let header_position = image_external_find_bytes_for_test(bytes, header)
   if header_position < 0 {
@@ -485,8 +485,8 @@ fn image_external_assert_jpeg_for_test(
 ///|
 fn image_external_assert_raw_rgb_for_test(
   images : Array[@pdflite.PdfImage],
-  width : Int,
-  height : Int,
+  width : Int32,
+  height : Int32,
   message : String,
 ) -> Unit raise {
   @test.assert_eq(images.length(), 1)
@@ -828,7 +828,7 @@ fn image_external_cpdf_source_nested_image_for_test() -> @syntax.PdfObject raise
 
 ///|
 fn image_external_cpdf_source_form_image_form_for_test(
-  image_number : Int,
+  image_number : Int32,
 ) -> @syntax.PdfObject raise {
   @pdflite.pdf_content_stream_of_ops([
     Op_cm({ a: 72.0, b: 0.0, c: 0.0, d: 72.0, e: 72.0, f: 72.0, }),

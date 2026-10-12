@@ -9,7 +9,7 @@ fn anim_xml(slide : @slide.Slide) -> String raise {
 
 ///|
 /// Count non-overlapping occurrences of `needle` in `haystack`.
-fn count(haystack : String, needle : String) -> Int {
+fn count(haystack : String, needle : String) -> Int32 {
   for rest = haystack[:], total = 0 {
     match rest.find(needle) {
       Some(at) => continue rest[at + needle.length():], total + 1

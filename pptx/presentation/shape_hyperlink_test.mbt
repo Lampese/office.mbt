@@ -144,7 +144,7 @@ test "ShapeHyperlink::external / to_slide constructors carry the target" {
 ///|
 /// A free-floating straight connector for these tests (no builder
 /// constructor exists for connectors — literal construction is the norm).
-fn test_connector(id : Int) -> @slide.Connector {
+fn test_connector(id : Int32) -> @slide.Connector {
   {
     id,
     name: "conn",

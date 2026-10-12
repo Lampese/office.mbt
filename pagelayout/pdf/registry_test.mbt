@@ -1,7 +1,7 @@
 ///|
 /// The bundled Liberation Sans program for a style, as a caller's own font
 /// file would be.
-fn sans(bold? : Bool = false, italic? : Bool = false) -> Bytes {
+fn sans(bold~ : Bool = false, italic~ : Bool = false) -> Bytes {
   @fontoutlines.outline_sfnt("Liberation Sans", bold~, italic~).unwrap()
 }
 
@@ -29,7 +29,7 @@ fn family_model(
   family : String,
   text : String,
   face : @fonts.FaceMetrics,
-  bold? : Bool = false,
+  bold~ : Bool = false,
 ) -> @pagelayout.PageModel {
   let model = @pagelayout.PageModel::new()
   let font = model.add_font({ family, bold, italic: false, })
@@ -214,7 +214,7 @@ test "a missing style is measured and drawn with the regular face" {
   let (shown, codes) = extracted(bytes)
   inspect(shown, content="AΩ")
   // Identity-H codes are the regular program's glyph ids
-  let hex = fn(cp : Int) {
+  let hex = fn(cp : Int32) {
     regular.glyph_id(cp).unwrap().to_string(radix=16).pad_start(4, '0')
   }
   assert_eq(codes, hex('A'.to_int()) + hex(0x3A9))
@@ -357,7 +357,7 @@ test "paragraph layout measures with the registry it is given" {
 ///|
 /// `program` with its `head` table's unitsPerEm replaced: every advance of
 /// the face then measures `old / units_per_em` times as wide.
-fn with_units_per_em(program : Bytes, units_per_em : Int) -> Bytes {
+fn with_units_per_em(program : Bytes, units_per_em : Int32) -> Bytes {
   let bytes = program.to_array()
   let tables = (bytes[4].to_int() << 8) | bytes[5].to_int()
   for i in 0..<tables {
@@ -531,7 +531,7 @@ test "metrics handed out by a sealed registry cannot change its output" {
     assert_true(physical_equal(metrics, face))
     assert_eq(metrics.glyph_id('A'.to_int()), Some(0x24))
     // ...and whatever is built from what it reads is the caller's own
-    let copy : Map[Int, Int] = Map([])
+    let copy : Map[Int32, Int32] = Map([])
     for codepoint, glyph in metrics.cmap_entries() {
       copy[codepoint] = glyph
     }
@@ -543,7 +543,7 @@ test "metrics handed out by a sealed registry cannot change its output" {
   let bundled_before = @pdf.render_pdf(
     family_model("Liberation Sans", "AΩ", bundled),
   )
-  let copy : Map[Int, Int] = Map([])
+  let copy : Map[Int32, Int32] = Map([])
   for codepoint, glyph in bundled.cmap_entries() {
     copy[codepoint] = glyph + 1
   }
@@ -597,7 +597,7 @@ test "notdef_text keeps characters the face lacks in the text layer" {
 
 ///|
 /// The `i`th two-byte code of `codes` (hex, as `extracted` gives them).
-fn code_at(codes : String, i : Int) -> Int {
+fn code_at(codes : String, i : Int32) -> Int32 {
   codes[i * 4:i * 4 + 4].fold(init=0, (value, c) => {
     value * 16 +
     (if c >= 'a' {
@@ -612,7 +612,7 @@ fn code_at(codes : String, i : Int) -> Int {
 /// The glyph each CID shows through the `/CIDToGIDMap` stream of the only
 /// composite font on the first page of `bytes`, decoded: two bytes per CID,
 /// from CID 0.
-fn cid_to_gid(bytes : Bytes) -> Array[Int] raise {
+fn cid_to_gid(bytes : Bytes) -> Array[Int32] raise {
   let document = @pdflite.pdf_read_document_from_bytes(bytes)
   let page = document.pages_of_pagetree()[0]
   guard document.lookup_direct(name("/Font"), page.resources)
@@ -704,10 +704,12 @@ test "typo_metrics takes the ascent for the cap height where OS/2 has none" {
 /// `program` with `codepoint` unmapped (mapped to glyph 0) in its format 4
 /// `cmap` subtables, where it must be a segment of its own that maps by
 /// `idDelta`, as U+2026 is in Liberation Sans.
-fn without_char(program : Bytes, codepoint : Int) -> Bytes {
+fn without_char(program : Bytes, codepoint : Int32) -> Bytes {
   let bytes = program.to_array()
-  let u16 = fn(at : Int) { (bytes[at].to_int() << 8) | bytes[at + 1].to_int() }
-  let u32 = fn(at : Int) { (u16(at) << 16) | u16(at + 2) }
+  let u16 = fn(at : Int32) {
+    (bytes[at].to_int() << 8) | bytes[at + 1].to_int()
+  }
+  let u32 = fn(at : Int32) { (u16(at) << 16) | u16(at + 2) }
   for i in 0..<u16(4) {
     let record = 12 + i * 16
     if Bytes::from_array(bytes[record:record + 4].to_owned()) != b"cmap" {
@@ -765,12 +767,12 @@ test "notdef_text keeps a WinAnsi character the face lacks in a composite font" 
 /// them: the new glyphs are empty (`loca` repeats the end of `glyf`) and
 /// take the last advance (`hmtx` gains only left side bearings). The tables
 /// are laid out afresh; their checksums go stale, which nothing here reads.
-fn with_glyph_count(program : Bytes, count : Int) -> Bytes {
-  let u16 = fn(bytes : ArrayView[Byte], at : Int) {
+fn with_glyph_count(program : Bytes, count : Int32) -> Bytes {
+  let u16 = fn(bytes : ArrayView[Byte], at : Int32) {
     (bytes[at].to_int() << 8) | bytes[at + 1].to_int()
   }
   let source = program.to_array()
-  let u32 = fn(at : Int) { (u16(source, at) << 16) | u16(source, at + 2) }
+  let u32 = fn(at : Int32) { (u16(source, at) << 16) | u16(source, at + 2) }
   let table_count = u16(source, 4)
   let tags : Array[Bytes] = []
   let bodies : Array[Array[Byte]] = []
@@ -806,7 +808,7 @@ fn with_glyph_count(program : Bytes, count : Int) -> Bytes {
     hmtx.push(b'\x00')
   }
   let out = source[0:12 + table_count * 16].to_owned()
-  let put32 = fn(at : Int, value : Int) {
+  let put32 = fn(at : Int32, value : Int32) {
     for k in 0..<4 {
       out[at + k] = ((value >> (24 - 8 * k)) & 0xFF).to_byte()
     }
@@ -990,7 +992,7 @@ test "notdef_text spells out characters past the codespace as ActualText" {
 ///|
 /// `program` with its `OS/2` table's declared length and version replaced
 /// (the bytes stay where they are).
-fn with_os2(program : Bytes, length? : Int, version? : Int) -> Bytes {
+fn with_os2(program : Bytes, length? : Int32, version? : Int32) -> Bytes {
   let bytes = program.to_array()
   let tables = (bytes[4].to_int() << 8) | bytes[5].to_int()
   for i in 0..<tables {

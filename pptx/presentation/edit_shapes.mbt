@@ -15,7 +15,7 @@
 /// out of range.
 pub fn Presentation::map_slide_shapes_mut(
   self : Presentation,
-  slide_idx : Int,
+  slide_idx : Int32,
   f : (@slide.Shape) -> @slide.Shape,
 ) -> Unit raise PptxError {
   let slide = self.parse_slide_part_at(slide_idx)
@@ -28,8 +28,8 @@ pub fn Presentation::map_slide_shapes_mut(
 /// range or no shape on that slide has the given id.
 pub fn Presentation::update_shape_by_id_mut(
   self : Presentation,
-  slide_idx : Int,
-  id : Int,
+  slide_idx : Int32,
+  id : Int32,
   f : (@slide.Shape) -> @slide.Shape,
 ) -> Unit raise PptxError {
   let slide = self.parse_slide_part_at(slide_idx)
@@ -45,7 +45,7 @@ pub fn Presentation::update_shape_by_id_mut(
 /// part doesn't parse.
 fn Presentation::parse_slide_part_at(
   self : Presentation,
-  slide_idx : Int,
+  slide_idx : Int32,
 ) -> @slide.Slide raise PptxError {
   let parts = self.ordered_slide_parts()
   if slide_idx < 0 || slide_idx >= parts.length() {

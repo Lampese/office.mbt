@@ -187,7 +187,7 @@ fn optional_attr(attrs : Array[(@xml.QName, String)], name : String) -> String? 
 fn parse_int_attr_opt(
   attrs : Array[(@xml.QName, String)],
   name : String,
-) -> Int? {
+) -> Int32? {
   match optional_attr(attrs, name) {
     Some(v) => @oxml.parse_signed_int(v)
     None => None

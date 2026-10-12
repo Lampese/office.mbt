@@ -16,7 +16,7 @@ fn drawing_preservation_test_utf8(
 fn drawing_preservation_test_position(
   xml : String,
   marker : String,
-) -> Int raise Error {
+) -> Int32 raise Error {
   match xml.find(marker) {
     Some(value) => value
     None => fail("missing drawing marker: \{marker}")
@@ -27,7 +27,7 @@ fn drawing_preservation_test_position(
 fn drawing_preservation_test_count(
   value : StringView,
   needle : StringView,
-) -> Int {
+) -> Int32 {
   if needle == "" {
     return 0
   }

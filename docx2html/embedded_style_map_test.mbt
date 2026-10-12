@@ -41,8 +41,8 @@ fn expected_embedded_style_map_content_types_xml() -> String {
 ///|
 /// Independent CRC-32 (bit-serial, IEEE polynomial), implemented locally so
 /// header checks below do not depend on the zip package under test.
-fn independent_crc32(data : BytesView) -> UInt {
-  let mut crc : UInt = 0xFFFFFFFF
+fn independent_crc32(data : BytesView) -> UInt32 {
+  let mut crc : UInt32 = 0xFFFFFFFF
   for byte in data {
     crc = crc ^ byte.to_uint()
     for _ in 0..<8 {
@@ -57,7 +57,11 @@ fn independent_crc32(data : BytesView) -> UInt {
 }
 
 ///|
-fn zip_name_at(data : BytesView, offset : Int, length : Int) -> String raise {
+fn zip_name_at(
+  data : BytesView,
+  offset : Int32,
+  length : Int32,
+) -> String raise {
   @utf8.decode(data[offset:offset + length].to_owned())
 }
 

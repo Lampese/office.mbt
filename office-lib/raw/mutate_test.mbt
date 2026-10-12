@@ -84,7 +84,7 @@ fn word_paragraph(text : String) -> String {
 }
 
 ///|
-fn raw_occurrences(text : String, needle : String) -> Int {
+fn raw_occurrences(text : String, needle : String) -> Int32 {
   text.split(needle).count() - 1
 }
 

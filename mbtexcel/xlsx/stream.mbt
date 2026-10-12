@@ -11,7 +11,7 @@ pub struct StreamCell {
   value_type : CellValueType
   rich_text : Array[RichTextRun]?
   formula : String?
-  style_id : Int
+  style_id : Int32
   /// Set only by StreamWriter::new_time_cell: the cell should receive the
   /// stream default date/time format unless a row/column style applies.
   priv needs_time_style : Bool
@@ -23,8 +23,8 @@ pub struct StreamCell {
 ///|
 pub fn StreamCell::new(
   value : String,
-  formula? : String = "",
-  style_id? : Int = 0,
+  formula~ : String = "",
+  style_id~ : Int32 = 0,
 ) -> StreamCell {
   let formula_value = if formula == "" { None } else { Some(formula) }
   {
@@ -57,8 +57,8 @@ pub fn StreamCell::new_blank() -> StreamCell {
 ///|
 pub fn StreamCell::new_value(
   value : CellValue,
-  formula? : String = "",
-  style_id? : Int = 0,
+  formula~ : String = "",
+  style_id~ : Int32 = 0,
 ) -> StreamCell {
   let formula_value = if formula == "" { None } else { Some(formula) }
   {
@@ -75,8 +75,8 @@ pub fn StreamCell::new_value(
 ///|
 pub fn StreamCell::new_rich_text(
   runs : ArrayView[RichTextRun],
-  formula? : String = "",
-  style_id? : Int = 0,
+  formula~ : String = "",
+  style_id~ : Int32 = 0,
 ) -> StreamCell raise XlsxError {
   let total = rich_text_total_units(runs)
   if total > max_cell_chars {
@@ -101,8 +101,8 @@ pub fn StreamCell::new_rich_text(
 ///|
 pub struct StreamWriter {
   sheet : Worksheet
-  sheet_id : Int
-  mut last_row : Int
+  sheet_id : Int32
+  mut last_row : Int32
   styles : Array[Style]
   mut closed : Bool
   /// Reads the workbook's current date-1904 setting; Go re-reads workbook
@@ -110,15 +110,15 @@ pub struct StreamWriter {
   priv date1904_now : () -> Bool
   /// Lazily-registered style holding the default date/time number format
   /// (numFmt 22) applied to unstyled time cells; 0 until first use.
-  priv mut time_style_id : Int
+  priv mut time_style_id : Int32
 }
 
 ///|
 fn StreamWriter::new(
   sheet : Worksheet,
-  sheet_id : Int,
+  sheet_id : Int32,
   styles : Array[Style],
-  date1904_now? : () -> Bool = () => false,
+  date1904_now~ : () -> Bool = () => false,
 ) -> StreamWriter {
   {
     sheet,
@@ -133,7 +133,7 @@ fn StreamWriter::new(
 
 ///|
 /// Registers (once) and returns the stream default date/time style.
-fn StreamWriter::ensure_time_style(self : StreamWriter) -> Int {
+fn StreamWriter::ensure_time_style(self : StreamWriter) -> Int32 {
   if self.time_style_id == 0 {
     let style = {
       ..Style::new(),
@@ -158,8 +158,8 @@ fn StreamWriter::ensure_time_style(self : StreamWriter) -> Int {
 pub fn StreamWriter::new_time_cell(
   self : StreamWriter,
   value : @time.ZonedDateTime,
-  formula? : String = "",
-  style_id? : Int = 0,
+  formula~ : String = "",
+  style_id~ : Int32 = 0,
 ) -> StreamCell {
   let serial = time_to_excel_date(value, use_1904_format=(self.date1904_now)())
   if serial > 0.0 {
@@ -192,8 +192,8 @@ pub fn StreamWriter::new_time_cell(
 pub fn StreamWriter::new_duration_cell(
   self : StreamWriter,
   value : @time.Duration,
-  formula? : String = "",
-  style_id? : Int = 0,
+  formula~ : String = "",
+  style_id~ : Int32 = 0,
 ) -> StreamCell {
   let _ = self
   let serial = value.to_nanoseconds().to_double() / nanos_per_day
@@ -201,7 +201,7 @@ pub fn StreamWriter::new_duration_cell(
 }
 
 ///|
-pub fn StreamWriter::sheet_id(self : StreamWriter) -> Int {
+pub fn StreamWriter::sheet_id(self : StreamWriter) -> Int32 {
   self.sheet_id
 }
 
@@ -223,7 +223,10 @@ fn StreamWriter::ensure_before_rows(
 }
 
 ///|
-fn normalize_col_range(start : Int, end : Int) -> (Int, Int) raise XlsxError {
+fn normalize_col_range(
+  start : Int32,
+  end : Int32,
+) -> (Int32, Int32) raise XlsxError {
   let (min_col, max_col) = if start <= end {
     (start, end)
   } else {
@@ -240,7 +243,7 @@ fn normalize_col_range(start : Int, end : Int) -> (Int, Int) raise XlsxError {
 ///|
 fn apply_row_opts(
   sheet : Worksheet,
-  row : Int,
+  row : Int32,
   opts : RowOpts,
 ) -> Unit raise XlsxError {
   if row <= 0 {
@@ -267,7 +270,7 @@ fn apply_row_opts(
 ///|
 fn set_col_width_stream(
   sheet : Worksheet,
-  col : Int,
+  col : Int32,
   width : Double,
 ) -> Unit raise XlsxError {
   if col <= 0 {
@@ -289,7 +292,7 @@ fn set_col_width_stream(
 ///|
 fn set_col_visible_stream(
   sheet : Worksheet,
-  col : Int,
+  col : Int32,
   visible : Bool,
 ) -> Unit raise XlsxError {
   if col <= 0 {
@@ -308,8 +311,8 @@ fn set_col_visible_stream(
 ///|
 fn set_col_outline_level_stream(
   sheet : Worksheet,
-  col : Int,
-  level : Int,
+  col : Int32,
+  level : Int32,
 ) -> Unit raise XlsxError {
   if col <= 0 {
     raise InvalidCellRef(value="\{col}:\{0}")
@@ -330,8 +333,8 @@ fn set_col_outline_level_stream(
 ///|
 fn set_col_style_stream(
   sheet : Worksheet,
-  col : Int,
-  style_id : Int,
+  col : Int32,
+  style_id : Int32,
 ) -> Unit raise XlsxError {
   if col <= 0 {
     raise InvalidCellRef(value="\{col}:\{0}")
@@ -482,13 +485,13 @@ pub fn StreamWriter::add_table(
   range_ref : String,
   name : String,
   columns : ArrayView[String],
-  display_name? : String = "",
-  style_name? : String = "TableStyleMedium9",
-  show_first_column? : Bool = false,
-  show_last_column? : Bool = false,
-  show_row_stripes? : Bool = true,
-  show_column_stripes? : Bool = false,
-  show_header_row? : Bool = true,
+  display_name~ : String = "",
+  style_name~ : String = "TableStyleMedium9",
+  show_first_column~ : Bool = false,
+  show_last_column~ : Bool = false,
+  show_row_stripes~ : Bool = true,
+  show_column_stripes~ : Bool = false,
+  show_header_row~ : Bool = true,
 ) -> Table raise XlsxError {
   self.ensure_open()
   self.sheet.add_table(
@@ -518,8 +521,8 @@ pub fn StreamWriter::merge_cell(
 ///|
 pub fn StreamWriter::set_col_width(
   self : StreamWriter,
-  start_col : Int,
-  end_col : Int,
+  start_col : Int32,
+  end_col : Int32,
   width : Double,
 ) -> Unit raise XlsxError {
   self.ensure_open()
@@ -533,8 +536,8 @@ pub fn StreamWriter::set_col_width(
 ///|
 pub fn StreamWriter::set_col_visible(
   self : StreamWriter,
-  start_col : Int,
-  end_col : Int,
+  start_col : Int32,
+  end_col : Int32,
   visible : Bool,
 ) -> Unit raise XlsxError {
   self.ensure_open()
@@ -548,8 +551,8 @@ pub fn StreamWriter::set_col_visible(
 ///|
 pub fn StreamWriter::set_col_outline_level(
   self : StreamWriter,
-  col : Int,
-  level : Int,
+  col : Int32,
+  level : Int32,
 ) -> Unit raise XlsxError {
   self.ensure_open()
   self.ensure_before_rows("set_col_outline_level")
@@ -559,9 +562,9 @@ pub fn StreamWriter::set_col_outline_level(
 ///|
 pub fn StreamWriter::set_col_style(
   self : StreamWriter,
-  start_col : Int,
-  end_col : Int,
-  style_id : Int,
+  start_col : Int32,
+  end_col : Int32,
+  style_id : Int32,
 ) -> Unit raise XlsxError {
   self.ensure_open()
   self.ensure_before_rows("set_col_style")
@@ -587,7 +590,7 @@ pub fn StreamWriter::set_panes(
 ///|
 pub struct RowStream {
   cells : Array[Cell]
-  mut index : Int
+  mut index : Int32
 }
 
 ///|

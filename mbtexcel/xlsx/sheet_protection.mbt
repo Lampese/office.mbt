@@ -77,7 +77,7 @@ fn gen_iso_password_hash(
   password : StringView,
   algorithm_name : StringView,
   salt : StringView,
-  spin_count : Int,
+  spin_count : Int32,
 ) -> (String, String) raise XlsxError {
   let pass_len = count_utf16_units(password)
   if pass_len <= 0 || pass_len > max_password_length {

@@ -19,7 +19,7 @@ pub(all) enum PdfObjectData {
 /// parsed objects after lazy loading.
 pub(all) struct PdfObjectEntry {
   mut data : PdfObjectData
-  generation : Int
+  generation : Int32
 } derive(Debug, Eq)
 
 ///|
@@ -35,7 +35,7 @@ pub(all) enum PdfObjectEvent {
 /// This is a thin wrapper around a hash map. It does not track maximum object
 /// number or mutation events; use `PdfObjects` for document-level bookkeeping.
 pub struct PdfObjectMap {
-  entries : @hashmap.HashMap[Int, PdfObjectEntry]
+  entries : @hashmap.HashMap[Int32, PdfObjectEntry]
 } derive(Debug, Eq)
 
 ///|
@@ -45,10 +45,10 @@ pub struct PdfObjectMap {
 /// allocated so far, records object-stream identifiers, and stores an alteration
 /// log used by writers and tests.
 pub struct PdfObjects {
-  mut max_object_number : Int
+  mut max_object_number : Int32
   object_map : PdfObjectMap
-  object_stream_ids : @hashmap.HashMap[Int, Int]
-  log : Array[(Int, PdfObjectEvent)]
+  object_stream_ids : @hashmap.HashMap[Int32, Int32]
+  log : Array[(Int32, PdfObjectEvent)]
 } derive(Debug, Eq)
 
 ///|
@@ -58,13 +58,13 @@ pub struct PdfObjects {
 /// trailer dictionary, linearization flag, saved encryption metadata, first xref
 /// offset, and the revision count read from the input.
 pub struct PdfDocument {
-  mut major : Int
-  mut minor : Int
-  mut root : Int
+  mut major : Int32
+  mut minor : Int32
+  mut root : Int32
   objects : PdfObjects
   mut trailer_dict : @syntax.PdfObject
   mut was_linearized : Bool
   mut saved_encryption : @crypt_core.PdfSavedEncryption?
-  mut first_xref : Int
-  mut revision_read : Int
+  mut first_xref : Int32
+  mut revision_read : Int32
 } derive(Debug, Eq)

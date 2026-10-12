@@ -27,7 +27,7 @@ fn pdflite_cmd_fonts_command() -> @argparse.Command {
 ///|
 async fn pdflite_cmd_fonts_execute(
   args : @argparse.Matches,
-  passwords? : PdflitePasswords = { user: None, owner: None, },
+  passwords~ : PdflitePasswords = { user: None, owner: None, },
 ) -> Unit {
   let document = pdflite_cmd_load(
     pdflite_cmd_single_value(args, "input"),
@@ -41,7 +41,7 @@ async fn pdflite_cmd_fonts_execute(
   let bytes = if pdflite_cmd_flag_value(args, "missing") {
     if json {
       let entries = document.missing_fonts(pages)
-      @utf8.encode(entries.to_json().stringify() + "\n")
+      @utf8.encode(Json(entries).stringify() + "\n")
     } else {
       document.missing_fonts_text(pages)
     }
@@ -54,8 +54,8 @@ async fn pdflite_cmd_fonts_execute(
 ///|
 async fn pdflite_cmd_fonts_run(
   options : @argparse.Matches,
-  passwords? : PdflitePasswords = { user: None, owner: None, },
-) -> Int {
+  passwords~ : PdflitePasswords = { user: None, owner: None, },
+) -> Int32 {
   pdflite_cmd_fonts_execute(options, passwords~) catch {
     err => return pdflite_cmd_operation_error(err)
   }

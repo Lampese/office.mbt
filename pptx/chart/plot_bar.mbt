@@ -41,9 +41,9 @@ pub(all) struct BarChartBody {
   vary_colors : Bool?
   series : Array[ChartSeriesCore]
   d_lbls : DLbls?
-  gap_width : Int?
-  overlap : Int?
-  ax_ids : Array[Int]
+  gap_width : Int32?
+  overlap : Int32?
+  ax_ids : Array[Int32]
   extension : Array[@xml.XmlElement]
 } derive(Eq, Debug)
 

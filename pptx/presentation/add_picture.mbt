@@ -32,7 +32,7 @@
 /// TIFF — anything else raises `Malformed`.
 pub fn Presentation::add_picture_mut(
   self : Presentation,
-  slide_idx : Int,
+  slide_idx : Int32,
   bytes : FixedArray[Byte],
   x~ : @units.Emu,
   y~ : @units.Emu,
@@ -117,7 +117,7 @@ pub fn Presentation::add_picture_mut(
 /// GIF / BMP / TIFF, or if the file is too short to parse dimensions.
 pub fn Presentation::add_picture_auto_mut(
   self : Presentation,
-  slide_idx : Int,
+  slide_idx : Int32,
   bytes : FixedArray[Byte],
   x~ : @units.Emu,
   y~ : @units.Emu,
@@ -145,7 +145,7 @@ pub fn Presentation::add_picture_auto_mut(
 /// if `fallback_bytes` isn't a recognised raster image.
 pub fn Presentation::add_svg_picture_mut(
   self : Presentation,
-  slide_idx : Int,
+  slide_idx : Int32,
   svg_bytes~ : FixedArray[Byte],
   fallback_bytes~ : FixedArray[Byte],
   x~ : @units.Emu,
@@ -275,7 +275,7 @@ fn Presentation::next_image_part_name(
 /// Find a shape id one greater than any existing id on the slide.
 /// IDs in OOXML are arbitrary unique-per-slide; we follow PowerPoint's
 /// "monotonically increasing" convention.
-fn next_picture_shape_id(slide_part : @opc.Part) -> Int {
+fn next_picture_shape_id(slide_part : @opc.Part) -> Int32 {
   // Cheap inspection of the slide XML — scan for `<p:cNvPr id="N"`
   // tokens and take max + 1. Falls back to 100 if parsing fails or
   // no shapes exist; collisions on the slide are not catastrophic

@@ -2,10 +2,10 @@
 /// A document with `n` pages of 200x100; `f` is called with the document
 /// and each page before it is finished.
 fn pages_doc(
-  n : Int,
+  n : Int32,
   f : (@export.Document, @export.Page) -> Unit raise,
-  settings? : @export.SerializeSettings = plain_settings(),
-  before_finish? : (@export.Document) -> Unit raise = _ => (),
+  settings~ : @export.SerializeSettings = plain_settings(),
+  before_finish~ : (@export.Document) -> Unit raise = _ => (),
 ) -> Bytes raise {
   let doc = @export.Document::new_with(settings)
   for _ in 0..<n {

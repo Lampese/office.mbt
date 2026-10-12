@@ -2,7 +2,7 @@
 fn wb_rewrite_content_types(
   data : BytesView,
   marker : String,
-  force_store? : Bool = false,
+  force_store~ : Bool = false,
 ) -> Bytes raise {
   let source = @zip.read(data)
   let result = @zip.Archive()
@@ -259,9 +259,9 @@ fn wb_read_transaction_archive_with_limits(
   bytes : BytesView,
   phase : String,
   invalid_code : String,
-  max_entries : Int,
-  max_entry_uncompressed_bytes : Int,
-  max_total_uncompressed_bytes : Int,
+  max_entries : Int32,
+  max_entry_uncompressed_bytes : Int32,
+  max_total_uncompressed_bytes : Int32,
 ) -> @zip.Archive raise TransactionError {
   @zip.read(
     bytes,
@@ -1188,7 +1188,7 @@ test "near-envelope transaction reserve covers fused strict XML splice peak" {
 }
 
 ///|
-fn wb_near_splice_limit_docx(token_units : Int) -> (Bytes, Int) raise {
+fn wb_near_splice_limit_docx(token_units : Int32) -> (Bytes, Int32) raise {
   let prefix =
     #|<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>
   let suffix = "</w:t></w:r></w:p><w:sectPr/></w:body></w:document>"

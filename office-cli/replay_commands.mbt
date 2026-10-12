@@ -1,10 +1,10 @@
 ///|
 /// Ceiling on the dump document `office replay` will read.
-let office_replay_max_input_bytes : Int = 64 * 1024 * 1024
+let office_replay_max_input_bytes : Int32 = 64 * 1024 * 1024
 
 ///|
 /// Ceiling on the workbook `office replay` will publish.
-let office_replay_max_output_bytes : Int = 64 * 1024 * 1024
+let office_replay_max_output_bytes : Int32 = 64 * 1024 * 1024
 
 ///|
 async fn run_replay(matches : @argparse.Matches) -> Unit {

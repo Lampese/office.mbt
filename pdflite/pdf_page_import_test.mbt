@@ -29,7 +29,7 @@ fn import_numbers_for_test(
 /// page; page 2 has a crop box, `/Rotate 90`, a font and an image
 /// resource, a transparency group and a Flate-compressed content stream.
 fn import_source_for_test(
-  write? : (@pdflite.PdfDocument) -> Bytes raise @core.PdfError = @pdflite.pdf_write_document,
+  write~ : (@pdflite.PdfDocument) -> Bytes raise @core.PdfError = @pdflite.pdf_write_document,
 ) -> @pdflite.PdfDocument raise @core.PdfError {
   let doc = @pdflite.pdf_document_empty()
   let font = doc.add_object(
@@ -573,10 +573,10 @@ fn import_type_for_test(name : String) -> @syntax.PdfObject {
 
 ///|
 fn import_box_for_test(
-  x0 : Int,
-  y0 : Int,
-  x1 : Int,
-  y1 : Int,
+  x0 : Int32,
+  y0 : Int32,
+  x1 : Int32,
+  y1 : Int32,
 ) -> @syntax.PdfObject {
   PdfArray([PdfInteger(x0), PdfInteger(y0), PdfInteger(x1), PdfInteger(y1)])
 }
@@ -1013,7 +1013,7 @@ test "a direct page tree node in a /Kids array that lists itself is an error" {
   let doc = @pdflite.pdf_document_empty()
   let root = doc.add_object(PdfNull)
   let kids = doc.add_object(PdfNull)
-  let node = (kids : Int) => {
+  let node = (kids : Int32) => {
     import_dict_for_test([
       ("/Type", import_type_for_test("/Pages")),
       ("/Kids", PdfIndirect(kids)),

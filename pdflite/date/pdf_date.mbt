@@ -4,14 +4,14 @@
 /// The fields mirror PDF's `D:YYYYMMDDHHmmSSOHH'mm'` representation. Month and
 /// day default to `1` when omitted during parsing; time fields default to zero.
 pub(all) struct PdfDate {
-  year : Int
-  month : Int
-  day : Int
-  hour : Int
-  minute : Int
-  second : Int
-  hour_offset : Int
-  minute_offset : Int
+  year : Int32
+  month : Int32
+  day : Int32
+  hour : Int32
+  minute : Int32
+  second : Int32
+  hour_offset : Int32
+  minute_offset : Int32
 } derive(Debug, Eq, ToJson)
 
 ///|
@@ -37,7 +37,7 @@ fn pdf_date_check(date : PdfDate) -> Unit raise @core.PdfError {
 }
 
 ///|
-fn pdf_date_abs(value : Int) -> Int {
+fn pdf_date_abs(value : Int32) -> Int32 {
   if value < 0 {
     -value
   } else {
@@ -46,7 +46,7 @@ fn pdf_date_abs(value : Int) -> Int {
 }
 
 ///|
-fn pdf_date_pad2(value : Int) -> String {
+fn pdf_date_pad2(value : Int32) -> String {
   if value < 10 {
     "0" + value.to_string()
   } else {
@@ -55,7 +55,7 @@ fn pdf_date_pad2(value : Int) -> String {
 }
 
 ///|
-fn pdf_date_pad4(value : Int) -> String {
+fn pdf_date_pad4(value : Int32) -> String {
   if value < 10 {
     "000" + value.to_string()
   } else if value < 100 {
@@ -100,7 +100,7 @@ pub fn pdf_string_of_date(date : PdfDate) -> String raise @core.PdfError {
 }
 
 ///|
-fn pdf_date_digit(byte : Byte) -> Int? {
+fn pdf_date_digit(byte : Byte) -> Int32? {
   let value = byte.to_int()
   if value >= 48 && value <= 57 {
     Some(value - 48)
@@ -112,8 +112,8 @@ fn pdf_date_digit(byte : Byte) -> Int? {
 ///|
 fn pdf_date_two_digits(
   bytes : BytesView,
-  index : Int,
-) -> Int raise @core.PdfError {
+  index : Int32,
+) -> Int32 raise @core.PdfError {
   if index + 1 >= bytes.length() {
     raise BadDate
   }
@@ -126,8 +126,8 @@ fn pdf_date_two_digits(
 ///|
 fn pdf_date_four_digits(
   bytes : BytesView,
-  index : Int,
-) -> Int raise @core.PdfError {
+  index : Int32,
+) -> Int32 raise @core.PdfError {
   if index + 3 >= bytes.length() {
     raise BadDate
   }
@@ -152,12 +152,12 @@ fn pdf_date_is_local_time_start(byte : Byte) -> Bool {
 ///|
 fn pdf_date_parse_optional_two(
   bytes : BytesView,
-  index : Int,
-  default : Int,
-  hour_offset : Ref[Int],
-  minute_offset : Ref[Int],
-  offset_sign : Ref[Int],
-) -> (Int, Int) raise @core.PdfError {
+  index : Int32,
+  default : Int32,
+  hour_offset : Ref[Int32],
+  minute_offset : Ref[Int32],
+  offset_sign : Ref[Int32],
+) -> (Int32, Int32) raise @core.PdfError {
   if index >= bytes.length() {
     (default, bytes.length())
   } else if pdf_date_is_local_time_start(bytes[index]) {
@@ -175,10 +175,10 @@ fn pdf_date_parse_optional_two(
 ///|
 fn pdf_date_parse_local_time(
   bytes : BytesView,
-  index : Int,
-  hour_offset : Ref[Int],
-  minute_offset : Ref[Int],
-  offset_sign : Ref[Int],
+  index : Int32,
+  hour_offset : Ref[Int32],
+  minute_offset : Ref[Int32],
+  offset_sign : Ref[Int32],
 ) -> Unit raise @core.PdfError {
   if index < bytes.length() {
     let (sign, offset_index) = match bytes[index].to_int() {
@@ -207,7 +207,7 @@ fn pdf_date_parse_local_time(
 }
 
 ///|
-fn pdf_date_has_distiller_y2k_bug(bytes : BytesView, index : Int) -> Bool {
+fn pdf_date_has_distiller_y2k_bug(bytes : BytesView, index : Int32) -> Bool {
   index + 4 < bytes.length() &&
   bytes[index].to_int() == 49 &&
   bytes[index + 1].to_int() == 57 &&

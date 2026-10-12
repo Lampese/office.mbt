@@ -4,7 +4,7 @@
 ///|
 /// Glyph specific metrics at a location in variation space (unscaled).
 pub struct GlyphMetrics {
-  priv glyph_count : Int
+  priv glyph_count : Int32
   priv hmtx : @read_fonts.Hmtx?
   priv hvar : @read_fonts.Hvar?
   priv gvar : @read_fonts.Gvar?
@@ -86,7 +86,7 @@ pub fn GlyphMetrics::advance_width(
 
 ///|
 /// `h_metrics.get(gid).map(advance).unwrap_or(default_advance_width)`.
-fn advance_or_default(hmtx : @read_fonts.Hmtx, glyph_id : GlyphId) -> Int {
+fn advance_or_default(hmtx : @read_fonts.Hmtx, glyph_id : GlyphId) -> Int32 {
   let n = hmtx.num_h_metrics()
   let gid = glyph_id.to_int()
   if gid < n {
@@ -100,7 +100,7 @@ fn advance_or_default(hmtx : @read_fonts.Hmtx, glyph_id : GlyphId) -> Int {
 
 ///|
 /// Rust's saturating `f64 as i32`.
-fn trunc_f64_to_i32(v : Double) -> Int {
+fn trunc_f64_to_i32(v : Double) -> Int32 {
   if v.is_nan() {
     0
   } else if v >= 2147483647.0 {
@@ -117,7 +117,7 @@ fn trunc_f64_to_i32(v : Double) -> Int {
 fn GlyphMetrics::metric_deltas_from_gvar(
   self : GlyphMetrics,
   glyph_id : GlyphId,
-) -> (Int, Int)? {
+) -> (Int32, Int32)? {
   guard self.loca_glyf is Some((loca, glyf)) else { return None }
   guard self.gvar is Some(gvar) else { return None }
   guard ok(() => gvar.phantom_point_deltas(glyf, loca, self.coords, glyph_id))
@@ -137,7 +137,7 @@ fn GlyphMetrics::metric_deltas_from_gvar(
 /// default (0).
 pub fn axes_location(
   font : FontRef,
-  settings : ArrayView[(UInt, Float)],
+  settings : ArrayView[(UInt32, Float)],
 ) -> Array[F2Dot14] {
   match ok(() => font.fvar()) {
     Some(fvar) => {

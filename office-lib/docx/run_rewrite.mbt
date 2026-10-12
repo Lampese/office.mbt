@@ -171,8 +171,8 @@ fn docx_paragraph_pieces(
 fn docx_piece_covered_width(
   pieces : Array[DocxPiece],
   span : @template.TemplateSpan,
-  index : Int,
-) -> Int {
+  index : Int32,
+) -> Int32 {
   if span.start_segment > index || index > span.end_segment {
     0
   } else {
@@ -268,9 +268,9 @@ fn docx_collect_span_checks(
 /// concatenated text, used only to detect overlapping accepted spans.
 fn docx_piece_position(
   pieces : Array[DocxPiece],
-  segment : Int,
-  offset : Int,
-) -> Int {
+  segment : Int32,
+  offset : Int32,
+) -> Int32 {
   let mut total = 0
   for index in 0..<segment.min(pieces.length()) {
     total += pieces[index].text.length()
@@ -298,7 +298,7 @@ fn docx_plan_span_rewrites(
     }
     let original = piece.text
     let length = original.length()
-    let piece_edits : Array[(Int, Int, String)] = []
+    let piece_edits : Array[(Int32, Int32, String)] = []
     for rewrite in rewrites {
       let span = rewrite.span
       if docx_piece_covered_width(pieces, span, index) > 0 ||

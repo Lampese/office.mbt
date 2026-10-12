@@ -64,7 +64,7 @@ fn docx_highlight_color(value : String) -> Bool {
 /// note ids the body actually referenced (for orphan disclosure).
 priv struct DocxDumpContext {
   assets : Map[String, DumpAsset]
-  total_asset_bytes : Ref[Int]
+  total_asset_bytes : Ref[Int32]
   residual : Array[DumpResidual]
   footnote_bodies : Map[String, Array[@document.DocumentElement]]
   endnote_bodies : Map[String, Array[@document.DocumentElement]]
@@ -86,7 +86,7 @@ fn docx_capture_asset(
   ctx : DocxDumpContext,
   data : Bytes,
   content_type : String,
-  block : Int,
+  block : Int32,
 ) -> String? {
   let id = "sha256-" + sha256_hex_bytes(data)
   match ctx.assets.get(id) {
@@ -127,7 +127,7 @@ fn docx_capture_asset(
 fn docx_image_spec(
   ctx : DocxDumpContext,
   image : @document.Image,
-  block : Int,
+  block : Int32,
 ) -> Json? {
   // the batch parser and the writer take exactly this set; the reader
   // passes any declared part type through (TIFF/EMF/WMF/SVG included),
@@ -262,7 +262,7 @@ fn docx_note_spec(
   ctx : DocxDumpContext,
   note_type : String,
   note_id : String,
-  block : Int,
+  block : Int32,
 ) -> Json? {
   let bodies = match note_type {
     "footnote" => ctx.footnote_bodies
@@ -353,7 +353,7 @@ fn docx_attribute_ok(text : String) -> Bool {
 }
 
 ///|
-fn docx_location(block : Int) -> Json {
+fn docx_location(block : Int32) -> Json {
   Json::object({ "block": Json::number(block.to_double()) })
 }
 
@@ -391,7 +391,7 @@ fn docx_text_serializable(text : String) -> Bool {
 fn docx_segment_spec(
   value : String,
   properties : @document.RunProperties,
-  block : Int,
+  block : Int32,
   ctx : DocxDumpContext,
 ) -> Json? {
   if !docx_text_serializable(value) {
@@ -505,7 +505,7 @@ fn docx_segment_spec(
 fn docx_run_specs(
   children : Array[@document.DocumentElement],
   properties : @document.RunProperties,
-  block : Int,
+  block : Int32,
   ctx : DocxDumpContext,
   out : Array[Json],
   in_note_body~ : Bool,
@@ -677,7 +677,7 @@ fn docx_element_name(element : @document.DocumentElement) -> String {
 /// inside hyperlinks (the batch grammar does not nest them).
 fn docx_inline_specs(
   children : Array[@document.DocumentElement],
-  block : Int,
+  block : Int32,
   runs : Array[Json],
   ctx : DocxDumpContext,
   allow_links~ : Bool,
@@ -901,7 +901,7 @@ fn docx_inline_specs(
 fn docx_paragraph_params(
   children : Array[@document.DocumentElement],
   properties : @document.ParagraphProperties,
-  block : Int,
+  block : Int32,
   ctx : DocxDumpContext,
   in_note_body~ : Bool,
   plain~ : Bool,
@@ -1005,7 +1005,7 @@ fn docx_paragraph_params(
 fn docx_table_params(
   children : Array[@document.DocumentElement],
   properties : @document.TableProperties,
-  block : Int,
+  block : Int32,
   ctx : DocxDumpContext,
 ) -> Map[String, Json]? {
   if properties.style_id is Some(_) || properties.style_name is Some(_) {
@@ -1018,11 +1018,11 @@ fn docx_table_params(
       ),
     )
   }
-  let emitted : Array[(Array[(Map[String, Json], Int, Int)], Bool)] = []
+  let emitted : Array[(Array[(Map[String, Json], Int32, Int32)], Bool)] = []
   for child in children {
     match child {
       TableRow(children~, is_header~) => {
-        let cells : Array[(Map[String, Json], Int, Int)] = []
+        let cells : Array[(Map[String, Json], Int32, Int32)] = []
         for cell in children {
           match cell {
             TableCell(children~, col_span~, row_span~) => {
@@ -1117,12 +1117,12 @@ fn docx_table_params(
   // continuations) is only droppable when no merge is active there —
   // otherwise the batch grammar cannot express the table at all (every
   // script row needs at least one cell) and the table residualizes.
-  let kept : Array[(Array[(Map[String, Json], Int, Int)], Bool)] = []
+  let kept : Array[(Array[(Map[String, Json], Int32, Int32)], Bool)] = []
   // an empty (reader-stripped) row is droppable only when no vertical
   // merge is ACTIVE at its position — decided against the placement
   // sim's pending state below, not a whole-table flag. Each entry is the
   // kept-row index the empty row precedes.
-  let empty_positions : Array[Int] = []
+  let empty_positions : Array[Int32] = []
   for entry in emitted {
     let (cells, is_header) = entry
     if cells.length() == 0 {
@@ -1144,7 +1144,7 @@ fn docx_table_params(
   }
   // the spans the ops will actually carry: out-of-range values were
   // already residualized and default to 1 at build
-  let effective = (span : Int, cap : Int) => {
+  let effective = (span : Int32, cap : Int32) => {
     if span > 1 && span <= cap {
       span
     } else {
@@ -1186,8 +1186,8 @@ fn docx_table_params(
   // judged at their positions against the live pending state: an active
   // merge there means the batch grammar cannot express the table (every
   // script row needs a cell); no active merge means the row just drops.
-  let pending : Map[Int, (Int, Int)] = Map([]) // start column -> (remaining, width)
-  let judge_empties = (at : Int) => {
+  let pending : Map[Int32, (Int32, Int32)] = Map([]) // start column -> (remaining, width)
+  let judge_empties = (at : Int32) => {
     let mut verdict = true
     for position in empty_positions {
       if position == at {
@@ -1344,9 +1344,9 @@ fn docx_table_params(
 pub fn dump_docx_document(
   annotated : @docx.DocxAnnotatedResult,
   source_file~ : String,
-  source_bytes~ : Int,
-  source_sha256? : String? = None,
-  cancelled? : () -> Bool = () => false,
+  source_bytes~ : Int32,
+  source_sha256~ : String? = None,
+  cancelled~ : () -> Bool = () => false,
 ) -> DumpEnvelope raise DumpError {
   let package_result = annotated.result()
   let ops : Array[Json] = []
@@ -1415,7 +1415,7 @@ pub fn dump_docx_document(
   // comment anchors are op-index ranges over PARAGRAPH ops; collect each
   // covering comment's span while walking (the annotation index keys on
   // the story-relative /body/p[K] selector, K counting paragraphs only)
-  let comment_spans : Map[String, (Int, Int)] = Map([])
+  let comment_spans : Map[String, (Int32, Int32)] = Map([])
   let mut paragraph_ordinal = 0
   let annotations = annotated.annotations()
   for block, element in children {
@@ -1517,7 +1517,7 @@ fn dump_docx_comments(
   annotated : @docx.DocxAnnotatedResult,
   ctx : DocxDumpContext,
   ops : Array[Json],
-  comment_spans : Map[String, (Int, Int)],
+  comment_spans : Map[String, (Int32, Int32)],
   document_location : Json,
   cancelled : () -> Bool,
 ) -> Unit raise DumpError {
@@ -1543,7 +1543,7 @@ fn dump_docx_comments(
     let (id, body) = entry
     bodies[id] = body
   }
-  let emitted : Map[String, Int] = Map([])
+  let emitted : Map[String, Int32] = Map([])
   let dropped : Set[String] = Set([])
   let drop = (id : String, reason : String) => {
     dropped.add(id)

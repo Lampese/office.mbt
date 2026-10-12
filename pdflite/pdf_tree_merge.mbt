@@ -38,7 +38,9 @@ pub fn PdfDocument::merge_number_trees_no_clash(
   self : PdfDocument,
   trees : ArrayView[@syntax.PdfObject],
 ) -> @syntax.PdfObject {
-  let entries : Array[(Int, @syntax.PdfObject)] = Array(capacity=trees.length())
+  let entries : Array[(Int32, @syntax.PdfObject)] = Array(
+    capacity=trees.length(),
+  )
   for tree in trees {
     for entry in self.read_number_tree(tree) {
       entries.push(entry)

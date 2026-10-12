@@ -79,7 +79,7 @@ pub(all) enum VMerge {
 pub(all) struct Cell {
   content : Array[@paragraph.ParagraphInput]
   width : Width
-  grid_span : Int
+  grid_span : Int32
   vmerge : VMerge
   borders : Borders
   margins : CellMargins
@@ -90,12 +90,12 @@ pub(all) struct Cell {
 /// A cell with Word's defaults, spanning one column.
 pub fn Cell::new(
   content : Array[@paragraph.ParagraphInput],
-  width? : Width = Auto,
-  grid_span? : Int = 1,
-  vmerge? : VMerge = VStart,
-  borders? : Borders = Borders::none(),
-  margins? : CellMargins = CellMargins::default(),
-  shading? : @pagelayout.Color? = None,
+  width~ : Width = Auto,
+  grid_span~ : Int32 = 1,
+  vmerge~ : VMerge = VStart,
+  borders~ : Borders = Borders::none(),
+  margins~ : CellMargins = CellMargins::default(),
+  shading~ : @pagelayout.Color? = None,
 ) -> Cell {
   { content, width, grid_span, vmerge, borders, margins, shading, }
 }
@@ -116,9 +116,9 @@ pub(all) struct Row {
 /// A row of cells, with Word's defaults.
 pub fn Row::new(
   cells : Array[Cell],
-  header? : Bool = false,
-  cant_split? : Bool = false,
-  min_height? : @pagelayout.Twips? = None,
+  header~ : Bool = false,
+  cant_split~ : Bool = false,
+  min_height~ : @pagelayout.Twips? = None,
 ) -> Row {
   { cells, header, cant_split, min_height, }
 }
@@ -139,11 +139,11 @@ pub(all) struct Table {
 /// A table with Word's defaults: autofit, no borders, no indent.
 pub fn Table::new(
   rows : Array[Row],
-  grid? : Array[@pagelayout.Twips] = [],
-  width? : Width = Auto,
-  layout? : TableLayout = Autofit,
-  borders? : Borders = Borders::none(),
-  indent? : @pagelayout.Twips = Twips(0),
+  grid~ : Array[@pagelayout.Twips] = [],
+  width~ : Width = Auto,
+  layout~ : TableLayout = Autofit,
+  borders~ : Borders = Borders::none(),
+  indent~ : @pagelayout.Twips = Twips(0),
 ) -> Table {
   { rows, grid, width, layout, borders, indent, }
 }
@@ -152,7 +152,7 @@ pub fn Table::new(
 /// The number of grid columns the table actually uses: the wider of the
 /// authored grid and the widest row's total span, so a row that spans
 /// past the declared grid still gets columns.
-pub fn Table::column_count(self : Table) -> Int {
+pub fn Table::column_count(self : Table) -> Int32 {
   let mut widest = self.grid.length()
   for row in self.rows {
     let mut span = 0

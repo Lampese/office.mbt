@@ -14,28 +14,28 @@
 /// first rewrite it to the open form (a byte edit of this node's own
 /// span).
 pub struct NodeSpan {
-  priv byte_start : Int
-  priv byte_end : Int
-  priv content_start : Int
-  priv close_tag_start : Int
+  priv byte_start : Int32
+  priv byte_end : Int32
+  priv content_start : Int32
+  priv close_tag_start : Int32
 }
 
 ///|
 /// Offset of the '<' of the paragraph's open tag.
-pub fn NodeSpan::byte_start(self : NodeSpan) -> Int {
+pub fn NodeSpan::byte_start(self : NodeSpan) -> Int32 {
   self.byte_start
 }
 
 ///|
 /// Offset just past the '>' of the paragraph's close tag (exclusive).
-pub fn NodeSpan::byte_end(self : NodeSpan) -> Int {
+pub fn NodeSpan::byte_end(self : NodeSpan) -> Int32 {
   self.byte_end
 }
 
 ///|
 /// Earliest interior insertion offset (past the open tag and any
 /// leading pPr), or None for a self-closing paragraph.
-pub fn NodeSpan::content_start(self : NodeSpan) -> Int? {
+pub fn NodeSpan::content_start(self : NodeSpan) -> Int32? {
   if self.content_start < 0 {
     None
   } else {
@@ -46,7 +46,7 @@ pub fn NodeSpan::content_start(self : NodeSpan) -> Int? {
 ///|
 /// Offset of the '<' of the close tag, or None for a self-closing
 /// paragraph.
-pub fn NodeSpan::close_tag_start(self : NodeSpan) -> Int? {
+pub fn NodeSpan::close_tag_start(self : NodeSpan) -> Int32? {
   if self.close_tag_start < 0 {
     None
   } else {
@@ -66,20 +66,20 @@ pub fn NodeSpan::self_closing(self : NodeSpan) -> Bool {
 /// every `w:delText` back into `w:t` through these ranges, which leaves the
 /// namespace prefix, `xml:space`, and every other byte of the tag untouched.
 pub struct RevisionNameEdit {
-  priv start : Int
-  priv end : Int
+  priv start : Int32
+  priv end : Int32
   priv replacement : String
 }
 
 ///|
 /// Offset of the first byte of the local name.
-pub fn RevisionNameEdit::start(self : RevisionNameEdit) -> Int {
+pub fn RevisionNameEdit::start(self : RevisionNameEdit) -> Int32 {
   self.start
 }
 
 ///|
 /// Offset just past the last byte of the local name (exclusive).
-pub fn RevisionNameEdit::end(self : RevisionNameEdit) -> Int {
+pub fn RevisionNameEdit::end(self : RevisionNameEdit) -> Int32 {
   self.end
 }
 
@@ -108,10 +108,10 @@ pub struct RevisionSpan {
   priv author : String?
   priv date : String?
   priv container_path : String?
-  priv byte_start : Int
-  priv byte_end : Int
-  priv content_start : Int
-  priv close_tag_start : Int
+  priv byte_start : Int32
+  priv byte_end : Int32
+  priv content_start : Int32
+  priv close_tag_start : Int32
   priv declares_namespaces : Bool
   priv name_edits : Array[RevisionNameEdit]
 }
@@ -161,13 +161,13 @@ pub fn RevisionSpan::container_path(self : RevisionSpan) -> String? {
 
 ///|
 /// Offset of the '<' of the element's open tag.
-pub fn RevisionSpan::byte_start(self : RevisionSpan) -> Int {
+pub fn RevisionSpan::byte_start(self : RevisionSpan) -> Int32 {
   self.byte_start
 }
 
 ///|
 /// Offset just past the '>' that ends the element (exclusive).
-pub fn RevisionSpan::byte_end(self : RevisionSpan) -> Int {
+pub fn RevisionSpan::byte_end(self : RevisionSpan) -> Int32 {
   self.byte_end
 }
 
@@ -175,7 +175,7 @@ pub fn RevisionSpan::byte_end(self : RevisionSpan) -> Int {
 /// Offset just past the '>' of the open tag, or None for the self-closing
 /// form — which has no content to keep, so all four resolutions of it
 /// collapse to removing the element.
-pub fn RevisionSpan::content_start(self : RevisionSpan) -> Int? {
+pub fn RevisionSpan::content_start(self : RevisionSpan) -> Int32? {
   if self.content_start < 0 {
     None
   } else {
@@ -185,7 +185,7 @@ pub fn RevisionSpan::content_start(self : RevisionSpan) -> Int? {
 
 ///|
 /// Offset of the '<' of the close tag, or None for the self-closing form.
-pub fn RevisionSpan::close_tag_start(self : RevisionSpan) -> Int? {
+pub fn RevisionSpan::close_tag_start(self : RevisionSpan) -> Int32? {
   if self.close_tag_start < 0 {
     None
   } else {
@@ -477,7 +477,7 @@ fn body_node_span_of_kind(
 // positions COMPUTED from the source text (find), never hard-coded.
 
 ///|
-fn span_source_offset(source : String, needle : String) -> Int raise {
+fn span_source_offset(source : String, needle : String) -> Int32 raise {
   match source.find(needle) {
     Some(offset) => offset
     None => fail("needle not in source: \{needle}")

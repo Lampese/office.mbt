@@ -4,7 +4,7 @@
 
 ///|
 enum CellKind {
-  AsInt(Int)
+  AsInt(Int32)
   AsFloat(Double)
   AsText
 }

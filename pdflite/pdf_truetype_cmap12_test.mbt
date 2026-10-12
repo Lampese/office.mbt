@@ -2,12 +2,12 @@
 /// A format 12 (or `format` 13) cmap subtable of `groups` (start, end, first
 /// glyph), declaring `declared` of them in `length` bytes.
 fn truetype_format12_subtable_for_test(
-  groups : ArrayView[(Int, Int, Int)],
-  declared? : Int = groups.length(),
-  length? : Int = 16 + groups.length() * 12,
-  format? : Int = 12,
-) -> Array[Int] {
-  let output : Array[Int] = []
+  groups : ArrayView[(Int32, Int32, Int32)],
+  declared~ : Int32 = groups.length(),
+  length~ : Int32 = 16 + groups.length() * 12,
+  format~ : Int32 = 12,
+) -> Array[Int32] {
+  let output : Array[Int32] = []
   truetype_push_u16_for_test(output, format)
   truetype_push_u16_for_test(output, 0)
   truetype_push_u32_for_test(output, length)
@@ -162,11 +162,11 @@ test "pdf_truetype_cmap_glyphs reads format 13, each group one glyph" {
 /// A format 10 cmap subtable: `glyphs` for the codepoints from `first`,
 /// declaring `declared` of them.
 fn truetype_format10_subtable_for_test(
-  first : Int,
-  glyphs : ArrayView[Int],
-  declared? : Int = glyphs.length(),
-) -> Array[Int] {
-  let output : Array[Int] = []
+  first : Int32,
+  glyphs : ArrayView[Int32],
+  declared~ : Int32 = glyphs.length(),
+) -> Array[Int32] {
+  let output : Array[Int32] = []
   truetype_push_u16_for_test(output, 10)
   truetype_push_u16_for_test(output, 0)
   truetype_push_u32_for_test(output, 20 + glyphs.length() * 2)
@@ -217,16 +217,16 @@ test "pdf_truetype_cmap_glyphs reads a cmap of tables without end to a bound" {
 /// A font of a cmap whose encoding `records` each point at one of
 /// `subtables` (by index): a subtable may be shared by many records.
 fn truetype_cmap_font_of_records_for_test(
-  subtables : ArrayView[Array[Int]],
-  records : ArrayView[Int],
+  subtables : ArrayView[Array[Int32]],
+  records : ArrayView[Int32],
 ) -> @core.PdfBytes {
-  let offsets : Array[Int] = []
+  let offsets : Array[Int32] = []
   let mut offset = 4 + records.length() * 8
   for subtable in subtables {
     offsets.push(offset)
     offset += subtable.length()
   }
-  let cmap : Array[Int] = []
+  let cmap : Array[Int32] = []
   truetype_push_u16_for_test(cmap, 0)
   truetype_push_u16_for_test(cmap, records.length())
   for i, record in records {
@@ -237,7 +237,7 @@ fn truetype_cmap_font_of_records_for_test(
   for subtable in subtables {
     truetype_append_for_test(cmap, subtable)
   }
-  let output : Array[Int] = []
+  let output : Array[Int32] = []
   truetype_push_u32_for_test(output, 0x00010000)
   truetype_push_u16_for_test(output, 1)
   truetype_push_u16_for_test(output, 0)

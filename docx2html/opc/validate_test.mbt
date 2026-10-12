@@ -23,8 +23,8 @@ fn utf8_bytes(text : String) -> Bytes {
 
 ///|
 fn opc_hash_clustered_names(
-  count : Int,
-  bucket_mask : Int,
+  count : Int32,
+  bucket_mask : Int32,
   suffix : String,
 ) -> Array[String] {
   let names : Array[String] = []
@@ -42,11 +42,11 @@ fn opc_hash_clustered_names(
 ///|
 /// A minimal structurally valid docx, with per-part replacement hooks.
 fn minimal_docx(
-  content_types? : String? = None,
-  root_rels? : String? = None,
-  document? : String? = None,
-  extra? : Array[(String, Bytes)] = [],
-  skip? : Array[String] = [],
+  content_types~ : String? = None,
+  root_rels~ : String? = None,
+  document~ : String? = None,
+  extra~ : Array[(String, Bytes)] = [],
+  skip~ : Array[String] = [],
 ) -> Bytes {
   let archive = @mbtzip.Archive()
   let parts : Array[(String, Bytes)] = [

@@ -128,7 +128,7 @@ fn range_vector(range : RangeValues) -> Array[FormulaValue]? {
 }
 
 ///|
-fn range_column(range : RangeValues, index : Int) -> Array[FormulaValue]? {
+fn range_column(range : RangeValues, index : Int32) -> Array[FormulaValue]? {
   if index < 0 || index >= range.cols {
     return None
   }
@@ -140,7 +140,7 @@ fn range_column(range : RangeValues, index : Int) -> Array[FormulaValue]? {
 }
 
 ///|
-fn range_row(range : RangeValues, index : Int) -> Array[FormulaValue]? {
+fn range_row(range : RangeValues, index : Int32) -> Array[FormulaValue]? {
   if index < 0 || index >= range.rows {
     return None
   }
@@ -169,7 +169,7 @@ fn is_munit_func(name : String) -> Bool {
 }
 
 ///|
-fn munit_dimension(value : FormulaValue) -> Result[Int, FormulaValue] {
+fn munit_dimension(value : FormulaValue) -> Result[Int32, FormulaValue] {
   match value_as_number(value) {
     Ok(num) =>
       if num < 0.0 {
@@ -182,7 +182,7 @@ fn munit_dimension(value : FormulaValue) -> Result[Int, FormulaValue] {
 }
 
 ///|
-fn munit_range_values(dimension : Int) -> RangeValues {
+fn munit_range_values(dimension : Int32) -> RangeValues {
   let out : Array[FormulaValue] = []
   for row in 0..<dimension {
     for col in 0..<dimension {
@@ -259,7 +259,7 @@ fn number_matrix_from_range(
 ///|
 fn matrix_minor(
   matrix : Array[Array[Double]],
-  index : Int,
+  index : Int32,
 ) -> Array[Array[Double]] {
   let out : Array[Array[Double]] = []
   for row in 0..<matrix.length() {
@@ -300,8 +300,8 @@ fn matrix_det(matrix : Array[Array[Double]]) -> Double {
 ///|
 fn matrix_minor_at(
   matrix : Array[Array[Double]],
-  remove_row : Int,
-  remove_col : Int,
+  remove_row : Int32,
+  remove_col : Int32,
 ) -> Array[Array[Double]] {
   let out : Array[Array[Double]] = []
   for row in 0..<matrix.length() {
@@ -323,8 +323,8 @@ fn matrix_minor_at(
 ///|
 fn matrix_cofactor(
   matrix : Array[Array[Double]],
-  row : Int,
-  col : Int,
+  row : Int32,
+  col : Int32,
 ) -> Double {
   let sign = if (row + col) % 2 == 0 { 1.0 } else { -1.0 }
   sign * matrix_det(matrix_minor_at(matrix, row, col))
@@ -384,7 +384,7 @@ fn matrix_multiply(
 }
 
 ///|
-fn new_matrix(cols : Int, rows : Int) -> Array[Array[Double]] {
+fn new_matrix(cols : Int32, rows : Int32) -> Array[Array[Double]] {
   if cols <= 0 || rows <= 0 {
     return []
   }
@@ -441,11 +441,11 @@ fn transpose_number_matrix(
 
 ///|
 priv struct TrendGrowthMatrixInfo {
-  trend_type : Int
-  n_cx : Int
-  n_rx : Int
-  m : Int
-  n : Int
+  trend_type : Int32
+  n_cx : Int32
+  n_rx : Int32
+  m : Int32
+  n : Int32
   mtx_x : Array[Array[Double]]
   mtx_y : Array[Array[Double]]
 }
@@ -584,7 +584,7 @@ fn prepare_trend_growth(
 }
 
 ///|
-fn calc_position(mtx : Array[Array[Double]], idx : Int) -> (Int, Int) {
+fn calc_position(mtx : Array[Array[Double]], idx : Int32) -> (Int32, Int32) {
   let row_size = mtx[0].length()
   let col = if row_size > 1 { idx / row_size } else { idx }
   let row = idx - col * row_size
@@ -592,19 +592,19 @@ fn calc_position(mtx : Array[Array[Double]], idx : Int) -> (Int, Int) {
 }
 
 ///|
-fn get_double(mtx : Array[Array[Double]], idx : Int) -> Double {
+fn get_double(mtx : Array[Array[Double]], idx : Int32) -> Double {
   let (row, col) = calc_position(mtx, idx)
   mtx[col][row]
 }
 
 ///|
-fn put_double(mtx : Array[Array[Double]], idx : Int, value : Double) -> Unit {
+fn put_double(mtx : Array[Array[Double]], idx : Int32, value : Double) -> Unit {
   let (row, col) = calc_position(mtx, idx)
   mtx[col][row] = value
 }
 
 ///|
-fn calc_mean_over_all(mtx : Array[Array[Double]], n : Int) -> Double {
+fn calc_mean_over_all(mtx : Array[Array[Double]], n : Int32) -> Double {
   let mut sum = 0.0
   for col in 0..<mtx.length() {
     for row in 0..<mtx[col].length() {
@@ -618,7 +618,7 @@ fn calc_mean_over_all(mtx : Array[Array[Double]], n : Int) -> Double {
 fn calc_sum_product(
   mtx_a : Array[Array[Double]],
   mtx_b : Array[Array[Double]],
-  m : Int,
+  m : Int32,
 ) -> Double {
   let mut sum = 0.0
   for idx in 0..<m {
@@ -631,8 +631,8 @@ fn calc_sum_product(
 fn calc_column_means(
   mtx_x : Array[Array[Double]],
   mtx_res : Array[Array[Double]],
-  c : Int,
-  r : Int,
+  c : Int32,
+  r : Int32,
 ) -> Unit {
   for i in 0..<c {
     let mut sum = 0.0
@@ -647,8 +647,8 @@ fn calc_column_means(
 fn calc_columns_delta(
   mtx : Array[Array[Double]],
   column_means : Array[Array[Double]],
-  c : Int,
-  r : Int,
+  c : Int32,
+  r : Int32,
 ) -> Unit {
   for i in 0..<c {
     for k in 0..<r {
@@ -669,9 +669,9 @@ fn calc_sign(value : Double) -> Double {
 ///|
 fn calc_cols_maximum_norm(
   mtx_a : Array[Array[Double]],
-  c : Int,
-  r : Int,
-  n : Int,
+  c : Int32,
+  r : Int32,
+  n : Int32,
 ) -> Double {
   let mut norm = 0.0
   for row in r..<n {
@@ -688,9 +688,9 @@ fn calc_fast_mult(
   mtx_a : Array[Array[Double]],
   mtx_b : Array[Array[Double]],
   mtx_r : Array[Array[Double]],
-  n : Int,
-  m : Int,
-  l : Int,
+  n : Int32,
+  m : Int32,
+  l : Int32,
 ) -> Unit {
   for row in 0..<n {
     for col in 0..<l {
@@ -706,9 +706,9 @@ fn calc_fast_mult(
 ///|
 fn calc_rows_euclidean_norm(
   mtx_a : Array[Array[Double]],
-  c : Int,
-  r : Int,
-  n : Int,
+  c : Int32,
+  r : Int32,
+  n : Int32,
 ) -> Double {
   let mut norm = 0.0
   for row in r..<n {
@@ -721,11 +721,11 @@ fn calc_rows_euclidean_norm(
 ///|
 fn calc_rows_sum_product(
   mtx_a : Array[Array[Double]],
-  a : Int,
+  a : Int32,
   mtx_b : Array[Array[Double]],
-  b : Int,
-  r : Int,
-  n : Int,
+  b : Int32,
+  r : Int32,
+  n : Int32,
 ) -> Double {
   let mut result = 0.0
   for row in r..<n {
@@ -739,7 +739,7 @@ fn calc_solve_with_upper_right_triangle(
   mtx_a : Array[Array[Double]],
   vec_r : Array[Double],
   mtx_s : Array[Array[Double]],
-  k : Int,
+  k : Int32,
   b_is_transposed : Bool,
 ) -> Unit {
   for idx in 0..<k {
@@ -761,8 +761,8 @@ fn calc_solve_with_upper_right_triangle(
 fn calc_row_qr_decomposition(
   mtx_a : Array[Array[Double]],
   vec_r : Array[Double],
-  k : Int,
-  n : Int,
+  k : Int32,
+  n : Int32,
 ) -> Bool {
   for col in 0..<k {
     let scale = calc_cols_maximum_norm(mtx_a, col, col, n)
@@ -790,9 +790,9 @@ fn calc_row_qr_decomposition(
 ///|
 fn calc_apply_cols_householder_transformation(
   mtx_a : Array[Array[Double]],
-  r : Int,
+  r : Int32,
   mtx_y : Array[Array[Double]],
-  n : Int,
+  n : Int32,
 ) -> Unit {
   let denominator = calc_cols_sum_product(mtx_a, r, mtx_a, r, r, n)
   let numerator = calc_cols_sum_product(mtx_a, r, mtx_y, 0, r, n)
@@ -806,8 +806,8 @@ fn calc_apply_cols_householder_transformation(
 fn calc_row_means(
   mtx_x : Array[Array[Double]],
   mtx_res : Array[Array[Double]],
-  c : Int,
-  r : Int,
+  c : Int32,
+  r : Int32,
 ) -> Unit {
   for k in 0..<r {
     let mut sum = 0.0
@@ -822,8 +822,8 @@ fn calc_row_means(
 fn calc_rows_delta(
   mtx : Array[Array[Double]],
   row_means : Array[Array[Double]],
-  c : Int,
-  r : Int,
+  c : Int32,
+  r : Int32,
 ) -> Unit {
   for k in 0..<r {
     for i in 0..<c {
@@ -835,9 +835,9 @@ fn calc_rows_delta(
 ///|
 fn calc_column_maximum_norm(
   mtx_a : Array[Array[Double]],
-  r : Int,
-  c : Int,
-  n : Int,
+  r : Int32,
+  c : Int32,
+  n : Int32,
 ) -> Double {
   let mut norm = 0.0
   for col in c..<n {
@@ -852,9 +852,9 @@ fn calc_column_maximum_norm(
 ///|
 fn calc_cols_euclidean_norm(
   mtx_a : Array[Array[Double]],
-  r : Int,
-  c : Int,
-  n : Int,
+  r : Int32,
+  c : Int32,
+  n : Int32,
 ) -> Double {
   let mut norm = 0.0
   for col in c..<n {
@@ -867,11 +867,11 @@ fn calc_cols_euclidean_norm(
 ///|
 fn calc_cols_sum_product(
   mtx_a : Array[Array[Double]],
-  a : Int,
+  a : Int32,
   mtx_b : Array[Array[Double]],
-  b : Int,
-  c : Int,
-  n : Int,
+  b : Int32,
+  c : Int32,
+  n : Int32,
 ) -> Double {
   let mut result = 0.0
   for col in c..<n {
@@ -884,8 +884,8 @@ fn calc_cols_sum_product(
 fn calc_col_qr_decomposition(
   mtx_a : Array[Array[Double]],
   vec_r : Array[Double],
-  k : Int,
-  n : Int,
+  k : Int32,
+  n : Int32,
 ) -> Bool {
   for row in 0..<k {
     let scale = calc_column_maximum_norm(mtx_a, row, row, n)
@@ -913,9 +913,9 @@ fn calc_col_qr_decomposition(
 ///|
 fn calc_apply_rows_householder_transformation(
   mtx_a : Array[Array[Double]],
-  c : Int,
+  c : Int32,
   mtx_y : Array[Array[Double]],
-  n : Int,
+  n : Int32,
 ) -> Unit {
   let denominator = calc_rows_sum_product(mtx_a, c, mtx_a, c, c, n)
   let numerator = calc_rows_sum_product(mtx_a, c, mtx_y, 0, c, n)
@@ -934,7 +934,7 @@ fn calc_trend_growth_simple_regression(
   new_x : Array[Array[Double]],
   mtx_res : Array[Array[Double]],
   mean_y : Double,
-  n : Int,
+  n : Int32,
 ) -> Unit {
   let mut mean_x = 0.0
   if b_constant {
@@ -975,9 +975,9 @@ fn calc_trend_growth_multiple_regression_part1(
   new_x : Array[Array[Double]],
   mtx_res : Array[Array[Double]],
   mean_y : Double,
-  r_xn : Int,
-  k : Int,
-  n : Int,
+  r_xn : Int32,
+  k : Int32,
+  n : Int32,
 ) -> Unit {
   let vec_r = Array::make(n, 0.0)
   let means = new_matrix(k, 1)
@@ -1031,9 +1031,9 @@ fn calc_trend_growth_multiple_regression_part2(
   new_x : Array[Array[Double]],
   mtx_res : Array[Array[Double]],
   mean_y : Double,
-  n_cxn : Int,
-  k : Int,
-  n : Int,
+  n_cxn : Int32,
+  k : Int32,
+  n : Int32,
 ) -> Unit {
   let vec_r = Array::make(n, 0.0)
   let means = new_matrix(k, 1)
@@ -1082,11 +1082,11 @@ fn calc_trend_growth_multiple_regression_part2(
 fn calc_trend_growth_regression(
   b_constant : Bool,
   b_growth : Bool,
-  trend_type : Int,
-  n_cxn : Int,
-  n_rxn : Int,
-  k : Int,
-  n : Int,
+  trend_type : Int32,
+  n_cxn : Int32,
+  n_rxn : Int32,
+  k : Int32,
+  n : Int32,
   mtx_y : Array[Array[Double]],
   mtx_x : Array[Array[Double]],
   new_x : Array[Array[Double]],
@@ -1171,7 +1171,7 @@ fn calc_trend_growth(
 ///|
 fn unique_row_key(
   range : RangeValues,
-  row : Int,
+  row : Int32,
 ) -> Result[String, FormulaValue] {
   let sb = StringBuilder()
   let start = row * range.cols
@@ -1192,7 +1192,7 @@ fn unique_range_values(
   exactly_once : Bool,
 ) -> Result[RangeValues, FormulaValue] {
   let base = if by_col { transpose_range_values(range) } else { range }
-  let counts : Map[String, Int] = Map([])
+  let counts : Map[String, Int32] = Map([])
   for row in 0..<base.rows {
     let key = match unique_row_key(base, row) {
       Ok(value) => value
@@ -1358,10 +1358,10 @@ fn randarray_values(values : ArrayView[FormulaValue]) -> FormulaValue {
 ///|
 fn slice_range_values(
   range : RangeValues,
-  row_start : Int,
-  row_count : Int,
-  col_start : Int,
-  col_count : Int,
+  row_start : Int32,
+  row_count : Int32,
+  col_start : Int32,
+  col_count : Int32,
 ) -> Result[RangeValues, FormulaValue] {
   if row_count <= 0 || col_count <= 0 {
     return Err(Error(formula_error_value))
@@ -1487,7 +1487,7 @@ fn drop_values(
 fn flatten_range_values(
   range : RangeValues,
   scan_by_column : Bool,
-  ignore : Int,
+  ignore : Int32,
 ) -> Result[Array[FormulaValue], FormulaValue] {
   let out : Array[FormulaValue] = []
   let keep_value = fn(value : FormulaValue) -> Result[Bool, FormulaValue] {
@@ -1536,9 +1536,9 @@ fn flatten_range_values(
 ///|
 fn choose_indices(
   values : ArrayView[FormulaValue],
-  total : Int,
-) -> Result[Array[Int], FormulaValue] {
-  let out : Array[Int] = []
+  total : Int32,
+) -> Result[Array[Int32], FormulaValue] {
+  let out : Array[Int32] = []
   for value in values {
     let idx = match value_as_int(value) {
       Ok(num) => num
@@ -1866,8 +1866,8 @@ fn tocol_torow_values(
 ///|
 fn sort_range_values(
   range : RangeValues,
-  sort_index : Int,
-  sort_order : Int,
+  sort_index : Int32,
+  sort_order : Int32,
 ) -> Result[RangeValues, FormulaValue] {
   if sort_index < 1 || sort_index > range.cols {
     return Err(Error(formula_error_value))
@@ -1875,7 +1875,7 @@ fn sort_range_values(
   if sort_order != 1 && sort_order != -1 {
     return Err(Error(formula_error_value))
   }
-  let entries : Array[(Int, FormulaValue)] = []
+  let entries : Array[(Int32, FormulaValue)] = []
   let key_col = sort_index - 1
   for row in 0..<range.rows {
     let key = match range.get(row, key_col) {
@@ -1914,7 +1914,7 @@ fn sort_range_values(
 ///|
 fn sortby_vector(
   range : RangeValues,
-  expected_len : Int,
+  expected_len : Int32,
 ) -> Result[Array[FormulaValue], FormulaValue] {
   let vector = match range_vector(range) {
     Some(list) => list
@@ -1957,7 +1957,7 @@ fn sortby_values(
   )
   let sort_by_rows = range.rows > 1 || range.cols == 1
   let expected_len = if sort_by_rows { range.rows } else { range.cols }
-  let key_sets : Array[(Array[FormulaValue], Int)] = []
+  let key_sets : Array[(Array[FormulaValue], Int32)] = []
   let mut idx = 1
   while idx < args.length() {
     match values[idx] {
@@ -1993,7 +1993,7 @@ fn sortby_values(
   if key_sets.length() == 0 {
     return Error(formula_error_value)
   }
-  let entries : Array[Int] = []
+  let entries : Array[Int32] = []
   for i in 0..<expected_len {
     entries.push(i)
   }
@@ -2325,7 +2325,10 @@ fn formula_value_to_cell_value(value : FormulaValue) -> CellValue? {
 }
 
 ///|
-fn array_shape_binary(left : (Int, Int)?, right : (Int, Int)?) -> (Int, Int)? {
+fn array_shape_binary(
+  left : (Int32, Int32)?,
+  right : (Int32, Int32)?,
+) -> (Int32, Int32)? {
   match (left, right) {
     (Some((1, 1)), Some(shape)) => Some(shape)
     (Some(shape), Some((1, 1))) => Some(shape)
@@ -2343,11 +2346,11 @@ fn array_shape_binary(left : (Int, Int)?, right : (Int, Int)?) -> (Int, Int)? {
 fn effective_range_bounds(
   workbook : Workbook,
   sheet_name : String,
-  min_row : Int,
-  max_row : Int,
-  min_col : Int,
-  max_col : Int,
-) -> (Int, Int, Int, Int) {
+  min_row : Int32,
+  max_row : Int32,
+  min_col : Int32,
+  max_col : Int32,
+) -> (Int32, Int32, Int32, Int32) {
   let rows = max_row - min_row + 1
   let cols = max_col - min_col + 1
   if rows <= 0 || cols <= 0 {
@@ -2463,7 +2466,7 @@ fn array_shape_from_expr(
   sheet_name : String,
   expr : Expr,
   ctx : CalcContext,
-) -> (Int, Int)? raise XlsxError {
+) -> (Int32, Int32)? raise XlsxError {
   match expr {
     Number(_) | String(_) | Bool(_) => Some((1, 1))
     Cell(_, _) => Some((1, 1))
@@ -2764,7 +2767,7 @@ fn array_shape_from_expr(
                 target_sheet : String,
                 start_ref : String,
                 end_ref : String,
-              ) -> (Int, Int)? raise XlsxError {
+              ) -> (Int32, Int32)? raise XlsxError {
                 let (row1, col1) = cell_ref_to_rc(start_ref)
                 let (row2, col2) = cell_ref_to_rc(end_ref)
                 let min_row = if row1 < row2 { row1 } else { row2 }
@@ -3471,7 +3474,7 @@ fn value_as_string(value : FormulaValue) -> Result[String, FormulaValue] {
 }
 
 ///|
-fn char_from_code(code : Int) -> String {
+fn char_from_code(code : Int32) -> String {
   String::from_array([code.unsafe_to_char()])
 }
 
@@ -3523,7 +3526,7 @@ fn encode_url_byte(sb : StringBuilder, byte : Byte) -> Unit {
     value == 0x2e ||
     value == 0x5f ||
     value == 0x7e {
-    sb.write_char(Int::unsafe_to_char(value))
+    sb.write_char(Int32::unsafe_to_char(value))
   } else {
     sb.write_char('%')
     sb.write_char(hex_digits[value / 16])
@@ -3617,7 +3620,7 @@ let bahttext_digits : Array[String] = [
 ]
 
 ///|
-fn bahttext_append_digit(text : String, digit : Int) -> String {
+fn bahttext_append_digit(text : String, digit : Int32) -> String {
   if digit >= 0 && digit <= 9 {
     text + bahttext_digits[digit]
   } else {
@@ -3626,7 +3629,7 @@ fn bahttext_append_digit(text : String, digit : Int) -> String {
 }
 
 ///|
-fn bahttext_append_pow10(text : String, digit : Int, pow10 : Int) -> String {
+fn bahttext_append_pow10(text : String, digit : Int32, pow10 : Int32) -> String {
   let mut out = bahttext_append_digit(text, digit)
   match pow10 {
     2 => out = out + th1e2
@@ -3639,7 +3642,7 @@ fn bahttext_append_pow10(text : String, digit : Int, pow10 : Int) -> String {
 }
 
 ///|
-fn bahttext_append_block(text : String, val : Int) -> String {
+fn bahttext_append_block(text : String, val : Int32) -> String {
   let mut out = text
   let mut value = val
   if value >= 100000 {
@@ -3679,7 +3682,7 @@ fn bahttext_append_block(text : String, val : Int) -> String {
 }
 
 ///|
-fn bahttext_split_block(val : Double, size : Double) -> (Double, Int) {
+fn bahttext_split_block(val : Double, size : Double) -> (Double, Int32) {
   let (integer, frac) = modf_double((val + 0.1) / size)
   let frac_value = frac * size + 0.1
   (integer, Double::to_int(trunc_double(frac_value)))
@@ -3733,7 +3736,7 @@ fn bahttext_values(values : ArrayView[FormulaValue]) -> FormulaValue {
 }
 
 ///|
-fn value_as_int(value : FormulaValue) -> Result[Int, FormulaValue] {
+fn value_as_int(value : FormulaValue) -> Result[Int32, FormulaValue] {
   match value_as_number(value) {
     Ok(num) => Ok(Double::to_int(trunc_double(num)))
     Err(err) => Err(err)
@@ -3741,7 +3744,11 @@ fn value_as_int(value : FormulaValue) -> Result[Int, FormulaValue] {
 }
 
 ///|
-fn find_substring_from(text : String, pattern : String, start : Int) -> Int? {
+fn find_substring_from(
+  text : String,
+  pattern : String,
+  start : Int32,
+) -> Int32? {
   let len = text.length()
   if start < 0 || start > len {
     return None
@@ -3794,9 +3801,9 @@ fn split_text_parts(
 fn wildcard_match_prefix(
   text : String,
   pattern : String,
-  text_idx : Int,
-  pattern_idx : Int,
-  memo : Map[(Int, Int), Bool],
+  text_idx : Int32,
+  pattern_idx : Int32,
+  memo : Map[(Int32, Int32), Bool],
 ) -> Bool {
   match memo.get((text_idx, pattern_idx)) {
     Some(result) => return result
@@ -3869,9 +3876,9 @@ fn wildcard_match_prefix(
 fn wildcard_match_full_prefix(
   text : String,
   pattern : String,
-  text_idx : Int,
-  pattern_idx : Int,
-  memo : Map[(Int, Int), Bool],
+  text_idx : Int32,
+  pattern_idx : Int32,
+  memo : Map[(Int32, Int32), Bool],
 ) -> Bool {
   match memo.get((text_idx, pattern_idx)) {
     Some(result) => return result
@@ -3960,18 +3967,18 @@ fn wildcard_match_full_prefix(
 
 ///|
 fn wildcard_match_full(text : String, pattern : String) -> Bool {
-  let memo : Map[(Int, Int), Bool] = Map([])
+  let memo : Map[(Int32, Int32), Bool] = Map([])
   wildcard_match_full_prefix(text, pattern, 0, 0, memo)
 }
 
 ///|
-fn wildcard_find(text : String, pattern : String, start : Int) -> Int? {
+fn wildcard_find(text : String, pattern : String, start : Int32) -> Int32? {
   let len = text.length()
   if start < 0 || start > len {
     return None
   }
   for idx in start..<=len {
-    let memo : Map[(Int, Int), Bool] = Map([])
+    let memo : Map[(Int32, Int32), Bool] = Map([])
     if wildcard_match_prefix(text, pattern, idx, 0, memo) {
       return Some(idx)
     }
@@ -3980,7 +3987,7 @@ fn wildcard_find(text : String, pattern : String, start : Int) -> Int? {
 }
 
 ///|
-fn dbcs_byte_len_char(ch : Char) -> Int {
+fn dbcs_byte_len_char(ch : Char) -> Int32 {
   if ch.to_int() <= 0x7f {
     1
   } else {
@@ -3998,7 +4005,7 @@ fn dbcs_byte_len_char(ch : Char) -> Int {
 /// `*B` function on one consistent DBCS model instead of slicing raw
 /// UTF-8 bytes (which would mangle even boundary-aligned wide-character
 /// cuts into per-byte code points).
-fn dbcs_byte_range(text : String, start_num : Int, count : Int) -> String {
+fn dbcs_byte_range(text : String, start_num : Int32, count : Int32) -> String {
   if count <= 0 {
     return ""
   }
@@ -4020,7 +4027,7 @@ fn dbcs_byte_range(text : String, start_num : Int, count : Int) -> String {
         if taken + 2 > count {
           let bytes = @encoding/utf8.encode(String::from_array([ch]))
           if bytes.length() > 0 {
-            sb.write_char(Int::unsafe_to_char(bytes[0].to_int()))
+            sb.write_char(Int32::unsafe_to_char(bytes[0].to_int()))
           }
           break
         }
@@ -4036,7 +4043,7 @@ fn dbcs_byte_range(text : String, start_num : Int, count : Int) -> String {
 }
 
 ///|
-fn dbcs_byte_length(text : String) -> Int {
+fn dbcs_byte_length(text : String) -> Int32 {
   let mut total = 0
   for ch in text {
     total = total + dbcs_byte_len_char(ch)
@@ -4061,7 +4068,7 @@ fn dbcs_convert(text : String) -> String {
     let r = ch.to_int()
     let code = if r == 32 { 12288 } else { r + 65248 }
     if (code < 32 || code > 126) && r != 165 && code < 65381 {
-      sb.write_char(Int::unsafe_to_char(code))
+      sb.write_char(Int32::unsafe_to_char(code))
     } else {
       sb.write_char(ch)
     }
@@ -4070,7 +4077,7 @@ fn dbcs_convert(text : String) -> String {
 }
 
 ///|
-fn dbcs_index_from_offset(text : String, start_num : Int) -> Int? {
+fn dbcs_index_from_offset(text : String, start_num : Int32) -> Int32? {
   if start_num <= 0 {
     return None
   }
@@ -4088,7 +4095,7 @@ fn dbcs_index_from_offset(text : String, start_num : Int) -> Int? {
 }
 
 ///|
-fn dbcs_byte_offset_for_index(text : String, index : Int) -> Int {
+fn dbcs_byte_offset_for_index(text : String, index : Int32) -> Int32 {
   let chars = text.to_array()
   let mut offset = 1
   let mut i = 0
@@ -4103,9 +4110,9 @@ fn dbcs_byte_offset_for_index(text : String, index : Int) -> Int {
 fn wildcard_match_prefix_dbcs(
   text : String,
   pattern : String,
-  text_idx : Int,
-  pattern_idx : Int,
-  memo : Map[(Int, Int), Bool],
+  text_idx : Int32,
+  pattern_idx : Int32,
+  memo : Map[(Int32, Int32), Bool],
 ) -> Bool {
   match memo.get((text_idx, pattern_idx)) {
     Some(result) => return result
@@ -4193,13 +4200,13 @@ fn wildcard_match_prefix_dbcs(
 }
 
 ///|
-fn wildcard_find_dbcs(text : String, pattern : String, start : Int) -> Int? {
+fn wildcard_find_dbcs(text : String, pattern : String, start : Int32) -> Int32? {
   let len = text.length()
   if start < 0 || start > len {
     return None
   }
   for idx in start..<=len {
-    let memo : Map[(Int, Int), Bool] = Map([])
+    let memo : Map[(Int32, Int32), Bool] = Map([])
     if wildcard_match_prefix_dbcs(text, pattern, idx, 0, memo) {
       return Some(idx)
     }
@@ -4211,9 +4218,9 @@ fn wildcard_find_dbcs(text : String, pattern : String, start : Int) -> Int? {
 fn find_dbcs(
   text : String,
   pattern : String,
-  start_num : Int,
+  start_num : Int32,
   wildcard : Bool,
-) -> Int? {
+) -> Int32? {
   if start_num <= 0 {
     return None
   }
@@ -4268,7 +4275,7 @@ fn proper_case(text : String) -> String {
 }
 
 ///|
-fn decimal_places_from_text(text : String) -> Int {
+fn decimal_places_from_text(text : String) -> Int32 {
   match text.find(".") {
     Some(pos) => {
       let tail = text.unsafe_substring(start=pos + 1, end=text.length())
@@ -4414,10 +4421,10 @@ fn textsplit_values(values : ArrayView[FormulaValue]) -> FormulaValue {
 fn text_after_before_index(
   text : String,
   delimiter : String,
-  instance_num : Int,
-  match_mode : Int,
+  instance_num : Int32,
+  match_mode : Int32,
   match_end : Bool,
-) -> Int? {
+) -> Int32? {
   if instance_num == 0 {
     return None
   }
@@ -4464,7 +4471,7 @@ fn text_after_before_index(
 }
 
 ///|
-fn compare_strings(left : String, right : String) -> Int {
+fn compare_strings(left : String, right : String) -> Int32 {
   let l = left.to_array()
   let r = right.to_array()
   let limit = if l.length() < r.length() { l.length() } else { r.length() }
@@ -4477,7 +4484,7 @@ fn compare_strings(left : String, right : String) -> Int {
 }
 
 ///|
-fn value_rank(value : FormulaValue) -> Int {
+fn value_rank(value : FormulaValue) -> Int32 {
   match value {
     Number(_) => 0
     Empty => 0
@@ -4492,7 +4499,7 @@ fn value_rank(value : FormulaValue) -> Int {
 fn compare_values(
   lhs : FormulaValue,
   rhs : FormulaValue,
-) -> Result[Int, FormulaValue] {
+) -> Result[Int32, FormulaValue] {
   match (lhs, rhs) {
     (Error(err), _) => Err(Error(err))
     (_, Error(err)) => Err(Error(err))
@@ -4520,7 +4527,7 @@ fn compare_values(
 fn compare_lookup_values(
   lhs : FormulaValue,
   rhs : FormulaValue,
-) -> Result[Int?, FormulaValue] {
+) -> Result[Int32?, FormulaValue] {
   match (lhs, rhs) {
     (Error(err), _) => Err(Error(err))
     (_, Error(err)) => Err(Error(err))
@@ -4548,7 +4555,7 @@ fn compare_lookup_values(
 fn match_range_value(
   lookup : FormulaValue,
   range : RangeValues,
-  match_type : Int,
+  match_type : Int32,
 ) -> FormulaValue {
   let values = match range_vector(range) {
     Some(list) => list
@@ -4571,7 +4578,7 @@ fn match_range_value(
     }
     return Error(formula_error_na)
   }
-  let mut best_idx : Int? = None
+  let mut best_idx : Int32? = None
   for i in 0..<values.length() {
     match compare_values(values[i], lookup) {
       Ok(cmp) =>
@@ -4612,7 +4619,7 @@ fn lookup_range_flag(value : FormulaValue) -> Result[Bool, FormulaValue] {
 fn vlookup_value(
   lookup : FormulaValue,
   table : RangeValues,
-  col_index : Int,
+  col_index : Int32,
   range_lookup : Bool,
 ) -> FormulaValue {
   match lookup {
@@ -4626,7 +4633,7 @@ fn vlookup_value(
     return Error(formula_error_ref)
   }
   if range_lookup {
-    let mut best_row : Int? = None
+    let mut best_row : Int32? = None
     for row in 0..<table.rows {
       let key = table.values[row * table.cols]
       match compare_values(key, lookup) {
@@ -4655,7 +4662,7 @@ fn vlookup_value(
 fn hlookup_value(
   lookup : FormulaValue,
   table : RangeValues,
-  row_index : Int,
+  row_index : Int32,
   range_lookup : Bool,
 ) -> FormulaValue {
   match lookup {
@@ -4673,7 +4680,7 @@ fn hlookup_value(
     return Error(formula_error_ref)
   }
   if range_lookup {
-    let mut best_col : Int? = None
+    let mut best_col : Int32? = None
     for col in 0..<table.cols {
       let key = table.values[col]
       match compare_values(key, lookup) {
@@ -4702,8 +4709,8 @@ fn hlookup_value(
 fn lookup_best_index(
   lookup : FormulaValue,
   values : Array[FormulaValue],
-) -> Result[Int?, FormulaValue] {
-  let mut best_idx : Int? = None
+) -> Result[Int32?, FormulaValue] {
+  let mut best_idx : Int32? = None
   for i in 0..<values.length() {
     match compare_lookup_values(values[i], lookup) {
       Ok(Some(cmp)) =>
@@ -4728,9 +4735,9 @@ fn lookup_best_index(
 fn xlookup_find_index(
   lookup : FormulaValue,
   values : Array[FormulaValue],
-  match_mode : Int,
-  search_mode : Int,
-) -> Result[Int?, FormulaValue] {
+  match_mode : Int32,
+  search_mode : Int32,
+) -> Result[Int32?, FormulaValue] {
   match lookup {
     Error(err) => return Err(Error(err))
     _ => ()
@@ -4797,7 +4804,7 @@ fn xlookup_find_index(
   if match_mode != -1 && match_mode != 1 {
     return Err(Error(formula_error_value))
   }
-  let mut best_idx : Int? = None
+  let mut best_idx : Int32? = None
   for i in 0..<values.length() {
     match compare_values(values[i], lookup) {
       Ok(cmp) =>
@@ -5155,7 +5162,7 @@ fn complex_to_string(value : Complex, suffix : String) -> String {
 }
 
 ///|
-fn parse_date_parts(text : String) -> (Int, Int, Int)? {
+fn parse_date_parts(text : String) -> (Int32, Int32, Int32)? {
   let trimmed = text.trim().to_owned()
   if trimmed == "" {
     return None
@@ -5204,7 +5211,7 @@ fn parse_date_parts(text : String) -> (Int, Int, Int)? {
 }
 
 ///|
-fn parse_time_parts(text : String) -> (Int, Int, Int)? {
+fn parse_time_parts(text : String) -> (Int32, Int32, Int32)? {
   let trimmed = text.trim().to_upper()
   if trimmed == "" {
     return None
@@ -5434,7 +5441,7 @@ fn formula_criteria_condition_is_string(criteria : FormulaCriteria) -> Bool {
 }
 
 ///|
-fn compare_criteria_values(left : FormulaValue, right : FormulaValue) -> Int? {
+fn compare_criteria_values(left : FormulaValue, right : FormulaValue) -> Int32? {
   let lhs = normalize_scalar(left)
   let rhs = normalize_scalar(right)
   match (lhs, rhs) {
@@ -5464,9 +5471,9 @@ fn compare_criteria_values(left : FormulaValue, right : FormulaValue) -> Int? {
 fn regex_match_from(
   text : Array[Char],
   pattern : Array[Char],
-  i : Int,
-  j : Int,
-  memo : Map[(Int, Int), Bool],
+  i : Int32,
+  j : Int32,
+  memo : Map[(Int32, Int32), Bool],
 ) -> Bool {
   match memo.get((i, j)) {
     Some(result) => return result
@@ -5497,7 +5504,7 @@ fn regex_match_from(
 fn regex_like_match(text : StringView, pattern : StringView) -> Bool {
   let text_chars = text.to_array()
   let pattern_chars = pattern.to_array()
-  let memo : Map[(Int, Int), Bool] = Map([])
+  let memo : Map[(Int32, Int32), Bool] = Map([])
   regex_match_from(text_chars, pattern_chars, 0, 0, memo)
 }
 
@@ -5534,9 +5541,9 @@ fn formula_criteria_eval(
 
 ///|
 priv struct CalcDatabase {
-  mut row : Int
-  col : Int
-  index_map : Map[Int, Int]
+  mut row : Int32
+  col : Int32
+  index_map : Map[Int32, Int32]
   database : RangeValues
   criteria : RangeValues
 }
@@ -5545,7 +5552,7 @@ priv struct CalcDatabase {
 fn calc_database_column_index(
   database : RangeValues,
   field : FormulaValue,
-) -> Int {
+) -> Int32 {
   let normalized = normalize_scalar(field)
   match normalized {
     Error(_) => return -1
@@ -5810,7 +5817,7 @@ fn modf_double(value : Double) -> (Double, Double) {
 }
 
 ///|
-fn normalize_year_month(year : Int, month : Int) -> (Int, Int) {
+fn normalize_year_month(year : Int32, month : Int32) -> (Int32, Int32) {
   let mut y = year
   let mut m = month
   while m <= 0 {
@@ -5825,7 +5832,11 @@ fn normalize_year_month(year : Int, month : Int) -> (Int, Int) {
 }
 
 ///|
-fn normalize_date_parts(year : Int, month : Int, day : Int) -> (Int, Int, Int) {
+fn normalize_date_parts(
+  year : Int32,
+  month : Int32,
+  day : Int32,
+) -> (Int32, Int32, Int32) {
   let (year_value, month_value) = normalize_year_month(year, month)
   let mut y = year_value
   let mut m = month_value
@@ -5853,10 +5864,10 @@ fn normalize_date_parts(year : Int, month : Int, day : Int) -> (Int, Int, Int) {
 
 ///|
 fn excel_serial_from_date(
-  year : Int,
-  month : Int,
-  day : Int,
-  use_1904_dates? : Bool = false,
+  year : Int32,
+  month : Int32,
+  day : Int32,
+  use_1904_dates~ : Bool = false,
 ) -> Double? {
   if year < 0 || year > 9999 {
     return None
@@ -5883,7 +5894,11 @@ fn excel_serial_from_date(
 }
 
 ///|
-fn excel_time_fraction(hours : Int, minutes : Int, seconds : Int) -> Double? {
+fn excel_time_fraction(
+  hours : Int32,
+  minutes : Int32,
+  seconds : Int32,
+) -> Double? {
   if hours < 0 || minutes < 0 || seconds < 0 {
     return None
   }
@@ -5895,8 +5910,8 @@ fn excel_time_fraction(hours : Int, minutes : Int, seconds : Int) -> Double? {
 ///|
 fn excel_serial_parts(
   value : FormulaValue,
-  use_1904_dates? : Bool = false,
-) -> Result[(Int, Int, Int, Int, Int, Int), FormulaValue] {
+  use_1904_dates~ : Bool = false,
+) -> Result[(Int32, Int32, Int32, Int32, Int32, Int32), FormulaValue] {
   match value_as_number(value) {
     Ok(num) => {
       let parts = if use_1904_dates {
@@ -5916,8 +5931,8 @@ fn excel_serial_parts(
 ///|
 fn date_parts_from_serial(
   serial : Double,
-  use_1904_dates? : Bool = false,
-) -> (Int, Int, Int)? {
+  use_1904_dates~ : Bool = false,
+) -> (Int32, Int32, Int32)? {
   // Calendar-only formulas use the serial's containing day. Clock rounding is
   // intentionally confined to time-bearing conversions: 23:59:59.99 must not
   // make YEAR, DAY, WEEKNUM, or ISOWEEKNUM observe the following date.
@@ -5936,8 +5951,8 @@ fn date_parts_from_serial(
 ///|
 fn excel_serial_date_parts(
   value : FormulaValue,
-  use_1904_dates? : Bool = false,
-) -> Result[(Int, Int, Int), FormulaValue] {
+  use_1904_dates~ : Bool = false,
+) -> Result[(Int32, Int32, Int32), FormulaValue] {
   match value_as_number(value) {
     Ok(serial) =>
       match date_parts_from_serial(serial, use_1904_dates~) {
@@ -5967,7 +5982,7 @@ fn validated_date_serial(
 ///|
 fn value_as_date_serial(
   value : FormulaValue,
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> Result[Double, FormulaValue] {
   match normalize_scalar(value) {
     Number(num) => validated_date_serial(num, use_1904_dates)
@@ -5997,8 +6012,8 @@ fn value_as_date_serial(
 ///|
 fn date_parts_from_value(
   value : FormulaValue,
-  use_1904_dates? : Bool = false,
-) -> Result[(Int, Int, Int), FormulaValue] {
+  use_1904_dates~ : Bool = false,
+) -> Result[(Int32, Int32, Int32), FormulaValue] {
   match value_as_date_serial(value, use_1904_dates~) {
     Ok(serial) =>
       match date_parts_from_serial(serial, use_1904_dates~) {
@@ -6010,7 +6025,7 @@ fn date_parts_from_value(
 }
 
 ///|
-fn days_in_year(year : Int) -> Int {
+fn days_in_year(year : Int32) -> Int32 {
   if is_leap_year(year) {
     366
   } else {
@@ -6019,12 +6034,12 @@ fn days_in_year(year : Int) -> Int {
 }
 
 ///|
-fn day_of_year(year : Int, month : Int, day : Int) -> Int {
+fn day_of_year(year : Int32, month : Int32, day : Int32) -> Int32 {
   days_from_civil(year, month, day) - days_from_civil(year, 1, 1) + 1
 }
 
 ///|
-fn weekday_monday1(year : Int, month : Int, day : Int) -> Int {
+fn weekday_monday1(year : Int32, month : Int32, day : Int32) -> Int32 {
   // 1970-01-01 was Thursday, or weekday 4 when Monday is 1.
   let mut idx = (days_from_civil(year, month, day) + 3) % 7
   if idx < 0 {
@@ -6034,7 +6049,7 @@ fn weekday_monday1(year : Int, month : Int, day : Int) -> Int {
 }
 
 ///|
-fn weekday_sun1(year : Int, month : Int, day : Int) -> Int {
+fn weekday_sun1(year : Int32, month : Int32, day : Int32) -> Int32 {
   let monday = weekday_monday1(year, month, day)
   if monday == 7 {
     1
@@ -6044,7 +6059,7 @@ fn weekday_sun1(year : Int, month : Int, day : Int) -> Int {
 }
 
 ///|
-fn iso_weeks_in_year(year : Int) -> Int {
+fn iso_weeks_in_year(year : Int32) -> Int32 {
   let january_first = weekday_monday1(year, 1, 1)
   if january_first == 4 || (january_first == 3 && is_leap_year(year)) {
     53
@@ -6054,7 +6069,7 @@ fn iso_weeks_in_year(year : Int) -> Int {
 }
 
 ///|
-fn iso_week_number(year : Int, month : Int, day : Int) -> Int? {
+fn iso_week_number(year : Int32, month : Int32, day : Int32) -> Int32? {
   if year < 1 ||
     year > 9999 ||
     month < 1 ||
@@ -6079,10 +6094,10 @@ fn iso_week_number(year : Int, month : Int, day : Int) -> Int? {
 ///|
 fn weekend_mask_from_value(
   value : FormulaValue,
-) -> Result[(Array[Int], Int), FormulaValue] {
-  let weekend_mask : Array[Int] = [0, 0, 0, 0, 0, 0, 0]
+) -> Result[(Array[Int32], Int32), FormulaValue] {
+  let weekend_mask : Array[Int32] = [0, 0, 0, 0, 0, 0, 0]
   let mut workdays = 0
-  let parse_code = fn(code : Int) -> Result[Unit, FormulaValue] {
+  let parse_code = fn(code : Int32) -> Result[Unit, FormulaValue] {
     let indices = match code {
       1 => [5, 6]
       2 => [6, 0]
@@ -6155,9 +6170,9 @@ fn weekend_mask_from_value(
 
 ///|
 fn is_workday_mask(
-  weekend_mask : Array[Int],
+  weekend_mask : Array[Int32],
   serial : Double,
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> Bool {
   match date_parts_from_serial(serial, use_1904_dates~) {
     Some((year, month, day)) => {
@@ -6169,13 +6184,13 @@ fn is_workday_mask(
 }
 
 ///|
-fn maximum_supported_formula_date_serial(use_1904_dates : Bool) -> Int {
+fn maximum_supported_formula_date_serial(use_1904_dates : Bool) -> Int32 {
   Double::to_int(excel_serial_from_date(9999, 12, 31, use_1904_dates~).unwrap())
 }
 
 ///|
 fn formula_date_serial_is_supported(
-  serial : Int,
+  serial : Int32,
   use_1904_dates : Bool,
 ) -> Bool {
   serial >= 0 && serial <= maximum_supported_formula_date_serial(use_1904_dates)
@@ -6185,7 +6200,7 @@ fn formula_date_serial_is_supported(
 fn normalized_formula_date_serial(
   serial : Double,
   use_1904_dates : Bool,
-) -> Int? {
+) -> Int32? {
   if serial.is_nan() || serial.is_inf() {
     return None
   }
@@ -6201,10 +6216,10 @@ fn normalized_formula_date_serial(
 ///|
 fn collect_holidays(
   value : FormulaValue,
-  use_1904_dates? : Bool = false,
-) -> Array[Int] {
-  let holidays : Array[Int] = []
-  let seen : Map[Int, Bool] = Map([])
+  use_1904_dates~ : Bool = false,
+) -> Array[Int32] {
+  let holidays : Array[Int32] = []
+  let seen : Map[Int32, Bool] = Map([])
   for item in flatten_values([value]) {
     match value_as_date_serial(item, use_1904_dates~) {
       Ok(serial) =>
@@ -6224,13 +6239,13 @@ fn collect_holidays(
 
 ///|
 fn workday_intl_adjust(
-  end_date : Int,
-  sign : Int,
-  holidays : Array[Int],
-  weekend_mask : Array[Int],
-  start_date : Int,
-  use_1904_dates? : Bool = false,
-) -> Int? {
+  end_date : Int32,
+  sign : Int32,
+  holidays : Array[Int32],
+  weekend_mask : Array[Int32],
+  start_date : Int32,
+  use_1904_dates~ : Bool = false,
+) -> Int32? {
   let mut adjusted = end_date
   for holiday in holidays {
     if sign > 0 {
@@ -6295,8 +6310,8 @@ fn networkdays_intl_value(
   start_serial : Double,
   end_serial : Double,
   weekend_value : FormulaValue,
-  holidays : Array[Int],
-  use_1904_dates? : Bool = false,
+  holidays : Array[Int32],
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   let start_date = match
     normalized_formula_date_serial(start_serial, use_1904_dates) {
@@ -6354,8 +6369,8 @@ fn workday_intl_value(
   start_serial : Double,
   days : Double,
   weekend_value : FormulaValue,
-  holidays : Array[Int],
-  use_1904_dates? : Bool = false,
+  holidays : Array[Int32],
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   let start_date = match
     normalized_formula_date_serial(start_serial, use_1904_dates) {
@@ -6437,12 +6452,12 @@ fn workday_intl_value(
 
 ///|
 fn yearfrac_basis_cond(
-  sy : Int,
-  sm : Int,
-  sd : Int,
-  ey : Int,
-  em : Int,
-  ed : Int,
+  sy : Int32,
+  sm : Int32,
+  sd : Int32,
+  ey : Int32,
+  em : Int32,
+  ed : Int32,
 ) -> Bool {
   (is_leap_year(sy) && (sm < 2 || (sm == 2 && sd <= 29))) ||
   (is_leap_year(ey) && (em > 2 || (em == 2 && ed == 29)))
@@ -6452,7 +6467,7 @@ fn yearfrac_basis_cond(
 fn yearfrac_basis0(
   start_serial : Double,
   end_serial : Double,
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> (Double, Double) {
   let (sy, sm, sd) = match
     date_parts_from_serial(start_serial, use_1904_dates~) {
@@ -6484,7 +6499,7 @@ fn yearfrac_basis0(
 fn yearfrac_basis1(
   start_serial : Double,
   end_serial : Double,
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> (Double, Double) {
   let (sy, sm, sd) = match
     date_parts_from_serial(start_serial, use_1904_dates~) {
@@ -6518,7 +6533,7 @@ fn yearfrac_basis1(
 fn yearfrac_basis4(
   start_serial : Double,
   end_serial : Double,
-  use_1904_dates? : Bool = false,
+  use_1904_dates~ : Bool = false,
 ) -> (Double, Double) {
   let (sy, sm, sd) = match
     date_parts_from_serial(start_serial, use_1904_dates~) {
@@ -6545,8 +6560,8 @@ fn yearfrac_basis4(
 fn yearfrac_value(
   start_serial : Double,
   end_serial : Double,
-  basis : Int,
-  use_1904_dates? : Bool = false,
+  basis : Int32,
+  use_1904_dates~ : Bool = false,
 ) -> FormulaValue {
   if start_serial == end_serial {
     return Number(0.0)
@@ -6606,7 +6621,7 @@ fn round_half_away_from_zero(value : Double) -> Double {
 }
 
 ///|
-fn round_significant_digits(value : Double, digits : Int) -> Double {
+fn round_significant_digits(value : Double, digits : Int32) -> Double {
   if value == 0.0 {
     return 0.0
   }
@@ -7635,7 +7650,7 @@ fn bessel_y2(x : Double, n : Double) -> Double {
 }
 
 ///|
-fn round_with_digits(value : Double, digits : Int) -> Double {
+fn round_with_digits(value : Double, digits : Int32) -> Double {
   if digits >= 0 {
     let scale = Double::from_int(pow10_int(digits))
     round_half_away_from_zero(value * scale) / scale
@@ -7646,7 +7661,7 @@ fn round_with_digits(value : Double, digits : Int) -> Double {
 }
 
 ///|
-fn round_down_with_digits(value : Double, digits : Int) -> Double {
+fn round_down_with_digits(value : Double, digits : Int32) -> Double {
   if digits >= 0 {
     let scale = Double::from_int(pow10_int(digits))
     trunc_double(value * scale) / scale
@@ -7657,7 +7672,7 @@ fn round_down_with_digits(value : Double, digits : Int) -> Double {
 }
 
 ///|
-fn round_up_with_digits(value : Double, digits : Int) -> Double {
+fn round_up_with_digits(value : Double, digits : Int32) -> Double {
   if digits >= 0 {
     let scale = Double::from_int(pow10_int(digits))
     let scaled = value * scale

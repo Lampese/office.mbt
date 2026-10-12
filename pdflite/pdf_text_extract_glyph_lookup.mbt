@@ -15,7 +15,7 @@ fn pdf_text_tounicode_glyphname(bytes : @core.PdfBytes) -> @core.PdfName {
 ///|
 fn PdfTextExtractor::pdf_text_encoded_glyph_of_charcode(
   self : PdfTextExtractor,
-  code : Int,
+  code : Int32,
 ) -> PdfTextGlyph {
   match self.font.pdf_text_glyphname_of_charcode(code) {
     Some(glyphname) =>
@@ -28,7 +28,10 @@ fn PdfTextExtractor::pdf_text_encoded_glyph_of_charcode(
 }
 
 ///|
-fn pdf_text_lookup_cmap_cid(map : ArrayView[(Int, Int)], code : Int) -> Int? {
+fn pdf_text_lookup_cmap_cid(
+  map : ArrayView[(Int32, Int32)],
+  code : Int32,
+) -> Int32? {
   for entry in map {
     if entry.0 == code {
       break Some(entry.1)
@@ -40,9 +43,9 @@ fn pdf_text_lookup_cmap_cid(map : ArrayView[(Int, Int)], code : Int) -> Int? {
 
 ///|
 fn pdf_text_reverse_lookup_cmap_cid(
-  map : ArrayView[(Int, Int)],
-  cid : Int,
-) -> Int? {
+  map : ArrayView[(Int32, Int32)],
+  cid : Int32,
+) -> Int32? {
   for entry in map {
     if entry.1 == cid {
       break Some(entry.0)
@@ -53,7 +56,10 @@ fn pdf_text_reverse_lookup_cmap_cid(
 }
 
 ///|
-fn pdf_text_cmap_has_charcode(map : ArrayView[(Int, Int)], code : Int) -> Bool {
+fn pdf_text_cmap_has_charcode(
+  map : ArrayView[(Int32, Int32)],
+  code : Int32,
+) -> Bool {
   for entry in map {
     if entry.0 == code {
       break true
@@ -65,9 +71,9 @@ fn pdf_text_cmap_has_charcode(map : ArrayView[(Int, Int)], code : Int) -> Bool {
 
 ///|
 fn pdf_text_cmap_has_charcode_in_any(
-  first : ArrayView[(Int, Int)],
-  second : ArrayView[(Int, Int)],
-  code : Int,
+  first : ArrayView[(Int32, Int32)],
+  second : ArrayView[(Int32, Int32)],
+  code : Int32,
 ) -> Bool {
   pdf_text_cmap_has_charcode(first, code) ||
   pdf_text_cmap_has_charcode(second, code)
@@ -76,7 +82,7 @@ fn pdf_text_cmap_has_charcode_in_any(
 ///|
 fn pdf_text_parsed_cmap_has_explicit_charcode(
   parsed : PdfParsedCMap,
-  code : Int,
+  code : Int32,
 ) -> Bool {
   pdf_text_tounicode_has_charcode(parsed.map, code) ||
   pdf_text_cmap_has_charcode_in_any(parsed.cid_map, parsed.notdef_map, code)
@@ -85,7 +91,7 @@ fn pdf_text_parsed_cmap_has_explicit_charcode(
 ///|
 fn PdfTextExtractor::pdf_text_glyph_of_charcode(
   self : PdfTextExtractor,
-  code : Int,
+  code : Int32,
 ) -> PdfTextGlyph {
   match self.font.pdf_text_tounicode() {
     Some(tounicode) =>

@@ -10,9 +10,9 @@ async fn replace_probe(
   runs : String,
   needle : String,
   replacement : String,
-  nth? : Int,
-  expect? : Int,
-  allow_zero? : Bool = false,
+  nth? : Int32,
+  expect? : Int32,
+  allow_zero~ : Bool = false,
 ) -> (@docx.DocxFindReplaceResult?, String?, Bytes?) {
   let input = edit_fixture(directory, name + "-in.docx", runs)
   let output = directory + "/" + name + "-out.docx"
@@ -221,7 +221,7 @@ async test "replace preflight refusal publishes nothing" {
       directory, "preflight-in.docx", "<w:r><w:t>alpha</w:t></w:r>",
     )
     let output = directory + "/preflight-out.docx"
-    let seen : Ref[Int?] = Ref(None)
+    let seen : Ref[Int32?] = Ref(None)
     let mut failure : String? = None
     ignore(
       @docx.transact_docx_find_replace(

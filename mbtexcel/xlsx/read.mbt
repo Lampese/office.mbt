@@ -367,11 +367,11 @@ fn parse_fill_entry(xml : StringView) -> Fill raise XlsxError {
     "darkDown", "darkUp", "darkGrid", "darkTrellis", "lightHorizontal", "lightVertical",
     "lightDown", "lightUp", "lightGrid", "lightTrellis", "gray125", "gray0625",
   ]
-  fn parse_rgb_color(rgb : StringView) -> (String, Int?) {
+  fn parse_rgb_color(rgb : StringView) -> (String, Int32?) {
     // Strip an 8-char value's alpha only when the alpha really is hex —
     // a malformed value must stay malformed (GG112233 is not #112233).
     // Char-level, since parse_int would accept a signed "+1"/"-1".
-    fn is_hex(c : Int) -> Bool {
+    fn is_hex(c : Int32) -> Bool {
       (c >= '0'.to_int() && c <= '9'.to_int()) ||
       (c >= 'a'.to_int() && c <= 'f'.to_int()) ||
       (c >= 'A'.to_int() && c <= 'F'.to_int())
@@ -424,7 +424,7 @@ fn parse_fill_entry(xml : StringView) -> Fill raise XlsxError {
         Some(value) => unescape_xml_text(value)
         None => ""
       }
-      let mut transparency : Int? = None
+      let mut transparency : Int32? = None
       let stop_positions : Array[Double] = []
       let stop_colors : Array[String] = []
       match extract_tag_body(xml, "gradientFill") {
@@ -524,7 +524,7 @@ fn parse_fill_entry(xml : StringView) -> Fill raise XlsxError {
       }
       let mut fg_color : String? = None
       let mut bg_color : String? = None
-      let mut transparency : Int? = None
+      let mut transparency : Int32? = None
       match tag_attributes_in(xml, "fgColor") {
         Some(color_tag) => {
           match attr_value(color_tag, "theme") {
@@ -1240,7 +1240,7 @@ fn parse_conditional_formats(
 ///|
 fn build_icon_set_rule_xml_from_x14(
   opt : ConditionalFormatOptions,
-  priority : Int,
+  priority : Int32,
   cfvos : ArrayView[String],
 ) -> String {
   let sb = StringBuilder()
@@ -2500,8 +2500,8 @@ fn parse_picture_rel_id(xml : StringView) -> String? raise XlsxError {
 ///|
 fn parse_auto_filter_columns(
   body : StringView,
-  min_col : Int,
-  max_col : Int,
+  min_col : Int32,
+  max_col : Int32,
 ) -> Array[AutoFilterColumn] raise XlsxError {
   let columns : Array[AutoFilterColumn] = []
   let mut first = true
@@ -2699,7 +2699,7 @@ fn parse_sheet_drawing_rel_ids(
   xml : StringView,
   root_local_name : StringView,
   budget? : ReadBudget,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> (String?, String?, String?) raise XlsxError {
   match budget {
     Some(value) => {
@@ -2894,13 +2894,13 @@ fn parse_inline_string(rest : StringView) -> InlineStringEntry raise XlsxError {
 ///|
 fn parse_row_dimensions(
   xml : StringView,
-  style_count : Int,
-  materialized_dimensions : Ref[Int],
-  max_materialized_dimensions : Int,
-  dimension_work : Ref[Int],
-  max_dimension_work : Int,
-) -> Map[Int, RowDimension] raise XlsxError {
-  let dims : Map[Int, RowDimension] = Map([])
+  style_count : Int32,
+  materialized_dimensions : Ref[Int32],
+  max_materialized_dimensions : Int32,
+  dimension_work : Ref[Int32],
+  max_dimension_work : Int32,
+) -> Map[Int32, RowDimension] raise XlsxError {
+  let dims : Map[Int32, RowDimension] = Map([])
   let mut first = true
   for chunk in xml.split("<row ") {
     if first {
@@ -2992,13 +2992,13 @@ fn parse_row_dimensions(
 ///|
 fn parse_col_dimensions(
   xml : StringView,
-  style_count : Int,
-  materialized_dimensions : Ref[Int],
-  max_materialized_dimensions : Int,
-  dimension_work : Ref[Int],
-  max_dimension_work : Int,
-) -> Map[Int, ColDimension] raise XlsxError {
-  let dims : Map[Int, ColDimension] = Map([])
+  style_count : Int32,
+  materialized_dimensions : Ref[Int32],
+  max_materialized_dimensions : Int32,
+  dimension_work : Ref[Int32],
+  max_dimension_work : Int32,
+) -> Map[Int32, ColDimension] raise XlsxError {
+  let dims : Map[Int32, ColDimension] = Map([])
   let body = match extract_tag_body(xml, "cols") {
     Some(value) => value
     None => return dims
@@ -3116,7 +3116,7 @@ fn is_xml_package_part(name : StringView) -> Bool {
 fn enforce_archive_limits(
   archive : @zip.Archive,
   limits : ReadLimits,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Unit raise XlsxError {
   check_read_cancelled(cancelled)
   let mut total_size = 0
@@ -3173,7 +3173,7 @@ fn zip_limit_kind_name(kind : @zip.LimitKind) -> String {
 fn require_bounded_archive(
   archive : @zip.Archive,
   limits : ReadLimits,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Unit raise XlsxError {
   check_read_cancelled(cancelled)
   if archive.entries().length() > limits.max_archive_entries {
@@ -3190,7 +3190,7 @@ fn require_bounded_archive(
 fn read_limited_archive(
   bytes : BytesView,
   limits : ReadLimits,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> @zip.Archive raise XlsxError {
   check_read_cancelled(cancelled)
   let read_limits = @zip.ReadLimits::default()
@@ -3232,7 +3232,7 @@ fn first_existing_rel_target_path(
   targets : Map[String, String],
   source_part : StringView,
   part_names : Map[String, String],
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String? raise XlsxError {
   for _, target in targets {
     let path = actual_relationship_target_path(
@@ -3257,7 +3257,7 @@ fn first_existing_workbook_rel_target_path(
   targets : Map[String, String],
   workbook_part : StringView,
   part_names : Map[String, String],
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String? raise XlsxError {
   for _, target in targets {
     let path = resolve_part_rel_target(
@@ -3563,7 +3563,7 @@ fn actual_relationship_target_path(
   source_part : StringView,
   target : StringView,
   part_names : Map[String, String],
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String raise XlsxError {
   let source_relative = resolve_part_rel_target(
     logical_archive_part_path(source_part),
@@ -3603,7 +3603,7 @@ fn workbook_related_part_path(
   fallback : StringView,
   part_names : Map[String, String],
   budget? : ReadBudget,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String? raise XlsxError {
   let targets = parse_internal_relationship_targets(
     workbook_rels,
@@ -5255,9 +5255,9 @@ fn checked_read_workbook(
 ///|
 fn read_zip_bytes(
   bytes : BytesView,
-  options? : Options = Options::new(),
-  limits? : ReadLimits = ReadLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  options~ : Options = Options::new(),
+  limits~ : ReadLimits = ReadLimits::new(),
+  cancelled~ : () -> Bool = () => false,
   transcoder? : (String, Bytes) -> String raise XlsxError,
 ) -> Workbook raise XlsxError {
   check_read_cancelled(cancelled)
@@ -5284,9 +5284,9 @@ fn read_zip_bytes(
 /// before any part is parsed.
 pub fn read_bounded_archive(
   archive : @zip.Archive,
-  options? : Options = Options::new(),
-  limits? : ReadLimits = ReadLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  options~ : Options = Options::new(),
+  limits~ : ReadLimits = ReadLimits::new(),
+  cancelled~ : () -> Bool = () => false,
   transcoder? : (String, Bytes) -> String raise XlsxError,
 ) -> Workbook raise XlsxError {
   check_read_cancelled(cancelled)
@@ -5313,9 +5313,9 @@ pub fn read_bounded_archive(
 /// `read_with_password` or an `Options` value containing a password.
 pub fn read(
   bytes : BytesView,
-  options? : Options = Options::new(),
-  limits? : ReadLimits = ReadLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  options~ : Options = Options::new(),
+  limits~ : ReadLimits = ReadLimits::new(),
+  cancelled~ : () -> Bool = () => false,
   transcoder? : (String, Bytes) -> String raise XlsxError,
 ) -> Workbook raise XlsxError {
   check_read_cancelled(cancelled)
@@ -5366,9 +5366,9 @@ pub fn read(
 pub fn read_with_password(
   bytes : BytesView,
   password : String,
-  options? : Options = Options::new(),
-  limits? : ReadLimits = ReadLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  options~ : Options = Options::new(),
+  limits~ : ReadLimits = ReadLimits::new(),
+  cancelled~ : () -> Bool = () => false,
   transcoder? : (String, Bytes) -> String raise XlsxError,
 ) -> Workbook raise XlsxError {
   check_read_cancelled(cancelled)

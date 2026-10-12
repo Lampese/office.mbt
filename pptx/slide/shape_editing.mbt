@@ -15,7 +15,7 @@
 /// `Unknown` shape (an unmodelled `<p:contentPart>` etc., which carries no
 /// typed id). Stable across edits, so it's the safest handle for targeted
 /// updates — see `Slide::with_shape_by_id`.
-pub fn Shape::id(self : Shape) -> Int? {
+pub fn Shape::id(self : Shape) -> Int32? {
   match self {
     AutoShape(s) => Some(s.id)
     Picture(p) => Some(p.id)
@@ -29,7 +29,7 @@ pub fn Shape::id(self : Shape) -> Int? {
 ///|
 /// Return the shape with its `<p:cNvPr id>` set to `id`. An `Unknown` shape
 /// carries no typed id and comes back untouched.
-pub fn Shape::with_id(self : Shape, id : Int) -> Shape {
+pub fn Shape::with_id(self : Shape, id : Int32) -> Shape {
   match self {
     AutoShape(s) => AutoShape({ ..s, id, })
     Picture(p) => Picture({ ..p, id, })
@@ -44,7 +44,7 @@ pub fn Shape::with_id(self : Shape, id : Int) -> Shape {
 /// Append every id under `shapes` to `out`, descending into groups — a group's
 /// children live in the same `<p:spTree>` as their parent, so they compete for
 /// the same id space.
-fn collect_shape_ids(shapes : Array[Shape], out : Array[Int]) -> Unit {
+fn collect_shape_ids(shapes : Array[Shape], out : Array[Int32]) -> Unit {
   for s in shapes {
     match s.id() {
       Some(i) => out.push(i)
@@ -67,8 +67,8 @@ fn collect_shape_ids(shapes : Array[Shape], out : Array[Int]) -> Unit {
 /// explicit id, so this is what a caller assembling shapes one at a time asks
 /// for instead of tracking a counter — or see `with_shape_auto_id`, which
 /// asks on the caller's behalf.
-pub fn Slide::next_shape_id(self : Slide) -> Int {
-  let ids : Array[Int] = []
+pub fn Slide::next_shape_id(self : Slide) -> Int32 {
+  let ids : Array[Int32] = []
   collect_shape_ids(self.shapes, ids)
   let mut max = 1
   for i in ids {
@@ -99,17 +99,17 @@ pub fn Slide::with_shape_auto_id(self : Slide, shape : Shape) -> Slide {
 /// refusing to write it back would cost the lossless round-trip.
 /// Check it on decks you assemble; leave the ones you are only passing
 /// through alone.
-pub fn Slide::duplicate_shape_ids(self : Slide) -> Array[Int] {
-  let ids : Array[Int] = []
+pub fn Slide::duplicate_shape_ids(self : Slide) -> Array[Int32] {
+  let ids : Array[Int32] = []
   collect_shape_ids(self.shapes, ids)
-  let seen : Map[Int, Int] = Map([])
+  let seen : Map[Int32, Int32] = Map([])
   for i in ids {
     seen[i] = match seen.get(i) {
       Some(n) => n + 1
       None => 1
     }
   }
-  let dups : Array[Int] = []
+  let dups : Array[Int32] = []
   for i in ids {
     if seen.get(i) is Some(n) && n > 1 && !dups.contains(i) {
       dups.push(i)
@@ -150,7 +150,7 @@ pub fn Slide::map_shapes(self : Slide, f : (Shape) -> Shape) -> Slide {
 /// Raises `SlideError::Malformed` if `index` is out of range.
 pub fn Slide::with_shape_at(
   self : Slide,
-  index : Int,
+  index : Int32,
   shape : Shape,
 ) -> Slide raise SlideError {
   if index < 0 || index >= self.shapes.length() {
@@ -178,7 +178,7 @@ pub fn Slide::with_shape_at(
 /// Raises `SlideError::Malformed` if `index` is out of range.
 pub fn Slide::with_shape_mapped(
   self : Slide,
-  index : Int,
+  index : Int32,
   f : (Shape) -> Shape,
 ) -> Slide raise SlideError {
   if index < 0 || index >= self.shapes.length() {
@@ -208,7 +208,7 @@ pub fn Slide::with_shape_mapped(
 /// share an id — malformed input — every match is transformed.)
 pub fn Slide::with_shape_by_id(
   self : Slide,
-  id : Int,
+  id : Int32,
   f : (Shape) -> Shape,
 ) -> Slide raise SlideError {
   let new_shapes : Array[Shape] = []
@@ -236,7 +236,7 @@ pub fn Slide::with_shape_by_id(
 /// `SlideError::Malformed` if `index` is out of range.
 pub fn Slide::without_shape(
   self : Slide,
-  index : Int,
+  index : Int32,
 ) -> Slide raise SlideError {
   if index < 0 || index >= self.shapes.length() {
     raise Malformed(
@@ -261,7 +261,7 @@ pub fn Slide::without_shape(
 /// `SlideError::Malformed` if no shape has that id.
 pub fn Slide::without_shape_by_id(
   self : Slide,
-  id : Int,
+  id : Int32,
 ) -> Slide raise SlideError {
   let new_shapes : Array[Shape] = []
   let mut found = false

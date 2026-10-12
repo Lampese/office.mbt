@@ -1,7 +1,7 @@
 ///|
 priv struct PdfMergeDictionaryBuilder {
   entries : Array[(@core.PdfName, @syntax.PdfObject)]
-  indexes : @hashmap.HashMap[Bytes, Int]
+  indexes : @hashmap.HashMap[Bytes, Int32]
 }
 
 ///|

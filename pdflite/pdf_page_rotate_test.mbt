@@ -1,6 +1,6 @@
 ///|
 fn rotate_page_for_test(
-  rotate? : @page.PdfPageRotation = Rotate0,
+  rotate~ : @page.PdfPageRotation = Rotate0,
 ) -> @page.PdfPage {
   { ..@page.pdf_page_blank(@geometry.paper_a4), rotate, }
 }
@@ -37,8 +37,8 @@ fn rotate_stream_for_test(
 ///|
 fn rotate_content_page_for_test(
   ops : ArrayView[@content.PdfContentOp],
-  rest? : @syntax.PdfObject = PdfDictionary([]),
-  resources? : @syntax.PdfObject = PdfDictionary([]),
+  rest~ : @syntax.PdfObject = PdfDictionary([]),
+  resources~ : @syntax.PdfObject = PdfDictionary([]),
 ) -> @page.PdfPage {
   {
     content: [rotate_stream_for_test(ops)],

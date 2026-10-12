@@ -8,8 +8,8 @@ pub fn element(
   document : @document.DocumentElement,
   file~ : String,
   path~ : String,
-  headers? : Array[@document.HeaderFooterPart] = [],
-  footers? : Array[@document.HeaderFooterPart] = [],
+  headers~ : Array[@document.HeaderFooterPart] = [],
+  footers~ : Array[@document.HeaderFooterPart] = [],
 ) -> Json raise PathError {
   let parsed = @paths.parse_path(path)
   let (container, prefix) = @paths.root_container(
@@ -168,7 +168,7 @@ fn children_json(
   parent_path : String,
 ) -> Json {
   let entries = []
-  let counters : Map[String, Int] = Map([])
+  let counters : Map[String, Int32] = Map([])
   for child in @paths.element_children(element) {
     match @paths.segment_kind(child) {
       Some(kind) => {
@@ -194,8 +194,8 @@ fn children_json(
 /// indices).
 pub fn text_lines(
   document : @document.DocumentElement,
-  headers? : Array[@document.HeaderFooterPart] = [],
-  footers? : Array[@document.HeaderFooterPart] = [],
+  headers~ : Array[@document.HeaderFooterPart] = [],
+  footers~ : Array[@document.HeaderFooterPart] = [],
 ) -> Array[String] {
   let lines = []
   let children = match document {
@@ -220,7 +220,7 @@ fn collect_text_lines(
   parent_path : String,
   lines : Array[String],
 ) -> Unit {
-  let counters : Map[String, Int] = Map([])
+  let counters : Map[String, Int32] = Map([])
   for child in children {
     match @paths.segment_kind(child) {
       Some(kind) => {

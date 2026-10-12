@@ -116,7 +116,7 @@ pub fn CoreProperties::with_values(
 ///|
 pub struct AppProperties {
   mut application : String
-  mut doc_security : Int?
+  mut doc_security : Int32?
   mut scale_crop : Bool?
   mut company : String
   mut links_up_to_date : Bool?
@@ -140,7 +140,7 @@ fn AppProperties::new() -> AppProperties {
 ///|
 pub fn AppProperties::with_values(
   application? : String,
-  doc_security? : Int,
+  doc_security? : Int32,
   scale_crop? : Bool,
   company? : String,
   links_up_to_date? : Bool,

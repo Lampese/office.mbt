@@ -2,7 +2,7 @@
 /// An opaque, validated drawing anchor retained because the semantic XLSX API
 /// does not model its direct object payload yet.
 priv struct PreservedDrawingAnchor {
-  order : Int
+  order : Int32
   xml : String
 }
 
@@ -50,7 +50,7 @@ priv struct PreservedDrawingWritePlan {
 }
 
 ///|
-fn Worksheet::allocate_drawing_order(self : Worksheet) -> Int raise XlsxError {
+fn Worksheet::allocate_drawing_order(self : Worksheet) -> Int32 raise XlsxError {
   if self.next_drawing_order == 0x7fff_ffff {
     raise InvalidSheetOperation(msg="drawing order exhausted")
   }
@@ -65,7 +65,7 @@ fn preserved_drawing_relationships_from_xml(
   source_part : StringView,
   part_names : Map[String, String],
   budget? : ReadBudget,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Array[PreservedDrawingRelationship] raise XlsxError {
   match budget {
     Some(value) => {
@@ -112,7 +112,7 @@ fn preserved_drawing_relationships_from_xml(
 ///|
 fn opaque_drawing_relationship_ids(
   anchor_xml : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Array[String] raise XlsxError {
   // Canonical drawing anchors retain only supported core element namespaces;
   // supply their root bindings so every relationship attribute can be
@@ -256,7 +256,7 @@ fn remap_preserved_drawing_relationship(
 ///|
 fn preserved_drawing_write_plan(
   sheet : Worksheet,
-  sheet_id : Int,
+  sheet_id : Int32,
 ) -> PreservedDrawingWritePlan raise XlsxError {
   let output_paths : Map[String, String] = Map([])
   for index, part in sheet.preserved_drawing_parts {
@@ -316,7 +316,7 @@ fn collect_preserved_drawing_parts(
   content_types : @ooxml.PackageContentTypes,
   decode : (BytesView) -> String raise XlsxError,
   budget? : ReadBudget,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Array[PreservedDrawingPart] raise XlsxError {
   let parts : Array[PreservedDrawingPart] = []
   let queue : Array[String] = []
@@ -389,7 +389,7 @@ fn preserved_unsupported_drawing_state(
   content_types : @ooxml.PackageContentTypes,
   decode : (BytesView) -> String raise XlsxError,
   budget? : ReadBudget,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> (
   Array[PreservedDrawingAnchor],
   Array[PreservedDrawingRelationship],
@@ -423,7 +423,7 @@ fn preserved_unsupported_drawing_state(
     budget?,
     cancelled~,
   )
-  let relationship_indices : Map[String, Int] = Map([])
+  let relationship_indices : Map[String, Int32] = Map([])
   for index, relationship in all_relationships {
     relationship_indices[relationship.id] = index
   }

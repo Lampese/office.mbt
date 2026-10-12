@@ -11,7 +11,7 @@ test "row/col + rc ops validate sheet name" {
     set_style_rc_result is Err(@xlsx.XlsxError::InvalidSheetName(_)),
     content="true",
   )
-  let get_style_rc_result : Result[Int?, Error] = Ok(
+  let get_style_rc_result : Result[Int32?, Error] = Ok(
     workbook.get_cell_style_rc("Sheet:1", 1, 1),
   ) catch {
     e => Err(e)

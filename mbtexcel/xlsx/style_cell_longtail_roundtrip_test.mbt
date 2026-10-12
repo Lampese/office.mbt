@@ -3,9 +3,9 @@
 /// its style id so the parsed workbook can be interrogated.
 fn apply_style(
   workbook : @xlsx.Workbook,
-  row : Int,
+  row : Int32,
   style : @xlsx.Style,
-) -> Int raise {
+) -> Int32 raise {
   let style_id = workbook.new_style(style)
   workbook.set_cell("Sheet1", "A\{row}", "styled \{row}")
   workbook.set_cell_style("Sheet1", "A\{row}", style_id)

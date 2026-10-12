@@ -25,10 +25,10 @@ priv enum SourceTokenKind {
 #warnings("-unused_field")
 priv struct SourceToken {
   kind : SourceTokenKind
-  projection_start : Int
-  projection_end : Int
-  byte_start : Int
-  byte_end : Int
+  projection_start : Int32
+  projection_end : Int32
+  byte_start : Int32
+  byte_end : Int32
 }
 
 ///|
@@ -36,8 +36,8 @@ priv struct SourceToken {
 #warnings("-unused_field")
 priv struct WtContentMap {
   source : BytesView
-  byte_start : Int
-  byte_end : Int
+  byte_start : Int32
+  byte_end : Int32
   projection : String
   tokens : Array[SourceToken]
   contains_cdata : Bool
@@ -49,8 +49,8 @@ priv struct WtContentMap {
 /// mutable here prevents a per-node reset from multiplying the transaction's
 /// memory allowance.
 priv struct TokenMapBudget {
-  mut source_bytes_left : Int
-  mut tokens_left : Int
+  mut source_bytes_left : Int32
+  mut tokens_left : Int32
 }
 
 ///|
@@ -62,8 +62,8 @@ priv suberror TokenMapError {
 ///|
 #warnings("-unused_value")
 fn token_map_budget(
-  max_source_bytes : Int,
-  max_tokens : Int,
+  max_source_bytes : Int32,
+  max_tokens : Int32,
 ) -> TokenMapBudget raise TokenMapError {
   guard max_source_bytes >= 0 && max_tokens >= 0 else {
     raise TokenMapError("token-map budget limits must be non-negative")
@@ -74,7 +74,7 @@ fn token_map_budget(
 ///|
 fn TokenMapBudget::charge_source(
   self : TokenMapBudget,
-  bytes : Int,
+  bytes : Int32,
 ) -> Unit raise TokenMapError {
   guard bytes >= 0 && bytes <= self.source_bytes_left else {
     raise TokenMapError("w:t source byte budget exceeded")
@@ -98,8 +98,8 @@ fn TokenMapBudget::charge_token(
 fn raw_byte_offset_at(
   source : BytesView,
   token : SourceToken,
-  projection_offset : Int,
-) -> Int? {
+  projection_offset : Int32,
+) -> Int32? {
   let mut at = token.byte_start
   let mut projected = token.projection_start
   while at < token.byte_end {
@@ -136,8 +136,8 @@ fn raw_byte_offset_at(
 #warnings("-unused_value")
 fn WtContentMap::byte_offset_at(
   self : WtContentMap,
-  projection_offset : Int,
-) -> Int? {
+  projection_offset : Int32,
+) -> Int32? {
   if projection_offset < 0 || projection_offset > self.projection.length() {
     return None
   }
@@ -186,8 +186,8 @@ fn WtContentMap::byte_offset_at(
 #warnings("-unused_value")
 fn WtContentMap::range_is_lexically_mutable(
   self : WtContentMap,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> Bool {
   if start < 0 ||
     start > end ||
@@ -212,7 +212,7 @@ fn is_xml_character_for_token_map(character : Char) -> Bool {
 }
 
 ///|
-fn utf8_scalar_length(character : Char) -> Int {
+fn utf8_scalar_length(character : Char) -> Int32 {
   let code = character.to_int()
   if code <= 0x7F {
     1
@@ -226,7 +226,7 @@ fn utf8_scalar_length(character : Char) -> Int {
 }
 
 ///|
-fn bytes_start_with(part : BytesView, at : Int, literal : String) -> Bool {
+fn bytes_start_with(part : BytesView, at : Int32, literal : String) -> Bool {
   let length = literal.length()
   if at < 0 || at + length > part.length() {
     return false
@@ -250,9 +250,9 @@ fn token_map_error(message : String) -> TokenMapError {
 /// numeric values must be XML 1.0 characters.
 fn decode_entity_token(
   part : BytesView,
-  at : Int,
-  content_end : Int,
-) -> (Char, SourceTokenKind, Int) raise TokenMapError {
+  at : Int32,
+  content_end : Int32,
+) -> (Char, SourceTokenKind, Int32) raise TokenMapError {
   let mut semicolon = at + 1
   while semicolon < content_end && part[semicolon] != b';' {
     semicolon += 1
@@ -312,9 +312,9 @@ fn decode_entity_token(
 ///|
 fn raw_text_token(
   part : BytesView,
-  byte_start : Int,
-  byte_end : Int,
-  projection_start : Int,
+  byte_start : Int32,
+  byte_end : Int32,
+  projection_start : Int32,
 ) -> (SourceToken, String) raise TokenMapError {
   let projection = @utf8.decode(part[byte_start:byte_end]) catch {
     _ => raise token_map_error("w:t content is not valid UTF-8")
@@ -360,8 +360,8 @@ fn append_token(
 #warnings("-unused_value")
 fn map_wt_content(
   part : BytesView,
-  content_start : Int,
-  content_end : Int,
+  content_start : Int32,
+  content_end : Int32,
   budget : TokenMapBudget,
 ) -> WtContentMap raise TokenMapError {
   guard content_start >= 0 &&
@@ -376,7 +376,7 @@ fn map_wt_content(
   let mut contains_cdata = false
   let mut at = content_start
   let mut raw_start = content_start
-  fn flush_raw(upto : Int) -> Unit raise TokenMapError {
+  fn flush_raw(upto : Int32) -> Unit raise TokenMapError {
     if upto > raw_start {
       budget.charge_token()
       let (token, decoded) = raw_text_token(

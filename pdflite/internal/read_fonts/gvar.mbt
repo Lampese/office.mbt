@@ -20,21 +20,21 @@ pub fn FontRef::gvar(self : FontRef) -> Gvar raise ReadError {
 }
 
 ///|
-pub fn Gvar::axis_count(self : Gvar) -> Int {
+pub fn Gvar::axis_count(self : Gvar) -> Int32 {
   self.data.read_u16(4) catch {
     _ => 0
   }
 }
 
 ///|
-fn Gvar::shared_tuple_count(self : Gvar) -> Int {
+fn Gvar::shared_tuple_count(self : Gvar) -> Int32 {
   self.data.read_u16(6) catch {
     _ => 0
   }
 }
 
 ///|
-fn Gvar::glyph_count(self : Gvar) -> Int {
+fn Gvar::glyph_count(self : Gvar) -> Int32 {
   self.data.read_u16(12) catch {
     _ => 0
   }
@@ -46,7 +46,7 @@ fn Gvar::long_offsets(self : Gvar) -> Bool {
 }
 
 ///|
-fn Gvar::glyph_variation_data_array_offset(self : Gvar) -> UInt {
+fn Gvar::glyph_variation_data_array_offset(self : Gvar) -> UInt32 {
   self.data.read_u32(16) catch {
     _ => 0
   }
@@ -71,7 +71,7 @@ fn Gvar::shared_tuples(self : Gvar) -> FontData raise ReadError {
 
 ///|
 /// The glyph variation data offset for `idx` (relative to the data array).
-fn Gvar::data_offset(self : Gvar, idx : Int) -> UInt raise ReadError {
+fn Gvar::data_offset(self : Gvar, idx : Int32) -> UInt32 raise ReadError {
   let size = if self.long_offsets() { 4 } else { 2 }
   let count = self.glyph_count() + 1
   // `read_with_args(range).unwrap_or_default()`: an out of bounds array is
@@ -88,7 +88,7 @@ fn Gvar::data_offset(self : Gvar, idx : Int) -> UInt raise ReadError {
 
 ///|
 /// Return the raw data for this gid, `None` if there is no variation data.
-fn Gvar::data_for_gid(self : Gvar, gid : UInt) -> FontData? raise ReadError {
+fn Gvar::data_for_gid(self : Gvar, gid : UInt32) -> FontData? raise ReadError {
   let start_idx = gid.reinterpret_as_int()
   let data_start = self.glyph_variation_data_array_offset().to_uint64()
   let start = data_start + self.data_offset(start_idx).to_uint64()
@@ -112,7 +112,7 @@ fn Gvar::data_for_gid(self : Gvar, gid : UInt) -> FontData? raise ReadError {
 /// malformed.
 pub fn Gvar::glyph_variation_data(
   self : Gvar,
-  gid : UInt,
+  gid : UInt32,
 ) -> GlyphVariationData? raise ReadError {
   let shared_tuples = self.shared_tuples()
   let axis_count = self.axis_count()
@@ -130,7 +130,7 @@ pub fn Gvar::phantom_point_deltas(
   loca : Loca,
   coords : ArrayView[F2Dot14],
   glyph_id : GlyphId,
-) -> Array[(Int, Int)]? raise ReadError {
+) -> Array[(Int32, Int32)]? raise ReadError {
   let (glyph_id, point_count) = find_glyph_and_point_count(
     glyf, loca, glyph_id, 0,
   )
@@ -162,8 +162,8 @@ fn find_glyph_and_point_count(
   glyf : Glyf,
   loca : Loca,
   glyph_id : GlyphId,
-  recurse_depth : Int,
-) -> (GlyphId, Int) raise ReadError {
+  recurse_depth : Int32,
+) -> (GlyphId, Int32) raise ReadError {
   // Matches HB's nesting limit
   if recurse_depth > 64 {
     raise MalformedData("nesting too deep in composite glyph")
@@ -207,11 +207,11 @@ fn find_glyph_and_point_count(
 /// Delta information for a single point or component in a glyph.
 pub(all) struct GlyphDelta {
   /// The point or component index.
-  position : Int
+  position : Int32
   /// The x delta.
-  x_delta : Int
+  x_delta : Int32
   /// The y delta.
-  y_delta : Int
+  y_delta : Int32
 }
 
 ///|
@@ -219,7 +219,7 @@ pub(all) struct GlyphDelta {
 pub fn GlyphDelta::apply_scalar(
   self : GlyphDelta,
   scalar : Fixed,
-) -> (Int, Int) {
+) -> (Int32, Int32) {
   (
     (Fixed::from_i32(self.x_delta) * scalar).to_bits(),
     (Fixed::from_i32(self.y_delta) * scalar).to_bits(),
@@ -229,10 +229,10 @@ pub fn GlyphDelta::apply_scalar(
 ///|
 /// Tuple variation data of a glyph.
 pub struct GlyphVariationData {
-  axis_count : Int
+  axis_count : Int32
   shared_tuples : FontData
   shared_point_numbers : FontData?
-  tuple_count : Int
+  tuple_count : Int32
   // the data for all the tuple variation headers
   header_data : FontData
   // the data for all the tuple bodies
@@ -242,7 +242,7 @@ pub struct GlyphVariationData {
 ///|
 fn GlyphVariationData::new(
   data : FontData,
-  axis_count : Int,
+  axis_count : Int32,
   shared_tuples : FontData,
 ) -> GlyphVariationData raise ReadError {
   // GlyphVariationDataHeader: tupleVariationCount, dataOffset
@@ -279,15 +279,15 @@ fn GlyphVariationData::new(
 /// A tuple variation header.
 priv struct TupleVariationHeader {
   data : FontData
-  variation_data_size : Int
-  tuple_index : Int
-  axis_count : Int
+  variation_data_size : Int32
+  tuple_index : Int32
+  axis_count : Int32
 }
 
 ///|
 fn TupleVariationHeader::read(
   data : FontData,
-  axis_count : Int,
+  axis_count : Int32,
 ) -> TupleVariationHeader raise ReadError {
   if data.len() < 4 {
     raise OutOfBounds
@@ -304,7 +304,7 @@ fn TupleVariationHeader::read(
 }
 
 ///|
-fn TupleVariationHeader::byte_len(self : TupleVariationHeader) -> Int {
+fn TupleVariationHeader::byte_len(self : TupleVariationHeader) -> Int32 {
   let tuple_byte_len = 2 * self.axis_count
   4 +
   (if (self.tuple_index & 0x8000) != 0 { tuple_byte_len } else { 0 }) +
@@ -341,7 +341,7 @@ fn TupleVariationHeader::intermediate_tuples(
 }
 
 ///|
-fn tuple_get(t : FontData, i : Int) -> F2Dot14 {
+fn tuple_get(t : FontData, i : Int32) -> F2Dot14 {
   F2Dot14::from_bits(t.read_i16(2 * i) catch { _ => 0 })
 }
 
@@ -399,7 +399,7 @@ pub fn GlyphVariationData::active_tuples_at(
 /// variation space (`None` if the tuple is not applicable).
 fn compute_tuple_scalar(
   header : TupleVariationHeader,
-  axis_count : Int,
+  axis_count : Int32,
   shared_tuples : FontData,
   coords : ArrayView[F2Dot14],
 ) -> Fixed? {
@@ -557,15 +557,15 @@ pub fn TupleVariation::deltas(self : TupleVariation) -> Array[GlyphDelta] {
 /// (16.16 bits), multiplied by `scalar` (`accumulate_dense_deltas`).
 pub fn TupleVariation::accumulate_dense_deltas(
   self : TupleVariation,
-  xs : FixedArray[Int],
-  ys : FixedArray[Int],
-  n : Int,
+  xs : FixedArray[Int32],
+  ys : FixedArray[Int32],
+  n : Int32,
   scalar : Fixed,
 ) -> Unit raise ReadError {
   let (_, packed_deltas) = self.point_numbers_and_packed_deltas()
   let cursor = packed_deltas.cursor()
   let one = scalar == Fixed::one()
-  let f = (new_delta : Int) => {
+  let f = (new_delta : Int32) => {
     if one {
       Fixed::from_i32(new_delta).to_bits()
     } else {
@@ -582,10 +582,10 @@ pub fn TupleVariation::accumulate_dense_deltas(
 /// (`accumulate_sparse_deltas`).
 pub fn TupleVariation::accumulate_sparse_deltas(
   self : TupleVariation,
-  xs : FixedArray[Int],
-  ys : FixedArray[Int],
-  flags : FixedArray[Int],
-  n : Int,
+  xs : FixedArray[Int32],
+  ys : FixedArray[Int32],
+  flags : FixedArray[Int32],
+  n : Int32,
   scalar : Fixed,
 ) -> Unit raise ReadError {
   let (point_numbers, packed_deltas) = self.point_numbers_and_packed_deltas()
@@ -593,7 +593,7 @@ pub fn TupleVariation::accumulate_sparse_deltas(
   let count = packed_points_count(point_numbers).0
   let points = packed_points_iter(point_numbers)
   let one = scalar == Fixed::one()
-  let f = (new_delta : Int) => {
+  let f = (new_delta : Int32) => {
     if one {
       Fixed::from_i32(new_delta).to_bits()
     } else {
@@ -616,8 +616,8 @@ pub fn TupleVariation::accumulate_sparse_deltas(
 ///|
 fn read_dense_deltas(
   cursor : Cursor,
-  count : Int,
-  f : (Int, Int) -> Unit,
+  count : Int32,
+  f : (Int32, Int32) -> Unit,
 ) -> Unit raise ReadError {
   let mut cur = 0
   while cur < count {
@@ -651,9 +651,9 @@ fn read_dense_deltas(
 ///|
 fn read_sparse_deltas(
   cursor : Cursor,
-  points : Array[Int],
-  count : Int,
-  f : (Int, Int) -> Unit,
+  points : Array[Int32],
+  count : Int32,
+  f : (Int32, Int32) -> Unit,
 ) -> Unit raise ReadError {
   let mut cur = 0
   let mut pi = 0
@@ -691,7 +691,7 @@ fn read_sparse_deltas(
 
 ///|
 /// The size of the values of a delta run (0 for zero runs).
-fn delta_run_type(control : Int) -> Int {
+fn delta_run_type(control : Int32) -> Int32 {
   let are_zero = (control & 0x80) != 0
   let are_words = (control & 0x40) != 0
   match (are_zero, are_words) {
@@ -704,7 +704,7 @@ fn delta_run_type(control : Int) -> Int {
 
 ///|
 /// Counts the number of deltas available in the given data.
-fn count_all_deltas(data : FontData) -> Int {
+fn count_all_deltas(data : FontData) -> Int32 {
   let mut count = 0
   let mut offset = 0
   while offset < data.len() {
@@ -719,7 +719,11 @@ fn count_all_deltas(data : FontData) -> Int {
 ///|
 /// The packed delta values with index `skip..limit` (`DeltaRunIter` with a
 /// limit, after `skip_fast(skip)`); stops early at the end of the data.
-fn delta_run_values(data : FontData, skip : Int, limit : Int) -> Array[Int] {
+fn delta_run_values(
+  data : FontData,
+  skip : Int32,
+  limit : Int32,
+) -> Array[Int32] {
   let out = []
   let mut offset = 0
   let mut index = 0
@@ -752,7 +756,7 @@ fn delta_run_values(data : FontData, skip : Int, limit : Int) -> Array[Int] {
 ///|
 /// The count of packed point numbers and the number of bytes used to store
 /// it.
-fn packed_points_count(data : FontData) -> (Int, Int) {
+fn packed_points_count(data : FontData) -> (Int32, Int32) {
   let first = data.read_u8(0) catch { _ => 0 }
   match first {
     0 => (0, 1)
@@ -800,7 +804,7 @@ fn packed_points_split_off_front(data : FontData) -> (FontData, FontData) {
 ///|
 /// The packed point numbers (`PackedPointNumbersIter` for a non-zero
 /// count).
-fn packed_points_iter(data : FontData) -> Array[Int] {
+fn packed_points_iter(data : FontData) -> Array[Int32] {
   let (count, n_bytes) = packed_points_count(data)
   let out = []
   let mut pos = n_bytes

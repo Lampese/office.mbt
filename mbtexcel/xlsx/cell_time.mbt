@@ -1,7 +1,7 @@
 ///|
 /// Days since 1970-01-01 for a proleptic-Gregorian calendar date
 /// (Howard Hinnant's civil-days algorithm).
-fn days_from_civil(year : Int, month : Int, day : Int) -> Int {
+fn days_from_civil(year : Int32, month : Int32, day : Int32) -> Int32 {
   let y = if month <= 2 { year - 1 } else { year }
   let era = (if y >= 0 { y } else { y - 399 }) / 400
   let yoe = y - era * 400
@@ -14,7 +14,7 @@ fn days_from_civil(year : Int, month : Int, day : Int) -> Int {
 ///|
 /// Converts days since 1970-01-01 to a proleptic-Gregorian calendar date in
 /// constant time (the inverse of `days_from_civil`).
-fn civil_from_days(days : Int) -> (Int, Int, Int) {
+fn civil_from_days(days : Int32) -> (Int32, Int32, Int32) {
   let shifted = days + 719468
   let era = (if shifted >= 0 { shifted } else { shifted - 146096 }) / 146097
   let day_of_era = shifted - era * 146097
@@ -62,7 +62,7 @@ let nanos_per_day : Double = 86_400_000_000_000.0
 /// ```
 pub fn time_to_excel_date(
   value : @time.ZonedDateTime,
-  use_1904_format? : Bool = false,
+  use_1904_format~ : Bool = false,
 ) -> Double {
   let epoch_days = if use_1904_format {
     days_from_civil(1904, 1, 1)
@@ -89,7 +89,7 @@ pub fn time_to_excel_date(
 /// Default number format for a time cell, mirroring Excelize's
 /// `getTimeNumFmt`: first of a month -> 17 (mmm-yy), midnight -> 14
 /// (mm-dd-yy), otherwise 22 (m/d/yy h:mm).
-fn time_num_fmt(value : @time.ZonedDateTime) -> Int {
+fn time_num_fmt(value : @time.ZonedDateTime) -> Int32 {
   if value.day() == 1 {
     17
   } else if value.hour() == 0 &&
@@ -106,7 +106,7 @@ fn time_num_fmt(value : @time.ZonedDateTime) -> Int {
 /// Default number format for a duration cell, mirroring Excelize's
 /// `getDurationNumFmt`: >= 24h -> 46 ([h]:mm:ss), whole minutes -> 20
 /// (hh:mm), otherwise 21 (hh:mm:ss).
-fn duration_num_fmt(nanos : Int64) -> Int {
+fn duration_num_fmt(nanos : Int64) -> Int32 {
   if nanos >= 86_400_000_000_000L {
     46
   } else if nanos % 60_000_000_000L == 0L {
@@ -141,7 +141,7 @@ fn Workbook::resolve_cell_base_style(
   self : Workbook,
   sheet_name : StringView,
   reference : String,
-) -> Int raise XlsxError {
+) -> Int32 raise XlsxError {
   let (row, col) = cell_ref_to_rc(reference)
   self.require_sheet(sheet_name).effective_style_id_rc(row, col)
 }
@@ -155,7 +155,7 @@ fn Workbook::set_default_time_style(
   self : Workbook,
   sheet_name : StringView,
   reference : String,
-  num_fmt : Int,
+  num_fmt : Int32,
 ) -> Unit raise XlsxError {
   let base_idx = self.resolve_cell_base_style(sheet_name, reference)
   let base = if base_idx != 0 { self.get_style(base_idx) } else { Style::new() }

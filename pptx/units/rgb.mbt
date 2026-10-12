@@ -8,9 +8,9 @@
 /// 24-bit RGB color. Each channel is 0–255 (unchecked at construction;
 /// values outside that range round-trip but render undefined behaviour).
 pub struct RgbColor {
-  r : Int
-  g : Int
-  b : Int
+  r : Int32
+  g : Int32
+  b : Int32
 } derive(Eq, Debug)
 
 ///|
@@ -25,7 +25,7 @@ pub extend RgbColor with Show::{to_string, output}
 ///|
 /// Construct an `RgbColor` from three 0–255 channel values.
 /// Each channel is clamped to `[0, 255]`.
-pub fn RgbColor::new(r : Int, g : Int, b : Int) -> RgbColor {
+pub fn RgbColor::new(r : Int32, g : Int32, b : Int32) -> RgbColor {
   { r, g, b, }
 }
 
@@ -60,7 +60,7 @@ fn parse_hex_byte(
   hi : Char,
   lo : Char,
   original : String,
-) -> Int raise UnitsError {
+) -> Int32 raise UnitsError {
   let h = hex_digit(hi)
   let l = hex_digit(lo)
   match (h, l) {
@@ -70,7 +70,7 @@ fn parse_hex_byte(
 }
 
 ///|
-fn hex_digit(c : Char) -> Int? {
+fn hex_digit(c : Char) -> Int32? {
   let code = c.to_int()
   if code >= '0'.to_int() && code <= '9'.to_int() {
     Some(code - '0'.to_int())
@@ -84,7 +84,7 @@ fn hex_digit(c : Char) -> Int? {
 }
 
 ///|
-fn hex_byte(n : Int) -> String {
+fn hex_byte(n : Int32) -> String {
   // Mask to a byte so over/underflows still produce two hex digits without
   // panicking; OOXML callers should keep values in 0–255 anyway.
   let v = n.land(0xFF)
@@ -92,7 +92,7 @@ fn hex_byte(n : Int) -> String {
 }
 
 ///|
-fn hex_char(n : Int) -> Char {
+fn hex_char(n : Int32) -> Char {
   let n = n.land(0xF)
   // Safe: n is masked to 0-15 and the resulting code points are ASCII '0'-'9' / 'A'-'F'.
   if n < 10 {

@@ -18,7 +18,7 @@ fn Worksheet::sorted_cells(self : Worksheet) -> Array[Cell] {
 ///|
 fn parse_range_ref(
   range_ref : StringView,
-) -> (Int, Int, Int, Int) raise XlsxError {
+) -> (Int32, Int32, Int32, Int32) raise XlsxError {
   let parts : Array[String] = []
   for part in range_ref.split(":") {
     parts.push(part.to_owned())
@@ -49,20 +49,20 @@ fn normalize_range_ref(range_ref : StringView) -> String raise XlsxError {
 
 ///|
 fn cell_in_bounds(
-  row : Int,
-  col : Int,
-  min_row : Int,
-  min_col : Int,
-  max_row : Int,
-  max_col : Int,
+  row : Int32,
+  col : Int32,
+  min_row : Int32,
+  min_col : Int32,
+  max_row : Int32,
+  max_col : Int32,
 ) -> Bool {
   row >= min_row && row <= max_row && col >= min_col && col <= max_col
 }
 
 ///|
 fn bounds_contain(
-  outer : (Int, Int, Int, Int),
-  inner : (Int, Int, Int, Int),
+  outer : (Int32, Int32, Int32, Int32),
+  inner : (Int32, Int32, Int32, Int32),
 ) -> Bool {
   let (outer_min_row, outer_min_col, outer_max_row, outer_max_col) = outer
   let (inner_min_row, inner_min_col, inner_max_row, inner_max_col) = inner
@@ -87,8 +87,8 @@ fn normalize_cell_or_range_ref(
 ///|
 fn cell_in_reference(
   reference : StringView,
-  row : Int,
-  col : Int,
+  row : Int32,
+  col : Int32,
 ) -> Bool raise XlsxError {
   if reference.contains(":") {
     let (min_row, min_col, max_row, max_col) = parse_range_ref(reference)
@@ -102,8 +102,8 @@ fn cell_in_reference(
 ///|
 fn Worksheet::merged_anchor_for_cell(
   self : Worksheet,
-  row : Int,
-  col : Int,
+  row : Int32,
+  col : Int32,
 ) -> String? raise XlsxError {
   for range_ref in self.merged_cells {
     let (min_row, min_col, max_row, max_col) = parse_range_ref(range_ref)
@@ -117,8 +117,8 @@ fn Worksheet::merged_anchor_for_cell(
 ///|
 fn Worksheet::hyperlink_anchor_for_cell(
   self : Worksheet,
-  row : Int,
-  col : Int,
+  row : Int32,
+  col : Int32,
 ) -> String raise XlsxError {
   match self.merged_anchor_for_cell(row, col) {
     Some(value) => value
@@ -454,9 +454,9 @@ fn shared_formula_validation_checkpoint(
 fn validated_shared_formula_masters(
   cells : ArrayView[Cell],
   budget? : ReadBudget,
-  cancelled? : () -> Bool = () => false,
-) -> Map[UInt, SharedFormulaMaster] raise XlsxError {
-  let masters : Map[UInt, SharedFormulaMaster] = Map([])
+  cancelled~ : () -> Bool = () => false,
+) -> Map[UInt32, SharedFormulaMaster] raise XlsxError {
+  let masters : Map[UInt32, SharedFormulaMaster] = Map([])
   shared_formula_validation_checkpoint(budget, cancelled)
   match budget {
     Some(value) => value.charge_work(cells.length())
@@ -545,9 +545,9 @@ fn validated_shared_formula_masters(
 
 ///|
 fn clone_shared_formula_masters_index(
-  source : Map[UInt, SharedFormulaMaster],
-) -> Map[UInt, SharedFormulaMaster] {
-  let cloned : Map[UInt, SharedFormulaMaster] = Map([])
+  source : Map[UInt32, SharedFormulaMaster],
+) -> Map[UInt32, SharedFormulaMaster] {
+  let cloned : Map[UInt32, SharedFormulaMaster] = Map([])
   for shared_index, master in source {
     cloned[shared_index] = master
   }
@@ -559,11 +559,11 @@ fn clone_shared_formula_masters_index(
 /// aggregate fan-out check before the first translated string is allocated.
 fn preflight_shared_formula_materialization(
   cells : ArrayView[Cell],
-  masters : Map[UInt, SharedFormulaMaster],
+  masters : Map[UInt32, SharedFormulaMaster],
   budget : SharedFormulaMaterializationBudget,
   retain : (Cell) -> Bool,
 ) -> Unit raise XlsxError {
-  let formula_counts : Map[UInt, Int] = Map([])
+  let formula_counts : Map[UInt32, Int32] = Map([])
   budget.checkpoint()
   let mut cell_index = 0
   for cell in cells {
@@ -603,7 +603,7 @@ fn preflight_shared_formula_materialization(
 /// movement follow the same rules as every other normal formula.
 fn normal_formula_cell_for_structural_edit(
   cell : Cell,
-  masters : Map[UInt, SharedFormulaMaster],
+  masters : Map[UInt32, SharedFormulaMaster],
   budget : SharedFormulaMaterializationBudget,
 ) -> Cell raise XlsxError {
   match (cell.formula_type, cell.formula_shared_index) {
@@ -641,7 +641,7 @@ fn Worksheet::invalidate_shared_formula_masters_index(self : Worksheet) -> Unit 
 ///|
 fn Worksheet::ensure_shared_formula_masters_index(
   self : Worksheet,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Unit raise XlsxError {
   if cancelled() {
     raise ReadCancelled
@@ -673,7 +673,7 @@ fn Worksheet::ensure_shared_formula_masters_index(
 /// master's declared range. Conflicting or incomplete groups are rejected.
 pub fn Worksheet::shared_formula_masters(
   self : Worksheet,
-) -> Map[UInt, SharedFormulaMaster] raise XlsxError {
+) -> Map[UInt32, SharedFormulaMaster] raise XlsxError {
   self.ensure_shared_formula_masters_index()
   clone_shared_formula_masters_index(self.shared_formula_masters_index)
 }
@@ -685,8 +685,8 @@ pub fn Worksheet::shared_formula_masters(
 /// `cancelled` is polled while rebuilding a stale index.
 pub fn Worksheet::shared_formula_master(
   self : Worksheet,
-  shared_index : UInt,
-  cancelled? : () -> Bool = () => false,
+  shared_index : UInt32,
+  cancelled~ : () -> Bool = () => false,
 ) -> SharedFormulaMaster? raise XlsxError {
   self.ensure_shared_formula_masters_index(cancelled~)
   self.shared_formula_masters_index.get(shared_index)
@@ -730,7 +730,7 @@ pub fn Worksheet::set_cell_formula(
   self : Worksheet,
   reference : String,
   formula : String,
-  value? : String = "",
+  value~ : String = "",
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
   self.invalidate_shared_formula_masters_index()
@@ -803,8 +803,8 @@ pub fn Worksheet::get_cell_formula(
 /// when a consumer needs its text.
 pub fn Worksheet::get_cell_formula_info_rc(
   self : Worksheet,
-  row : Int,
-  col : Int,
+  row : Int32,
+  col : Int32,
 ) -> CellFormulaInfo? raise XlsxError {
   ignore(cell_ref_from(row, col))
   match self.cell_index_of(row, col) {
@@ -829,8 +829,8 @@ pub fn Worksheet::set_cell_formula_opts(
   self : Worksheet,
   reference : String,
   formula : String,
-  opts? : FormulaOpts = FormulaOpts::new(),
-  value? : String = "",
+  opts~ : FormulaOpts = FormulaOpts::new(),
+  value~ : String = "",
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
   self.invalidate_shared_formula_masters_index()
@@ -854,8 +854,8 @@ pub fn Worksheet::set_cell_formula_opts(
       }
       fn set_formula_cell(
         sheet : Worksheet,
-        row : Int,
-        col : Int,
+        row : Int32,
+        col : Int32,
         formula : String,
         formula_ref : String,
         value : String,
@@ -924,7 +924,7 @@ pub fn Worksheet::set_cell_formula_opts(
           msg="shared formula master must be top-left of ref",
         )
       }
-      let mut max_si : UInt? = None
+      let mut max_si : UInt32? = None
       for cell in self.cells {
         match cell.formula_shared_index {
           Some(si) =>
@@ -943,11 +943,11 @@ pub fn Worksheet::set_cell_formula_opts(
       }
       fn set_shared_cell(
         sheet : Worksheet,
-        row : Int,
-        col : Int,
+        row : Int32,
+        col : Int32,
         formula : String,
         formula_ref : String?,
-        shared_index : UInt,
+        shared_index : UInt32,
         value : String,
       ) -> Unit raise XlsxError {
         let canonical = cell_ref_from(row, col)
@@ -1024,8 +1024,8 @@ pub fn Worksheet::set_cell_hyperlink(
   reference : String,
   target : String,
   link_type : HyperlinkType,
-  display? : String = "",
-  tooltip? : String = "",
+  display~ : String = "",
+  tooltip~ : String = "",
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
   let (row, col) = cell_ref_to_rc(reference)
@@ -1038,7 +1038,7 @@ pub fn Worksheet::set_cell_hyperlink(
   let display_value = if display == "" { None } else { Some(display) }
   let tooltip_value = if tooltip == "" { None } else { Some(tooltip) }
   let normalized_ref = normalize_cell_or_range_ref(resolved)
-  let mut existing_index : Int? = None
+  let mut existing_index : Int32? = None
   for i, link in self.hyperlinks {
     if link.reference == normalized_ref {
       existing_index = Some(i)
@@ -1074,7 +1074,7 @@ pub fn Worksheet::set_cell_hyperlink_opts(
   reference : String,
   target : String,
   link_type : HyperlinkType,
-  opts? : HyperlinkOpts = HyperlinkOpts::new(),
+  opts~ : HyperlinkOpts = HyperlinkOpts::new(),
 ) -> Unit raise XlsxError {
   let display = match opts.display {
     Some(value) => value
@@ -1157,7 +1157,7 @@ pub fn Worksheet::remove_cell_hyperlink(
 }
 
 ///|
-fn Worksheet::comment_index(self : Worksheet, cell : String) -> Int? {
+fn Worksheet::comment_index(self : Worksheet, cell : String) -> Int32? {
   for index, comment in self.comments {
     if comment.cell == cell {
       return Some(index)
@@ -1245,7 +1245,7 @@ pub fn Worksheet::delete_comment(
 pub fn Worksheet::set_cell_style(
   self : Worksheet,
   reference : String,
-  style_id : Int,
+  style_id : Int32,
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
   if style_id < 0 {
@@ -1298,7 +1298,7 @@ pub fn Worksheet::set_cell_style(
 pub fn Worksheet::get_cell_style(
   self : Worksheet,
   reference : StringView,
-) -> Int? raise XlsxError {
+) -> Int32? raise XlsxError {
   let (row, col) = cell_ref_to_rc(reference)
   match self.cell_index_of(row, col) {
     Some(i) => Some(self.cells[i].style_id)
@@ -1309,9 +1309,9 @@ pub fn Worksheet::get_cell_style(
 ///|
 pub fn Worksheet::set_cell_style_rc(
   self : Worksheet,
-  row : Int,
-  col : Int,
-  style_id : Int,
+  row : Int32,
+  col : Int32,
+  style_id : Int32,
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
   if style_id < 0 {
@@ -1362,9 +1362,9 @@ pub fn Worksheet::set_cell_style_rc(
 ///|
 pub fn Worksheet::get_cell_style_rc(
   self : Worksheet,
-  row : Int,
-  col : Int,
-) -> Int? raise XlsxError {
+  row : Int32,
+  col : Int32,
+) -> Int32? raise XlsxError {
   if row <= 0 || col <= 0 {
     raise InvalidCellRef(value="\{col}:\{row}")
   }
@@ -1382,9 +1382,9 @@ pub fn Worksheet::get_cell_style_rc(
 /// The row and column are 1-based and must fit the XLSX grid.
 pub fn Worksheet::effective_style_id_rc(
   self : Worksheet,
-  row : Int,
-  col : Int,
-) -> Int raise XlsxError {
+  row : Int32,
+  col : Int32,
+) -> Int32 raise XlsxError {
   ignore(cell_ref_from(row, col))
   match self.cell_index_of(row, col) {
     Some(i) if self.cells[i].style_explicit => self.cells[i].style_id
@@ -1448,13 +1448,13 @@ pub fn Worksheet::add_table(
   range_ref : String,
   name : String,
   columns : ArrayView[String],
-  display_name? : String = "",
-  style_name? : String = "TableStyleMedium9",
-  show_first_column? : Bool = false,
-  show_last_column? : Bool = false,
-  show_row_stripes? : Bool = true,
-  show_column_stripes? : Bool = false,
-  show_header_row? : Bool = true,
+  display_name~ : String = "",
+  style_name~ : String = "TableStyleMedium9",
+  show_first_column~ : Bool = false,
+  show_last_column~ : Bool = false,
+  show_row_stripes~ : Bool = true,
+  show_column_stripes~ : Bool = false,
+  show_header_row~ : Bool = true,
 ) -> Table raise XlsxError {
   let table = Table::new(
     name,
@@ -1500,7 +1500,7 @@ pub fn Worksheet::add_sparkline(
   self : Worksheet,
   location : String,
   range_ref : String,
-  sparkline_type? : SparklineType = Line,
+  sparkline_type~ : SparklineType = Line,
 ) -> Unit raise XlsxError {
   self.add_sparkline_group([location], [range_ref], sparkline_type~)
 }
@@ -1510,7 +1510,7 @@ pub fn Worksheet::add_sparkline_group(
   self : Worksheet,
   locations : ArrayView[String],
   ranges : ArrayView[String],
-  sparkline_type? : SparklineType = Line,
+  sparkline_type~ : SparklineType = Line,
 ) -> Unit raise XlsxError {
   if locations.length() == 0 || ranges.length() == 0 {
     raise InvalidSparkline(msg="sparkline inputs empty")
@@ -1540,8 +1540,8 @@ pub fn Worksheet::add_pivot_table_xml(
   self : Worksheet,
   table_xml : String,
   cache_definition_xml : String,
-  cache_records_xml? : String = "",
-  name? : String = "",
+  cache_records_xml~ : String = "",
+  name~ : String = "",
 ) -> PivotTable raise XlsxError {
   self.ensure_stream_idle()
   let pivot = PivotTable::new(
@@ -1563,7 +1563,7 @@ fn Worksheet::add_generated_pivot_table(
   table_xml : String,
   cache_definition_xml : String,
   name : String,
-  cache_id : Int,
+  cache_id : Int32,
 ) -> PivotTable raise XlsxError {
   self.ensure_stream_idle()
   let pivot = PivotTable::new(table_xml, cache_definition_xml, name~, cache_id~)
@@ -1647,13 +1647,13 @@ fn check_header_footer_image_size(
 
 ///|
 fn normalize_picture_options(
-  offset_x : Int,
-  offset_y : Int,
+  offset_x : Int32,
+  offset_y : Int32,
   scale_x : Double,
   scale_y : Double,
   hyperlink : String,
   hyperlink_type : HyperlinkType,
-) -> (Int, Int, Double, Double, String, HyperlinkType) raise XlsxError {
+) -> (Int32, Int32, Double, Double, String, HyperlinkType) raise XlsxError {
   if offset_x < 0 || offset_y < 0 {
     raise InvalidSheetOperation(msg="picture offset must be >= 0")
   }
@@ -1679,7 +1679,7 @@ let default_picture_width_px = 200
 let default_picture_height_px = 160
 
 ///|
-let default_row_height_pixels : Int = convert_row_height_to_pixels(15.0)
+let default_row_height_pixels : Int32 = convert_row_height_to_pixels(15.0)
 
 ///|
 let max_graphic_name_length = 254
@@ -1688,7 +1688,7 @@ let max_graphic_name_length = 254
 let max_graphic_alt_text_length = 65535
 
 ///|
-fn convert_col_width_to_pixels(width : Double) -> Int {
+fn convert_col_width_to_pixels(width : Double) -> Int32 {
   if width == 0.0 {
     return 0
   }
@@ -1697,7 +1697,7 @@ fn convert_col_width_to_pixels(width : Double) -> Int {
 }
 
 ///|
-fn convert_row_height_to_pixels(height : Double) -> Int {
+fn convert_row_height_to_pixels(height : Double) -> Int32 {
   if height == 0.0 {
     return 0
   }
@@ -1705,7 +1705,7 @@ fn convert_row_height_to_pixels(height : Double) -> Int {
 }
 
 ///|
-fn Worksheet::default_col_width_pixels(self : Worksheet) -> Int {
+fn Worksheet::default_col_width_pixels(self : Worksheet) -> Int32 {
   let props = sheet_props_with_defaults(self.sheet_props)
   match props.default_col_width {
     Some(w) => convert_col_width_to_pixels(w)
@@ -1717,7 +1717,7 @@ fn Worksheet::default_col_width_pixels(self : Worksheet) -> Int {
 }
 
 ///|
-fn Worksheet::default_row_height_pixels(self : Worksheet) -> Int {
+fn Worksheet::default_row_height_pixels(self : Worksheet) -> Int32 {
   let props = sheet_props_with_defaults(self.sheet_props)
   match props.default_row_height {
     Some(h) => convert_row_height_to_pixels(h)
@@ -1726,7 +1726,7 @@ fn Worksheet::default_row_height_pixels(self : Worksheet) -> Int {
 }
 
 ///|
-fn Worksheet::col_width_pixels(self : Worksheet, col : Int) -> Int {
+fn Worksheet::col_width_pixels(self : Worksheet, col : Int32) -> Int32 {
   match self.col_dimensions.get(col) {
     Some(dim) =>
       if dim.hidden {
@@ -1742,7 +1742,7 @@ fn Worksheet::col_width_pixels(self : Worksheet, col : Int) -> Int {
 }
 
 ///|
-fn Worksheet::row_height_pixels(self : Worksheet, row : Int) -> Int {
+fn Worksheet::row_height_pixels(self : Worksheet, row : Int32) -> Int32 {
   match self.row_dimensions.get(row) {
     Some(dim) =>
       if dim.hidden {
@@ -1760,9 +1760,9 @@ fn Worksheet::row_height_pixels(self : Worksheet, row : Int) -> Int {
 ///|
 fn Worksheet::merged_rect_for_cell(
   self : Worksheet,
-  row : Int,
-  col : Int,
-) -> (Int, Int, Int, Int)? raise XlsxError {
+  row : Int32,
+  col : Int32,
+) -> (Int32, Int32, Int32, Int32)? raise XlsxError {
   for range_ref in self.merged_cells {
     let (min_row, min_col, max_row, max_col) = parse_range_ref(range_ref)
     if cell_in_bounds(row, col, min_row, min_col, max_row, max_col) {
@@ -1775,9 +1775,9 @@ fn Worksheet::merged_rect_for_cell(
 ///|
 fn Worksheet::anchor_cell_size_pixels(
   self : Worksheet,
-  row : Int,
-  col : Int,
-) -> (Int, Int, Int, Int) raise XlsxError {
+  row : Int32,
+  col : Int32,
+) -> (Int32, Int32, Int32, Int32) raise XlsxError {
   match self.merged_rect_for_cell(row, col) {
     Some((min_row, min_col, max_row, max_col)) => {
       let mut cell_width = 0
@@ -1879,20 +1879,20 @@ fn Worksheet::add_picture_from_bytes(
   reference : String,
   data : Bytes,
   extension : String,
-  offset_x? : Int = 0,
-  offset_y? : Int = 0,
-  scale_x? : Double = 1.0,
-  scale_y? : Double = 1.0,
-  hyperlink? : String = "",
-  hyperlink_type? : HyperlinkType = Unset,
-  name? : String = "",
-  alt_text? : String = "",
-  lock_aspect_ratio? : Bool = false,
-  auto_fit? : Bool = false,
-  auto_fit_ignore_aspect? : Bool = false,
-  print_object? : Bool = true,
-  locked? : Bool = true,
-  positioning? : PicturePositioning = OneCell,
+  offset_x~ : Int32 = 0,
+  offset_y~ : Int32 = 0,
+  scale_x~ : Double = 1.0,
+  scale_y~ : Double = 1.0,
+  hyperlink~ : String = "",
+  hyperlink_type~ : HyperlinkType = Unset,
+  name~ : String = "",
+  alt_text~ : String = "",
+  lock_aspect_ratio~ : Bool = false,
+  auto_fit~ : Bool = false,
+  auto_fit_ignore_aspect~ : Bool = false,
+  print_object~ : Bool = true,
+  locked~ : Bool = true,
+  positioning~ : PicturePositioning = OneCell,
 ) -> Unit raise XlsxError {
   let ext = normalize_extension_lower_requires_dot(
     extension, "unsupported picture extension",
@@ -1972,20 +1972,20 @@ async fn Worksheet::add_picture(
   self : Worksheet,
   reference : String,
   path : String,
-  offset_x? : Int = 0,
-  offset_y? : Int = 0,
-  scale_x? : Double = 1.0,
-  scale_y? : Double = 1.0,
-  hyperlink? : String = "",
-  hyperlink_type? : HyperlinkType = Unset,
-  name? : String = "",
-  alt_text? : String = "",
-  lock_aspect_ratio? : Bool = false,
-  auto_fit? : Bool = false,
-  auto_fit_ignore_aspect? : Bool = false,
-  print_object? : Bool = true,
-  locked? : Bool = true,
-  positioning? : PicturePositioning = OneCell,
+  offset_x~ : Int32 = 0,
+  offset_y~ : Int32 = 0,
+  scale_x~ : Double = 1.0,
+  scale_y~ : Double = 1.0,
+  hyperlink~ : String = "",
+  hyperlink_type~ : HyperlinkType = Unset,
+  name~ : String = "",
+  alt_text~ : String = "",
+  lock_aspect_ratio~ : Bool = false,
+  auto_fit~ : Bool = false,
+  auto_fit_ignore_aspect~ : Bool = false,
+  print_object~ : Bool = true,
+  locked~ : Bool = true,
+  positioning~ : PicturePositioning = OneCell,
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
   let extension = match extension_from_path(path) {
@@ -2065,20 +2065,20 @@ pub fn Worksheet::add_image(
   data : Bytes,
   extension : String,
   content_type : String,
-  offset_x? : Int = 0,
-  offset_y? : Int = 0,
-  scale_x? : Double = 1.0,
-  scale_y? : Double = 1.0,
-  hyperlink? : String = "",
-  hyperlink_type? : HyperlinkType = Unset,
-  name? : String = "",
-  alt_text? : String = "",
-  lock_aspect_ratio? : Bool = false,
-  auto_fit? : Bool = false,
-  auto_fit_ignore_aspect? : Bool = false,
-  print_object? : Bool = true,
-  locked? : Bool = true,
-  positioning? : PicturePositioning = OneCell,
+  offset_x~ : Int32 = 0,
+  offset_y~ : Int32 = 0,
+  scale_x~ : Double = 1.0,
+  scale_y~ : Double = 1.0,
+  hyperlink~ : String = "",
+  hyperlink_type~ : HyperlinkType = Unset,
+  name~ : String = "",
+  alt_text~ : String = "",
+  lock_aspect_ratio~ : Bool = false,
+  auto_fit~ : Bool = false,
+  auto_fit_ignore_aspect~ : Bool = false,
+  print_object~ : Bool = true,
+  locked~ : Bool = true,
+  positioning~ : PicturePositioning = OneCell,
 ) -> Unit raise XlsxError {
   let (row, col) = cell_ref_to_rc(reference)
   let ext = normalize_extension(extension)
@@ -2525,7 +2525,7 @@ pub fn Worksheet::add_data_validation_list(
   self : Worksheet,
   range_ref : String,
   values : ArrayView[String],
-  allow_blank? : Bool = true,
+  allow_blank~ : Bool = true,
 ) -> Unit raise XlsxError {
   if values.length() == 0 {
     raise UnsupportedFeature(msg="empty validation list")
@@ -2550,7 +2550,7 @@ pub fn Worksheet::get_data_validations(
 ///|
 pub fn Worksheet::delete_data_validation(
   self : Worksheet,
-  sqrefs? : Array[String] = [],
+  sqrefs~ : Array[String] = [],
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
   if sqrefs.length() == 0 {
@@ -2617,7 +2617,7 @@ let ext_uri_conditional_formatting_rule_id = "{B025F937-C7B1-47D3-B67F-A62EFF666
 let ns_spreadsheet_x14 = "http://schemas.microsoft.com/office/spreadsheetml/2009/9/main"
 
 ///|
-fn pad_left_dec(value : Int, width : Int) -> String {
+fn pad_left_dec(value : Int32, width : Int32) -> String {
   let text = value.to_string()
   if text.length() >= width {
     return text
@@ -2643,9 +2643,9 @@ fn Worksheet::next_x14_cf_rule_id(self : Worksheet) -> String {
 
 ///|
 fn next_available_x14_cf_rule_id(
-  start : Int,
+  start : Int32,
   used : Map[String, X14DataBarProps],
-) -> (String, Int) {
+) -> (String, Int32) {
   let mut counter = start
   while true {
     let suffix = pad_left_dec(counter, 12)
@@ -2763,10 +2763,10 @@ pub fn Worksheet::get_conditional_formats(
 /// result are bounded, and long scans poll `cancelled`.
 pub fn conditional_format_xml_range_count_limited(
   xml : StringView,
-  maximum_ranges : Int,
-  maximum_work_units : Int,
-  cancelled? : () -> Bool = () => false,
-) -> Int raise XlsxError {
+  maximum_ranges : Int32,
+  maximum_work_units : Int32,
+  cancelled~ : () -> Bool = () => false,
+) -> Int32 raise XlsxError {
   if maximum_ranges < 0 || maximum_work_units < 0 {
     raise InvalidOptions(
       msg="conditional-format count limits must be non-negative",
@@ -2828,10 +2828,10 @@ pub fn conditional_format_xml_range_count_limited(
 ///|
 pub fn Worksheet::conditional_format_range_count_limited(
   self : Worksheet,
-  maximum_ranges : Int,
-  maximum_work_units : Int,
-  cancelled? : () -> Bool = () => false,
-) -> Int raise XlsxError {
+  maximum_ranges : Int32,
+  maximum_work_units : Int32,
+  cancelled~ : () -> Bool = () => false,
+) -> Int32 raise XlsxError {
   if maximum_ranges < 0 || maximum_work_units < 0 {
     raise InvalidOptions(
       msg="conditional-format count limits must be non-negative",
@@ -2999,8 +2999,8 @@ pub fn Worksheet::unset_conditional_format(
 ///|
 pub fn Worksheet::set_cell_rc(
   self : Worksheet,
-  row : Int,
-  col : Int,
+  row : Int32,
+  col : Int32,
   value : String,
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
@@ -3050,8 +3050,8 @@ pub fn Worksheet::set_cell_rc(
 ///|
 pub fn Worksheet::set_cell_value_rc(
   self : Worksheet,
-  row : Int,
-  col : Int,
+  row : Int32,
+  col : Int32,
   value : CellValue,
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
@@ -3103,10 +3103,10 @@ pub fn Worksheet::set_cell_value_rc(
 ///|
 pub fn Worksheet::set_cell_formula_rc(
   self : Worksheet,
-  row : Int,
-  col : Int,
+  row : Int32,
+  col : Int32,
   formula : String,
-  value? : String = "",
+  value~ : String = "",
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
   self.invalidate_shared_formula_masters_index()
@@ -3155,8 +3155,8 @@ pub fn Worksheet::set_cell_formula_rc(
 ///|
 pub fn Worksheet::get_cell_rc(
   self : Worksheet,
-  row : Int,
-  col : Int,
+  row : Int32,
+  col : Int32,
 ) -> String? raise XlsxError {
   if row <= 0 || col <= 0 {
     raise InvalidCellRef(value="\{col}:\{row}")
@@ -3170,8 +3170,8 @@ pub fn Worksheet::get_cell_rc(
 ///|
 fn Worksheet::get_cell_value_raw_rc(
   self : Worksheet,
-  row : Int,
-  col : Int,
+  row : Int32,
+  col : Int32,
 ) -> CellValue? raise XlsxError {
   if row <= 0 || col <= 0 {
     raise InvalidCellRef(value="\{col}:\{row}")
@@ -3184,7 +3184,7 @@ fn Worksheet::get_cell_value_raw_rc(
 }
 
 ///|
-pub fn Worksheet::max_row(self : Worksheet) -> Int {
+pub fn Worksheet::max_row(self : Worksheet) -> Int32 {
   let mut max_row = 0
   for cell in self.cells {
     if cell.row > max_row {
@@ -3195,7 +3195,7 @@ pub fn Worksheet::max_row(self : Worksheet) -> Int {
 }
 
 ///|
-pub fn Worksheet::max_col(self : Worksheet) -> Int {
+pub fn Worksheet::max_col(self : Worksheet) -> Int32 {
   let mut max_col = 0
   for cell in self.cells {
     if cell.col > max_col {
@@ -3209,7 +3209,7 @@ pub fn Worksheet::max_col(self : Worksheet) -> Int {
 /// Returns the number of stored cell records in this worksheet in O(1) time.
 /// This is a representation count, not the area of the logical used range;
 /// callers can use it to preflight aggregate scan work before iteration.
-pub fn Worksheet::stored_cell_count(self : Worksheet) -> Int {
+pub fn Worksheet::stored_cell_count(self : Worksheet) -> Int32 {
   self.cells.length()
 }
 
@@ -3220,9 +3220,9 @@ pub fn Worksheet::stored_cell_count(self : Worksheet) -> Int {
 /// hide unbounded preprocessing behind a tiny logical used range.
 pub fn Worksheet::used_bounds_limited(
   self : Worksheet,
-  maximum_stored_cells~ : Int,
-  cancelled? : () -> Bool = () => false,
-) -> (Int, Int) raise XlsxError {
+  maximum_stored_cells~ : Int32,
+  cancelled~ : () -> Bool = () => false,
+) -> (Int32, Int32) raise XlsxError {
   if maximum_stored_cells < 1 {
     raise InvalidOptions(msg="maximum stored cells must be positive")
   }
@@ -3263,7 +3263,7 @@ pub fn Worksheet::used_bounds_limited(
 /// — `StreamModeConflict` if the worksheet is driven by a stream writer.
 pub fn Worksheet::set_row(
   self : Worksheet,
-  row : Int,
+  row : Int32,
   values : ArrayView[String],
 ) -> Unit raise XlsxError {
   // Preflight the whole write so it is all-or-nothing: writing incrementally
@@ -3288,7 +3288,7 @@ pub fn Worksheet::set_row(
 /// Raises `XlsxError` if `row` is less than 1.
 pub fn Worksheet::get_row(
   self : Worksheet,
-  row : Int,
+  row : Int32,
 ) -> Array[String] raise XlsxError {
   if row <= 0 {
     raise InvalidCellRef(value="\{0}:\{row}")
@@ -3319,7 +3319,7 @@ pub fn Worksheet::get_row(
 /// — `StreamModeConflict` if the worksheet is driven by a stream writer.
 pub fn Worksheet::set_col(
   self : Worksheet,
-  col : Int,
+  col : Int32,
   values : ArrayView[String],
 ) -> Unit raise XlsxError {
   // Preflight (see set_row): all-or-nothing, never a half-written column.
@@ -3337,7 +3337,7 @@ pub fn Worksheet::set_col(
 ///|
 pub fn Worksheet::get_col(
   self : Worksheet,
-  col : Int,
+  col : Int32,
 ) -> Array[String] raise XlsxError {
   if col <= 0 {
     raise InvalidCellRef(value="\{col}:\{0}")
@@ -3387,7 +3387,10 @@ fn col_dimension_is_default(dim : ColDimension) -> Bool {
 }
 
 ///|
-fn Worksheet::row_dimension_value(self : Worksheet, row : Int) -> RowDimension {
+fn Worksheet::row_dimension_value(
+  self : Worksheet,
+  row : Int32,
+) -> RowDimension {
   match self.row_dimensions.get(row) {
     Some(value) => value
     None => default_row_dimension()
@@ -3395,7 +3398,10 @@ fn Worksheet::row_dimension_value(self : Worksheet, row : Int) -> RowDimension {
 }
 
 ///|
-fn Worksheet::col_dimension_value(self : Worksheet, col : Int) -> ColDimension {
+fn Worksheet::col_dimension_value(
+  self : Worksheet,
+  col : Int32,
+) -> ColDimension {
   match self.col_dimensions.get(col) {
     Some(value) => value
     None => default_col_dimension()
@@ -3405,7 +3411,7 @@ fn Worksheet::col_dimension_value(self : Worksheet, col : Int) -> ColDimension {
 ///|
 fn Worksheet::set_row_dimension(
   self : Worksheet,
-  row : Int,
+  row : Int32,
   dim : RowDimension,
 ) -> Unit raise XlsxError {
   // The single choke point for every row-dimension write (heights, visibility,
@@ -3424,7 +3430,7 @@ fn Worksheet::set_row_dimension(
 ///|
 fn Worksheet::set_col_dimension(
   self : Worksheet,
-  col : Int,
+  col : Int32,
   dim : ColDimension,
 ) -> Unit raise XlsxError {
   if col < 1 || col > cell_ref_max_cols {
@@ -3440,7 +3446,7 @@ fn Worksheet::set_col_dimension(
 ///|
 pub fn Worksheet::set_row_height(
   self : Worksheet,
-  row : Int,
+  row : Int32,
   height : Double,
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
@@ -3463,7 +3469,7 @@ pub fn Worksheet::set_row_height(
 ///|
 pub fn Worksheet::get_row_height(
   self : Worksheet,
-  row : Int,
+  row : Int32,
 ) -> Double? raise XlsxError {
   if row <= 0 {
     raise InvalidCellRef(value="\{0}:\{row}")
@@ -3477,7 +3483,7 @@ pub fn Worksheet::get_row_height(
 ///|
 pub fn Worksheet::set_row_visible(
   self : Worksheet,
-  row : Int,
+  row : Int32,
   visible : Bool,
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
@@ -3497,7 +3503,7 @@ pub fn Worksheet::set_row_visible(
 ///|
 pub fn Worksheet::row_visible(
   self : Worksheet,
-  row : Int,
+  row : Int32,
 ) -> Bool raise XlsxError {
   if row <= 0 {
     raise InvalidCellRef(value="\{0}:\{row}")
@@ -3511,8 +3517,8 @@ pub fn Worksheet::row_visible(
 ///|
 pub fn Worksheet::set_row_outline_level(
   self : Worksheet,
-  row : Int,
-  level : Int,
+  row : Int32,
+  level : Int32,
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
   if row <= 0 {
@@ -3534,8 +3540,8 @@ pub fn Worksheet::set_row_outline_level(
 ///|
 fn Worksheet::row_outline_level(
   self : Worksheet,
-  row : Int,
-) -> Int raise XlsxError {
+  row : Int32,
+) -> Int32 raise XlsxError {
   if row <= 0 {
     raise InvalidCellRef(value="\{0}:\{row}")
   }
@@ -3548,9 +3554,9 @@ fn Worksheet::row_outline_level(
 ///|
 fn Worksheet::set_row_style_range(
   self : Worksheet,
-  start : Int,
-  end : Int,
-  style_id : Int,
+  start : Int32,
+  end : Int32,
+  style_id : Int32,
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
   if start <= 0 || end <= 0 {
@@ -3579,8 +3585,8 @@ fn Worksheet::set_row_style_range(
 ///|
 pub fn Worksheet::set_row_style(
   self : Worksheet,
-  row : Int,
-  style_id : Int,
+  row : Int32,
+  style_id : Int32,
 ) -> Unit raise XlsxError {
   self.set_row_style_range(row, row, style_id)
 }
@@ -3588,8 +3594,8 @@ pub fn Worksheet::set_row_style(
 ///|
 fn Worksheet::get_row_style(
   self : Worksheet,
-  row : Int,
-) -> Int? raise XlsxError {
+  row : Int32,
+) -> Int32? raise XlsxError {
   if row <= 0 {
     raise InvalidCellRef(value="\{0}:\{row}")
   }
@@ -3602,7 +3608,7 @@ fn Worksheet::get_row_style(
 ///|
 pub fn Worksheet::set_col_width(
   self : Worksheet,
-  col : Int,
+  col : Int32,
   width : Double,
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
@@ -3625,7 +3631,7 @@ pub fn Worksheet::set_col_width(
 ///|
 pub fn Worksheet::get_col_width(
   self : Worksheet,
-  col : Int,
+  col : Int32,
 ) -> Double? raise XlsxError {
   if col <= 0 {
     raise InvalidCellRef(value="\{col}:\{0}")
@@ -3639,7 +3645,7 @@ pub fn Worksheet::get_col_width(
 ///|
 pub fn Worksheet::set_col_visible(
   self : Worksheet,
-  col : Int,
+  col : Int32,
   visible : Bool,
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
@@ -3659,7 +3665,7 @@ pub fn Worksheet::set_col_visible(
 ///|
 pub fn Worksheet::col_visible(
   self : Worksheet,
-  col : Int,
+  col : Int32,
 ) -> Bool raise XlsxError {
   if col <= 0 {
     raise InvalidCellRef(value="\{col}:\{0}")
@@ -3673,8 +3679,8 @@ pub fn Worksheet::col_visible(
 ///|
 fn Worksheet::set_col_outline_level(
   self : Worksheet,
-  col : Int,
-  level : Int,
+  col : Int32,
+  level : Int32,
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
   if col <= 0 {
@@ -3696,8 +3702,8 @@ fn Worksheet::set_col_outline_level(
 ///|
 pub fn Worksheet::col_outline_level(
   self : Worksheet,
-  col : Int,
-) -> Int raise XlsxError {
+  col : Int32,
+) -> Int32 raise XlsxError {
   if col <= 0 {
     raise InvalidCellRef(value="\{col}:\{0}")
   }
@@ -3710,8 +3716,8 @@ pub fn Worksheet::col_outline_level(
 ///|
 fn Worksheet::set_col_style(
   self : Worksheet,
-  col : Int,
-  style_id : Int,
+  col : Int32,
+  style_id : Int32,
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
   if col <= 0 {
@@ -3731,8 +3737,8 @@ fn Worksheet::set_col_style(
 ///|
 pub fn Worksheet::get_col_style(
   self : Worksheet,
-  col : Int,
-) -> Int? raise XlsxError {
+  col : Int32,
+) -> Int32? raise XlsxError {
   if col <= 0 {
     raise InvalidCellRef(value="\{col}:\{0}")
   }
@@ -3745,10 +3751,10 @@ pub fn Worksheet::get_col_style(
 ///|
 fn Worksheet::insert_rows(
   self : Worksheet,
-  row : Int,
-  count : Int,
-  formula_limits? : SharedFormulaLimits = SharedFormulaLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  row : Int32,
+  count : Int32,
+  formula_limits~ : SharedFormulaLimits = SharedFormulaLimits::new(),
+  cancelled~ : () -> Bool = () => false,
   formula_budget? : SharedFormulaMaterializationBudget,
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
@@ -3916,7 +3922,7 @@ fn Worksheet::insert_rows(
     let reference = adjust_cell_after_row_insert(chart.reference, row, count)
     updated_charts.push(chart_with_reference(chart, reference))
   }
-  let updated_rows : Map[Int, RowDimension] = Map([])
+  let updated_rows : Map[Int32, RowDimension] = Map([])
   let mut dimension_index = 0
   for row_index, dim in self.row_dimensions {
     if (dimension_index & 4095) == 0 {
@@ -3992,10 +3998,10 @@ fn Worksheet::insert_rows(
 ///|
 fn Worksheet::remove_rows(
   self : Worksheet,
-  row : Int,
-  count : Int,
-  formula_limits? : SharedFormulaLimits = SharedFormulaLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  row : Int32,
+  count : Int32,
+  formula_limits~ : SharedFormulaLimits = SharedFormulaLimits::new(),
+  cancelled~ : () -> Bool = () => false,
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
   if row <= 0 {
@@ -4153,7 +4159,7 @@ fn Worksheet::remove_rows(
       None => ()
     }
   }
-  let updated_rows : Map[Int, RowDimension] = Map([])
+  let updated_rows : Map[Int32, RowDimension] = Map([])
   let mut dimension_index = 0
   for row_index, dim in self.row_dimensions {
     if (dimension_index & 4095) == 0 {
@@ -4204,14 +4210,14 @@ fn Worksheet::remove_rows(
 ///|
 fn parse_cell_ref_with_abs(
   reference : StringView,
-) -> (Int, Int, Bool, Bool) raise XlsxError {
+) -> (Int32, Int32, Bool, Bool) raise XlsxError {
   parse_cell_ref_parts(reference)
 }
 
 ///|
 fn format_cell_ref_with_abs(
-  row : Int,
-  col : Int,
+  row : Int32,
+  col : Int32,
   abs_col : Bool,
   abs_row : Bool,
 ) -> String raise XlsxError {
@@ -4257,7 +4263,7 @@ fn split_sqref_range(text : StringView) -> (String, String) {
 ///|
 fn decode_structural_sqref(
   encoded : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String raise XlsxError {
   @ooxml.decode_xml_attribute(encoded, cancelled~) catch {
     InvalidXml(msg~) => raise InvalidXml(msg~)
@@ -4274,10 +4280,10 @@ priv enum SqrefInsertAxis {
 ///|
 fn adjust_sqref_after_insert(
   sqref : StringView,
-  start : Int,
-  count : Int,
+  start : Int32,
+  count : Int32,
   axis : SqrefInsertAxis,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String raise XlsxError {
   let adjusted : Array[String] = []
   let tokens = xml_whitespace_tokens_cancellable(sqref, cancelled~)
@@ -4322,10 +4328,10 @@ fn adjust_sqref_after_insert(
 ///|
 fn adjust_xml_sqref_after_insert(
   xml : StringView,
-  start : Int,
-  count : Int,
+  start : Int32,
+  count : Int32,
   axis : SqrefInsertAxis,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String raise XlsxError {
   let tag_text = match tag_attributes_in(xml, "conditionalFormatting") {
     Some(value) => value
@@ -4356,10 +4362,10 @@ fn adjust_xml_sqref_after_insert(
 ///|
 fn adjust_xml_sqrefs_after_insert(
   entries : ArrayView[String],
-  start : Int,
-  count : Int,
+  start : Int32,
+  count : Int32,
   axis : SqrefInsertAxis,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Array[String] raise XlsxError {
   let shifted : Array[String] = []
   for index, xml in entries {
@@ -4377,10 +4383,10 @@ fn adjust_xml_sqrefs_after_insert(
 ///|
 fn adjust_x14_data_bars_after_insert(
   entries : Map[String, X14DataBarProps],
-  start : Int,
-  count : Int,
+  start : Int32,
+  count : Int32,
   axis : SqrefInsertAxis,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Map[String, X14DataBarProps] raise XlsxError {
   let shifted : Map[String, X14DataBarProps] = Map([])
   let mut index = 0
@@ -4408,10 +4414,10 @@ fn adjust_x14_data_bars_after_insert(
 
 ///|
 fn duplicate_sqref_for_row(
-  row : Int,
-  target_row : Int,
+  row : Int32,
+  target_row : Int32,
   sqref : StringView,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Array[String] raise XlsxError {
   let refs : Array[String] = []
   for index, text in xml_whitespace_tokens_cancellable(sqref, cancelled~) {
@@ -4443,9 +4449,9 @@ fn duplicate_sqref_for_row(
 ///|
 fn duplicate_xml_sqref(
   xml : StringView,
-  row : Int,
-  target_row : Int,
-  cancelled? : () -> Bool = () => false,
+  row : Int32,
+  target_row : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> String? raise XlsxError {
   let tag_text = match tag_attributes_in(xml, "conditionalFormatting") {
     Some(value) => value
@@ -4472,7 +4478,7 @@ fn duplicate_xml_sqref(
 priv struct ConditionalFormatCopies {
   xml : Array[String]
   x14_data_bars : Map[String, X14DataBarProps]
-  next_x14_cf_rule_id_counter : Int
+  next_x14_cf_rule_id_counter : Int32
 }
 
 ///|
@@ -4481,8 +4487,8 @@ fn remap_duplicated_x14_ids(
   sqref : String,
   source : Map[String, X14DataBarProps],
   used : Map[String, X14DataBarProps],
-  start_counter : Int,
-) -> (String, Map[String, X14DataBarProps], Int) raise XlsxError {
+  start_counter : Int32,
+) -> (String, Map[String, X14DataBarProps], Int32) raise XlsxError {
   let chunks = Array::from_iter(xml.split("<x14:id>"))
   if chunks.length() <= 1 {
     return (xml.to_owned(), Map([]), start_counter)
@@ -4539,10 +4545,10 @@ fn remap_duplicated_x14_ids(
 fn duplicate_conditional_format_copies(
   entries : ArrayView[String],
   x14_data_bars : Map[String, X14DataBarProps],
-  next_x14_cf_rule_id_counter : Int,
-  row : Int,
-  target_row : Int,
-  cancelled? : () -> Bool = () => false,
+  next_x14_cf_rule_id_counter : Int32,
+  row : Int32,
+  target_row : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> ConditionalFormatCopies raise XlsxError {
   let copies : Array[String] = []
   let additions : Map[String, X14DataBarProps] = Map([])
@@ -4589,9 +4595,9 @@ fn duplicate_conditional_format_copies(
 ///|
 fn duplicate_xml_sqref_copies(
   entries : ArrayView[String],
-  row : Int,
-  target_row : Int,
-  cancelled? : () -> Bool = () => false,
+  row : Int32,
+  target_row : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> Array[String] raise XlsxError {
   let copies : Array[String] = []
   for index, xml in entries {
@@ -4610,8 +4616,8 @@ fn duplicate_xml_sqref_copies(
 ///|
 fn Worksheet::duplicate_data_validations(
   self : Worksheet,
-  row : Int,
-  target_row : Int,
+  row : Int32,
+  target_row : Int32,
 ) -> Unit raise XlsxError {
   let copies = duplicate_xml_sqref_copies(
     self.data_validations,
@@ -4626,9 +4632,9 @@ fn Worksheet::duplicate_data_validations(
 ///|
 fn duplicate_merge_cell_copies(
   merged_cells : ArrayView[String],
-  row : Int,
-  target_row : Int,
-  cancelled? : () -> Bool = () => false,
+  row : Int32,
+  target_row : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> Array[String] raise XlsxError {
   let copies : Array[String] = []
   let mut source_row = row
@@ -4665,8 +4671,8 @@ fn duplicate_merge_cell_copies(
 ///|
 fn Worksheet::duplicate_merge_cells(
   self : Worksheet,
-  row : Int,
-  target_row : Int,
+  row : Int32,
+  target_row : Int32,
 ) -> Unit raise XlsxError {
   let copies = duplicate_merge_cell_copies(self.merged_cells, row, target_row)
   self.merged_cells.append(copies)
@@ -4675,10 +4681,10 @@ fn Worksheet::duplicate_merge_cells(
 ///|
 fn Worksheet::duplicate_row_to(
   self : Worksheet,
-  row : Int,
-  target_row : Int,
-  formula_limits? : SharedFormulaLimits = SharedFormulaLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  row : Int32,
+  target_row : Int32,
+  formula_limits~ : SharedFormulaLimits = SharedFormulaLimits::new(),
+  cancelled~ : () -> Bool = () => false,
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
   if row <= 0 || row > cell_ref_max_rows {
@@ -4795,10 +4801,10 @@ fn Worksheet::duplicate_row_to(
 ///|
 fn Worksheet::insert_cols(
   self : Worksheet,
-  col : Int,
-  count : Int,
-  formula_limits? : SharedFormulaLimits = SharedFormulaLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  col : Int32,
+  count : Int32,
+  formula_limits~ : SharedFormulaLimits = SharedFormulaLimits::new(),
+  cancelled~ : () -> Bool = () => false,
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
   if col <= 0 || col > cell_ref_max_cols {
@@ -4961,7 +4967,7 @@ fn Worksheet::insert_cols(
     let reference = adjust_cell_after_col_insert(chart.reference, col, count)
     updated_charts.push(chart_with_reference(chart, reference))
   }
-  let updated_cols : Map[Int, ColDimension] = Map([])
+  let updated_cols : Map[Int32, ColDimension] = Map([])
   let mut dimension_index = 0
   for col_index, dim in self.col_dimensions {
     if (dimension_index & 4095) == 0 {
@@ -5034,10 +5040,10 @@ fn Worksheet::insert_cols(
 ///|
 fn Worksheet::remove_cols(
   self : Worksheet,
-  col : Int,
-  count : Int,
-  formula_limits? : SharedFormulaLimits = SharedFormulaLimits::new(),
-  cancelled? : () -> Bool = () => false,
+  col : Int32,
+  count : Int32,
+  formula_limits~ : SharedFormulaLimits = SharedFormulaLimits::new(),
+  cancelled~ : () -> Bool = () => false,
 ) -> Unit raise XlsxError {
   self.ensure_stream_idle()
   if col <= 0 {
@@ -5194,7 +5200,7 @@ fn Worksheet::remove_cols(
       None => ()
     }
   }
-  let updated_cols : Map[Int, ColDimension] = Map([])
+  let updated_cols : Map[Int32, ColDimension] = Map([])
   let mut dimension_index = 0
   for col_index, dim in self.col_dimensions {
     if (dimension_index & 4095) == 0 {
@@ -5242,11 +5248,11 @@ fn Worksheet::remove_cols(
 
 ///|
 fn adjust_bounds_for_insert(
-  raw_min : Int,
-  raw_max : Int,
-  start : Int,
-  count : Int,
-) -> (Int, Int) {
+  raw_min : Int32,
+  raw_max : Int32,
+  start : Int32,
+  count : Int32,
+) -> (Int32, Int32) {
   // Order-aware: a defined-name range can be stored reversed (e.g. `$A$5:$A$1`).
   // Normalize to [min, max] before shifting so the result stays in-grid rather
   // than producing a bogus endpoint.
@@ -5263,11 +5269,11 @@ fn adjust_bounds_for_insert(
 
 ///|
 fn adjust_bounds_for_remove(
-  raw_min : Int,
-  raw_max : Int,
-  start : Int,
-  count : Int,
-) -> (Int, Int)? {
+  raw_min : Int32,
+  raw_max : Int32,
+  start : Int32,
+  count : Int32,
+) -> (Int32, Int32)? {
   // Order-aware (see adjust_bounds_for_insert): normalize a reversed range so a
   // removal never yields a negative/out-of-order endpoint.
   let min = if raw_min <= raw_max { raw_min } else { raw_max }
@@ -5295,9 +5301,9 @@ fn adjust_bounds_for_remove(
 ///|
 fn adjust_page_breaks_after_insert(
   breaks : Array[PageBreak],
-  start : Int,
-  count : Int,
-  cancelled? : () -> Bool = () => false,
+  start : Int32,
+  count : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> Array[PageBreak] raise XlsxError {
   let updated : Array[PageBreak] = []
   for index, brk in breaks {
@@ -5314,9 +5320,9 @@ fn adjust_page_breaks_after_insert(
 ///|
 fn adjust_page_breaks_after_remove(
   breaks : Array[PageBreak],
-  start : Int,
-  count : Int,
-  cancelled? : () -> Bool = () => false,
+  start : Int32,
+  count : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> Array[PageBreak] raise XlsxError {
   let updated : Array[PageBreak] = []
   let end = start + count - 1
@@ -5344,8 +5350,8 @@ fn adjust_page_breaks_after_remove(
 ///|
 fn adjust_range_after_row_insert(
   range_ref : String,
-  row : Int,
-  count : Int,
+  row : Int32,
+  count : Int32,
 ) -> String raise XlsxError {
   let (min_row, min_col, max_row, max_col) = parse_range_ref(range_ref)
   let (new_min_row, new_max_row) = adjust_bounds_for_insert(
@@ -5359,8 +5365,8 @@ fn adjust_range_after_row_insert(
 ///|
 fn adjust_range_after_row_remove(
   range_ref : String,
-  row : Int,
-  count : Int,
+  row : Int32,
+  count : Int32,
 ) -> String? raise XlsxError {
   let (min_row, min_col, max_row, max_col) = parse_range_ref(range_ref)
   match adjust_bounds_for_remove(min_row, max_row, row, count) {
@@ -5376,8 +5382,8 @@ fn adjust_range_after_row_remove(
 ///|
 fn adjust_range_after_col_insert(
   range_ref : String,
-  col : Int,
-  count : Int,
+  col : Int32,
+  count : Int32,
 ) -> String raise XlsxError {
   let (min_row, min_col, max_row, max_col) = parse_range_ref(range_ref)
   let (new_min_col, new_max_col) = adjust_bounds_for_insert(
@@ -5391,8 +5397,8 @@ fn adjust_range_after_col_insert(
 ///|
 fn adjust_range_after_col_remove(
   range_ref : String,
-  col : Int,
-  count : Int,
+  col : Int32,
+  count : Int32,
 ) -> String? raise XlsxError {
   let (min_row, min_col, max_row, max_col) = parse_range_ref(range_ref)
   match adjust_bounds_for_remove(min_col, max_col, col, count) {
@@ -5408,8 +5414,8 @@ fn adjust_range_after_col_remove(
 ///|
 fn adjust_auto_filter_after_row_insert(
   filter : AutoFilter,
-  row : Int,
-  count : Int,
+  row : Int32,
+  count : Int32,
 ) -> AutoFilter raise XlsxError {
   let range_ref = adjust_range_after_row_insert(filter.range_ref, row, count)
   let copied = clone_auto_filter(filter)
@@ -5419,8 +5425,8 @@ fn adjust_auto_filter_after_row_insert(
 ///|
 fn adjust_auto_filter_after_row_remove(
   filter : AutoFilter,
-  row : Int,
-  count : Int,
+  row : Int32,
+  count : Int32,
 ) -> AutoFilter? raise XlsxError {
   match adjust_range_after_row_remove(filter.range_ref, row, count) {
     Some(range_ref) => {
@@ -5434,8 +5440,8 @@ fn adjust_auto_filter_after_row_remove(
 ///|
 fn adjust_auto_filter_after_col_insert(
   filter : AutoFilter,
-  col : Int,
-  count : Int,
+  col : Int32,
+  count : Int32,
 ) -> AutoFilter raise XlsxError {
   let range_ref = adjust_range_after_col_insert(filter.range_ref, col, count)
   let columns : Array[AutoFilterColumn] = []
@@ -5457,8 +5463,8 @@ fn adjust_auto_filter_after_col_insert(
 ///|
 fn adjust_auto_filter_after_col_remove(
   filter : AutoFilter,
-  col : Int,
-  count : Int,
+  col : Int32,
+  count : Int32,
 ) -> AutoFilter? raise XlsxError {
   let end = col + count - 1
   match adjust_range_after_col_remove(filter.range_ref, col, count) {
@@ -5488,8 +5494,8 @@ fn adjust_auto_filter_after_col_remove(
 ///|
 fn adjust_hyperlink_ref_after_row_insert(
   reference : String,
-  row : Int,
-  count : Int,
+  row : Int32,
+  count : Int32,
 ) -> String raise XlsxError {
   if reference.contains(":") {
     adjust_range_after_row_insert(reference, row, count)
@@ -5501,8 +5507,8 @@ fn adjust_hyperlink_ref_after_row_insert(
 ///|
 fn adjust_hyperlink_ref_after_row_remove(
   reference : String,
-  row : Int,
-  count : Int,
+  row : Int32,
+  count : Int32,
 ) -> String? raise XlsxError {
   if reference.contains(":") {
     adjust_range_after_row_remove(reference, row, count)
@@ -5514,8 +5520,8 @@ fn adjust_hyperlink_ref_after_row_remove(
 ///|
 fn adjust_hyperlink_ref_after_col_insert(
   reference : String,
-  col : Int,
-  count : Int,
+  col : Int32,
+  count : Int32,
 ) -> String raise XlsxError {
   if reference.contains(":") {
     adjust_range_after_col_insert(reference, col, count)
@@ -5527,8 +5533,8 @@ fn adjust_hyperlink_ref_after_col_insert(
 ///|
 fn adjust_hyperlink_ref_after_col_remove(
   reference : String,
-  col : Int,
-  count : Int,
+  col : Int32,
+  count : Int32,
 ) -> String? raise XlsxError {
   if reference.contains(":") {
     adjust_range_after_col_remove(reference, col, count)
@@ -5540,8 +5546,8 @@ fn adjust_hyperlink_ref_after_col_remove(
 ///|
 fn adjust_cell_after_row_insert(
   reference : String,
-  row : Int,
-  count : Int,
+  row : Int32,
+  count : Int32,
 ) -> String raise XlsxError {
   let (cell_row, cell_col) = cell_ref_to_rc(reference)
   let new_row = if cell_row >= row { cell_row + count } else { cell_row }
@@ -5551,8 +5557,8 @@ fn adjust_cell_after_row_insert(
 ///|
 fn adjust_cell_after_row_remove(
   reference : String,
-  row : Int,
-  count : Int,
+  row : Int32,
+  count : Int32,
 ) -> String? raise XlsxError {
   let (cell_row, cell_col) = cell_ref_to_rc(reference)
   let end_row = row + count - 1
@@ -5568,8 +5574,8 @@ fn adjust_cell_after_row_remove(
 ///|
 fn adjust_cell_after_col_insert(
   reference : String,
-  col : Int,
-  count : Int,
+  col : Int32,
+  count : Int32,
 ) -> String raise XlsxError {
   let (cell_row, cell_col) = cell_ref_to_rc(reference)
   let new_col = if cell_col >= col { cell_col + count } else { cell_col }
@@ -5579,8 +5585,8 @@ fn adjust_cell_after_col_insert(
 ///|
 fn adjust_cell_after_col_remove(
   reference : String,
-  col : Int,
-  count : Int,
+  col : Int32,
+  count : Int32,
 ) -> String? raise XlsxError {
   let (cell_row, cell_col) = cell_ref_to_rc(reference)
   let end_col = col + count - 1
@@ -5596,7 +5602,7 @@ fn adjust_cell_after_col_remove(
 ///|
 fn clone_table_columns(
   columns : ArrayView[String],
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> Array[String] raise XlsxError {
   let out : Array[String] = []
   for index, column in columns {
@@ -5610,16 +5616,16 @@ fn clone_table_columns(
 }
 
 ///|
-fn table_default_column_name(index : Int) -> String {
+fn table_default_column_name(index : Int32) -> String {
   "Column\{index}"
 }
 
 ///|
 fn adjust_table_after_row_insert(
   table : Table,
-  row : Int,
-  count : Int,
-  cancelled? : () -> Bool = () => false,
+  row : Int32,
+  count : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> Table raise XlsxError {
   let range_ref = adjust_range_after_row_insert(table.range_ref, row, count)
   {
@@ -5642,9 +5648,9 @@ fn adjust_table_after_row_insert(
 ///|
 fn adjust_table_after_row_remove(
   table : Table,
-  row : Int,
-  count : Int,
-  cancelled? : () -> Bool = () => false,
+  row : Int32,
+  count : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> Table? raise XlsxError {
   match adjust_range_after_row_remove(table.range_ref, row, count) {
     Some(range_ref) =>
@@ -5670,9 +5676,9 @@ fn adjust_table_after_row_remove(
 ///|
 fn adjust_table_after_col_insert(
   table : Table,
-  col : Int,
-  count : Int,
-  cancelled? : () -> Bool = () => false,
+  col : Int32,
+  count : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> Table raise XlsxError {
   let (min_row, min_col, max_row, max_col) = parse_range_ref(table.range_ref)
   let (new_min_col, new_max_col) = adjust_bounds_for_insert(
@@ -5711,9 +5717,9 @@ fn adjust_table_after_col_insert(
 ///|
 fn adjust_table_after_col_remove(
   table : Table,
-  col : Int,
-  count : Int,
-  cancelled? : () -> Bool = () => false,
+  col : Int32,
+  count : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> Table? raise XlsxError {
   let (min_row, min_col, max_row, max_col) = parse_range_ref(table.range_ref)
   match adjust_bounds_for_remove(min_col, max_col, col, count) {
@@ -5757,9 +5763,9 @@ fn adjust_table_after_col_remove(
 ///|
 fn adjust_sparkline_group_after_row_insert(
   group : SparklineGroup,
-  row : Int,
-  count : Int,
-  cancelled? : () -> Bool = () => false,
+  row : Int32,
+  count : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> SparklineGroup raise XlsxError {
   let updated : Array[Sparkline] = []
   for index, sparkline in group.sparklines {
@@ -5784,9 +5790,9 @@ fn adjust_sparkline_group_after_row_insert(
 ///|
 fn adjust_sparkline_group_after_row_remove(
   group : SparklineGroup,
-  row : Int,
-  count : Int,
-  cancelled? : () -> Bool = () => false,
+  row : Int32,
+  count : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> SparklineGroup raise XlsxError {
   let updated : Array[Sparkline] = []
   for index, sparkline in group.sparklines {
@@ -5815,9 +5821,9 @@ fn adjust_sparkline_group_after_row_remove(
 ///|
 fn adjust_sparkline_group_after_col_insert(
   group : SparklineGroup,
-  col : Int,
-  count : Int,
-  cancelled? : () -> Bool = () => false,
+  col : Int32,
+  count : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> SparklineGroup raise XlsxError {
   let updated : Array[Sparkline] = []
   for index, sparkline in group.sparklines {
@@ -5842,9 +5848,9 @@ fn adjust_sparkline_group_after_col_insert(
 ///|
 fn adjust_sparkline_group_after_col_remove(
   group : SparklineGroup,
-  col : Int,
-  count : Int,
-  cancelled? : () -> Bool = () => false,
+  col : Int32,
+  count : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> SparklineGroup raise XlsxError {
   let updated : Array[Sparkline] = []
   for index, sparkline in group.sparklines {
@@ -5871,7 +5877,7 @@ fn adjust_sparkline_group_after_col_remove(
 }
 
 ///|
-fn compare_cell(a : Cell, b : Cell) -> Int {
+fn compare_cell(a : Cell, b : Cell) -> Int32 {
   if a.row != b.row {
     a.row - b.row
   } else {
@@ -6508,7 +6514,7 @@ test "worksheet wb: row/col dimension guard and default branches" {
     bad_set_row_outline_level is Err(XlsxError::InvalidSheetOperation(_)),
     content="true",
   )
-  let bad_row_outline_level : Result[Int, Error] = Ok(
+  let bad_row_outline_level : Result[Int32, Error] = Ok(
     sheet.row_outline_level(0),
   ) catch {
     e => Err(e)
@@ -6535,7 +6541,7 @@ test "worksheet wb: row/col dimension guard and default branches" {
     bad_row_style_range_order is Err(XlsxError::InvalidSheetOperation(_)),
     content="true",
   )
-  let bad_get_row_style : Result[Int?, Error] = Ok(sheet.get_row_style(0)) catch {
+  let bad_get_row_style : Result[Int32?, Error] = Ok(sheet.get_row_style(0)) catch {
     e => Err(e)
   }
   inspect(
@@ -6599,7 +6605,7 @@ test "worksheet wb: row/col dimension guard and default branches" {
     bad_set_col_outline_level is Err(XlsxError::InvalidSheetOperation(_)),
     content="true",
   )
-  let bad_col_outline_level : Result[Int, Error] = Ok(
+  let bad_col_outline_level : Result[Int32, Error] = Ok(
     sheet.col_outline_level(0),
   ) catch {
     e => Err(e)
@@ -6615,7 +6621,7 @@ test "worksheet wb: row/col dimension guard and default branches" {
     bad_set_col_style is Err(XlsxError::InvalidCellRef(_)),
     content="true",
   )
-  let bad_get_col_style : Result[Int?, Error] = Ok(sheet.get_col_style(0)) catch {
+  let bad_get_col_style : Result[Int32?, Error] = Ok(sheet.get_col_style(0)) catch {
     e => Err(e)
   }
   inspect(
@@ -6725,25 +6731,25 @@ test "worksheet wb: duplicate-row helper edge branches" {
   inspect(col, content="2")
   inspect(abs_col, content="true")
   inspect(abs_row, content="true")
-  let bad_no_col : Result[(Int, Int, Bool, Bool), Error] = Ok(
+  let bad_no_col : Result[(Int32, Int32, Bool, Bool), Error] = Ok(
     parse_cell_ref_with_abs("1A"),
   ) catch {
     e => Err(e)
   }
   inspect(bad_no_col is Err(XlsxError::InvalidCellRef(_)), content="true")
-  let bad_invalid_char : Result[(Int, Int, Bool, Bool), Error] = Ok(
+  let bad_invalid_char : Result[(Int32, Int32, Bool, Bool), Error] = Ok(
     parse_cell_ref_with_abs("A1X"),
   ) catch {
     e => Err(e)
   }
   inspect(bad_invalid_char is Err(XlsxError::InvalidCellRef(_)), content="true")
-  let bad_no_row : Result[(Int, Int, Bool, Bool), Error] = Ok(
+  let bad_no_row : Result[(Int32, Int32, Bool, Bool), Error] = Ok(
     parse_cell_ref_with_abs("A"),
   ) catch {
     e => Err(e)
   }
   inspect(bad_no_row is Err(XlsxError::InvalidCellRef(_)), content="true")
-  let bad_zero_row : Result[(Int, Int, Bool, Bool), Error] = Ok(
+  let bad_zero_row : Result[(Int32, Int32, Bool, Bool), Error] = Ok(
     parse_cell_ref_with_abs("A0"),
   ) catch {
     e => Err(e)

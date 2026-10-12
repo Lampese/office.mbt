@@ -86,7 +86,7 @@ fn unicode_main_docx_session_fixture() -> Bytes raise {
 }
 
 ///|
-fn padded_entity_docx_session_fixture(token_units : Int) -> Bytes raise {
+fn padded_entity_docx_session_fixture(token_units : Int32) -> Bytes raise {
   if token_units <= 5 {
     fail("padded entity token must include at least one leading zero")
   }
@@ -1613,7 +1613,7 @@ async test "D1 generic plans cannot publish duplicate global paraIds" {
       old="<w:p>",
       new="<w:p w14:paraId=\"DEADBEEF\">",
     )
-    assert_eq(duplicated.split("w14:paraId").length(), 3)
+    assert_eq(duplicated.split("w14:paraId").count(), 3)
     write_docx_session_file(input, original)
     let code = docx_session_error_code(() => {
       @docx.transact_docx(

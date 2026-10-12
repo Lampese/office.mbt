@@ -5,8 +5,8 @@
 /// (finding_count, the matched refs in scan order) of a lint run.
 fn lint_findings(
   workbook : @xlsx.Workbook,
-  sheet? : String = "",
-) -> (Int, Array[String]) raise {
+  sheet~ : String = "",
+) -> (Int32, Array[String]) raise {
   let map = match @inspect.lint(workbook, file="t.xlsx", sheet~) {
     Object(map) => map
     _ => fail("lint payload must be an object")

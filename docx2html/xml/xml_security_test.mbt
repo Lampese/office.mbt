@@ -1,5 +1,5 @@
 ///|
-fn xml_security_nested_source(count : Int) -> String {
+fn xml_security_nested_source(count : Int32) -> String {
   let builder = StringBuilder()
   for _ in 0..<count {
     builder.write_string("<a>")
@@ -11,7 +11,7 @@ fn xml_security_nested_source(count : Int) -> String {
 }
 
 ///|
-fn namespace_heavy_source(binding_count : Int, child_count : Int) -> String {
+fn namespace_heavy_source(binding_count : Int32, child_count : Int32) -> String {
   let builder = StringBuilder()
   builder.write_string("<root")
   for index in 0..<binding_count {
@@ -26,7 +26,10 @@ fn namespace_heavy_source(binding_count : Int, child_count : Int) -> String {
 }
 
 ///|
-fn reused_long_namespace_source(uri_chars : Int, child_count : Int) -> String {
+fn reused_long_namespace_source(
+  uri_chars : Int32,
+  child_count : Int32,
+) -> String {
   let builder = StringBuilder()
   builder.write_string("<root xmlns:n=\"")
   builder.write_string("u".repeat(uri_chars))
@@ -39,7 +42,10 @@ fn reused_long_namespace_source(uri_chars : Int, child_count : Int) -> String {
 }
 
 ///|
-fn unique_long_namespace_source(uri_chars : Int, child_count : Int) -> String {
+fn unique_long_namespace_source(
+  uri_chars : Int32,
+  child_count : Int32,
+) -> String {
   let builder = StringBuilder()
   builder.write_string("<root xmlns:n=\"")
   builder.write_string("u".repeat(uri_chars))
@@ -53,8 +59,8 @@ fn unique_long_namespace_source(uri_chars : Int, child_count : Int) -> String {
 
 ///|
 fn popped_namespace_scope_source(
-  binding_count : Int,
-  sibling_count : Int,
+  binding_count : Int32,
+  sibling_count : Int32,
 ) -> String {
   let builder = StringBuilder()
   builder.write_string("<root><heavy")
@@ -111,7 +117,7 @@ fn limited_xml_resource_error(
 ///|
 fn limited_xml_write_error(
   element : @xml.XmlElement,
-  max_output_bytes : Int,
+  max_output_bytes : Int32,
 ) -> String raise {
   try @xml.write_xml_fragment_limited(element, max_output_bytes~) catch {
     InvalidXml(message~) => message
@@ -358,7 +364,7 @@ test "strict XML normalizes source line endings but preserves references" {
 }
 
 ///|
-fn near_splice_limit_transformed_xml(token_units : Int) -> String {
+fn near_splice_limit_transformed_xml(token_units : Int32) -> String {
   let source = StringBuilder(size_hint=(token_units + 32) * 2)
   source.write_string("<root>")
   source.write_string("x".repeat(token_units - 7))
@@ -391,7 +397,7 @@ test "strict XML rejects malformed entities and illegal characters" {
     ] {
     ignore(strict_xml_error(source))
   }
-  let illegal = "<a>" + Int::unsafe_to_char(1).to_string() + "</a>"
+  let illegal = "<a>" + Int32::unsafe_to_char(1).to_string() + "</a>"
   inspect(strict_xml_error(illegal), content="illegal XML character")
   inspect(@xml.read_xml_string("<a>&unknown;</a>").text(), content="&unknown;")
 }
@@ -774,8 +780,8 @@ test "limited XML writer bounds inverse namespace indexing before sizing" {
 
 ///|
 fn xml_security_hash_clustered_names(
-  count : Int,
-  bucket_mask : Int,
+  count : Int32,
+  bucket_mask : Int32,
 ) -> Array[String] {
   let names : Array[String] = []
   let mut candidate = 0
@@ -918,7 +924,7 @@ test "strict XML depth limit fails closed on native and Wasm" {
 
 ///|
 test "xml parser raises on malformed UTF-16 text instead of panicking" {
-  let source = "<a>" + Int::unsafe_to_char(0xD800).to_string() + "</a>"
+  let source = "<a>" + Int32::unsafe_to_char(0xD800).to_string() + "</a>"
   try @xml.read_xml_string(source) catch {
     InvalidXml(message~) =>
       inspect(message, content="invalid UTF-16 in XML content")
@@ -930,7 +936,7 @@ test "xml parser raises on malformed UTF-16 text instead of panicking" {
 
 ///|
 test "xml parser raises on malformed UTF-16 attribute instead of panicking" {
-  let source = "<a b=\"" + Int::unsafe_to_char(0xDC00).to_string() + "\"/>"
+  let source = "<a b=\"" + Int32::unsafe_to_char(0xDC00).to_string() + "\"/>"
   try @xml.read_xml_string(source) catch {
     InvalidXml(message~) =>
       inspect(message, content="invalid UTF-16 in XML content")

@@ -1,6 +1,6 @@
 ///|
 priv struct PdfDocumentPageSpecContext {
-  end_page : Int
+  end_page : Int32
   document : PdfDocument
   source : String
 }
@@ -30,7 +30,7 @@ fn PdfDocumentPageSpecContext::selectors(
 pub fn PdfDocument::parse_pagespec(
   self : PdfDocument,
   spec : String,
-) -> Array[Int] raise @core.PdfError {
+) -> Array[Int32] raise @core.PdfError {
   let end_page = self.endpage()
   let context = PdfDocumentPageSpecContext::{
     end_page,
@@ -49,6 +49,6 @@ pub fn PdfDocument::parse_pagespec(
 pub fn pdf_parse_pagespec(
   document : PdfDocument,
   spec : String,
-) -> Array[Int] raise @core.PdfError {
+) -> Array[Int32] raise @core.PdfError {
   document.parse_pagespec(spec)
 }

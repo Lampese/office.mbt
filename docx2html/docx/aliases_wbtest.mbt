@@ -7,7 +7,7 @@
 ///|
 fn paragraph(
   children : Array[DocumentElement],
-  properties? : ParagraphProperties = @document.ParagraphProperties::default(),
+  properties~ : ParagraphProperties = @document.ParagraphProperties::default(),
 ) -> DocumentElement {
   @document.paragraph(children, properties~)
 }
@@ -15,7 +15,7 @@ fn paragraph(
 ///|
 fn run(
   children : Array[DocumentElement],
-  properties? : RunProperties = @document.RunProperties::default(),
+  properties~ : RunProperties = @document.RunProperties::default(),
 ) -> DocumentElement {
   @document.run(children, properties~)
 }

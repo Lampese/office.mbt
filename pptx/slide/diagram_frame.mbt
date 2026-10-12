@@ -17,7 +17,7 @@
 /// layout / quickStyle / colors parts respectively. Pair with
 /// `@presentation.Presentation::add_smartart_mut` for the full OPC plumbing.
 pub fn GraphicFrame::of_diagram_ref(
-  id~ : Int,
+  id~ : Int32,
   name~ : String,
   x~ : @units.Emu,
   y~ : @units.Emu,

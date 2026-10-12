@@ -746,7 +746,7 @@ test "workbook: missing-sheet cell/media wrapper guards" {
     e => Err(e)
   }
   inspect(set_style is Err(@xlsx.XlsxError::SheetNotFound(_)), content="true")
-  let get_style : Result[Int?, Error] = Ok(
+  let get_style : Result[Int32?, Error] = Ok(
     workbook.get_cell_style("Missing", "A1"),
   ) catch {
     e => Err(e)

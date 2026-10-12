@@ -16,12 +16,12 @@ pub suberror DocxAuthorParseError {
 ///|
 /// Per-document authoring counts for the result record.
 pub(all) struct DocxAuthorReport {
-  ops : Int
-  comments : Int
-  footnotes : Int
-  endnotes : Int
-  headers : Int
-  footers : Int
+  ops : Int32
+  comments : Int32
+  footnotes : Int32
+  endnotes : Int32
+  headers : Int32
+  footers : Int32
 } derive(Eq, @debug.Debug)
 
 ///|

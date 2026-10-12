@@ -115,13 +115,13 @@ pub fn pdf_standard_font_of_pdf_name(name : @core.PdfName) -> PdfStandardFont? {
 ///
 /// The value is derived from the font ascent-like metrics used by the original
 /// CamlPDF helpers and is expressed in glyph-space units.
-pub fn PdfStandardFont::baseline_adjustment(self : PdfStandardFont) -> Int {
+pub fn PdfStandardFont::baseline_adjustment(self : PdfStandardFont) -> Int32 {
   self.to_standard14_data_font().baseline_adjustment()
 }
 
 ///|
 /// Return the standard-font `StemV` descriptor value used when writing fonts.
-pub fn PdfStandardFont::stemv(self : PdfStandardFont) -> Int {
+pub fn PdfStandardFont::stemv(self : PdfStandardFont) -> Int32 {
   self.to_standard14_data_font().stemv()
 }
 
@@ -130,6 +130,6 @@ pub fn PdfStandardFont::stemv(self : PdfStandardFont) -> Int {
 ///
 /// The flags distinguish symbolic fonts, fixed-pitch Courier faces, and the
 /// nonsymbolic roman faces according to the PDF font descriptor bit layout.
-pub fn PdfStandardFont::flags(self : PdfStandardFont) -> Int {
+pub fn PdfStandardFont::flags(self : PdfStandardFont) -> Int32 {
   self.to_standard14_data_font().flags()
 }

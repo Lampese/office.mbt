@@ -57,7 +57,7 @@ pub impl Show for SubsetError with fn output(self, logger) {
 /// CFF2 fonts are not supported.
 pub fn subset(
   data : Bytes,
-  index : Int,
+  index : Int32,
   mapper : GlyphRemapper,
 ) -> Bytes raise SubsetError {
   subset_inner(data, index, [], false, mapper)
@@ -73,7 +73,7 @@ pub fn subset(
 /// font.
 pub fn subset_with_variations(
   data : Bytes,
-  index : Int,
+  index : Int32,
   variation_coordinates : ArrayView[(Tag, Float)],
   mapper : GlyphRemapper,
 ) -> Bytes raise SubsetError {
@@ -83,7 +83,7 @@ pub fn subset_with_variations(
 ///|
 fn subset_inner(
   data : Bytes,
-  index : Int,
+  index : Int32,
   variation_coordinates : ArrayView[(Tag, Float)],
   allow_cff2 : Bool,
   mapper : GlyphRemapper,
@@ -98,7 +98,7 @@ fn subset_inner(
 ///|
 fn prepare_context(
   data : Bytes,
-  index : Int,
+  index : Int32,
   variation_coordinates : ArrayView[(Tag, Float)],
   allow_cff2 : Bool,
   gid_remapper : GlyphRemapper,
@@ -200,7 +200,7 @@ fn subset_context(ctx : Context) -> Bytes raise SubsetError {
 
 ///|
 /// Parse a font face from OpenType data.
-fn parse(data : Bytes, index : Int) -> Face raise SubsetError {
+fn parse(data : Bytes, index : Int32) -> Face raise SubsetError {
   let mut r = Reader::new(data)
   guard read_font_kind(r) is Some(kind) else { raise UnknownKind }
   let mut kind = kind
@@ -327,7 +327,7 @@ fn construct(ctx : Context) -> Bytes {
 /// Calculate a checksum over the sliced data as a sum of u32s. If the data
 /// length is not a multiple of four, it is treated as if padded with zero to
 /// a length that is a multiple of four.
-fn checksum(data : BytesView) -> UInt {
+fn checksum(data : BytesView) -> UInt32 {
   let mut sum = 0U
   let n = data.length()
   let mut i = 0
@@ -363,7 +363,7 @@ priv enum FontFlavor {
 } derive(Eq)
 
 ///|
-fn FontFlavor::magic(self : FontFlavor) -> UInt {
+fn FontFlavor::magic(self : FontFlavor) -> UInt32 {
   match self {
     // Important note: This is the magic for TrueType and not CFF2. However,
     // CFF2 fonts will be converted to TrueType as part of the subsetting
@@ -398,7 +398,7 @@ priv struct Context {
   /// needed for CFF2, where we need to synthesize a V1 table after
   /// converting.
   mut custom_maxp_data : MaxpData?
-  mut custom_hmtx_data : Array[(Int, Int)]?
+  mut custom_hmtx_data : Array[(Int32, Int32)]?
   /// Whether the long loca format was chosen.
   mut long_loca : Bool
 }
@@ -469,7 +469,7 @@ fn Face::table(self : Face, tag : Tag) -> BytesView? {
 /// Rust's `slice::binary_search_by` (std 1.89): the probed indices depend
 /// only on the length of the slice, which matters for unsorted or duplicate
 /// entries.
-fn[T] binary_search_by(xs : Array[T], f : (T) -> Int) -> Result[Int, Int] {
+fn[T] binary_search_by(xs : Array[T], f : (T) -> Int32) -> Result[Int32, Int32] {
   let mut size = xs.length()
   if size == 0 {
     return Err(0)
@@ -738,8 +738,8 @@ fn Tag::cff2() -> Tag {
 /// Locates a table in the font file.
 priv struct TableRecord {
   tag : Tag
-  offset : UInt
-  length : UInt
+  offset : UInt32
+  length : UInt32
 }
 
 ///|

@@ -21,7 +21,7 @@ test "compat get_sheet_index missing returns -1" {
   let workbook = @xlsx.Workbook::new()
   ignore(workbook.add_sheet("Sheet1"))
   inspect(workbook.get_sheet_index("SheetN"), content="-1")
-  let invalid : Result[Int, Error] = Ok(workbook.get_sheet_index("Sheet:1")) catch {
+  let invalid : Result[Int32, Error] = Ok(workbook.get_sheet_index("Sheet:1")) catch {
     e => Err(e)
   }
   inspect(invalid is Err(@xlsx.XlsxError::InvalidSheetName(_)), content="true")

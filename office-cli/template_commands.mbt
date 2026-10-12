@@ -1,6 +1,6 @@
 ///|
 /// Ceiling on the template data document `office template` will read.
-let office_template_max_data_bytes : Int = 8 * 1024 * 1024
+let office_template_max_data_bytes : Int32 = 8 * 1024 * 1024
 
 ///|
 fn template_findings_json(
@@ -27,7 +27,7 @@ fn template_report_json(
   report : @office_xlsx.XlsxTemplateReport,
   transaction? : Json,
   stories? : Array[String],
-  regions? : Array[Json] = [],
+  regions~ : Array[Json] = [],
 ) -> Json {
   let fields : Map[String, Json] = {
     "schema": Json::string(@lib.SCHEMA_TEMPLATE_RESULT),

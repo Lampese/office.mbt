@@ -17,7 +17,7 @@ let xlsx_transaction_max_message_chars = 480
 /// transient serializer indexes.
 
 ///|
-fn bounded_xlsx_message(text : String, limit : Int) -> String {
+fn bounded_xlsx_message(text : String, limit : Int32) -> String {
   let output = StringBuilder()
   let mut count = 0
   for character in text {
@@ -59,7 +59,7 @@ fn xlsx_read_limits() -> @engine.ReadLimits raise @engine.XlsxError {
 ///|
 fn read_transaction_workbook(
   archive : @zip.Archive,
-  candidate_validation? : Bool = false,
+  candidate_validation~ : Bool = false,
 ) -> @engine.Workbook raise @transaction.TransactionError {
   let phase = if candidate_validation {
     "candidate validation"

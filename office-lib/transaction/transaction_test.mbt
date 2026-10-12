@@ -38,12 +38,12 @@ fn rewrite_content_types(data : BytesView, marker : String) -> Bytes raise {
 }
 
 ///|
-fn transaction_zip_u16(bytes : Array[Byte], offset : Int) -> Int {
+fn transaction_zip_u16(bytes : Array[Byte], offset : Int32) -> Int32 {
   bytes[offset].to_int() | (bytes[offset + 1].to_int() << 8)
 }
 
 ///|
-fn transaction_zip_u32(bytes : Array[Byte], offset : Int) -> UInt {
+fn transaction_zip_u32(bytes : Array[Byte], offset : Int32) -> UInt32 {
   bytes[offset].to_uint() |
   (bytes[offset + 1].to_uint() << 8) |
   (bytes[offset + 2].to_uint() << 16) |
@@ -53,8 +53,8 @@ fn transaction_zip_u32(bytes : Array[Byte], offset : Int) -> UInt {
 ///|
 fn transaction_zip_write_u16(
   bytes : Array[Byte],
-  offset : Int,
-  value : Int,
+  offset : Int32,
+  value : Int32,
 ) -> Unit {
   let raw = value.reinterpret_as_uint()
   bytes[offset] = (raw & 0xFF).to_byte()
@@ -64,8 +64,8 @@ fn transaction_zip_write_u16(
 ///|
 fn transaction_zip_write_u32(
   bytes : Array[Byte],
-  offset : Int,
-  value : UInt,
+  offset : Int32,
+  value : UInt32,
 ) -> Unit {
   bytes[offset] = (value & 0xFF).to_byte()
   bytes[offset + 1] = ((value >> 8) & 0xFF).to_byte()
@@ -74,14 +74,14 @@ fn transaction_zip_write_u32(
 }
 
 ///|
-fn transaction_zip_push_u16(bytes : Array[Byte], value : Int) -> Unit {
+fn transaction_zip_push_u16(bytes : Array[Byte], value : Int32) -> Unit {
   let raw = value.reinterpret_as_uint()
   bytes.push((raw & 0xFF).to_byte())
   bytes.push(((raw >> 8) & 0xFF).to_byte())
 }
 
 ///|
-fn transaction_zip_push_u32(bytes : Array[Byte], value : UInt) -> Unit {
+fn transaction_zip_push_u32(bytes : Array[Byte], value : UInt32) -> Unit {
   bytes.push((value & 0xFF).to_byte())
   bytes.push(((value >> 8) & 0xFF).to_byte())
   bytes.push(((value >> 16) & 0xFF).to_byte())
@@ -89,9 +89,9 @@ fn transaction_zip_push_u32(bytes : Array[Byte], value : UInt) -> Unit {
 }
 
 ///|
-fn transaction_zip_eocd(bytes : Array[Byte]) -> Int raise {
+fn transaction_zip_eocd(bytes : Array[Byte]) -> Int32 raise {
   for offset in (bytes.length() - 22)>=..0 {
-    if transaction_zip_u32(bytes, offset) == (0x06054B50 : UInt) {
+    if transaction_zip_u32(bytes, offset) == (0x06054B50 : UInt32) {
       return offset
     }
   }
@@ -1608,7 +1608,7 @@ async test "transaction rejects alternate ZIP interpretations before publication
 
     let decoy_eocd = raw.copy()
     transaction_zip_write_u16(decoy_eocd, eocd + 20, 22)
-    transaction_zip_push_u32(decoy_eocd, (0x06054B50 : UInt))
+    transaction_zip_push_u32(decoy_eocd, (0x06054B50 : UInt32))
     for _ in 0..<9 {
       transaction_zip_push_u16(decoy_eocd, 0)
     }
@@ -1689,7 +1689,7 @@ async test "transaction rejects alternate ZIP interpretations before publication
     transaction_zip_write_u32(
       oversized_zip32,
       central_offset + 24,
-      (0x80000000 : UInt),
+      (0x80000000 : UInt32),
     )
     let resource_code = transaction_error_code(() => {
       @transaction.transact(

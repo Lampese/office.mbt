@@ -24,7 +24,7 @@ fn rust_display_f32(x : Float) -> String {
 ///|
 /// The shortest round-trip decimal digits and exponent of a finite, non-zero
 /// `f32`: `x = 0.d1d2d3... * 10^exp`.
-fn shortest_digits_f32(x : Float) -> (String, Int) {
+fn shortest_digits_f32(x : Float) -> (String, Int32) {
   // `flt2dec::decode` for `f32`.
   let bits = x.abs().reinterpret_as_uint()
   let biased = ((bits >> 23) & 0xFF).reinterpret_as_int()
@@ -50,11 +50,11 @@ fn shortest_digits_f32(x : Float) -> (String, Int) {
 /// it rounds up. `approx` is used for the initial exponent estimate only.
 fn shortest_digits_decoded(
   raw_mant : UInt64,
-  raw_exp : Int,
+  raw_exp : Int32,
   subnormal : Bool,
   boundary : Bool,
   approx : Double,
-) -> (String, Int) {
+) -> (String, Int32) {
   let inclusive = (raw_mant & 1UL) == 0UL
   let (mant, minus, plus, exp) = if subnormal {
     (raw_mant, 1, 1, raw_exp)
@@ -83,7 +83,7 @@ fn shortest_digits_decoded(
   }
   let ten = @bigint.BigInt::from_int(10)
   let upper = r + m_plus
-  let scaled_below = (k : Int) => {
+  let scaled_below = (k : Int32) => {
     if k >= 0 {
       below(s * ten.pow(@bigint.BigInt::from_int(k)), upper)
     } else {
@@ -149,7 +149,7 @@ fn shortest_digits_decoded(
 
 ///|
 /// Place the decimal point into `digits` (`0.digits * 10^point`).
-fn place_point(digits : String, point : Int) -> String {
+fn place_point(digits : String, point : Int32) -> String {
   let buf = StringBuilder()
   let n = digits.length()
   if point <= 0 {
@@ -259,7 +259,7 @@ fn parse_f32(s : String) -> Float? {
     e2 -= 1
   }
   // Round `num / den * 2^shift` to an integer, half to even.
-  let round_scaled = (shift : Int) => {
+  let round_scaled = (shift : Int32) => {
     let (a, b) = if shift >= 0 {
       (num << shift, den)
     } else {

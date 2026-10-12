@@ -16,11 +16,11 @@ let pdf_units_per_em : Double = 1000.0
 /// A glyph to draw.
 pub(all) struct Glyph {
   /// The glyph ID.
-  glyph_id : Int
+  glyph_id : Int32
   /// The start of the glyph's cluster in the text (UTF-16 offset).
-  text_start : Int
+  text_start : Int32
   /// The end of the glyph's cluster in the text (UTF-16 offset).
-  text_end : Int
+  text_end : Int32
   /// The horizontal advance in em.
   x_advance : Double
   /// The horizontal offset in em.
@@ -47,7 +47,7 @@ fn CmapEntries::new() -> CmapEntries {
 }
 
 ///|
-fn CmapEntries::get(self : CmapEntries, code : Int) -> (String, Location?)? {
+fn CmapEntries::get(self : CmapEntries, code : Int32) -> (String, Location?)? {
   if code >= 0 && code < self.entries.length() {
     self.entries[code]
   } else {
@@ -58,7 +58,7 @@ fn CmapEntries::get(self : CmapEntries, code : Int) -> (String, Location?)? {
 ///|
 fn CmapEntries::set(
   self : CmapEntries,
-  code : Int,
+  code : Int32,
   entry : (String, Location?),
 ) -> Unit {
   while self.entries.length() <= code {
@@ -103,7 +103,7 @@ fn CIDFont::is_empty(self : CIDFont) -> Bool {
 
 ///|
 /// Add a new glyph (if it has not already been added) and return its CID.
-fn CIDFont::add_glyph(self : CIDFont, glyph : Int) -> Int {
+fn CIDFont::add_glyph(self : CIDFont, glyph : Int32) -> Int32 {
   self.is_empty = false
   let new_id = self.glyph_remapper.remap(glyph)
   // This means that the glyph ID has been newly assigned, and thus we need
@@ -117,7 +117,7 @@ fn CIDFont::add_glyph(self : CIDFont, glyph : Int) -> Int {
 }
 
 ///|
-fn CIDFont::get_codepoints(self : CIDFont, cid : Int) -> String? {
+fn CIDFont::get_codepoints(self : CIDFont, cid : Int32) -> String? {
   match self.cmap_entries.get(cid) {
     Some((s, _)) => Some(s)
     None => None
@@ -127,7 +127,7 @@ fn CIDFont::get_codepoints(self : CIDFont, cid : Int) -> String? {
 ///|
 fn CIDFont::set_codepoints(
   self : CIDFont,
-  cid : Int,
+  cid : Int32,
   text : String,
   location : Location?,
 ) -> Unit {
@@ -170,7 +170,7 @@ fn siphash13_128(msg : Bytes) -> (UInt64, UInt64) {
   let mut v1 = 0x646f72616e646f83UL
   let mut v2 = 0x6c7967656e657261UL
   let mut v3 = 0x7465646279746573UL
-  let rotl = (x : UInt64, b : Int) => (x << b) | (x >> (64 - b))
+  let rotl = (x : UInt64, b : Int32) => (x << b) | (x >> (64 - b))
   let round = () => {
     v0 = v0 + v1
     v1 = rotl(v1, 13)
@@ -250,7 +250,7 @@ fn base_font_name(font : Font, remapper : @subsetter.GlyphRemapper) -> String {
 }
 
 ///|
-fn hex4(v : Int) -> String {
+fn hex4(v : Int32) -> String {
   let sb = StringBuilder()
   for shift in [12, 8, 4, 0] {
     sb.write_char(hex_digits[(v >> shift) & 0xF].unsafe_to_char())
@@ -265,9 +265,9 @@ fn write_cmap_entry(
   sc : SerializeContext,
   font : Font,
   entry : (String, Location?)?,
-  g : Int,
-  out : Array[(Int, String)],
-  code? : Int = g,
+  g : Int32,
+  out : Array[(Int32, String)],
+  code~ : Int32 = g,
 ) -> Unit {
   match entry {
     None => sc.register_validation_error(NoCodepointMapping(font, g, None))
@@ -308,8 +308,8 @@ fn write_cmap_entry(
 ///|
 /// Build a ToUnicode CMap stream.
 fn to_unicode_cmap(
-  entries : Array[(Int, String)],
-  one_byte? : Bool = false,
+  entries : Array[(Int32, String)],
+  one_byte~ : Bool = false,
 ) -> Bytes {
   let sb = StringBuilder()
   sb.write_string(
@@ -356,11 +356,11 @@ priv struct BoundsPen {
   xs : Array[Float]
   ys : Array[Float]
   /// The number of verbs and whether the last one is a move.
-  mut verbs : Int
+  mut verbs : Int32
   mut last_is_move : Bool
   mut last_is_close : Bool
   mut move_to_required : Bool
-  mut last_move_to_index : Int
+  mut last_move_to_index : Int32
 }
 
 ///|
@@ -498,7 +498,7 @@ fn BoundsPen::bounds(self : BoundsPen) -> (Float, Float, Float, Float)? {
 fn subset_font(
   font : Font,
   glyph_remapper : @subsetter.GlyphRemapper,
-) -> (Bytes, Int, (Float, Float, Float, Float)) raise ExportError {
+) -> (Bytes, Int32, (Float, Float, Float, Float)) raise ExportError {
   let data = @subsetter.subset_with_variations(
     font.data,
     font.index,
@@ -579,7 +579,7 @@ fn subset_font(
 fn CIDFont::serialize(
   self : CIDFont,
   sc : SerializeContext,
-  root_ref : Int,
+  root_ref : Int32,
 ) -> Unit raise ExportError {
   let font = self.font
   let cid_ref = sc.new_ref()

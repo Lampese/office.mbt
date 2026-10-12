@@ -69,9 +69,9 @@ pub extend Transform with Eq::{not_equal, equal}
 pub fn Transform::new(
   offset~ : Point,
   extent~ : Size,
-  rotation? : @units.Angle? = None,
-  flip_h? : Bool = false,
-  flip_v? : Bool = false,
+  rotation~ : @units.Angle? = None,
+  flip_h~ : Bool = false,
+  flip_v~ : Bool = false,
 ) -> Transform {
   { offset, extent, rotation, flip_h, flip_v, }
 }
@@ -92,8 +92,8 @@ pub fn Transform::with_rotation(
 /// only and `with_flip()` clears both.
 pub fn Transform::with_flip(
   self : Transform,
-  h? : Bool = false,
-  v? : Bool = false,
+  h~ : Bool = false,
+  v~ : Bool = false,
 ) -> Transform {
   { ..self, flip_h: h, flip_v: v, }
 }
@@ -109,7 +109,7 @@ pub fn Transform::with_flip(
 /// (see `placeholders.mbt`) rather than in this field.
 pub(all) struct Placeholder {
   ph_type : String
-  idx : Int
+  idx : Int32
 } derive(Eq, Debug)
 
 ///|
@@ -170,7 +170,7 @@ pub extend Shape with Eq::{not_equal, equal}
 ///   `None` for a parsed shape (its `<a:hlinkClick>` round-trips via the
 ///   captured `<p:cNvPr>` in `extension`).
 pub(all) struct AutoShape {
-  id : Int
+  id : Int32
   name : String
   placeholder : Placeholder?
   transform : Transform?

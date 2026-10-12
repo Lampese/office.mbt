@@ -19,8 +19,8 @@
 /// One byte-range replacement in the source part.
 #warnings("-unused_field")
 priv struct RunSurgeryEdit {
-  byte_start : Int
-  byte_end : Int
+  byte_start : Int32
+  byte_end : Int32
   replacement : String
 }
 
@@ -80,13 +80,13 @@ fn run_surgery_needs_space_preserve(text : String) -> Bool {
   if text.length() == 0 {
     return false
   }
-  fn is_space(unit : Int) -> Bool {
+  fn is_space(unit : Int32) -> Bool {
     unit == 0x20 || unit == 0x09 || unit == 0x0A || unit == 0x0D
   }
 
   let first = text.view(start_offset=0, end_offset=1).to_owned()
   let last = text.view(start_offset=text.length() - 1).to_owned()
-  fn leading(one : String) -> Int {
+  fn leading(one : String) -> Int32 {
     let mut code = 0
     for char in one {
       code = char.to_int()
@@ -125,8 +125,8 @@ fn run_surgery_is_self_closing(element : ScannedElement) -> Bool {
 fn plan_whole_run_replacement(
   projection : ReaderProjection,
   source : BytesView,
-  paragraph_index : Int,
-  run_index : Int,
+  paragraph_index : Int32,
+  run_index : Int32,
   text : String,
   // Every refusal below still runs; the EDIT RECORDS and the synthesised
   // run body are what is withheld. A caller replacing a run's text with
@@ -138,7 +138,7 @@ fn plan_whole_run_replacement(
   // character, an unpaired surrogate and a non-character are refused, so
   // deferring it would make the mode lose validation, which is the one
   // thing it may never do.
-  validate_only? : Bool = false,
+  validate_only~ : Bool = false,
 ) -> Array[RunSurgeryEdit] raise DocxError {
   guard paragraph_index >= 0 && paragraph_index < projection.paragraphs.length() else {
     raise Unsupported(
@@ -282,7 +282,7 @@ fn plan_whole_run_replacement(
   // across the run's own projecting contributions and refuse on any
   // difference, `None` against `Some` included. A run wholly inside one
   // link still edits, which is the common and legitimate shape.
-  let mut link_anchor : Int?? = None
+  let mut link_anchor : Int32?? = None
   for contribution in owned {
     if contribution.kind is ProjectedText(_) {
       let SourceElementId(source_identity) = contribution.source
@@ -314,7 +314,7 @@ fn plan_whole_run_replacement(
   let removals : Array[ScannedElement] = []
   // The same physical bytes must not be planned twice: two contributions
   // sharing a source would compose two edits over one span.
-  let planned_sources : Array[Int] = []
+  let planned_sources : Array[Int32] = []
   for contribution in owned {
     let SourceElementId(source_identity) = contribution.source
     let element = elements[source_identity]
@@ -561,7 +561,7 @@ fn plan_whole_run_replacement(
 /// whitespace, so a value carrying any differs from it either way.
 fn run_surgery_space_declaration_is_preserve(
   source : BytesView,
-  span : (Int, Int),
+  span : (Int32, Int32),
 ) -> Bool? {
   let (from, to) = span
   let mut at = from
@@ -649,7 +649,7 @@ fn run_surgery_is_hard_barrier_container(element : ScannedElement) -> Bool {
 ///|
 /// Where an element's open tag ends: just before its content, or before the
 /// `/>` when it is self-closing.
-fn run_surgery_open_tag_end(element : ScannedElement) -> Int {
+fn run_surgery_open_tag_end(element : ScannedElement) -> Int32 {
   if run_surgery_is_self_closing(element) {
     element.byte_end - 2
   } else {
@@ -668,7 +668,7 @@ fn run_surgery_open_tag_end(element : ScannedElement) -> Int {
 fn run_surgery_space_declaration(
   source : BytesView,
   element : ScannedElement,
-) -> (Int, Int)? {
+) -> (Int32, Int32)? {
   let stop = run_surgery_open_tag_end(element)
   if stop <= element.byte_start || stop > source.length() {
     return None
@@ -796,7 +796,7 @@ fn run_surgery_consumed_span_has_children(
 fn run_surgery_hyperlink_ancestor(
   elements : Array[ScannedElement],
   element : ScannedElement,
-) -> Int? {
+) -> Int32? {
   let mut at = element.identity
   while at >= 0 && at < elements.length() {
     let ancestor = elements[at]
@@ -927,7 +927,7 @@ fn run_surgery_inside_checkbox_control(
 fn run_surgery_first_content_position(
   elements : Array[ScannedElement],
   run : ScannedElement,
-) -> Int {
+) -> Int32 {
   let mut child = run.first_child_index
   let mut position = run.content_start
   while child >= 0 {
@@ -992,8 +992,8 @@ fn run_surgery_synthesise_text(
   prefix : String,
   escaped : String,
   raw : String,
-  anchor~ : Int,
-  consumed~ : Int,
+  anchor~ : Int32,
+  consumed~ : Int32,
 ) -> RunSurgeryEdit {
   let attribute = if run_surgery_needs_space_preserve(raw) {
     " xml:space=\"preserve\""

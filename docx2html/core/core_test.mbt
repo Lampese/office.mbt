@@ -17,8 +17,8 @@ test "message deduplication is order-preserving and kind-sensitive" {
 
 ///|
 fn diagnostic_hash_clustered_texts(
-  count : Int,
-  bucket_mask : Int,
+  count : Int32,
+  bucket_mask : Int32,
 ) -> Array[String] {
   let texts : Array[String] = []
   let mut candidate = 0

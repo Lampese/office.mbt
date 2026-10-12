@@ -1,14 +1,14 @@
 ///|
-let pdf_png_ihdr_chunk_type : UInt = 0x49484452U
+let pdf_png_ihdr_chunk_type : UInt32 = 0x49484452U
 
 ///|
-let pdf_png_idat_chunk_type : UInt = 0x49444154U
+let pdf_png_idat_chunk_type : UInt32 = 0x49444154U
 
 ///|
-let pdf_png_plte_chunk_type : UInt = 0x504C5445U
+let pdf_png_plte_chunk_type : UInt32 = 0x504C5445U
 
 ///|
-let pdf_png_trns_chunk_type : UInt = 0x74524E53U
+let pdf_png_trns_chunk_type : UInt32 = 0x74524E53U
 
 ///|
 let pdf_png_max_int64 : Int64 = 2147483647L
@@ -20,7 +20,7 @@ pub(all) enum PdfPNGTransparency {
   /// Greyscale and truecolour: the one colour whose pixels are fully
   /// transparent, as its samples (grey, or red, green and blue) of the
   /// image's bit depth.
-  PdfPNGColourKey(Array[Int])
+  PdfPNGColourKey(Array[Int32])
   /// A palette image: the alpha of the palette's first entries, a byte each;
   /// the entries past them are opaque. Only with an entry below 255: a
   /// `tRNS` of opaque entries declares no transparency.
@@ -39,10 +39,10 @@ pub(all) enum PdfPNGTransparency {
 /// `transparency` is what a `tRNS` chunk before the image data declares,
 /// `None` without one.
 pub(all) struct PdfPNG {
-  width : Int
-  height : Int
-  bit_depth : Int
-  color_type : Int
+  width : Int32
+  height : Int32
+  bit_depth : Int32
+  color_type : Int32
   idat : @core.PdfBytes
   palette : @core.PdfBytes?
   transparency : PdfPNGTransparency?
@@ -50,9 +50,9 @@ pub(all) struct PdfPNG {
 
 ///|
 fn pdf_png_u32_to_int(
-  value : UInt,
+  value : UInt32,
   context : String,
-) -> Int raise @core.PdfError {
+) -> Int32 raise @core.PdfError {
   let wide = value.to_int64()
   if wide > pdf_png_max_int64 {
     raise BadPNG(context)
@@ -63,7 +63,7 @@ fn pdf_png_u32_to_int(
 ///|
 fn pdf_png_read_chunk(
   cursor : @core.ByteCursor,
-) -> (UInt, @core.PdfBytes) raise @core.PdfError {
+) -> (UInt32, @core.PdfBytes) raise @core.PdfError {
   let length = pdf_png_u32_to_int(
     byte_cursor_read_u32_be(cursor),
     "read_png: chunk too large",

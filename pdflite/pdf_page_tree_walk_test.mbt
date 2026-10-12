@@ -35,7 +35,7 @@ fn[T] tree_walk_error(body : () -> T raise @core.PdfError) -> @core.PdfError? {
 /// are not references) just ends.
 fn tree_walk_all_rejected(
   doc : @pdflite.PdfDocument,
-  direct_kids_skipped? : Bool = false,
+  direct_kids_skipped~ : Bool = false,
 ) -> Unit raise {
   assert_true(tree_walk_error(() => doc.endpage()) is Some(PageTreeExpected))
   assert_true(
@@ -126,7 +126,7 @@ test "a /Pages node that lists itself is rejected" {
 ///|
 /// A page tree `levels` deep over one page, the root carrying the media
 /// box the page inherits.
-fn tree_walk_deep_doc(levels : Int) -> @pdflite.PdfDocument raise {
+fn tree_walk_deep_doc(levels : Int32) -> @pdflite.PdfDocument raise {
   let doc = @pdflite.pdf_document_empty()
   let page = doc.add_object(
     tree_walk_dict([("/Type", PdfNameObject(tree_walk_name("/Page")))]),
@@ -205,7 +205,7 @@ test "sharing that multiplies the page tree is an error, not a hang" {
 /// A tree in which no node is its own ancestor but each level holds, by
 /// reference, a `/Kids` array of two direct nodes whose `/Kids` is the
 /// level below: `levels + 2` objects, 2^levels pages.
-fn tree_walk_direct_doubling_doc(levels : Int) -> @pdflite.PdfDocument raise {
+fn tree_walk_direct_doubling_doc(levels : Int32) -> @pdflite.PdfDocument raise {
   let doc = @pdflite.pdf_document_empty()
   let mut below = doc.add_object(
     PdfArray([
@@ -251,7 +251,7 @@ test "a page shared by two parents inherits from each" {
   let page = doc.add_object(
     tree_walk_dict([("/Type", PdfNameObject(tree_walk_name("/Page")))]),
   )
-  let box = (side : Int) => {
+  let box = (side : Int32) => {
     @syntax.PdfArray([
       PdfInteger(0),
       PdfInteger(0),
@@ -259,7 +259,7 @@ test "a page shared by two parents inherits from each" {
       PdfInteger(side),
     ])
   }
-  let parent = (side : Int) => {
+  let parent = (side : Int32) => {
     doc.add_object(
       tree_walk_dict([
         ("/Type", PdfNameObject(tree_walk_name("/Pages"))),
@@ -287,7 +287,7 @@ test "a page listed more often than the allowance permits is rejected" {
   let page = doc.add_object(
     tree_walk_dict([("/Type", PdfNameObject(tree_walk_name("/Page")))]),
   )
-  let listed = (times : Int) => {
+  let listed = (times : Int32) => {
     let root = doc.add_object(
       tree_walk_pages(PdfArray(Array::make(times, PdfIndirect(page)))),
     )
@@ -304,8 +304,8 @@ test "a page listed more often than the allowance permits is rejected" {
 /// `/Kids` array of `nulls` nulls: `branches + 2` objects, and
 /// `branches * nulls` kids to examine.
 fn tree_walk_shared_nulls_doc(
-  branches : Int,
-  nulls : Int,
+  branches : Int32,
+  nulls : Int32,
 ) -> @pdflite.PdfDocument raise {
   let doc = @pdflite.pdf_document_empty()
   let kids = doc.add_object(PdfArray(Array::make(nulls, PdfNull)))

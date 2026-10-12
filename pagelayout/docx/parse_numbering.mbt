@@ -5,7 +5,7 @@
 // follows that chain — cycle-safe, like the style cascade.
 
 ///|
-fn read_level(lvl : @xml.XmlElement) -> (Int, @numbering.Level) {
+fn read_level(lvl : @xml.XmlElement) -> (Int32, @numbering.Level) {
   let depth = parse_int(attr(lvl, "w:ilvl")).unwrap_or(0)
   let mut level = @numbering.Level::default(depth)
   let mut saw_text = false
@@ -109,16 +109,16 @@ fn read_level(lvl : @xml.XmlElement) -> (Int, @numbering.Level) {
 ///|
 /// Parse a `w:numbering` root element.
 pub fn read_numbering(root : @xml.XmlElement) -> @numbering.Numbering {
-  let abstracts : Map[Int, @numbering.AbstractNum] = Map([])
+  let abstracts : Map[Int32, @numbering.AbstractNum] = Map([])
   // abstractNumId → the numStyleLink target it delegates to, if any
-  let links : Map[Int, String] = Map([])
+  let links : Map[Int32, String] = Map([])
   // styleLink name → the abstractNumId that defines it
-  let defines : Map[String, Int] = Map([])
+  let defines : Map[String, Int32] = Map([])
   for node in root.elements_by_tag_name("w:abstractNum") {
     guard parse_int(node.attributes.get("w:abstractNumId")) is Some(id) else {
       continue
     }
-    let levels : Map[Int, @numbering.Level] = Map([])
+    let levels : Map[Int32, @numbering.Level] = Map([])
     for lvl in node.elements_by_tag_name("w:lvl") {
       let (depth, level) = read_level(lvl)
       levels[depth] = level
@@ -146,14 +146,14 @@ pub fn read_numbering(root : @xml.XmlElement) -> @numbering.Numbering {
   // delegations costs O(N) rather than O(N^2) — a crafted numbering.xml
   // would otherwise hang the reader well inside its own budgets. Cycles
   // stop where they close.
-  let resolved : Map[Int, Int] = Map([])
+  let resolved : Map[Int32, Int32] = Map([])
   for id, _ in links {
     if resolved.contains(id) {
       continue
     }
     // walk to the end of this chain, remembering the path
-    let path : Array[Int] = []
-    let seen : Map[Int, Unit] = Map([])
+    let path : Array[Int32] = []
+    let seen : Map[Int32, Unit] = Map([])
     let mut current = id
     let mut endpoint = id
     while true {
@@ -202,7 +202,7 @@ pub fn read_numbering(root : @xml.XmlElement) -> @numbering.Numbering {
       None => ()
     }
   }
-  let instances : Map[Int, @numbering.NumInstance] = Map([])
+  let instances : Map[Int32, @numbering.NumInstance] = Map([])
   for node in root.elements_by_tag_name("w:num") {
     guard parse_int(node.attributes.get("w:numId")) is Some(num_id) else {
       continue
@@ -211,8 +211,8 @@ pub fn read_numbering(root : @xml.XmlElement) -> @numbering.Numbering {
       Some(el) => parse_int(el.attributes.get("w:val")).unwrap_or(-1)
       None => -1
     }
-    let overrides : Map[Int, @numbering.Level] = Map([])
-    let start_overrides : Map[Int, Int] = Map([])
+    let overrides : Map[Int32, @numbering.Level] = Map([])
+    let start_overrides : Map[Int32, Int32] = Map([])
     for over in node.elements_by_tag_name("w:lvlOverride") {
       let depth = parse_int(over.attributes.get("w:ilvl")).unwrap_or(0)
       match over.first("w:startOverride") {

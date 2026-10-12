@@ -38,7 +38,7 @@ pub fn PdfDrawControl::add_text_scale(
 /// Append a text rendering-mode operation.
 pub fn PdfDrawControl::add_render_mode(
   self : PdfDrawControl,
-  mode : Int,
+  mode : Int32,
 ) -> Unit raise @core.PdfError {
   self.add_op(PdfDrawRenderMode(mode))
 }

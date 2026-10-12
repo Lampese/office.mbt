@@ -2,9 +2,9 @@
 fn level(
   format : @numbering.NumberFormat,
   text : String,
-  start? : Int = 1,
-  restart? : Int? = None,
-  is_legal? : Bool = false,
+  start~ : Int32 = 1,
+  restart~ : Int32? = None,
+  is_legal~ : Bool = false,
 ) -> @numbering.Level {
   {
     format,
@@ -25,7 +25,7 @@ fn level(
 /// One instance (numId 1) over an abstract definition with the given
 /// levels, which is the shape every real numbering.xml has.
 fn numbering_of(levels : Array[@numbering.Level]) -> @numbering.Numbering {
-  let by_depth : Map[Int, @numbering.Level] = Map([])
+  let by_depth : Map[Int32, @numbering.Level] = Map([])
   for i, l in levels {
     by_depth[i] = l
   }

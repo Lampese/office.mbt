@@ -182,7 +182,7 @@ pub fn Slide::body(self : Slide) -> Shape? {
 pub fn Slide::with_placeholder(
   self : Slide,
   kind : PlaceholderType,
-  idx : Int,
+  idx : Int32,
   text? : String,
 ) -> Slide {
   let kept : Array[Shape] = []

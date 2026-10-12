@@ -1,30 +1,30 @@
 ///|
-let docx_cli_max_xml_source_units : Int = 64 * 1024 * 1024
+let docx_cli_max_xml_source_units : Int32 = 64 * 1024 * 1024
 
 ///|
 /// One markup token per four source units (#438 corpus calibration: real
 /// DOCX main parts measure 6.8-7.4 units per token with interned names).
-let docx_cli_max_xml_tokens : Int = docx_cli_max_xml_source_units / 4
+let docx_cli_max_xml_tokens : Int32 = docx_cli_max_xml_source_units / 4
 
 ///|
 /// The source allowance itself: interned-name materialization measures at
 /// most 0.85 chars per source unit on the corpus (#438).
-let docx_cli_max_xml_materialized_chars : Int = docx_cli_max_xml_source_units
+let docx_cli_max_xml_materialized_chars : Int32 = docx_cli_max_xml_source_units
 
 ///|
-let docx_cli_max_xml_token_chars : Int = 1024 * 1024
+let docx_cli_max_xml_token_chars : Int32 = 1024 * 1024
 
 ///|
-let docx_cli_default_max_elements : Int = 50_000
+let docx_cli_default_max_elements : Int32 = 50_000
 
 ///|
-let docx_cli_hard_max_elements : Int = 200_000
+let docx_cli_hard_max_elements : Int32 = 200_000
 
 ///|
-let docx_cli_max_warnings : Int = 128
+let docx_cli_max_warnings : Int32 = 128
 
 ///|
-let docx_cli_projection_yield_elements : Int = 256
+let docx_cli_projection_yield_elements : Int32 = 256
 
 ///|
 priv enum DocxProjectionRole {
@@ -64,13 +64,13 @@ priv struct DocxProjection {
   file : String
   annotated : @docx.DocxAnnotatedResult
   entries : Array[DocxProjectionEntry]
-  entry_index : @sorted_map.SortedMap[String, Int]
+  entry_index : @sorted_map.SortedMap[String, Int32]
   // Stable-selector resolution state (paraId R2a): the body story's
   // anchor join and its occurrence -> entry-index map, retained ONLY
   // when the join survived the walk's count check. Absent means every
   // `p[id="…"]` selector refuses as unavailable — never guesses.
   body_joins : @docx.DocxParagraphAnchorJoinIndex?
-  body_paragraph_entries : Array[Int]
+  body_paragraph_entries : Array[Int32]
   // Tracked changes, already reduced to canonical-path records. They have no
   // projection entry of their own: the reader flattens `w:ins` into the
   // accepted text and drops `w:del`, so this is the only surface that says
@@ -78,7 +78,7 @@ priv struct DocxProjection {
   revisions : Array[Json]
   warnings : Array[@lib.ProtocolWarning]
   cancelled : () -> Bool
-  mut work_since_yield : Int
+  mut work_since_yield : Int32
 }
 
 ///|
@@ -93,9 +93,9 @@ priv struct AnnotationStoryPlan {
   kind : String
   pairs : Array[(String, Array[@document.DocumentElement])]
   paths : Array[String]
-  missing_ids : Int
-  duplicate_ids : Int
-  unrepresentable_ids : Int
+  missing_ids : Int32
+  duplicate_ids : Int32
+  unrepresentable_ids : Int32
 }
 
 ///|
@@ -109,22 +109,22 @@ priv struct AnnotationProjectionIndex {
 
 ///|
 priv struct DocxProjectionBuilder {
-  max_elements : Int
+  max_elements : Int32
   entries : Array[DocxProjectionEntry]
-  entry_index : @sorted_map.SortedMap[String, Int]
+  entry_index : @sorted_map.SortedMap[String, Int32]
   warnings : Array[@lib.ProtocolWarning]
   warning_keys : Set[String]
   mut warnings_truncated : Bool
   cancelled : () -> Bool
-  mut work_since_yield : Int
+  mut work_since_yield : Int32
   // Active only while walking a story whose anchor join is available:
   // the join index, the story-scoped paragraph-occurrence cursor
   // (advancing in the SAME depth-first order the erase boundary's
   // provenance channel recorded), and the story's paragraph entry
   // indices so a count disagreement can revoke every join it attached.
   mut story_joins : @docx.DocxParagraphAnchorJoinIndex?
-  mut story_paragraph_cursor : Int
-  story_paragraph_entries : Array[Int]
+  mut story_paragraph_cursor : Int32
+  story_paragraph_entries : Array[Int32]
   mut surviving_joins : @docx.DocxParagraphAnchorJoinIndex?
 }
 
@@ -140,8 +140,8 @@ fn docx_cli_failure(
 ///|
 fn docx_resource_failure(
   resource : String,
-  limit : Int,
-  actual? : Int,
+  limit : Int32,
+  actual? : Int32,
 ) -> CliFailure {
   format_resource_failure("docx", resource, limit, actual?)
 }
@@ -196,8 +196,8 @@ fn docx_xml_resource_name(limit : @docx_core.DocxXmlResourceLimit) -> String {
 
 ///|
 fn DocxProjectionBuilder::new(
-  max_elements : Int,
-  cancelled? : () -> Bool = () => false,
+  max_elements : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> DocxProjectionBuilder {
   {
     max_elements,
@@ -225,7 +225,7 @@ fn DocxProjectionBuilder::check_cancelled(
 ///|
 async fn DocxProjectionBuilder::cooperate(
   self : DocxProjectionBuilder,
-  work? : Int = 1,
+  work~ : Int32 = 1,
 ) -> Unit {
   self.check_cancelled()
   self.work_since_yield += work.max(0)
@@ -246,7 +246,7 @@ fn DocxProjection::check_cancelled(
 ///|
 async fn DocxProjection::cooperate(
   self : DocxProjection,
-  work? : Int = 1,
+  work~ : Int32 = 1,
 ) -> Unit {
   self.check_cancelled()
   self.work_since_yield += work.max(0)
@@ -524,7 +524,7 @@ async fn comment_anchor_metadata(
 ///|
 fn comment_details(
   comments : Array[@docx.CommentInfo],
-  ordinal : Int,
+  ordinal : Int32,
   anchors_by_id : @sorted_map.SortedMap[String, Json],
 ) -> AnnotationDetails {
   let fields : Map[String, Json] = Map([])
@@ -578,7 +578,7 @@ fn note_details(
 }
 
 ///|
-fn has_at_most_chars(value : String, maximum : Int) -> Bool {
+fn has_at_most_chars(value : String, maximum : Int32) -> Bool {
   let mut count = 0
   for _ in value {
     count += 1
@@ -615,8 +615,8 @@ fn stable_annotation_path(
 async fn annotation_id_counts(
   pairs : Array[(String, Array[@document.DocumentElement])],
   builder : DocxProjectionBuilder,
-) -> @sorted_map.SortedMap[String, Int] {
-  let counts : @sorted_map.SortedMap[String, Int] = SortedMap([])
+) -> @sorted_map.SortedMap[String, Int32] {
+  let counts : @sorted_map.SortedMap[String, Int32] = SortedMap([])
   for pair in pairs {
     builder.cooperate()
     let (id, _) = pair
@@ -824,7 +824,7 @@ async fn DocxProjectionBuilder::walk_element_children(
   parent : DocxProjectionEntry,
   element : @document.DocumentElement,
 ) -> Unit {
-  let counters : Map[String, Int] = Map([])
+  let counters : Map[String, Int32] = Map([])
   for child in @docx_paths.element_children(element) {
     self.cooperate()
     match @docx_paths.segment_kind(child) {
@@ -943,7 +943,7 @@ async fn DocxProjectionBuilder::add_story(
 /// and a footer's identity must never answer a /docx/body selector.
 fn DocxProjectionBuilder::take_story_join_state(
   self : DocxProjectionBuilder,
-) -> (@docx.DocxParagraphAnchorJoinIndex?, Array[Int]) {
+) -> (@docx.DocxParagraphAnchorJoinIndex?, Array[Int32]) {
   let joins = self.surviving_joins
   let entries = self.story_paragraph_entries.copy()
   self.surviving_joins = None
@@ -1080,8 +1080,8 @@ fn document_body_elements(
 async fn projection_from_annotated(
   file : String,
   annotated : @docx.DocxAnnotatedResult,
-  max_elements : Int,
-  cancelled? : () -> Bool = () => false,
+  max_elements : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> DocxProjection {
   let builder = DocxProjectionBuilder::new(max_elements, cancelled~)
   builder.cooperate(work=docx_cli_projection_yield_elements)
@@ -1202,7 +1202,7 @@ async fn projection_from_annotated(
 fn validate_docx_read_archive(
   file : String,
   archive : @zip.Archive,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> String raise CliFailure {
   check_office_read_cancelled(cancelled)
   let lower = file.to_lower()
@@ -1302,7 +1302,7 @@ fn docx_cli_xml_budget(cancelled : () -> Bool) -> @xml.XmlReadBudget {
 async fn open_docx_mutation_annotated_archive(
   file : String,
   archive : @zip.Archive,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> @docx.DocxAnnotatedResult {
   check_office_read_cancelled(cancelled)
   @async.pause()
@@ -1333,7 +1333,7 @@ async fn open_docx_annotated_archive(
   file : String,
   archive : @zip.Archive,
   main_document_part : String,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> @docx.DocxAnnotatedResult {
   check_office_read_cancelled(cancelled)
   @async.pause()
@@ -1358,8 +1358,8 @@ async fn open_docx_annotated_archive(
 async fn open_docx_projection_archive(
   file : String,
   archive : @zip.Archive,
-  max_elements : Int,
-  cancelled? : () -> Bool = () => false,
+  max_elements : Int32,
+  cancelled~ : () -> Bool = () => false,
 ) -> DocxProjection {
   check_office_read_cancelled(cancelled)
   if max_elements < 1 || max_elements > docx_cli_hard_max_elements {
@@ -1393,7 +1393,7 @@ async fn open_docx_projection_archive(
 async fn open_docx_projection_annotated_archive(
   file : String,
   archive : @zip.Archive,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> @docx.DocxAnnotatedResult {
   check_office_read_cancelled(cancelled)
   @async.pause()
@@ -1424,7 +1424,7 @@ async fn open_docx_joined_projection_annotated_archive(
   file : String,
   archive : @zip.Archive,
   main_document_part : String,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> @docx.DocxAnnotatedResult {
   check_office_read_cancelled(cancelled)
   @async.pause()
@@ -1453,7 +1453,7 @@ fn attempt_docx_story_anchor_join(
   file : String,
   annotated : @docx.DocxAnnotatedResult,
   story_source : @docx.DocxStoryPartSource,
-  cancelled? : () -> Bool = () => false,
+  cancelled~ : () -> Bool = () => false,
 ) -> @docx.DocxParagraphAnchorJoinIndex? raise CliFailure {
   let joins = Some(
     @docx.docx_paragraph_anchor_join_index(annotated, story_source),

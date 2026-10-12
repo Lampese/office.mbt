@@ -4,7 +4,7 @@ fn pdf_ua_matterhorn_is_hnum(name : @core.PdfName) -> Bool {
   if text == "/H" || !text.has_prefix("/H") {
     false
   } else {
-    let result : Result[Int, Error] = try
+    let result : Result[Int32, Error] = try
       @string.parse_int(text[2:].to_owned())
     catch {
       err => Err(err)
@@ -16,7 +16,7 @@ fn pdf_ua_matterhorn_is_hnum(name : @core.PdfName) -> Bool {
 }
 
 ///|
-fn pdf_ua_matterhorn_hnum(name : @core.PdfName) -> Int {
+fn pdf_ua_matterhorn_hnum(name : @core.PdfName) -> Int32 {
   let text = pdf_ua_matterhorn_name_text(name)
   @string.parse_int(text[2:].to_owned()) catch {
     _ => 0

@@ -12,8 +12,8 @@ pub struct DocxFormatSpan {
   path : String
   para_id : String?
   anchor_status : String
-  start : Int
-  end : Int
+  start : Int32
+  end : Int32
   text : String
   source_runs : Array[String]
 }
@@ -39,13 +39,13 @@ pub fn DocxFormatSpan::anchor_status(self : DocxFormatSpan) -> String {
 
 ///|
 /// The span's paragraph-local UTF-16 start offset.
-pub fn DocxFormatSpan::start(self : DocxFormatSpan) -> Int {
+pub fn DocxFormatSpan::start(self : DocxFormatSpan) -> Int32 {
   self.start
 }
 
 ///|
 /// The span's paragraph-local UTF-16 end offset, exclusive.
-pub fn DocxFormatSpan::end(self : DocxFormatSpan) -> Int {
+pub fn DocxFormatSpan::end(self : DocxFormatSpan) -> Int32 {
   self.end
 }
 
@@ -71,9 +71,9 @@ pub struct DocxFormatAffected {
   expected : String
   para_id : String?
   anchor_status : String
-  runs_changed : Int
-  runs_already_satisfied : Int
-  splits : Int
+  runs_changed : Int32
+  runs_already_satisfied : Int32
+  splits : Int32
 }
 
 ///|
@@ -102,7 +102,7 @@ pub fn DocxFormatAffected::anchor_status(self : DocxFormatAffected) -> String {
 
 ///|
 /// How many of the paragraph's runs the plan rewrites.
-pub fn DocxFormatAffected::runs_changed(self : DocxFormatAffected) -> Int {
+pub fn DocxFormatAffected::runs_changed(self : DocxFormatAffected) -> Int32 {
   self.runs_changed
 }
 
@@ -110,13 +110,13 @@ pub fn DocxFormatAffected::runs_changed(self : DocxFormatAffected) -> Int {
 /// How many of the paragraph's touched runs already held the request.
 pub fn DocxFormatAffected::runs_already_satisfied(
   self : DocxFormatAffected,
-) -> Int {
+) -> Int32 {
   self.runs_already_satisfied
 }
 
 ///|
 /// How many of the paragraph's runs the plan clone-splits.
-pub fn DocxFormatAffected::splits(self : DocxFormatAffected) -> Int {
+pub fn DocxFormatAffected::splits(self : DocxFormatAffected) -> Int32 {
   self.splits
 }
 
@@ -126,15 +126,15 @@ pub struct DocxFormatReceipt {
   mode : String
   requested_text : String?
   requested_within : String?
-  requested_nth : Int?
-  requested_range : (Int, Int)?
-  selected : Array[Int]
+  requested_nth : Int32?
+  requested_range : (Int32, Int32)?
+  selected : Array[Int32]
   spans : Array[DocxFormatSpan]
   affected : Array[DocxFormatAffected]
-  runs_changed : Int
-  runs_already_satisfied : Int
-  splits : Int
-  byte_edits : Int
+  runs_changed : Int32
+  runs_already_satisfied : Int32
+  splits : Int32
+  byte_edits : Int32
 }
 
 ///|
@@ -160,7 +160,7 @@ pub fn DocxFormatReceipt::requested_within(self : DocxFormatReceipt) -> String? 
 /// The ordinal the caller selected, if any. `None` with one span means
 /// "all candidates, and there was one" — a distinction a count alone
 /// cannot make.
-pub fn DocxFormatReceipt::requested_nth(self : DocxFormatReceipt) -> Int? {
+pub fn DocxFormatReceipt::requested_nth(self : DocxFormatReceipt) -> Int32? {
   self.requested_nth
 }
 
@@ -168,14 +168,14 @@ pub fn DocxFormatReceipt::requested_nth(self : DocxFormatReceipt) -> Int? {
 /// The explicit range the caller addressed, in range mode.
 pub fn DocxFormatReceipt::requested_range(
   self : DocxFormatReceipt,
-) -> (Int, Int)? {
+) -> (Int32, Int32)? {
   self.requested_range
 }
 
 ///|
 /// The candidate ordinals this plan formats, in document order. Empty
 /// in range mode, which addresses coordinates rather than candidates.
-pub fn DocxFormatReceipt::selected(self : DocxFormatReceipt) -> Array[Int] {
+pub fn DocxFormatReceipt::selected(self : DocxFormatReceipt) -> Array[Int32] {
   self.selected.copy()
 }
 
@@ -206,7 +206,7 @@ pub fn DocxFormatReceipt::affected(
 
 ///|
 /// How many runs the plan rewrites.
-pub fn DocxFormatReceipt::runs_changed(self : DocxFormatReceipt) -> Int {
+pub fn DocxFormatReceipt::runs_changed(self : DocxFormatReceipt) -> Int32 {
   self.runs_changed
 }
 
@@ -215,20 +215,20 @@ pub fn DocxFormatReceipt::runs_changed(self : DocxFormatReceipt) -> Int {
 /// no-op accounting a `changed=false` report rests on.
 pub fn DocxFormatReceipt::runs_already_satisfied(
   self : DocxFormatReceipt,
-) -> Int {
+) -> Int32 {
   self.runs_already_satisfied
 }
 
 ///|
 /// How many runs the plan clone-splits.
-pub fn DocxFormatReceipt::splits(self : DocxFormatReceipt) -> Int {
+pub fn DocxFormatReceipt::splits(self : DocxFormatReceipt) -> Int32 {
   self.splits
 }
 
 ///|
 /// How many byte edits the plan carries. Zero means the document
 /// already held the request everywhere it was asked.
-pub fn DocxFormatReceipt::byte_edits(self : DocxFormatReceipt) -> Int {
+pub fn DocxFormatReceipt::byte_edits(self : DocxFormatReceipt) -> Int32 {
   self.byte_edits
 }
 
@@ -258,8 +258,8 @@ pub fn plan_docx_format(
   format~ : DocxDirectFormat,
   text? : String,
   within? : String,
-  nth? : Int,
-  range? : (Int, Int),
+  nth? : Int32,
+  range? : (Int32, Int32),
 ) -> (@splice.SplicePlan, DocxFormatReceipt) raise DocxError {
   let part = story.part()
   // v1 is BODY-ONLY in both selector modes. Text mode inherits find's
@@ -303,8 +303,8 @@ pub fn plan_docx_format(
   // last-wins map would format one paragraph while the receipt
   // described the other, so collided paths are counted and refused
   // rather than answered for.
-  let index_by_path : Map[String, Int] = Map([])
-  let claimants : Map[String, Int] = Map([])
+  let index_by_path : Map[String, Int32] = Map([])
+  let claimants : Map[String, Int32] = Map([])
   for paragraph_index, paragraph in projection.paragraphs {
     guard paragraph.sources.length() > 0 else { continue }
     let SourceElementId(head) = paragraph.sources[0].source
@@ -318,7 +318,7 @@ pub fn plan_docx_format(
       }
     }
   }
-  fn resolve_paragraph(path : String) -> Int raise DocxError {
+  fn resolve_paragraph(path : String) -> Int32 raise DocxError {
     guard claimants.get(path) is Some(count) else {
       raise Unsupported(
         message="the paragraph '\{path}' did not resolve to a projection paragraph",
@@ -338,7 +338,7 @@ pub fn plan_docx_format(
   }
   // Selection.
   let mode = if range is Some(_) { "range" } else { "text" }
-  let ordinals : Array[Int] = []
+  let ordinals : Array[Int32] = []
   let spans : Array[DocxFormatSpan] = []
   match range {
     Some((start, end)) => {
@@ -501,9 +501,9 @@ pub fn plan_docx_format(
 /// receipt reports, taken BEFORE any split changes what runs exist.
 fn docx_format_source_runs(
   projection : ReaderProjection,
-  paragraph_index : Int,
-  start : Int,
-  end : Int,
+  paragraph_index : Int32,
+  start : Int32,
+  end : Int32,
   paragraph_path : String,
 ) -> Array[String] {
   let run_paths = find_path_map(projection.scan, "r")
@@ -543,14 +543,14 @@ fn docx_format_source_runs(
 /// for each one — a thousand formatted paragraphs in a large document
 /// turn a bounded read into a quadratic one.
 priv struct DocxStoryIndex {
-  by_path : Map[String, (Int, Int)]
-  registered : Map[Int, Bool]
+  by_path : Map[String, (Int32, Int32)]
+  registered : Map[Int32, Bool]
 }
 
 ///|
 fn docx_story_index(projection : ReaderProjection) -> DocxStoryIndex {
-  let by_path : Map[String, (Int, Int)] = Map([])
-  let registered : Map[Int, Bool] = Map([])
+  let by_path : Map[String, (Int32, Int32)] = Map([])
+  let registered : Map[Int32, Bool] = Map([])
   let paragraph_paths = find_path_map(projection.scan, "p")
   let elements = projection.scan.elements()
   for paragraph_index, paragraph in projection.paragraphs {
@@ -573,7 +573,10 @@ fn docx_story_index(projection : ReaderProjection) -> DocxStoryIndex {
 
 ///|
 /// The paragraph a path names, and how many paragraphs name it.
-fn DocxStoryIndex::locate(self : DocxStoryIndex, path : String) -> (Int, Int) {
+fn DocxStoryIndex::locate(
+  self : DocxStoryIndex,
+  path : String,
+) -> (Int32, Int32) {
   match self.by_path.get(path) {
     Some(entry) => entry
     None => (-1, 0)
@@ -596,7 +599,7 @@ pub fn docx_paragraph_direct_format_spans(
   annotated : DocxAnnotatedResult,
   story : DocxStoryPartSource,
   path~ : String,
-  spans~ : Array[(Int, Int)],
+  spans~ : Array[(Int32, Int32)],
   format~ : DocxDirectFormat,
 ) -> String? raise DocxError {
   docx_paragraphs_direct_format(
@@ -614,7 +617,7 @@ pub fn docx_paragraph_direct_format_spans(
 pub fn docx_paragraphs_direct_format(
   annotated : DocxAnnotatedResult,
   story : DocxStoryPartSource,
-  requests~ : Array[(String, Array[(Int, Int)])],
+  requests~ : Array[(String, Array[(Int32, Int32)])],
   format~ : DocxDirectFormat,
 ) -> Array[String?] raise DocxError {
   // An empty batch asks nothing, and building the lookup for it would
@@ -651,7 +654,7 @@ fn docx_paragraph_direct_format_at(
   bytes : BytesView,
   index : DocxStoryIndex,
   path : String,
-  spans : Array[(Int, Int)],
+  spans : Array[(Int32, Int32)],
   format : DocxDirectFormat,
 ) -> String? raise DocxError {
   let elements = projection.scan.elements()
@@ -679,7 +682,7 @@ fn docx_paragraph_direct_format_at(
   // Ownership as ordered INTERVALS: a paragraph is allowed to be one
   // enormous run, and a table sized by its units would be sized by the
   // text.
-  let owned : Array[(Int, Int, Int)] = []
+  let owned : Array[(Int32, Int32, Int32)] = []
   for contribution in paragraph.contributions {
     guard contribution.kind is ProjectedText(_) else { continue }
     guard contribution.run_source is Some(SourceElementId(run_identity)) else {
@@ -694,7 +697,7 @@ fn docx_paragraph_direct_format_at(
   owned.sort_by(fn(left, right) { left.0.compare(right.0) })
   // The selection, sorted and coalesced ONCE: the sweep below then
   // costs the contributions and the spans, not the characters.
-  let selection : Array[(Int, Int)] = []
+  let selection : Array[(Int32, Int32)] = []
   for span in spans {
     let (start, end) = span
     guard start >= 0 && start < end && end <= width else {
@@ -712,8 +715,8 @@ fn docx_paragraph_direct_format_at(
   // Every run holding selected text must carry the properties; a run
   // whose text lies only OUTSIDE the span is none of this check's
   // business.
-  let judged : Map[Int, Bool] = Map([])
-  let judged_runs : Array[Int] = []
+  let judged : Map[Int32, Bool] = Map([])
+  let judged_runs : Array[Int32] = []
   let mut owned_at = 0
   for span in selection {
     let (start, end) = span
@@ -801,7 +804,7 @@ pub fn docx_paragraph_format_preserved(
   after : DocxAnnotatedResult,
   after_story : DocxStoryPartSource,
   path~ : String,
-  spans~ : Array[(Int, Int)],
+  spans~ : Array[(Int32, Int32)],
   format~ : DocxDirectFormat,
 ) -> String? raise DocxError {
   docx_paragraphs_format_preserved(
@@ -823,7 +826,7 @@ pub fn docx_paragraphs_format_preserved(
   before_story : DocxStoryPartSource,
   after : DocxAnnotatedResult,
   after_story : DocxStoryPartSource,
-  requests~ : Array[(String, Array[(Int, Int)])],
+  requests~ : Array[(String, Array[(Int32, Int32)])],
   format~ : DocxDirectFormat,
 ) -> Array[String?] raise DocxError {
   guard !requests.is_empty() else { return [] }
@@ -876,7 +879,7 @@ fn docx_paragraph_format_preserved_at(
   after_bytes : BytesView,
   after_index : DocxStoryIndex,
   path : String,
-  spans : Array[(Int, Int)],
+  spans : Array[(Int32, Int32)],
   format : DocxDirectFormat,
   interner : DocxFormatInterner,
 ) -> String? raise DocxError {
@@ -919,7 +922,7 @@ fn docx_paragraph_format_preserved_at(
   // The selection as sorted, coalesced INTERVALS, like the ownership:
   // the comparison sweeps segment boundaries, so a paragraph allowed to
   // be one enormous run costs its contributions, not its characters.
-  let selection : Array[(Int, Int)] = []
+  let selection : Array[(Int32, Int32)] = []
   for span in spans {
     let (from, to) = span
     let start = if from < 0 { 0 } else { from }
@@ -929,7 +932,7 @@ fn docx_paragraph_format_preserved_at(
     }
   }
   selection.sort_by(fn(left, right) { left.0.compare(right.0) })
-  let merged_selection : Array[(Int, Int)] = []
+  let merged_selection : Array[(Int32, Int32)] = []
   for span in selection {
     match merged_selection.last() {
       Some(last) if span.0 <= last.1 =>
@@ -1071,8 +1074,8 @@ fn docx_paragraph_format_preserved_at(
 /// One text contribution's provenance: the unit range it claims and the
 /// owning run's properties, key, and binding digest.
 priv struct DocxFormatOwnedSpan {
-  start : Int
-  end : Int
+  start : Int32
+  end : Int32
   properties : String
   key : String
   digest : String
@@ -1090,7 +1093,7 @@ fn docx_format_paragraph_provenance(
   index : DocxStoryIndex,
   path : String,
   interner~ : DocxFormatInterner,
-) -> (Array[DocxFormatOwnedSpan], Int, Array[String], String)? raise DocxError {
+) -> (Array[DocxFormatOwnedSpan], Int32, Array[String], String)? raise DocxError {
   let elements = projection.scan.elements()
   let (target, found) = index.locate(path)
   guard target >= 0 && found == 1 else { return None }
@@ -1109,7 +1112,7 @@ fn docx_format_paragraph_provenance(
   // ancestor's declarations are read once, and an element that
   // declares nothing shares its parent's scope outright.
   // Every element's subtree binding digest, computed in ONE pass.
-  let namespace_tokens : Map[Int, UInt] = Map([])
+  let namespace_tokens : Map[Int32, UInt32] = Map([])
   let binding_digests = docx_format_binding_digests(
     bytes,
     elements,
@@ -1120,9 +1123,9 @@ fn docx_format_paragraph_provenance(
   // A run's properties, read ONCE per run: recomputing them for every
   // contribution walks its children again and again, and a run of many
   // small text elements is legal.
-  let properties_by_run : Map[Int, String] = Map([])
-  let digests_by_run : Map[Int, String] = Map([])
-  let keys_by_run : Map[Int, String] = Map([])
+  let properties_by_run : Map[Int32, String] = Map([])
+  let digests_by_run : Map[Int32, String] = Map([])
+  let keys_by_run : Map[Int32, String] = Map([])
   for contribution in paragraph.contributions {
     guard contribution.kind is ProjectedText(_) else { continue }
     guard contribution.run_source is Some(run_source) else { continue }
@@ -1195,7 +1198,7 @@ fn docx_format_paragraph_provenance(
   units.sort_by(fn(left, right) { left.start.compare(right.start) })
   // Which runs project text, indexed once: scanning every contribution
   // per run is quadratic, and a paragraph of many small runs is legal.
-  let projecting : Map[Int, Bool] = Map([])
+  let projecting : Map[Int32, Bool] = Map([])
   for contribution in paragraph.contributions {
     guard contribution.kind is ProjectedText(_) else { continue }
     guard contribution.projection_end > contribution.projection_start else {
@@ -1211,9 +1214,9 @@ fn docx_format_paragraph_provenance(
   // Run signatures are BOUNDED and computed once each: a run may
   // contain a large subtree, and every carrier inside it would
   // otherwise re-read and re-store that whole text.
-  let signatures : Map[Int, String] = Map([])
-  let keys : Map[Int, String] = Map([])
-  let run_offsets : Map[Int, Int] = Map([])
+  let signatures : Map[Int32, String] = Map([])
+  let keys : Map[Int32, String] = Map([])
+  let run_offsets : Map[Int32, Int32] = Map([])
   for contribution in paragraph.contributions {
     guard contribution.run_source is Some(SourceElementId(owner)) else {
       continue
@@ -1241,7 +1244,7 @@ fn docx_format_paragraph_provenance(
   // ELEMENT rather than a list of known container kinds is what keeps
   // this closed against a container nobody has heard of.
   let silent : Array[String] = []
-  let physical_runs : Array[Int] = []
+  let physical_runs : Array[Int32] = []
   docx_format_collect_named(
     elements,
     paragraph_head_identity,
@@ -1249,7 +1252,7 @@ fn docx_format_paragraph_provenance(
     physical_runs,
     registered~,
   )
-  let run_carriers : Map[Int, Bool] = Map([])
+  let run_carriers : Map[Int32, Bool] = Map([])
   for run_identity in physical_runs {
     // A run carrying projected units is compared per unit, with the
     // request's authorization; a WEIGHTLESS run (properties and empty
@@ -1286,7 +1289,7 @@ fn docx_format_paragraph_provenance(
   }
   // Carriers that belong to no run at all: `w:pPr`, `w:sdtPr`,
   // `w:sdtEndPr`, or any container this planner has never seen.
-  let carriers : Array[Int] = []
+  let carriers : Array[Int32] = []
   docx_format_collect_named(
     elements,
     paragraph_head_identity,
@@ -1323,7 +1326,7 @@ fn docx_format_paragraph_provenance(
   // and still be the paragraph's own. The WHOLE element is compared —
   // alignment, spacing, numbering, and the mark's own rPr alike —
   // because no v1 request touches any of it.
-  let marks : Array[Int] = []
+  let marks : Array[Int32] = []
   docx_format_collect_named(
     elements,
     paragraph_head_identity,
@@ -1428,8 +1431,8 @@ fn docx_format_without(
 /// and any other element is dropped exactly when the request names it.
 fn docx_format_filter_region(
   bytes : BytesView,
-  from : Int,
-  to : Int,
+  from : Int32,
+  to : Int32,
   touched : Array[String],
 ) -> String raise DocxError {
   let builder = StringBuilder()
@@ -1572,7 +1575,11 @@ fn docx_format_filter_region(
 }
 
 ///|
-fn docx_format_matches_at(bytes : BytesView, at : Int, needle : String) -> Bool {
+fn docx_format_matches_at(
+  bytes : BytesView,
+  at : Int32,
+  needle : String,
+) -> Bool {
   let units = needle.code_units()
   if at + units.length() > bytes.length() {
     return false
@@ -1593,8 +1600,8 @@ fn docx_format_matches_at(bytes : BytesView, at : Int, needle : String) -> Bool 
 /// shell visible, because a change to one is a change nobody named.
 fn docx_format_shell(
   bytes : BytesView,
-  attributes_from : Int,
-  attributes_to : Int,
+  attributes_from : Int32,
+  attributes_to : Int32,
   children : String,
 ) -> String raise DocxError {
   let attributes = if attributes_to > attributes_from {
@@ -1613,7 +1620,7 @@ fn docx_format_shell(
 ///|
 /// Whether a name ends at this offset — the next byte may not continue
 /// an XML name, so `<w:rPrChange` never counts as `<w:rPr`.
-fn docx_format_name_ends_at(bytes : BytesView, at : Int, to : Int) -> Bool {
+fn docx_format_name_ends_at(bytes : BytesView, at : Int32, to : Int32) -> Bool {
   if at >= to {
     return true
   }
@@ -1638,8 +1645,8 @@ fn docx_format_touched_residue(
   bytes : BytesView,
   qname : String,
   property_name : String,
-  from : Int,
-  to : Int,
+  from : Int32,
+  to : Int32,
 ) -> String raise DocxError {
   // The attributes a request may rewrite: an on/off or underline
   // property owns its `val`; an absolute colour additionally drops the
@@ -1696,10 +1703,10 @@ fn docx_format_touched_residue(
 /// — that paragraph answers for its own.
 fn docx_format_collect_named(
   elements : Array[ScannedElement],
-  element_identity : Int,
+  element_identity : Int32,
   local_name : String,
-  out : Array[Int],
-  registered~ : Map[Int, Bool],
+  out : Array[Int32],
+  registered~ : Map[Int32, Bool],
 ) -> Unit {
   let mut child = elements[element_identity].first_child_index
   while child >= 0 {
@@ -1734,8 +1741,8 @@ pub fn docx_paragraph_direct_format(
   annotated : DocxAnnotatedResult,
   story : DocxStoryPartSource,
   path~ : String,
-  start~ : Int,
-  end~ : Int,
+  start~ : Int32,
+  end~ : Int32,
   format~ : DocxDirectFormat,
 ) -> String? raise DocxError {
   docx_paragraph_direct_format_spans(
@@ -1753,7 +1760,7 @@ pub fn docx_paragraph_direct_format(
 /// re-homes, and nothing about it is worth comparing.
 fn docx_format_run_carries_content(
   elements : Array[ScannedElement],
-  run_identity : Int,
+  run_identity : Int32,
 ) -> Bool {
   let mut child = elements[run_identity].first_child_index
   while child >= 0 {
@@ -1778,7 +1785,7 @@ fn docx_format_run_carries_content(
 fn docx_format_run_signature(
   bytes : BytesView,
   elements : Array[ScannedElement],
-  run_identity : Int,
+  run_identity : Int32,
 ) -> String raise DocxError {
   let builder = StringBuilder()
   let mut child = elements[run_identity].first_child_index
@@ -1808,12 +1815,12 @@ fn docx_format_run_signature(
 fn docx_format_carrier_key(
   bytes : BytesView,
   elements : Array[ScannedElement],
-  element_identity : Int,
-  stop_identity : Int,
-  run_offsets~ : Map[Int, Int],
-  signatures~ : Map[Int, String],
-  keys~ : Map[Int, String],
-  namespace_tokens~ : Map[Int, UInt],
+  element_identity : Int32,
+  stop_identity : Int32,
+  run_offsets~ : Map[Int32, Int32],
+  signatures~ : Map[Int32, String],
+  keys~ : Map[Int32, String],
+  namespace_tokens~ : Map[Int32, UInt32],
   interner~ : DocxFormatInterner,
 ) -> String raise DocxError {
   if element_identity < 0 ||
@@ -1870,7 +1877,7 @@ fn docx_format_carrier_key(
 /// a unit's entry holds an id rather than the property text, so an
 /// array of them grows with the units and not with their product.
 priv struct DocxFormatInterner {
-  ids : Map[String, Int]
+  ids : Map[String, Int32]
 }
 
 ///|
@@ -1879,7 +1886,7 @@ fn DocxFormatInterner::new() -> DocxFormatInterner {
 }
 
 ///|
-fn DocxFormatInterner::uid(self : DocxFormatInterner, text : String) -> UInt {
+fn DocxFormatInterner::uid(self : DocxFormatInterner, text : String) -> UInt32 {
   match self.ids.get(text) {
     Some(known) => known.reinterpret_as_uint()
     None => {
@@ -1913,8 +1920,8 @@ fn DocxFormatInterner::id(self : DocxFormatInterner, text : String) -> String {
 fn docx_format_run_signature_key(
   bytes : BytesView,
   elements : Array[ScannedElement],
-  run_identity : Int,
-  signatures~ : Map[Int, String],
+  run_identity : Int32,
+  signatures~ : Map[Int32, String],
   interner~ : DocxFormatInterner,
 ) -> String raise DocxError {
   match signatures.get(run_identity) {
@@ -1970,26 +1977,26 @@ fn docx_format_filtered(
 fn docx_format_binding_digests(
   bytes : BytesView,
   elements : Array[ScannedElement],
-  root_identity : Int,
-  tokens~ : Map[Int, UInt],
+  root_identity : Int32,
+  tokens~ : Map[Int32, UInt32],
   interner~ : DocxFormatInterner,
-) -> Map[Int, UInt] raise DocxError {
-  let digests : Map[Int, UInt] = Map([])
+) -> Map[Int32, UInt32] raise DocxError {
+  let digests : Map[Int32, UInt32] = Map([])
   let scope : Map[String, String] = Map([])
   // Each binding's identity, interned ONCE when it is declared: a long
   // URI used by many descendants would otherwise be re-read per use.
   // These are EXACT — equal ids mean equal prefix=uri pairs — where the
   // folded hash they replace answered equality only up to collisions,
   // and a 32-bit collision between two bindings is searchable.
-  let scope_hash : Map[String, UInt] = Map([])
-  fn binding_hash(prefix : String, uri : String) -> UInt {
+  let scope_hash : Map[String, UInt32] = Map([])
+  fn binding_hash(prefix : String, uri : String) -> UInt32 {
     interner.uid("b|\{prefix}=\{uri}")
   }
-  fn walk(identity : Int) -> UInt raise DocxError {
+  fn walk(identity : Int32) -> UInt32 raise DocxError {
     let element = elements[identity]
     // Declarations on this element, parsed in ONE pass over its tag,
     // applied to the scope with an undo record.
-    let undo : Array[(String, String?, UInt?)] = []
+    let undo : Array[(String, String?, UInt32?)] = []
     let used : Array[String] = []
     // Attributes whose VALUES may carry prefixes: markup-compatibility
     // directives name namespaces and elements by QName, so a prefix can
@@ -2149,7 +2156,7 @@ fn docx_format_binding_digests(
     }
     let own_part = own_builder.to_string()
     let children_part = children_builder.to_string()
-    let total : UInt = if own_part == "" && children_part == "" {
+    let total : UInt32 = if own_part == "" && children_part == "" {
       0
     } else {
       interner.uid("s|\{own_part}/\{children_part}")
@@ -2178,7 +2185,7 @@ fn docx_format_binding_digests(
   // The scope above the paragraph matters too, so the walk starts at
   // the story root and records digests for everything beneath it.
   let mut ancestor = root_identity
-  let chain : Array[Int] = []
+  let chain : Array[Int32] = []
   while ancestor >= 0 && ancestor < elements.length() {
     chain.push(ancestor)
     ancestor = elements[ancestor].parent_index
