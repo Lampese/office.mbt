@@ -560,20 +560,32 @@ fn write_file(
   buf.write_byte(b'\x80')
   buf.write_byte(b'\x80')
   buf.write_byte(b'\n')
-  let offsets : Array[Int32?] = Array::make(count + 1, None)
+  // The offset of each object (`-1`: there is none with the number).
+  let offsets : Array[Int32] = Array::make(count + 1, -1)
   for i in 1..<=count {
     guard objects.get(i) is Some(object) else { continue }
-    offsets[i] = Some(buf.length())
-    write_ascii(buf, "\{i} 0 obj\n")
+    offsets[i] = buf.length()
+    write_int(buf, i)
+    write_ascii(buf, " 0 obj\n")
     match object {
       Plain(obj) => write_obj(buf, obj)
       Stream(dict, data) => {
-        // The length of the data, replacing any `/Length` of the dictionary
-        // (e.g. of streams copied from other files).
-        let entries = dict.filter(e => e.0 != "Length")
-        entries.push(("Length", Int(data.length())))
-        write_obj(buf, Dict(entries))
-        write_ascii(buf, "\nstream\n")
+        // The dictionary with the length of the data, replacing any
+        // `/Length` of the dictionary (e.g. of streams copied from other
+        // files): written as [write_obj] writes a dictionary.
+        buf.write_byte(b'<')
+        buf.write_byte(b'<')
+        for entry in dict {
+          if entry.0 != "Length" {
+            write_name(buf, entry.0)
+            buf.write_byte(b' ')
+            write_obj(buf, entry.1)
+            buf.write_byte(b'\n')
+          }
+        }
+        write_ascii(buf, "/Length ")
+        write_int(buf, data.length())
+        write_ascii(buf, "\n>>\nstream\n")
         buf.write_bytes(data)
         write_ascii(buf, "\nendstream")
       }
@@ -581,19 +593,17 @@ fn write_file(
     write_ascii(buf, "\nendobj\n\n")
   }
   let xref_offset = buf.length()
-  write_ascii(buf, "xref\n0 \{count + 1}\n")
-  write_ascii(buf, "0000000000 65535 f\r\n")
+  write_ascii(buf, "xref\n0 ")
+  write_int(buf, count + 1)
+  write_ascii(buf, "\n0000000000 65535 f\r\n")
   for i in 1..<=count {
-    match offsets[i] {
-      Some(off) => {
-        let s = off.to_string()
-        for _ in 0..<(10 - s.length()) {
-          buf.write_byte(b'0')
-        }
-        write_ascii(buf, s)
-        write_ascii(buf, " 00000 n\r\n")
-      }
-      None => write_ascii(buf, "0000000000 65535 f\r\n")
+    let offset = offsets[i]
+    if offset >= 0 {
+      // Ten digits (a file of more than `Int` bytes is not written).
+      write_padded_digits(buf, offset.to_int64(), 10)
+      write_ascii(buf, " 00000 n\r\n")
+    } else {
+      write_ascii(buf, "0000000000 65535 f\r\n")
     }
   }
   let trailer = DictBuilder::new()

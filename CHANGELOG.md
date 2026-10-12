@@ -60,6 +60,11 @@ covers changes that have landed on `main` but are not yet published.
   typst.mbt the export of `bench/longer.typ` (5222 structure elements,
   13 930 pieces of marked content) goes from 1206 to 1134 million
   instructions (-6 %).
+- `export`: the file is written without a string per object (the header
+  of an object and its offset in the cross-reference table are written as
+  digits, the dictionary of a stream entry by entry instead of from a
+  filtered copy). The files are the same bytes; `bench/longer.typ` in
+  typst.mbt: 1134 to 1125 million instructions (-0.8 %).
 
 ### moonbitlang/pdflite [0.3.9]
 
