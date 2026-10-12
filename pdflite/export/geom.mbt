@@ -3,6 +3,10 @@
 
 ///|
 /// A point.
+///
+/// A value type (two numbers, passed and stored as such): a point is made
+/// for every run of text and every segment of a path.
+#valtype
 pub(all) struct Point {
   x : Double
   y : Double
@@ -126,6 +130,11 @@ fn Rect::to_pdf(self : Rect) -> Obj {
 
 ///|
 /// An affine transformation `[sx ky kx sy tx ty]`.
+///
+/// A value type (six numbers, passed and stored as such): every run of
+/// text and every shape concatenates transforms, and each result was an
+/// object.
+#valtype
 pub(all) struct Transform {
   sx : Double
   ky : Double
