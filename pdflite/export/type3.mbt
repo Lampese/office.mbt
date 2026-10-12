@@ -45,6 +45,18 @@ fn Type3Font::get_code(self : Type3Font, glyph : (Int, Int)) -> Int? {
 }
 
 ///|
+/// The PDF font of a glyph (`-1` for the CID font, else the index of the
+/// Type 3 font) and the code of the glyph in it (krilla's
+/// `(FontIdentifier, PDFGlyph)`). Not upstream: a value type, so that
+/// `FontContainer::add_glyph`, which is called for every glyph of a run,
+/// returns it without an allocation.
+#valtype
+priv struct PdfGlyph {
+  fid : Int
+  code : Int
+}
+
+///|
 /// All PDF fonts belonging to an OpenType font.
 priv struct FontContainer {
   font : Font
@@ -52,13 +64,24 @@ priv struct FontContainer {
   /// The reference of the `Type0` font.
   ref_ : Int
   type3 : Array[Type3Font]
+  /// The CID of each glyph that is known to be in the CID font, indexed by
+  /// glyph ID (`-1`: not known). krilla's `cid_cache`, stored densely
+  /// instead of in a hash map.
+  mut cid_cache : FixedArray[Int]
   /// The Type 3 font and code of each colored glyph.
   type3_cache : Map[(Int, Int), (Int, Int)]
 }
 
 ///|
 fn FontContainer::new(font : Font, ref_ : Int) -> FontContainer {
-  { font, cid_font: CIDFont::new(font), ref_, type3: [], type3_cache: {}, }
+  {
+    font,
+    cid_font: CIDFont::new(font),
+    ref_,
+    type3: [],
+    cid_cache: [],
+    type3_cache: {},
+  }
 }
 
 ///|
@@ -78,13 +101,43 @@ fn FontContainer::add_glyph(
   sc : SerializeContext,
   glyph : Int,
   context_color : Int,
-) -> (Int, Int) {
-  if self.should_outline(glyph) {
-    return (-1, self.cid_font.add_glyph(glyph))
+) -> PdfGlyph {
+  // We already know whether this glyph uses a CID or Type3 glyph.
+  let cid_cache = self.cid_cache
+  if glyph >= 0 && glyph < cid_cache.length() {
+    let cid = cid_cache[glyph]
+    if cid >= 0 {
+      return { fid: -1, code: cid, }
+    }
   }
+  self.add_new_glyph(sc, glyph, context_color)
+}
+
+///|
+/// `add_glyph` for a glyph that is not in the `cid_cache`.
+fn FontContainer::add_new_glyph(
+  self : FontContainer,
+  sc : SerializeContext,
+  glyph : Int,
+  context_color : Int,
+) -> PdfGlyph {
   let key = (glyph, context_color)
-  if self.type3_cache.get(key) is Some(r) {
-    return r
+  if self.type3_cache.get(key) is Some((index, code)) {
+    return { fid: index, code, }
+  }
+  if self.should_outline(glyph) {
+    let cid = self.cid_font.add_glyph(glyph)
+    // (Glyph IDs are `u16`s: `CIDFont::add_glyph` aborts for others.)
+    if glyph >= self.cid_cache.length() {
+      let grown = FixedArray::make(
+        (glyph + 1).max(self.cid_cache.length() * 2).max(256),
+        -1,
+      )
+      self.cid_cache.blit_to(grown, len=self.cid_cache.length())
+      self.cid_cache = grown
+    }
+    self.cid_cache[glyph] = cid
+    return { fid: -1, code: cid, }
   }
   let needs_new = match self.type3.last() {
     Some(t) => t.glyphs.length() >= 256
@@ -105,7 +158,7 @@ fn FontContainer::add_glyph(
   t3.glyphs.push(key)
   t3.widths.push(self.font.advance_width(glyph).unwrap_or(0.0))
   self.type3_cache[key] = (index, code)
-  (index, code)
+  { fid: index, code, }
 }
 
 ///|
