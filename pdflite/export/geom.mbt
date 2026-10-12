@@ -164,7 +164,14 @@ pub fn Transform::from_scale(sx : Double, sy : Double) -> Transform {
 
 ///|
 pub fn Transform::is_identity(self : Transform) -> Bool {
-  self == Transform::identity()
+  // (`self == Transform::identity()`, without making the identity: this is
+  // asked for everything that is drawn.)
+  self.sx == 1.0 &&
+  self.ky == 0.0 &&
+  self.kx == 0.0 &&
+  self.sy == 1.0 &&
+  self.tx == 0.0 &&
+  self.ty == 0.0
 }
 
 ///|
