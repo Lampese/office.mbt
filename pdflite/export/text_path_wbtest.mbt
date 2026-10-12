@@ -132,6 +132,21 @@ test "a scratch buffer grows and is cleared" {
       assert_eq(scratch.data[i], (i % 251).to_byte())
     }
   }
+  // Two bytes at a time, from an even and from an odd length.
+  for start in 0..<2 {
+    let scratch = Scratch::new()
+    for _ in 0..<start {
+      scratch.push(b'\xEE')
+    }
+    for i in 0..<150 {
+      scratch.push2(i.to_byte(), (255 - i).to_byte())
+    }
+    assert_eq(scratch.len, start + 300)
+    for i in 0..<150 {
+      assert_eq(scratch.data[start + 2 * i], i.to_byte())
+      assert_eq(scratch.data[start + 2 * i + 1], (255 - i).to_byte())
+    }
+  }
   // The codes of the two kinds of fonts.
   scratch.clear()
   write_code(scratch, -1, 0x1234)
@@ -170,10 +185,11 @@ test "clamp_clusters copies the glyphs only if a cluster is outside the text" {
   inside.push(wb_glyph(3, 4, 4))
   let clamped = clamp_clusters(inside, text)
   assert_eq(clamped.length(), 3)
-  for i in 0..<3 {
-    // The glyphs themselves, not copies.
-    assert_true(physical_equal(clamped[i], inside[i]))
-  }
+  // A view of the caller's array, not a copy: it shows what is written to
+  // the array afterwards.
+  inside[1] = wb_glyph(7, 2, 3)
+  assert_eq(clamped[1].glyph_id, 7)
+  assert_eq(clamped[0].glyph_id, 1)
   let outside = []
   outside.push(wb_glyph(1, -2, 1))
   outside.push(wb_glyph(2, 1, 9))
@@ -231,6 +247,52 @@ test "is_glyph_text is the comparison with the text of the glyph" {
   assert_true(is_glyph_text("é", text, wb_glyph(1, 1, 2)))
   assert_false(is_glyph_text("e", text, wb_glyph(1, 1, 2)))
   assert_true(is_glyph_text("", text, wb_glyph(1, 3, 1)))
+}
+
+///|
+test "write_real writes small integral values as write_any_real does" {
+  let check = (v : Double) => {
+    let got = Buffer()
+    write_real(got, v)
+    let expected = Buffer()
+    write_any_real(expected, v)
+    assert_eq(got.to_bytes(), expected.to_bytes())
+  }
+  for i in -2000..<2000 {
+    check(i.to_double())
+    check(i.to_double() + 0.5)
+    check(i.to_double() / 8.0)
+  }
+  // Around the limit of the values that are written first, 2^24, and of
+  // `i32`.
+  for base in [16777216.0, 2147483648.0, 4294967296.0, 1.0e12, 3.4e38, 1.0e39] {
+    for d in -4..<5 {
+      check(base + d.to_double())
+      check(-(base + d.to_double()))
+      check(base + d.to_double() + 0.5)
+    }
+  }
+  let mut power = 1.0
+  for _ in 0..<12 {
+    check(power)
+    check(-power)
+    check(power - 1.0)
+    check(1.0 / power)
+    power = power * 10.0
+  }
+  check(0.0)
+  check(-0.0)
+  check(@double.not_a_number)
+  check(@double.infinity)
+  check(@double.neg_infinity)
+  inspect(
+    [
+      0.0, -0.0, 7.0, -7.0, 16777215.0, -16777215.0, 16777216.0, 16777217.0, 16777219.0,
+    ]
+    .map(format_real)
+    .join(" "),
+    content="0 0 7 -7 16777215 -16777215 16777216 16777216 16777220",
+  )
 }
 
 ///|

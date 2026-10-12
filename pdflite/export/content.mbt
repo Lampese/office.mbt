@@ -66,14 +66,36 @@ fn Scratch::clear(self : Scratch) -> Unit {
 }
 
 ///|
+/// Make room for `more` bytes behind the ones that are there.
+fn Scratch::grow(self : Scratch, more : Int32) -> Unit {
+  // Twice the size, or what is needed if that is more (or if twice the
+  // size is beyond an `Int`).
+  let needed = self.len + more
+  let doubled = self.len * 2
+  let capacity = if doubled < needed { needed } else { doubled }
+  let grown = FixedArray::make(capacity.max(64), b'\x00')
+  self.data.blit_to(grown, len=self.len)
+  self.data = grown
+}
+
+///|
 fn Scratch::push(self : Scratch, byte : Byte) -> Unit {
   if self.len == self.data.length() {
-    let grown = FixedArray::make((self.len * 2).max(64), b'\x00')
-    self.data.blit_to(grown, len=self.len)
-    self.data = grown
+    self.grow(1)
   }
   self.data[self.len] = byte
   self.len += 1
+}
+
+///|
+/// Two bytes, the code of a glyph of a CID font.
+fn Scratch::push2(self : Scratch, first : Byte, second : Byte) -> Unit {
+  if self.len > self.data.length() - 2 {
+    self.grow(2)
+  }
+  self.data[self.len] = first
+  self.data[self.len + 1] = second
+  self.len += 2
 }
 
 ///|

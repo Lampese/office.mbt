@@ -14,6 +14,10 @@ let pdf_units_per_em : Double = 1000.0
 
 ///|
 /// A glyph to draw.
+///
+/// A value type: the glyphs of a run are one array of them, not an object
+/// each.
+#valtype
 pub(all) struct Glyph {
   /// The glyph ID.
   glyph_id : Int32
