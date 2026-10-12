@@ -508,16 +508,6 @@ pub fn TagKind::heading_level(self : TagKind) -> Int32 {
 }
 
 ///|
-fn TagKind::headers(self : TagKind) -> Array[Bytes] {
-  for a in self.attrs {
-    if a is CellHeaders(h) {
-      return h
-    }
-  }
-  []
-}
-
-///|
 fn TagKind::title(self : TagKind) -> String? {
   for a in self.attrs {
     if a is Title(t) {
@@ -650,20 +640,40 @@ pub fn TagTree::push(self : TagTree, child : Node) -> Unit {
 }
 
 ///|
-/// A serialized child of a structure element.
-priv enum Reference {
-  RefTo(Int32)
-  Content(Identifier)
+priv struct TagSerializer {
+  sc : SerializeContext
+  /// The parent structure element of each piece of marked content that a
+  /// page gave out, by page index and marked content ID (zero: none; object
+  /// numbers start at one): for every page of the document, as many slots
+  /// as the page counted marked content IDs. Not upstream, where this is a
+  /// part of the map below: a document has an entry per text run, and a
+  /// table by page is found without a key to build and to hash.
+  page_parents : Array[FixedArray[Int32]]
+  /// The parent structure element of each other piece of content, and of
+  /// page content with an ID that its page did not give out (an identifier
+  /// is a public value).
+  parent_tree_map : Map[String, Int32]
+  /// The structure elements by ID.
+  id_tree : Map[Bytes, Int32]
+  mut note_id : Int32
 }
 
 ///|
-priv struct TagSerializer {
-  sc : SerializeContext
-  /// The parent structure element of each piece of content.
-  parent_tree_map : Map[String, Int32]
-  /// The structure elements by ID.
-  id_tree : Map[String, (Bytes, Int32)]
-  mut note_id : Int32
+/// The table of [TagSerializer::page_parents] for the pages of a document:
+/// what every page counted is known when the tag tree is serialized.
+fn SerializeContext::new_page_parents(
+  self : SerializeContext,
+) -> Array[FixedArray[Int32]] {
+  let table : Array[FixedArray[Int32]] = Array::make(self.page_infos.length(), [])
+  for parent in self.struct_parents {
+    if parent is Page(page_index, num_mcids) &&
+      page_index >= 0 &&
+      page_index < table.length() &&
+      num_mcids > table[page_index].length() {
+      table[page_index] = FixedArray::make(num_mcids, 0)
+    }
+  }
+  table
 }
 
 ///|
@@ -677,25 +687,60 @@ fn identifier_key(id : Identifier) -> String {
 }
 
 ///|
-fn bytes_key(b : Bytes) -> String {
-  let sb = StringBuilder()
-  for x in b {
-    sb.write_string(hex4(x.to_int()))
+/// The parent of a piece of marked content of a page, or zero if it has
+/// none (no object has the number zero).
+fn TagSerializer::page_parent(
+  self : TagSerializer,
+  page_index : Int32,
+  mcid : Int32,
+) -> Int32 {
+  if page_index >= 0 && page_index < self.page_parents.length() {
+    let parents = self.page_parents[page_index]
+    if mcid >= 0 && mcid < parents.length() {
+      return parents[mcid]
+    }
   }
-  sb.to_string()
+  match
+    self.parent_tree_map.get(identifier_key(PageContent(page_index, mcid))) {
+    Some(parent) => parent
+    None => 0
+  }
 }
 
 ///|
-fn TagSerializer::node(
+/// Note the parent of a piece of marked content of a page.
+fn TagSerializer::set_page_parent(
   self : TagSerializer,
-  node : Node,
-  parent : Int32,
-) -> Reference? raise ExportError {
-  match node {
-    Group(g) => Some(RefTo(self.group(g, parent)))
-    Leaf(Dummy) => None
-    Leaf(id) => Some(Content(id))
+  page_index : Int32,
+  mcid : Int32,
+  parent_ref : Int32,
+) -> Unit {
+  if page_index >= 0 && page_index < self.page_parents.length() {
+    let parents = self.page_parents[page_index]
+    if mcid >= 0 && mcid < parents.length() {
+      parents[mcid] = parent_ref
+      return
+    }
   }
+  self.parent_tree_map[identifier_key(PageContent(page_index, mcid))] = parent_ref
+}
+
+///|
+/// Serialize the groups among the children of a structure element; returns
+/// their references in order (the other children, content, are written by
+/// [TagSerializer::children]).
+fn TagSerializer::child_groups(
+  self : TagSerializer,
+  nodes : Array[Node],
+  parent : Int32,
+) -> Array[Int32] raise ExportError {
+  let refs = []
+  for node in nodes {
+    if node is Group(g) {
+      refs.push(self.group(g, parent))
+    }
+  }
+  refs
 }
 
 ///|
@@ -706,12 +751,7 @@ fn TagSerializer::group(
 ) -> Int32 raise ExportError {
   let sc = self.sc
   let elem_ref = sc.new_ref()
-  let children_refs = []
-  for child in group.children {
-    if self.node(child, elem_ref) is Some(r) {
-      children_refs.push(r)
-    }
-  }
+  let group_refs = self.child_groups(group.children, elem_ref)
   let tag = group.tag
   let d = DictBuilder::new()
   d.set("Type", Name("StructElem"))
@@ -720,18 +760,17 @@ fn TagSerializer::group(
   let version = sc.settings.pdf_version()
   match tag.get_id() {
     Some(id) => {
-      let key = bytes_key(id)
-      if self.id_tree.contains(key) {
+      if self.id_tree.contains(id) {
         raise DuplicateTagId(id, tag.location)
       }
       d.set("ID", Str(id))
-      self.id_tree[key] = (id, elem_ref)
+      self.id_tree[id] = elem_ref
     }
     None =>
       if tag.name == Note {
         let id = utf8_bytes("Note \{self.note_id}")
         d.set("ID", Str(id))
-        self.id_tree[bytes_key(id)] = (id, elem_ref)
+        self.id_tree[id] = elem_ref
         self.note_id += 1
       }
   }
@@ -763,18 +802,82 @@ fn TagSerializer::group(
       _ => ()
     }
   }
-  let attributes = []
-  // List attributes.
-  let list = DictBuilder::new()
+  // (Which owners the element has attributes of, so that the dictionary of
+  // an owner without one, which most elements are for every owner, is not
+  // started.)
+  let mut has_list = false
+  let mut has_table = false
+  let mut has_layout = false
   for attr in tag.attrs {
-    if attr is ListNumbering(n) {
-      list.set("ListNumbering", Name(n.name()))
+    match attr {
+      ListNumbering(_) => has_list = true
+      Summary(_) | HeaderScope(_) | CellHeaders(_) | RowSpan(_) | ColSpan(_) =>
+        has_table = true
+      Placement(_)
+      | BBox(_, _)
+      | Width(_)
+      | Height(_)
+      | BackgroundColor(_)
+      | BorderColor(_)
+      | BorderStyle(_)
+      | BorderThickness(_)
+      | Padding(_)
+      | Color(_)
+      | BaselineShift(_)
+      | LineHeight(_)
+      | TextDecorationColor(_)
+      | TextDecorationThickness(_)
+      | TextDecorationType(_) => has_layout = true
+      Id(_)
+      | Lang(_)
+      | AltText(_)
+      | Expanded(_)
+      | ActualText(_)
+      | Title(_)
+      | HeadingLevel(_) => ()
     }
   }
-  if !list.entries().is_empty() {
-    attributes.push(Dict([("O", Name("List")), ..list.entries()]))
+  if has_list || has_table || has_layout {
+    let attributes = []
+    // List attributes.
+    if has_list {
+      let list = DictBuilder::new()
+      for attr in tag.attrs {
+        if attr is ListNumbering(n) {
+          list.set("ListNumbering", Name(n.name()))
+        }
+      }
+      if !list.entries().is_empty() {
+        attributes.push(Dict([("O", Name("List")), ..list.entries()]))
+      }
+    }
+    // Table attributes.
+    if has_table {
+      self.table_attributes(tag, attributes)
+    }
+    // Layout attributes.
+    if has_layout {
+      self.layout_attributes(tag, attributes)
+    }
+    if !attributes.is_empty() {
+      d.set("A", Arr(attributes))
+    }
   }
-  // Table attributes.
+  self.children(elem_ref, group.children, group_refs, d)
+  sc.put(elem_ref, d.finish())
+  elem_ref
+}
+
+///|
+/// The attributes of a structure element whose owner is `Table`, if it has
+/// any that are written.
+fn TagSerializer::table_attributes(
+  self : TagSerializer,
+  tag : TagKind,
+  attributes : Array[Obj],
+) -> Unit {
+  let sc = self.sc
+  let version = sc.settings.pdf_version()
   let table = DictBuilder::new()
   for attr in tag.attrs {
     match attr {
@@ -808,7 +911,18 @@ fn TagSerializer::group(
   if !table.entries().is_empty() {
     attributes.push(Dict([("O", Name("Table")), ..table.entries()]))
   }
-  // Layout attributes.
+}
+
+///|
+/// The attributes of a structure element whose owner is `Layout`, if it
+/// has any that are written.
+fn TagSerializer::layout_attributes(
+  self : TagSerializer,
+  tag : TagKind,
+  attributes : Array[Obj],
+) -> Unit {
+  let sc = self.sc
+  let version = sc.settings.pdf_version()
   let layout = DictBuilder::new()
   let pdf15 = version >= Pdf15
   for attr in tag.attrs {
@@ -893,43 +1007,45 @@ fn TagSerializer::group(
   if !layout.entries().is_empty() {
     attributes.push(Dict([("O", Name("Layout")), ..layout.entries()]))
   }
-  if !attributes.is_empty() {
-    d.set("A", Arr(attributes))
-  }
-  self.children(elem_ref, children_refs, d)
-  sc.put(elem_ref, d.finish())
-  elem_ref
 }
 
 ///|
+/// Write the children of a structure element: `nodes` in their order,
+/// with `group_refs` as the references of the groups among them
+/// ([TagSerializer::child_groups]).
 fn TagSerializer::children(
   self : TagSerializer,
   parent_ref : Int32,
-  children : Array[Reference],
+  nodes : Array[Node],
+  group_refs : Array[Int32],
   d : DictBuilder,
 ) -> Unit {
   let sc = self.sc
-  let mut struct_page_ref : Int32? = None
+  // (Zero: none yet. `struct_page_ref : Option<Ref>` upstream.)
+  let mut struct_page_ref = 0
+  let mut next_group = 0
   let kids = []
-  for child in children {
-    match child {
-      RefTo(r) => kids.push(Ref(r))
-      Content(PageContent(page_index, mcid) as id) => {
+  for node in nodes {
+    match node {
+      Group(_) => {
+        kids.push(Ref(group_refs[next_group]))
+        next_group += 1
+      }
+      Leaf(PageContent(page_index, mcid) as id) => {
         guard sc.page_infos.get(page_index) is Some(info) else {
           abort(
             "tag tree contains identifier from page \{page_index + 1}, but document only has \{sc.page_infos.length()} pages",
           )
         }
         let page_ref = info.ref_
-        if struct_page_ref is None {
-          struct_page_ref = Some(page_ref)
+        if struct_page_ref == 0 {
+          struct_page_ref = page_ref
         }
-        let key = identifier_key(id)
-        if self.parent_tree_map.contains(key) {
+        if self.page_parent(page_index, mcid) != 0 {
           abort("the identifier \{Repr(id)} appears twice in the tag tree")
         }
-        self.parent_tree_map[key] = parent_ref
-        if struct_page_ref == Some(page_ref) {
+        self.set_page_parent(page_index, mcid, parent_ref)
+        if struct_page_ref == page_ref {
           kids.push(Int(mcid))
         } else {
           kids.push(
@@ -941,7 +1057,7 @@ fn TagSerializer::children(
           )
         }
       }
-      Content(StreamContent(page_index, stream_id, mcid) as id) => {
+      Leaf(StreamContent(page_index, stream_id, mcid) as id) => {
         guard sc.page_infos.get(page_index) is Some(info) else {
           abort(
             "tag tree contains identifier from page \{page_index + 1}, but document only has \{sc.page_infos.length()} pages",
@@ -966,7 +1082,7 @@ fn TagSerializer::children(
           ]),
         )
       }
-      Content(Annotation(page_index, annot_index) as id) => {
+      Leaf(Annotation(page_index, annot_index) as id) => {
         guard sc.page_infos.get(page_index) is Some(info) else {
           abort("tag tree contains an annotation from a missing page")
         }
@@ -988,12 +1104,12 @@ fn TagSerializer::children(
           ]),
         )
       }
-      Content(Dummy) => ()
+      Leaf(Dummy) => ()
     }
   }
   d.set("K", Arr(kids))
-  if struct_page_ref is Some(r) {
-    d.set("Pg", Ref(r))
+  if struct_page_ref != 0 {
+    d.set("Pg", Ref(struct_page_ref))
   }
 }
 
@@ -1004,9 +1120,16 @@ fn TagSerializer::validate(
 ) -> Unit raise ExportError {
   for child in nodes {
     if child is Group(g) {
-      for id in g.tag.headers() {
-        if !self.id_tree.contains(bytes_key(id)) {
-          raise UnknownTagId(id, g.tag.location)
+      // The headers of the element (krilla `tag.headers()`: its first
+      // `CellHeaders` attribute).
+      for attr in g.tag.attrs {
+        if attr is CellHeaders(headers) {
+          for id in headers {
+            if !self.id_tree.contains(id) {
+              raise UnknownTagId(id, g.tag.location)
+            }
+          }
+          break
         }
       }
       self.validate(g.children)
@@ -1023,18 +1146,14 @@ fn SerializeContext::serialize_tag_tree(
 ) -> Int32 raise ExportError {
   let ts = TagSerializer::{
     sc: self,
+    page_parents: self.new_page_parents(),
     parent_tree_map: {},
     id_tree: {},
     note_id: 1,
   }
   let struct_tree_root_ref = self.new_ref()
   let root_ref = self.new_ref()
-  let children_refs = []
-  for child in tree.children {
-    if ts.node(child, root_ref) is Some(r) {
-      children_refs.push(r)
-    }
-  }
+  let group_refs = ts.child_groups(tree.children, root_ref)
   let doc = DictBuilder::new()
   doc.set("Type", Name("StructElem"))
   doc.set("S", Name("Document"))
@@ -1042,7 +1161,7 @@ fn SerializeContext::serialize_tag_tree(
   if tree.lang is Some(lang) {
     doc.set("Lang", TextStr(lang))
   }
-  ts.children(root_ref, children_refs, doc)
+  ts.children(root_ref, tree.children, group_refs, doc)
   self.put(root_ref, doc.finish())
   ts.validate(tree.children)
   let d = DictBuilder::new()
@@ -1070,14 +1189,13 @@ fn SerializeContext::serialize_tag_tree(
           let list_ref = self.new_ref()
           let refs = []
           for mcid in 0..<num_mcids {
-            let key = identifier_key(PageContent(page_index, mcid))
-            match ts.parent_tree_map.get(key) {
-              Some(r) => refs.push(Ref(r))
-              None =>
-                abort(
-                  "page tag identifier \{page_index}:\{mcid} doesn't appear in the tag tree",
-                )
+            let parent = ts.page_parent(page_index, mcid)
+            if parent == 0 {
+              abort(
+                "page tag identifier \{page_index}:\{mcid} doesn't appear in the tag tree",
+              )
             }
+            refs.push(Ref(parent))
           }
           self.put(list_ref, Arr(refs))
           nums.push(Int(index))
@@ -1118,7 +1236,7 @@ fn SerializeContext::serialize_tag_tree(
     d.set("ParentTree", Dict([("Nums", Arr(nums))]))
   }
   if !ts.id_tree.is_empty() {
-    let entries = ts.id_tree.values().collect()
+    let entries = ts.id_tree.to_array()
     entries.sort_by((a, b) => compare_bytes(a.0, b.0))
     let names = []
     for e in entries {
