@@ -70,7 +70,10 @@ fn is_glyph_text(codepoints : String, text : String, g : Glyph) -> Bool {
 ///|
 /// The glyphs with their cluster ranges clamped to the text
 /// (`0 <= text_start <= text_end <= text.length()`). Glyphs whose ranges
-/// are all inside the text are returned as they are, without a copy.
+/// are all inside the text are returned as they are, without a copy: the
+/// caller's array is then read while the run is drawn. The one piece of
+/// the caller's code that runs meanwhile is `ColorGlyphs.is_color`, which
+/// must not write to it.
 fn clamp_clusters(glyphs : ArrayView[Glyph], text : String) -> ArrayView[Glyph] {
   let len = text.length()
   let mut clamped = true
@@ -184,8 +187,53 @@ priv struct GlyphSpan {
 }
 
 ///|
+/// krilla's `func` of `GlyphSpanner::next`: registers the codepoints of a
+/// glyph of a spanned run and returns whether the glyph has already been
+/// assigned other codepoints. `has_previous`, `previous_start` and
+/// `previous_end` are its `previous_range` (the cluster of the glyph
+/// before, if there is one).
+///
+/// Not upstream: a function of its own that is given the range as numbers
+/// and returns the one thing that is not the glyph's own range, since a
+/// closure, an option of a tuple and a tuple of a tuple were allocations
+/// for every glyph of a run that needs spans (every glyph of text that is
+/// written from right to left).
+fn span_glyph(
+  sc : SerializeContext,
+  g : Glyph,
+  has_previous : Bool,
+  previous_start : Int,
+  previous_end : Int,
+  forbid_invalid_codepoints : Bool,
+  context_color : Int,
+  fc : FontContainer,
+  text : String,
+) -> Bool {
+  let { fid, code, } = fc.add_glyph(sc, g.glyph_id, context_color)
+  let codepoints = fc.get_codepoints(fid, code)
+  // Whether the glyph has these codepoints already.
+  let same = match codepoints {
+    Some(c) => is_glyph_text(c, text, g)
+    None => false
+  }
+  // Check if the glyph has already been assigned codepoints that don't
+  // match the one we are seeing right now.
+  let incompatible = codepoints is Some(_) && !same
+  // Only set the codepoint if there isn't a previous, different mapping,
+  // and if we are not already building a spanned run.
+  let same_prev = has_previous &&
+    previous_start == g.text_start &&
+    previous_end == g.text_end
+  if !incompatible && (!same_prev || forbid_invalid_codepoints) && !same {
+    fc.set_codepoints(fid, code, glyph_text(text, g), g.location)
+  }
+  incompatible
+}
+
+///|
 /// Segment a glyph run into spans that either need an `/ActualText` or not
-/// (krilla `GlyphSpanner`).
+/// (krilla `GlyphSpanner`). The cluster ranges of the glyphs are inside the
+/// text (`clamp_clusters`).
 fn glyph_spans(
   sc : SerializeContext,
   slice : ArrayView[Glyph],
@@ -196,43 +244,34 @@ fn glyph_spans(
   fc : FontContainer,
 ) -> Array[GlyphSpan] {
   let out = []
-  let func = (g : Glyph, previous_range : (Int, Int)?) => {
-    let { fid, code, } = fc.add_glyph(sc, g.glyph_id, context_color)
-    let range = (g.text_start, g.text_end)
-    let t = glyph_text_view(text, g)
-    let codepoints = fc.get_codepoints(fid, code)
-    // Check if the glyph has already been assigned codepoints that don't
-    // match the one we are seeing right now.
-    let incompatible = match codepoints {
-      Some(c) => c.view() != t
-      None => false
-    }
-    // Only set the codepoint if there isn't a previous, different mapping,
-    // and if we are not already building a spanned run.
-    let same_prev = match previous_range {
-      Some(p) => p == range
-      None => false
-    }
-    if !incompatible &&
-      (!same_prev || forbid_invalid_codepoints) &&
-      !(codepoints is Some(c) && c.view() == t) {
-      fc.set_codepoints(fid, code, t.to_owned(), g.location)
-    }
-    (range, incompatible)
-  }
   let mut slice = slice
   while !slice.is_empty() {
     let mut use_span : Bool? = None
     let mut count = 1
-    let (first_range, first_incompatible) = func(slice[0], None)
-    let mut prev_range = first_range
+    // Get the range of the first glyph, as well as whether it's
+    // incompatible.
+    let first = slice[0]
+    let first_start = first.text_start
+    let first_end = first.text_end
+    let first_incompatible = span_glyph(
+      sc, first, false, 0, 0, forbid_invalid_codepoints, context_color, fc, text,
+    )
+    let mut prev_start = first_start
+    let mut prev_end = first_end
     let mut i = 1
     while i < slice.length() {
-      let (next_range, next_incompatible) = func(slice[i], Some(prev_range))
+      let next = slice[i]
+      let next_start = next.text_start
+      let next_end = next.text_end
+      let next_incompatible = span_glyph(
+        sc, next, true, prev_start, prev_end, forbid_invalid_codepoints, context_color,
+        fc, text,
+      )
+      let same_range = prev_start == next_start && prev_end == next_end
       let mut stop = false
       match use_span {
         None =>
-          if prev_range == next_range {
+          if same_range {
             use_span = Some(true)
           } else {
             use_span = Some(first_incompatible)
@@ -240,9 +279,9 @@ fn glyph_spans(
               stop = true
             }
           }
-        Some(true) => if prev_range != next_range { stop = true }
+        Some(true) => if !same_range { stop = true }
         Some(false) =>
-          if prev_range == next_range {
+          if same_range {
             count -= 1
             stop = true
           } else if next_incompatible {
@@ -252,13 +291,16 @@ fn glyph_spans(
       if stop {
         break
       }
-      prev_range = next_range
+      prev_start = next_start
+      prev_end = next_end
       count += 1
       // `/ReversedChars` show strings shall not contain interior space
-      // glyphs.
+      // glyphs. (The text of the cluster is `" "`: in bounds, since the
+      // clusters are inside the text.)
       if reversed &&
         count > 1 &&
-        text.unsafe_substring(start=prev_range.0, end=prev_range.1) == " " {
+        prev_end - prev_start == 1 &&
+        text.unsafe_get(prev_start).to_int() == 0x20 {
         break
       }
       i += 1
@@ -269,7 +311,7 @@ fn glyph_spans(
     let head = slice[0:count]
     slice = slice[count:]
     let actual_text = if use_span.unwrap_or(false) {
-      Some(text.unsafe_substring(start=first_range.0, end=first_range.1))
+      Some(text.unsafe_substring(start=first_start, end=first_end))
     } else {
       None
     }
