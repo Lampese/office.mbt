@@ -396,6 +396,96 @@ priv enum RenderMode {
 } derive(Eq)
 
 ///|
+/// The bounding box that is given for a solid fill or stroke of text if the
+/// box of the glyphs is not needed.
+let unit_rect : Rect = { left: 0.0, top: 0.0, right: 1.0, bottom: 1.0, }
+
+///|
+/// The position of the next glyph of a run (krilla's `cur_x` and `cur_y`,
+/// which it hands on as `&mut f32`). Not upstream: a value that the
+/// functions take and return, so that a run needs no cells for the two.
+#valtype
+priv struct TextCursor {
+  x : Double
+  y : Double
+}
+
+///|
+/// krilla's `fill_action` closure of `draw_glyphs`. (Not upstream, like
+/// the three methods after it: a closure is an allocation per glyph run,
+/// and what these captured is given to `fill_stroke_glyph_run` anyway.)
+fn ContentBuilder::glyphs_fill_action(
+  self : ContentBuilder,
+  sc : SerializeContext,
+  fill : Fill,
+  glyphs : ArrayView[Glyph],
+  x : Double,
+  y : Double,
+  font_size : Double,
+  font : Font,
+) -> Unit {
+  // Calculating the glyphs bbox is very expensive but not always necessary,
+  // so omit if not needed.
+  let bbox = if self.bbox_important || !(fill.paint is Color(_)) {
+    let bbox = get_glyphs_bbox(glyphs, x, y, font_size, font)
+    self.expand_bbox(bbox)
+    bbox
+  } else {
+    unit_rect
+  }
+  self.content_set_fill_properties(sc, bbox, fill)
+}
+
+///|
+/// krilla's `stroke_action` closure of `draw_glyphs`.
+fn ContentBuilder::glyphs_stroke_action(
+  self : ContentBuilder,
+  sc : SerializeContext,
+  stroke : Stroke,
+  glyphs : ArrayView[Glyph],
+  x : Double,
+  y : Double,
+  font_size : Double,
+  font : Font,
+) -> Unit {
+  let bbox = if self.bbox_important || !(stroke.paint is Color(_)) {
+    let bbox = get_glyphs_bbox(glyphs, x, y, font_size, font)
+    self.expand_bbox(bbox)
+    bbox
+  } else {
+    unit_rect
+  }
+  self.content_set_stroke_properties(sc, bbox, stroke)
+}
+
+///|
+/// krilla's `set_fill_opacity` closure of `draw_glyphs`.
+fn ContentBuilder::set_glyphs_fill_opacity(
+  self : ContentBuilder,
+  fill : Fill,
+) -> Unit {
+  // PDF viewers don't show patterns with fill/stroke opacities
+  // consistently. Because of this, the opacity is accounted for in the
+  // pattern itself.
+  if !(fill.paint is Pattern(_)) {
+    self.set_fill_opacity(paint_opacity(fill.paint, fill.opacity))
+  }
+}
+
+///|
+/// krilla's `set_stroke_opacity` closure of `draw_glyphs`.
+fn ContentBuilder::set_glyphs_stroke_opacity(
+  self : ContentBuilder,
+  stroke : Stroke,
+) -> Unit {
+  if !(stroke.paint is Pattern(_)) {
+    let opacity = paint_opacity(stroke.paint, stroke.opacity)
+    self.set_stroke_opacity(opacity)
+    self.set_fill_opacity(opacity)
+  }
+}
+
+///|
 fn ContentBuilder::draw_glyphs(
   self : ContentBuilder,
   sc : SerializeContext,
@@ -423,65 +513,32 @@ fn ContentBuilder::draw_glyphs(
   // Clamp the cluster ranges to the text, so that all later uses (codepoint
   // mappings, `/ActualText`, reversed-text checks) stay in bounds.
   let glyphs = clamp_clusters(glyphs, text)
-  let (x, y) = (start.x, start.y)
+  let x = start.x
+  let y = start.y
   self.graphics_states.save_state()
-  let bbox_important = self.bbox_important
-  let fill_action = (sb : ContentBuilder, fill : Fill) => {
-    let bbox = if bbox_important || !(fill.paint is Color(_)) {
-      let bbox = get_glyphs_bbox(glyphs, x, y, font_size, font)
-      sb.expand_bbox(bbox)
-      bbox
-    } else {
-      { left: 0.0, top: 0.0, right: 1.0, bottom: 1.0, }
+  // (The fill and the stroke are handed on in place of krilla's `action`
+  // closure, which calls `fill_action` and `stroke_action` for them.)
+  let mode = match fill {
+    Some(f) => {
+      self.set_glyphs_fill_opacity(f)
+      match stroke {
+        Some(s) => {
+          self.set_glyphs_stroke_opacity(s)
+          FillStrokeMode
+        }
+        None => FillMode
+      }
     }
-    sb.content_set_fill_properties(sc, bbox, fill)
-  }
-  let stroke_action = (sb : ContentBuilder, stroke : Stroke) => {
-    let bbox = if bbox_important || !(stroke.paint is Color(_)) {
-      let bbox = get_glyphs_bbox(glyphs, x, y, font_size, font)
-      sb.expand_bbox(bbox)
-      bbox
-    } else {
-      { left: 0.0, top: 0.0, right: 1.0, bottom: 1.0, }
-    }
-    sb.content_set_stroke_properties(sc, bbox, stroke)
-  }
-  let set_fill_opacity = (sb : ContentBuilder, fill : Fill) => {
-    if !(fill.paint is Pattern(_)) {
-      sb.set_fill_opacity(paint_opacity(fill.paint, fill.opacity))
+    None => {
+      if stroke is Some(s) {
+        self.set_glyphs_stroke_opacity(s)
+      }
+      StrokeMode
     }
   }
-  let set_stroke_opacity = (sb : ContentBuilder, stroke : Stroke) => {
-    if !(stroke.paint is Pattern(_)) {
-      let opacity = paint_opacity(stroke.paint, stroke.opacity)
-      sb.set_stroke_opacity(opacity)
-      sb.set_fill_opacity(opacity)
-    }
-  }
-  let run = (mode : RenderMode, action : (ContentBuilder) -> Unit) => {
-    self.fill_stroke_glyph_run(
-      sc, x, y, mode, action, context_color, glyphs, font, text, font_size,
-    )
-  }
-  match (fill, stroke) {
-    (Some(f), Some(s)) => {
-      set_fill_opacity(self, f)
-      set_stroke_opacity(self, s)
-      run(FillStrokeMode, sb => {
-        fill_action(sb, f)
-        stroke_action(sb, s)
-      })
-    }
-    (Some(f), None) => {
-      set_fill_opacity(self, f)
-      run(FillMode, sb => fill_action(sb, f))
-    }
-    (None, Some(s)) => {
-      set_stroke_opacity(self, s)
-      run(StrokeMode, sb => stroke_action(sb, s))
-    }
-    (None, None) => ()
-  }
+  self.fill_stroke_glyph_run(
+    sc, x, y, mode, fill, stroke, context_color, glyphs, font, text, font_size,
+  )
   self.graphics_states.restore_state()
 }
 
@@ -492,7 +549,8 @@ fn ContentBuilder::fill_stroke_glyph_run(
   x : Double,
   y : Double,
   mode : RenderMode,
-  action : (ContentBuilder) -> Unit,
+  fill : Fill?,
+  stroke : Stroke?,
   context_color : Int32,
   glyphs : ArrayView[Glyph],
   font : Font,
@@ -502,62 +560,98 @@ fn ContentBuilder::fill_stroke_glyph_run(
   if glyphs.is_empty() {
     return
   }
-  self.apply_isolated_op(sc, _ => (), sb => {
-    let cur_x = Ref::{ val: x, }
-    let cur_y = Ref::{ val: y, }
-    // When the glyph ranges are monotonically decreasing, the glyphs are in
-    // reverse order and we should write `/ReversedChars` marked content.
-    let mut reversed = glyphs.length() > 1
-    if reversed {
-      for i in 0..<(glyphs.length() - 1) {
-        if glyphs[i].text_start < glyphs[i + 1].text_end {
-          reversed = false
-          break
-        }
+  // krilla's `apply_isolated_op` with a `prep` that does nothing, written
+  // out: the operation as a closure is an allocation per glyph run.
+  self.begin_isolated_op()
+  self.write_isolated_state(sc)
+  let cur = TextCursor::{ x, y, }
+  // When the glyph ranges are monotonically decreasing, the glyphs are in
+  // reverse order and we should write `/ReversedChars` marked content.
+  let mut reversed = glyphs.length() > 1
+  if reversed {
+    for i in 0..<(glyphs.length() - 1) {
+      if glyphs[i].text_start < glyphs[i + 1].text_end {
+        reversed = false
+        break
       }
     }
-    action(sb)
-    sb.content.op("BT")
-    let fc = sc.register_font_container(font)
-    let do_text_span = reversed ||
-      use_text_spanner(sc, glyphs, text, context_color, fc)
-    let spans = if do_text_span {
-      glyph_spans(
+  }
+  // krilla's `action`.
+  if fill is Some(f) {
+    self.glyphs_fill_action(sc, f, glyphs, x, y, font_size, font)
+  }
+  if stroke is Some(s) {
+    self.glyphs_stroke_action(sc, s, glyphs, x, y, font_size, font)
+  }
+  self.content.op("BT")
+  let fc = sc.register_font_container(font)
+  let do_text_span = reversed ||
+    use_text_spanner(sc, glyphs, text, context_color, fc)
+  if do_text_span {
+    // Separate into distinct glyph runs that either are encoded using
+    // actual text, or are not.
+    let spanned = glyph_spans(
+      sc,
+      glyphs,
+      text,
+      reversed,
+      sc.settings.validators().requires_codepoint_mappings(),
+      context_color,
+      fc,
+    )
+    let mut cur = cur
+    for fragment in spanned {
+      cur = self.fill_stroke_glyph_span(
         sc,
-        glyphs,
-        text,
-        reversed,
-        sc.settings.validators().requires_codepoint_mappings(),
+        cur,
+        fragment.glyphs,
+        fragment.actual_text,
+        mode,
         context_color,
         fc,
-      )
-    } else {
-      [{ glyphs, actual_text: None, }]
-    }
-    for span in spans {
-      sb.fill_stroke_glyph_span(
-        sc, cur_x, cur_y, span, mode, context_color, fc, text, font_size, reversed,
+        text,
+        font_size,
+        reversed,
       )
     }
-    sb.content.op("ET")
-  })
+  } else {
+    self.fill_stroke_glyph_span(
+      sc,
+      cur,
+      glyphs,
+      None,
+      mode,
+      context_color,
+      fc,
+      text,
+      font_size,
+      reversed,
+    )
+    |> ignore
+  }
+  self.content.op("ET")
+  self.end_isolated_op()
 }
 
 ///|
+/// Draws the glyphs of a span (krilla's `GlyphSpan`: the glyphs and, for a
+/// spanned one, the actual text) and returns where the next span starts.
 fn ContentBuilder::fill_stroke_glyph_span(
   self : ContentBuilder,
   sc : SerializeContext,
-  cur_x : Ref[Double],
-  cur_y : Ref[Double],
-  span : GlyphSpan,
+  cur : TextCursor,
+  glyphs : ArrayView[Glyph],
+  actual_text : String?,
   mode : RenderMode,
   context_color : Int32,
   fc : FontContainer,
   text : String,
   font_size : Double,
   reversed : Bool,
-) -> Unit {
-  if span.actual_text is Some(t) {
+) -> TextCursor {
+  let mut cur_x = cur.x
+  let mut cur_y = cur.y
+  if actual_text is Some(t) {
     self.content.name("Span")
     self.content.obj(Dict([("ActualText", TextStr(t))]))
     self.content.op("BDC")
@@ -568,7 +662,7 @@ fn ContentBuilder::fill_stroke_glyph_span(
   }
   // Segment into glyph runs that can be encoded in one go using a PDF text
   // showing operator (i.e. no y shift, same Type3 font, etc.)
-  let mut slice = span.glyphs
+  let mut slice = glyphs
   while !slice.is_empty() {
     let count = glyph_group_len(sc, slice, context_color, fc)
     let group = slice[0:count]
@@ -585,10 +679,10 @@ fn ContentBuilder::fill_stroke_glyph_span(
       },
     )
     self.content.op(" Tr")
-    self.encode_consecutive_glyph_run(
+    cur_x = self.encode_consecutive_glyph_run(
       sc,
       cur_x,
-      cur_y.val - first.y_offset * font_size,
+      cur_y - first.y_offset * font_size,
       fid,
       context_color,
       fc,
@@ -596,21 +690,22 @@ fn ContentBuilder::fill_stroke_glyph_span(
       group,
       text,
     )
-    cur_y.val = cur_y.val - first.y_advance * font_size
+    cur_y = cur_y - first.y_advance * font_size
   }
   if reversed {
     self.content.op("EMC")
   }
-  if span.actual_text is Some(_) {
+  if actual_text is Some(_) {
     self.content.op("EMC")
   }
+  { x: cur_x, y: cur_y, }
 }
 
 ///|
 fn ContentBuilder::encode_consecutive_glyph_run(
   self : ContentBuilder,
   sc : SerializeContext,
-  cur_x : Ref[Double],
+  cur_x : Double,
   cur_y : Double,
   fid : Int32,
   context_color : Int32,
@@ -618,13 +713,13 @@ fn ContentBuilder::encode_consecutive_glyph_run(
   size : Double,
   glyphs : ArrayView[Glyph],
   text : String,
-) -> Unit {
+) -> Double {
   let font_name = self.rd.register(Font, fc.font_ref(fid))
   self.content.name(font_name)
   self.content.num(size)
   self.content.op("Tf")
   self.content.transform_text(
-    Transform::from_row(1.0, 0.0, 0.0, -1.0, cur_x.val, cur_y),
+    Transform::from_row(1.0, 0.0, 0.0, -1.0, cur_x, cur_y),
   )
   let font = fc.font
   let last_resort = font.postscript_name == Some("LastResort")
@@ -635,57 +730,108 @@ fn ContentBuilder::encode_consecutive_glyph_run(
       )
     }
   }
-  // A single glyph without an x offset is shown with `Tj`.
+  // If it's just a single glyph and without an x_offset, there is no need
+  // for individual positioning, so we can use `Tj` instead of `TJ`. The
+  // reason we're doing this is because Acrobat's copy-paste is a bit buggy
+  // if `/ActualText` is used at the end of a line, but only if `TJ` is used.
+  // With `Tj`, it's fine.
   if glyphs.length() == 1 && glyphs[0].x_offset.abs() <= 0.001 {
-    let g = glyphs[0]
-    let code = fc.add_glyph(sc, g.glyph_id, context_color).code
-    self.content.obj(Str(encode_code(fid, code)))
-    self.content.op("Tj")
-    cur_x.val = cur_x.val + g.x_advance * size
-    return
+    return self.encode_single_glyph(
+      sc,
+      cur_x,
+      fid,
+      context_color,
+      fc,
+      size,
+      glyphs[0],
+    )
   }
-  // Individual positioning with `TJ`.
-  let upem = fc.units_per_em(fid)
-  let items : Array[Obj] = []
-  let encoded = Buffer()
-  let mut adjustment = 0.0
-  let scale = (v : Double) => v * upem
-  for g in glyphs {
-    let code = fc.add_glyph(sc, g.glyph_id, context_color).code
-    let x_advance = scale(g.x_advance)
-    let font_advance = match font.advance_width(g.glyph_id) {
-      Some(n) => Some(scale(n / font.units_per_em))
-      None => None
-    }
-    let x_offset = scale(g.x_offset)
-    adjustment += x_offset
-    // Make sure we don't write miniscule adjustments.
-    if adjustment.abs() > 0.001 {
-      if encoded.length() > 0 {
-        items.push(Str(encoded.to_bytes()))
-        encoded.reset()
-      }
-      // Adjustments are always in 1000 units, even for Type 3 fonts.
-      items.push(Real(-(adjustment / upem * pdf_units_per_em)))
-      adjustment = 0.0
-    }
-    write_code(encoded, fid, code)
-    if font_advance is Some(fa) {
-      adjustment += x_advance - fa
-    }
-    adjustment -= x_offset
-    cur_x.val = cur_x.val + g.x_advance * size
-  }
-  if encoded.length() > 0 {
-    items.push(Str(encoded.to_bytes()))
-  }
-  self.content.obj(Arr(items))
-  self.content.op("TJ")
+  self.encode_glyphs_with_individual_positioning(
+    sc, cur_x, fid, context_color, fc, size, glyphs,
+  )
 }
 
 ///|
-fn encode_cid(cid : Int32) -> Bytes {
-  Bytes::from_array([((cid >> 8) & 0xFF).to_byte(), (cid & 0xFF).to_byte()])
+fn ContentBuilder::encode_single_glyph(
+  self : ContentBuilder,
+  sc : SerializeContext,
+  cur_x : Double,
+  fid : Int32,
+  context_color : Int32,
+  fc : FontContainer,
+  size : Double,
+  glyph : Glyph,
+) -> Double {
+  let code = fc.add_glyph(sc, glyph.glyph_id, context_color).code
+  let encoded = self.scratch
+  encoded.clear()
+  write_code(encoded, fid, code)
+  self.content.show(encoded)
+  cur_x + glyph.x_advance * size
+}
+
+///|
+/// Not upstream in two ways. The items of the `TJ` array are written as
+/// they come (pdf-writer's `show_positioned().items()`), not collected as
+/// objects first; `items` counts them. And the advance width of a glyph is
+/// asked of the font container, which keeps it
+/// (`FontContainer::advance_width`), where krilla asks the font.
+fn ContentBuilder::encode_glyphs_with_individual_positioning(
+  self : ContentBuilder,
+  sc : SerializeContext,
+  cur_x : Double,
+  fid : Int32,
+  context_color : Int32,
+  fc : FontContainer,
+  size : Double,
+  glyphs : ArrayView[Glyph],
+) -> Double {
+  let mut cur_x = cur_x
+  let font = fc.font
+  let upem = fc.units_per_em(fid)
+  let encoded = self.scratch
+  encoded.clear()
+  let mut adjustment = 0.0
+  self.content.begin_positioned()
+  let mut items = 0
+  for g in glyphs {
+    let code = fc.add_glyph(sc, g.glyph_id, context_color).code
+    // (krilla's `scale` is a multiplication by `upem`.)
+    let x_advance = g.x_advance * upem
+    let x_offset = g.x_offset * upem
+    adjustment += x_offset
+    // Make sure we don't write miniscule adjustments.
+    if adjustment.abs() > 0.001 {
+      if encoded.len > 0 {
+        self.content.positioned_show(items, encoded)
+        items += 1
+        encoded.clear()
+      }
+      // Adjustments are always in 1000 units, even for Type 3 fonts.
+      self.content.positioned_adjust(
+        items,
+        -(adjustment / upem * pdf_units_per_em),
+      )
+      items += 1
+      adjustment = 0.0
+    }
+    write_code(encoded, fid, code)
+    let advance = fc.advance_width(g.glyph_id)
+    // (Not NaN: the advance is kept.)
+    if advance == advance {
+      adjustment += x_advance - advance / font.units_per_em * upem
+    } else if font.advance_width(g.glyph_id) is Some(n) {
+      adjustment += x_advance - n / font.units_per_em * upem
+    }
+    adjustment -= x_offset
+    // cur_x/cur_y and glyph metrics are in user space units.
+    cur_x = cur_x + g.x_advance * size
+  }
+  if encoded.len > 0 {
+    self.content.positioned_show(items, encoded)
+  }
+  self.content.end_positioned()
+  cur_x
 }
 
 ///|
