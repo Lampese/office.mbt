@@ -74,6 +74,8 @@ priv enum StructParentElement {
 /// The serialization context.
 priv struct SerializeContext {
   settings : SerializeSettings
+  /// What the host keeps between documents.
+  memo : Memo
   mut cur_ref : Int32
   objects : Map[Int32, Indirect]
   cache : Map[String, Int32]
@@ -106,7 +108,10 @@ priv struct SerializeContext {
 }
 
 ///|
-fn SerializeContext::new(settings : SerializeSettings) -> SerializeContext {
+fn SerializeContext::new(
+  settings : SerializeSettings,
+  memo : Memo,
+) -> SerializeContext {
   // Override flags as required by the validators.
   let validators = settings.validators()
   let settings = {
@@ -117,6 +122,7 @@ fn SerializeContext::new(settings : SerializeSettings) -> SerializeContext {
   }
   {
     settings,
+    memo,
     cur_ref: 1,
     objects: {},
     cache: {},
@@ -159,26 +165,89 @@ fn SerializeContext::put(
 }
 
 ///|
-/// Write a stream object, compressing its data if requested.
+/// Write a stream object, compressing its data if requested. `content` says
+/// that the stream is one whose compressed data the host of the document
+/// may have kept ([Memo]).
 fn SerializeContext::put_stream(
   self : SerializeContext,
   ref_ : Int32,
   dict : Array[(String, Obj)],
   data : Bytes,
   compress~ : Bool = true,
+  content~ : Bool = false,
 ) -> Unit {
   if compress && data.length() > 0 {
-    self.put_deflated_stream(ref_, dict, deflate_stream_data(data))
+    let encoded = if content {
+      (self.memo.deflate)(data, deflate_stream_data)
+    } else {
+      deflate_stream_data(data)
+    }
+    self.put_deflated_stream(ref_, dict, encoded)
   } else {
     self.objects[ref_] = Stream(dict, data)
   }
 }
 
 ///|
-/// The data of a compressed stream: what [SerializeContext::put_stream]
-/// writes for `data`, and what [SerializeContext::put_deflated_stream]
-/// takes. It is a function of the data alone, not of the document or its
-/// settings, which is what lets an image keep it ([Image::deflated]).
+/// What the host of a document keeps for it between documents
+/// ([Document::new_with]).
+///
+/// krilla keeps the results of some of its functions by their arguments
+/// (`comemo::memoize`), so that a document which is written again after a
+/// change, as a compiler that watches its sources does, pays for what
+/// changed. This package keeps nothing between documents, no table and no
+/// key. A host that writes documents again and again gives a lookup
+/// instead: a function that is handed the arguments and the computation
+/// and returns the result, computed now or kept from before, with its own
+/// rules for what is kept and for how long.
+///
+/// The contract of a lookup: it returns what its computation returns for
+/// the arguments it was handed. What it returns is used as it is and not
+/// checked, so a document is byte for byte what it is without a [Memo] only
+/// with lookups that keep to this; one that returns anything else violates
+/// the contract and may corrupt the document. A lookup is called while the
+/// document is finished: if it needs the result it calls the computation
+/// before it returns, it does not keep the computation (which reads the
+/// document), and it does not write to the document or finish it again.
+/// The package does no locking and does not join two requests for the same
+/// arguments: both are the host's, with its table.
+///
+/// `deflate` is the lookup of krilla's `deflate_encode_memoized`
+/// (`stream.rs`), the filter of
+/// `FilterStreamBuilder::new_from_content_stream`: the compressed data of
+/// the content streams of pages, form XObjects, tiling patterns and the
+/// glyphs of Type 3 fonts, of ToUnicode CMaps and of the PostScript
+/// functions of gradients, where the settings ask for compressed content
+/// streams. It is called with the data of the stream, which has at least
+/// a byte, and with the package's compression, a function of the data
+/// alone, and returns what that function returns for the data. Binary data
+/// (font programs, CID sets, ICC profiles, embedded files, the samples of
+/// images: krilla's `deflate_encode`) is compressed for every document, as
+/// krilla does; an image can keep its compressed samples itself
+/// ([Image::deflated]).
+pub struct Memo {
+  priv deflate : (Bytes, (Bytes) -> Bytes) -> Bytes
+}
+
+///|
+/// A [Memo] of the host's lookups; what is computed for every document
+/// without the one that is left out, so `Memo()` keeps nothing, which is
+/// what a document uses that is given no [Memo]. (A lookup that is added
+/// later is another optional parameter: calls stay what they are.)
+pub fn Memo::Memo(deflate? : (Bytes, (Bytes) -> Bytes) -> Bytes) -> Memo {
+  {
+    deflate: match deflate {
+      Some(deflate) => deflate
+      None => (data, compute) => compute(data)
+    },
+  }
+}
+
+///|
+/// The compression of the data of a stream: level 6 of
+/// `moonbitlang/pdflite/flate`. A function of the data alone, not of the
+/// document or its settings, which is what lets an image ([Image::deflated])
+/// and the host of a document ([Memo]) keep its result.
 fn deflate_stream_data(data : Bytes) -> Bytes {
   @flate.pdf_flate_encode(data)
 }
@@ -198,7 +267,8 @@ fn SerializeContext::put_deflated_stream(
 }
 
 ///|
-/// Write a content stream, compressed if the settings ask for it.
+/// Write a content stream, compressed if the settings ask for it (krilla
+/// `FilterStreamBuilder::new_from_content_stream`).
 fn SerializeContext::put_content_stream(
   self : SerializeContext,
   ref_ : Int32,
@@ -210,6 +280,7 @@ fn SerializeContext::put_content_stream(
     dict,
     data,
     compress=self.settings.compress_content_streams,
+    content=true,
   )
 }
 

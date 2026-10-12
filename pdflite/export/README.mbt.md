@@ -8,7 +8,12 @@ the parts of krilla that Typst's PDF exporter uses, so that a port of
 
 1. `Document::new_with(settings)` creates a document. `SerializeSettings`
    chooses the PDF version, validators (PDF/A, PDF/UA), tagging,
-   compression and whether device color spaces may be used.
+   compression and whether device color spaces may be used. An optional
+   `memo` (`Memo`) is what the host keeps between documents: krilla
+   memoizes the compression of content streams, and a host that writes a
+   document again after every edit gives a lookup that returns the
+   compressed stream of a page that is the bytes it was. The package
+   itself keeps nothing between documents.
 2. `Document::start_page_with(PageSettings::from_wh(w, h))` starts a page.
    `Page::surface()` returns its drawing surface: the origin is at the
    top-left corner and the y-axis points down. Every `push_*` (transform,
