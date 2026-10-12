@@ -88,6 +88,9 @@ pub struct Font {
   key : String
   /// The color glyph hook.
   priv mut color : ColorGlyphs?
+  /// How many times the hook was set: what a font container knows of the
+  /// glyphs of the font (`FontContainer.cid_cache`) is for one hook.
+  priv mut color_epoch : Int32
   /// The variation coordinates (axis tag and user space value).
   priv variation_coordinates : Array[(@subsetter.Tag, Float)]
   /// The glyph metrics at the location of the variation coordinates, if it
@@ -269,6 +272,7 @@ pub fn Font::new_variable(
     kind,
     key,
     color: None,
+    color_epoch: 0,
     // krilla stores the coordinates as `FiniteF32`s (non-finite values
     // become 0); the location of the metrics uses the values as given.
     variation_coordinates: variation_coordinates.map(entry => {
