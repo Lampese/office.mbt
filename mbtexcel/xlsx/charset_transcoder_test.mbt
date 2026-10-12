@@ -36,7 +36,7 @@ fn build_non_utf8_workbook_bytes() -> Bytes raise {
 ///|
 test "read uses transcoder for non-utf8 xml" {
   let bytes = build_non_utf8_workbook_bytes()
-  let called = @ref.new(false)
+  let called = Ref(false)
   fn transcode(
     _encoding : String,
     data : Bytes,
@@ -58,7 +58,7 @@ test "read uses transcoder for non-utf8 xml" {
 ///|
 async test "workbook read_zip_reader uses charset_transcoder" {
   let bytes = build_non_utf8_workbook_bytes()
-  let called = @ref.new(false)
+  let called = Ref(false)
   fn transcode(
     _encoding : String,
     data : Bytes,

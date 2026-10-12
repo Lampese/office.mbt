@@ -276,7 +276,7 @@ fn pdf_text_cmap_has_split_marker_at(
   prefix : BytesView,
 ) -> Bool {
   guard start >= 0 && start <= data.length() else { return false }
-  guard data[start:].chop_prefix(prefix) is Some(rest) else { return false }
+  guard data[start:].strip_prefix(prefix) is Some(rest) else { return false }
   let suffix_start = pdf_text_skip_cmap_whitespace(rest, 0)
   guard suffix_start > 0 else { return false }
   for suffix in pdf_text_cmap_split_suffixes {

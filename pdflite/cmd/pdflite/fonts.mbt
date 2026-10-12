@@ -41,7 +41,7 @@ async fn pdflite_cmd_fonts_execute(
   let bytes = if pdflite_cmd_flag_value(args, "missing") {
     if json {
       let entries = document.missing_fonts(pages)
-      @utf8.encode(entries.to_json().stringify() + "\n")
+      @utf8.encode(Json(entries).stringify() + "\n")
     } else {
       document.missing_fonts_text(pages)
     }

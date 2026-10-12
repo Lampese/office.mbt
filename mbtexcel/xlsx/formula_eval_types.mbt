@@ -103,7 +103,7 @@ fn formula_rand() -> @random.Rand {
   match formula_rand_state.val {
     Some(rng) => rng
     None => {
-      let rng = @random.Rand::new()
+      let rng = @random.Rand()
       formula_rand_state.val = Some(rng)
       rng
     }

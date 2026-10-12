@@ -341,7 +341,7 @@ test "custom zip writer used" {
   let workbook = @xlsx.Workbook::new()
   ignore(workbook.add_sheet("Sheet1"))
   workbook.set_cell("Sheet1", "A1", "alpha")
-  let called = @ref.new(false)
+  let called = Ref(false)
   workbook.set_zip_writer(archive => {
     called.val = true
     @zip.write_preserving(archive)

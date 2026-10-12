@@ -1617,10 +1617,10 @@ test "K3: written footnotes and endnotes round-trip through the index" {
       #|"1"
     ),
   )
-  json_inspect(index.footnotes()[0].references().to_json(), content=[
+  json_inspect(Json(index.footnotes()[0].references()), content=[
     "/body/p[1]/r[1]",
   ])
-  json_inspect(index.footnotes()[1].references().to_json(), content=[
+  json_inspect(Json(index.footnotes()[1].references()), content=[
     "/body/p[1]/r[2]",
   ])
   // Note bodies are readable stories.

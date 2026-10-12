@@ -1613,7 +1613,7 @@ async test "D1 generic plans cannot publish duplicate global paraIds" {
       old="<w:p>",
       new="<w:p w14:paraId=\"DEADBEEF\">",
     )
-    assert_eq(duplicated.split("w14:paraId").length(), 3)
+    assert_eq(duplicated.split("w14:paraId").count(), 3)
     write_docx_session_file(input, original)
     let code = docx_session_error_code(() => {
       @docx.transact_docx(
