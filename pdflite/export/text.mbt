@@ -2,9 +2,31 @@
 // and of `text::group`).
 
 ///|
+/// The start of the text of a glyph in `text` (`glyph_text`).
+#inline
+fn glyph_text_start(g : Glyph) -> Int {
+  if g.text_start < 0 {
+    0
+  } else {
+    g.text_start
+  }
+}
+
+///|
+/// The end of the text of a glyph in `text` (`glyph_text`).
+#inline
+fn glyph_text_end(text : String, g : Glyph) -> Int {
+  if g.text_end > text.length() {
+    text.length()
+  } else {
+    g.text_end
+  }
+}
+
+///|
 fn glyph_text(text : String, g : Glyph) -> String {
-  let start = @cmp.maximum(0.0, g.text_start.to_double()).to_int()
-  let end = @cmp.minimum(text.length().to_double(), g.text_end.to_double()).to_int()
+  let start = glyph_text_start(g)
+  let end = glyph_text_end(text, g)
   if start >= end {
     ""
   } else {
@@ -15,8 +37,8 @@ fn glyph_text(text : String, g : Glyph) -> String {
 ///|
 /// `glyph_text` as a view, for comparisons that need no copy.
 fn glyph_text_view(text : String, g : Glyph) -> StringView {
-  let start = @cmp.maximum(0.0, g.text_start.to_double()).to_int()
-  let end = @cmp.minimum(text.length().to_double(), g.text_end.to_double()).to_int()
+  let start = glyph_text_start(g)
+  let end = glyph_text_end(text, g)
   if start >= end {
     ""
   } else {
@@ -25,13 +47,44 @@ fn glyph_text_view(text : String, g : Glyph) -> StringView {
 }
 
 ///|
+/// Whether `codepoints` is `glyph_text(text, g)`. Not upstream (`c != text`
+/// on two `&str`): the code units are compared in place, since this is
+/// asked for every glyph that is drawn.
+fn is_glyph_text(codepoints : String, text : String, g : Glyph) -> Bool {
+  let start = glyph_text_start(g)
+  let end = glyph_text_end(text, g)
+  let len = if start >= end { 0 } else { end - start }
+  if codepoints.length() != len {
+    return false
+  }
+  // In bounds: `0 <= start`, and `start + len == end <= text.length()` if
+  // `len > 0`; `i < len == codepoints.length()`.
+  for i in 0..<len {
+    if codepoints.unsafe_get(i) != text.unsafe_get(start + i) {
+      return false
+    }
+  }
+  true
+}
+
+///|
 /// The glyphs with their cluster ranges clamped to the text
-/// (`0 <= text_start <= text_end <= text.length()`).
-fn clamp_clusters(glyphs : ArrayView[Glyph], text : String) -> Array[Glyph] {
+/// (`0 <= text_start <= text_end <= text.length()`). Glyphs whose ranges
+/// are all inside the text are returned as they are, without a copy.
+fn clamp_clusters(glyphs : ArrayView[Glyph], text : String) -> ArrayView[Glyph] {
   let len = text.length()
-  glyphs
-  .iter()
-  .map(g => {
+  let mut clamped = true
+  for g in glyphs {
+    if g.text_start < 0 || g.text_end < g.text_start || g.text_end > len {
+      clamped = false
+      break
+    }
+  }
+  if clamped {
+    return glyphs
+  }
+  let out = []
+  for g in glyphs {
     let start = if g.text_start < 0 {
       0
     } else if g.text_start > len {
@@ -46,9 +99,9 @@ fn clamp_clusters(glyphs : ArrayView[Glyph], text : String) -> Array[Glyph] {
     } else {
       g.text_end
     }
-    { ..g, text_start: start, text_end: end, }
-  })
-  .collect()
+    out.push({ ..g, text_start: start, text_end: end, })
+  }
+  out
 }
 
 ///|
@@ -66,19 +119,8 @@ fn use_text_spanner(
     return false
   }
   let mut do_text_span = false
-  let check_single = (glyph : Glyph) => {
-    if !do_text_span {
-      let { fid, code, } = fc.add_glyph(sc, glyph.glyph_id, context_color)
-      match fc.get_codepoints(fid, code) {
-        Some(c) =>
-          if c.view() != glyph_text_view(text, glyph) {
-            do_text_span = true
-          }
-        None =>
-          fc.set_codepoints(fid, code, glyph_text(text, glyph), glyph.location)
-      }
-    }
-  }
+  // (krilla's `check_single` closure is written out at its two calls: a
+  // closure that captures `do_text_span` is an allocation per run.)
   for i in 0..<(glyphs.length() - 1) {
     let prev = glyphs[i]
     let next = glyphs[i + 1]
@@ -87,10 +129,51 @@ fn use_text_spanner(
     if prev.text_start == next.text_start && prev.text_end == next.text_end {
       do_text_span = true
     }
-    check_single(prev)
+    // As soon as we know that the glyph run requires a text span, we do not
+    // insert any codepoints anymore, because otherwise we might
+    // unnecessarily pollute the cmap with entries that wouldn't be
+    // necessary. The text spanner will then iterate over the all glyphs
+    // again and thus take care of inserting cmap entries for any remaining
+    // glyphs we ignore now.
+    if !do_text_span {
+      do_text_span = check_text_span_prop(sc, prev, text, context_color, fc)
+    }
   }
-  check_single(glyphs[glyphs.length() - 1])
+  // Since the loop checks groups of two, we need to manually check the last
+  // glyph.
+  if !do_text_span {
+    do_text_span = check_text_span_prop(
+      sc,
+      glyphs[glyphs.length() - 1],
+      text,
+      context_color,
+      fc,
+    )
+  }
   do_text_span
+}
+
+///|
+/// Whether the glyph needs a text span: registers its codepoints, unless it
+/// has others already (krilla `check_text_span_prop`, which sets a `&mut
+/// bool`).
+fn check_text_span_prop(
+  sc : SerializeContext,
+  glyph : Glyph,
+  text : String,
+  context_color : Int,
+  fc : FontContainer,
+) -> Bool {
+  let { fid, code, } = fc.add_glyph(sc, glyph.glyph_id, context_color)
+  match fc.get_codepoints(fid, code) {
+    // If there already exists an entry, then the codepoints are invalid, and
+    // we will have to use a text span.
+    Some(c) => !is_glyph_text(c, text, glyph)
+    None => {
+      fc.set_codepoints(fid, code, glyph_text(text, glyph), glyph.location)
+      false
+    }
+  }
 }
 
 ///|
@@ -196,34 +279,32 @@ fn glyph_spans(
 }
 
 ///|
-/// Segment glyphs into groups that can be shown with one operator (same y
-/// offset, no y advance).
-fn glyph_groups(
+/// The number of glyphs at the start of the non-empty `slice` that can be
+/// shown with one operator (same PDF font, same y offset, no y advance):
+/// the next group of krilla's `GlyphGrouper`. Not upstream: the caller
+/// keeps the rest of the slice, so that segmenting a span allocates neither
+/// an iterator nor an array of groups.
+fn glyph_group_len(
   sc : SerializeContext,
   slice : ArrayView[Glyph],
   context_color : Int,
   fc : FontContainer,
-) -> Array[ArrayView[Glyph]] {
-  let out = []
-  let mut slice = slice
-  while !slice.is_empty() {
-    let first = slice[0]
-    let first_fid = fc.add_glyph(sc, first.glyph_id, context_color).fid
-    let mut count = 1
-    while count < slice.length() {
-      let next = slice[count]
-      if first_fid != fc.add_glyph(sc, next.glyph_id, context_color).fid ||
-        first.y_offset != next.y_offset ||
-        first.y_advance != 0.0 ||
-        next.y_advance != 0.0 {
-        break
-      }
-      count += 1
+) -> Int {
+  let first = slice[0]
+  let first_fid = fc.add_glyph(sc, first.glyph_id, context_color).fid
+  let mut count = 1
+  while count < slice.length() {
+    let next = slice[count]
+    // If either of those is different, we need to start a new subrun.
+    if first_fid != fc.add_glyph(sc, next.glyph_id, context_color).fid ||
+      first.y_offset != next.y_offset ||
+      first.y_advance != 0.0 ||
+      next.y_advance != 0.0 {
+      break
     }
-    out.push(slice[0:count])
-    slice = slice[count:]
+    count += 1
   }
-  out
+  count
 }
 
 ///|
@@ -299,7 +380,7 @@ fn ContentBuilder::draw_glyphs(
   }
   // Clamp the cluster ranges to the text, so that all later uses (codepoint
   // mappings, `/ActualText`, reversed-text checks) stay in bounds.
-  let glyphs = clamp_clusters(glyphs, text)[:]
+  let glyphs = clamp_clusters(glyphs, text)
   let (x, y) = (start.x, start.y)
   self.graphics_states.save_state()
   let bbox_important = self.bbox_important
@@ -443,7 +524,13 @@ fn ContentBuilder::fill_stroke_glyph_span(
     self.content.name("ReversedChars")
     self.content.op("BMC")
   }
-  for group in glyph_groups(sc, span.glyphs, context_color, fc) {
+  // Segment into glyph runs that can be encoded in one go using a PDF text
+  // showing operator (i.e. no y shift, same Type3 font, etc.)
+  let mut slice = span.glyphs
+  while !slice.is_empty() {
+    let count = glyph_group_len(sc, slice, context_color, fc)
+    let group = slice[0:count]
+    slice = slice[count:]
     let first = group[0]
     let fid = fc.add_glyph(sc, first.glyph_id, context_color).fid
     // Type 3 fonts are always filled.
