@@ -232,3 +232,52 @@ test "is_glyph_text is the comparison with the text of the glyph" {
   assert_false(is_glyph_text("e", text, wb_glyph(1, 1, 2)))
   assert_true(is_glyph_text("", text, wb_glyph(1, 3, 1)))
 }
+
+///|
+test "write_int writes the text of Int::to_string" {
+  let check = (i : Int) => {
+    let buf = Buffer()
+    write_int(buf, i)
+    assert_eq(wb_latin1(buf.to_bytes()), i.to_string())
+    let buf = Buffer()
+    write_obj(buf, Int(i))
+    assert_eq(wb_latin1(buf.to_bytes()), i.to_string())
+    let buf = Buffer()
+    write_obj(buf, Ref(i))
+    assert_eq(wb_latin1(buf.to_bytes()), "\{i} 0 R")
+  }
+  let mut power = 1
+  for _ in 0..<10 {
+    for d in -2..<3 {
+      check(power + d)
+      check(-(power + d))
+    }
+    if power < 1000000000 {
+      power = power * 10
+    }
+  }
+  for i in -1100..<1100 {
+    check(i)
+  }
+  check(2147483647)
+  check(-2147483647)
+  check(-2147483647 - 1)
+  check(1234567890)
+  check(-987654321)
+}
+
+///|
+test "hex_digit is the digit of hex_digits" {
+  for n in 0..<16 {
+    assert_eq(hex_digit(n).to_int(), hex_digits.unsafe_get(n).to_int())
+  }
+  let buf = Buffer()
+  write_hex_byte(buf, 0x00)
+  write_hex_byte(buf, 0x09)
+  write_hex_byte(buf, 0x0A)
+  write_hex_byte(buf, 0x1F)
+  write_hex_byte(buf, 0x9A)
+  write_hex_byte(buf, 0xA9)
+  write_hex_byte(buf, 0xFF)
+  inspect(wb_latin1(buf.to_bytes()), content="00090A1F9AA9FF")
+}

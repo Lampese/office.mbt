@@ -273,14 +273,40 @@ let hex_digits : String = "0123456789ABCDEF"
 
 ///|
 fn write_hex_byte(buf : @buffer.Buffer, b : Int) -> Unit {
-  buf.write_byte(hex_digits[(b >> 4) & 0xF].to_byte())
-  buf.write_byte(hex_digits[b & 0xF].to_byte())
+  buf.write_byte(hex_digit((b >> 4) & 0xF))
+  buf.write_byte(hex_digit(b & 0xF))
 }
 
 ///|
+/// The digit of `hex_digits` for `n` in `0..16`, computed: two of them are
+/// written for every glyph of a CID font.
+fn hex_digit(n : Int) -> Byte {
+  if n < 10 {
+    (n + '0'.to_int()).to_byte()
+  } else {
+    (n - 10 + 'A'.to_int()).to_byte()
+  }
+}
+
+///|
+/// Write ASCII text as it is.
 fn write_ascii(buf : @buffer.Buffer, s : String) -> Unit {
-  for c in s {
-    buf.write_byte(c.to_int().to_byte())
+  // (By code unit, which for ASCII is by character.)
+  for i in 0..<s.length() {
+    buf.write_byte(s.unsafe_get(i).to_int().to_byte())
+  }
+}
+
+///|
+/// Write an integer in decimal, the text of `Int::to_string` without the
+/// string.
+fn write_int(buf : @buffer.Buffer, i : Int) -> Unit {
+  let i = i.to_int64()
+  if i < 0L {
+    buf.write_byte(b'-')
+    write_digits(buf, -i)
+  } else {
+    write_digits(buf, i)
   }
 }
 
@@ -461,7 +487,7 @@ fn write_obj(buf : @buffer.Buffer, obj : Obj) -> Unit {
   match obj {
     Null => write_ascii(buf, "null")
     Bool(b) => write_ascii(buf, if b { "true" } else { "false" })
-    Int(i) => write_ascii(buf, i.to_string())
+    Int(i) => write_int(buf, i)
     Real(r) => write_real(buf, r)
     Name(n) => write_name(buf, n)
     Str(s) => write_string_bytes(buf, s)
@@ -488,7 +514,10 @@ fn write_obj(buf : @buffer.Buffer, obj : Obj) -> Unit {
       buf.write_byte(b'>')
       buf.write_byte(b'>')
     }
-    Ref(r) => write_ascii(buf, "\{r} 0 R")
+    Ref(r) => {
+      write_int(buf, r)
+      write_ascii(buf, " 0 R")
+    }
   }
 }
 
