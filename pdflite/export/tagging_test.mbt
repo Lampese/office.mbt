@@ -773,3 +773,133 @@ test "tagged content inside layers refers to the layer's form XObject" {
     ),
   )
 }
+
+///|
+test "the parent tree of pages whose content is tagged out of order" {
+  // Three pages with four, no and three pieces of marked content. The tree
+  // names them in another order than the pages give them out, under
+  // several elements, the last page first.
+  let doc = @export.Document::new_with(tagged_settings())
+  let ids : Array[Array[@export.Identifier]] = []
+  for count in [4, 0, 3] {
+    let page = doc.start_page_with(
+      @export.PageSettings::from_wh(100.0, 100.0).unwrap(),
+    )
+    let s = page.surface()
+    let of_page = []
+    for _ in 0..<count {
+      of_page.push(tagged_rect(s, Other))
+    }
+    ids.push(of_page)
+    s.finish()
+    page.finish()
+  }
+  let tree = @export.TagTree::new()
+  tree.push(group(kind(P), [Leaf(ids[2][2]), Leaf(ids[0][3]), Leaf(ids[2][0])]))
+  tree.push(
+    group(kind(Div), [
+      Leaf(ids[0][1]),
+      group(kind(Span), [Leaf(ids[0][0]), Leaf(ids[2][1])]),
+      Leaf(ids[0][2]),
+    ]),
+  )
+  doc.set_tag_tree(tree)
+  let p = parse(doc.finish())
+  inspect(
+    p.struct_tree(),
+    content=(
+      #|/Document
+      #|  /P K=[2 <</Type /MCR /Pg R /MCID 3>> 0]
+      #|  /Div K=[1 2]
+      #|    /Span K=[0 <</Type /MCR /Pg R /MCID 1>>]
+      #|
+    ),
+  )
+  // Every piece of content of a page names the element it is a kid of, in
+  // the order of the page's IDs; the page without content has no entry.
+  let root = p.get(p.catalog(), "StructTreeRoot")
+  let nums = p.items(p.path(root, ["ParentTree", "Nums"]))
+  assert_eq(nums.length(), 4)
+  let parents = (i : Int32) => {
+    p.items(nums[i]).map(parent => p.show(p.get(parent, "S"))).join(" ")
+  }
+  inspect(p.show(nums[0]), content="0")
+  inspect(parents(1), content="/Span /Div /Div /P")
+  inspect(p.show(nums[2]), content="1")
+  inspect(parents(3), content="/P /Span /P")
+  inspect(
+    p
+    .pages()
+    .map(page => if p.has(page, "StructParents") { "yes" } else { "no" })
+    .join(" "),
+    content="yes no yes",
+  )
+}
+
+///|
+test "identifiers that no page gave out are kids like the others" {
+  // An identifier is a public value: a tree may name marked content that
+  // no surface started. It is written as a kid and is in no parent tree.
+  let doc = @export.Document::new_with(tagged_settings())
+  let page = doc.start_page_with(
+    @export.PageSettings::from_wh(100.0, 100.0).unwrap(),
+  )
+  let s = page.surface()
+  let id = tagged_rect(s, Other)
+  s.finish()
+  page.finish()
+  let tree = @export.TagTree::new()
+  tree.push(
+    group(kind(P), [
+      Leaf(PageContent(0, -1)),
+      Leaf(id),
+      Leaf(PageContent(0, 7)),
+      Leaf(PageContent(0, 1 << 30)),
+      Leaf(Dummy),
+    ]),
+  )
+  doc.set_tag_tree(tree)
+  let p = parse(doc.finish())
+  inspect(
+    p.struct_tree(),
+    content=(
+      #|/Document
+      #|  /P K=[-1 0 7 1073741824]
+      #|
+    ),
+  )
+  let root = p.get(p.catalog(), "StructTreeRoot")
+  let nums = p.items(p.path(root, ["ParentTree", "Nums"]))
+  inspect(p.items(nums[1]).length(), content="1")
+}
+
+///|
+test "structure element IDs are found by their bytes" {
+  // IDs that differ in a byte that is not a character, a prefix of another
+  // ID, and the IDs that notes are given.
+  let doc = @export.Document::new_with(tagged_settings())
+  let page = doc.start_page_with(
+    @export.PageSettings::from_wh(100.0, 100.0).unwrap(),
+  )
+  page.surface().finish()
+  page.finish()
+  let tree = @export.TagTree::new()
+  tree.push(group(kind(TH, attrs=[Id(b"\x00\xff")]), []))
+  tree.push(group(kind(TH, attrs=[Id(b"\x00\xfe")]), []))
+  tree.push(group(kind(TH, attrs=[Id(b"\x00")]), []))
+  tree.push(group(kind(Note), []))
+  tree.push(
+    group(kind(TD, attrs=[CellHeaders([b"\x00", b"\x00\xfe", b"\x00\xff"])]), []),
+  )
+  tree.push(group(kind(Note), []))
+  doc.set_tag_tree(tree)
+  let p = parse(doc.finish())
+  let root = p.get(p.catalog(), "StructTreeRoot")
+  // Sorted by their bytes.
+  inspect(
+    p.show(p.path(root, ["IDTree", "Names"])),
+    content=(
+      #|[<00> R <00FE> R <00FF> R (Note 1) R (Note 2) R]
+    ),
+  )
+}
