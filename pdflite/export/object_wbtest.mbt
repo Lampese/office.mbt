@@ -277,3 +277,131 @@ test "format_real keeps small values and never writes exponents" {
     ),
   )
 }
+
+///|
+test "write_file: the whole file, byte for byte" {
+  // Object numbers of one and of two digits, numbers without an object,
+  // a stream whose dictionary has a `/Length` of its own in the middle, one
+  // without entries and one without data.
+  let objects : Map[Int32, Indirect] = {
+    1: Plain(Dict([("Type", Name("Catalog")), ("Pages", Ref(2))])),
+    2: Plain(
+      Dict([("Type", Name("Pages")), ("Count", Int(0)), ("Kids", Arr([]))]),
+    ),
+    4: Stream(
+      [("A", Int(1)), ("Length", Int(99)), ("B", Name("x y"))],
+      b"hello",
+    ),
+    5: Stream([], b"ab\ncd"),
+    9: Plain(Arr([Int(-3), Real(0.5), Bool(true), Null, Str(b"s")])),
+    11: Stream([("Filter", Name("FlateDecode"))], b""),
+    12: Plain(Dict([("Title", TextStr("T"))])),
+  }
+  let bytes = write_file(
+    "1.7",
+    objects,
+    13,
+    1,
+    Some(12),
+    Some((b"ab", b"\x01\xff")),
+  )
+  // The binary marker of the header.
+  assert_true(bytes[9] == b'%' && bytes[14] == b'\n')
+  for i in 10..<14 {
+    assert_eq(bytes[i], b'\x80')
+  }
+  let text = wb_latin1(bytes)
+  let rest = text.unsafe_substring(start=15, end=text.length())
+  inspect(
+    rest.replace_all(old="\r", new="\\r"),
+    content=(
+      #|1 0 obj
+      #|<</Type /Catalog
+      #|/Pages 2 0 R
+      #|>>
+      #|endobj
+      #|
+      #|2 0 obj
+      #|<</Type /Pages
+      #|/Count 0
+      #|/Kids []
+      #|>>
+      #|endobj
+      #|
+      #|4 0 obj
+      #|<</A 1
+      #|/B /x#20y
+      #|/Length 5
+      #|>>
+      #|stream
+      #|hello
+      #|endstream
+      #|endobj
+      #|
+      #|5 0 obj
+      #|<</Length 5
+      #|>>
+      #|stream
+      #|ab
+      #|cd
+      #|endstream
+      #|endobj
+      #|
+      #|9 0 obj
+      #|[-3 0.5 true null (s)]
+      #|endobj
+      #|
+      #|11 0 obj
+      #|<</Filter /FlateDecode
+      #|/Length 0
+      #|>>
+      #|stream
+      #|
+      #|endstream
+      #|endobj
+      #|
+      #|12 0 obj
+      #|<</Title (T)
+      #|>>
+      #|endobj
+      #|
+      #|xref
+      #|0 14
+      #|0000000000 65535 f\r
+      #|0000000015 00000 n\r
+      #|0000000064 00000 n\r
+      #|0000000000 65535 f\r
+      #|0000000116 00000 n\r
+      #|0000000185 00000 n\r
+      #|0000000000 65535 f\r
+      #|0000000000 65535 f\r
+      #|0000000000 65535 f\r
+      #|0000000239 00000 n\r
+      #|0000000000 65535 f\r
+      #|0000000278 00000 n\r
+      #|0000000349 00000 n\r
+      #|0000000000 65535 f\r
+      #|trailer
+      #|<</Size 14
+      #|/Root 1 0 R
+      #|/Info 12 0 R
+      #|/ID [(ab) <01FF>]
+      #|>>
+      #|startxref
+      #|382
+      #|%%EOF
+    ),
+  )
+  // The offsets of the table are where the objects are.
+  for entry in [(1, 15), (4, 116), (9, 239), (12, 349)] {
+    let (number, offset) = entry
+    assert_true(
+      text
+      .unsafe_substring(start=offset, end=text.length())
+      .has_prefix("\{number} 0 obj\n"),
+    )
+  }
+  assert_true(
+    text.unsafe_substring(start=382, end=text.length()).has_prefix("xref\n"),
+  )
+}

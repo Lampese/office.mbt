@@ -849,3 +849,49 @@ test "cluster ranges outside the text are clamped" {
     ),
   )
 }
+
+///|
+test "the glyphs of a run are read while it is drawn: the caller may write to its array afterwards" {
+  // A caller that draws run after run from one array (a view of it is what
+  // `draw_glyphs` takes) gets the document of a caller with an array per
+  // run: nothing of the view is kept beyond the call.
+  let font = test_font()
+  let runs : Array[(Array[Int32], String)] = [
+    ([1, 2, 3], "ABC"),
+    ([2, 1], "BA"),
+    ([3, 3, 1, 2], "CCAB"),
+  ]
+  let draw = (shared : Bool) => {
+    let array : Array[@export.Glyph] = []
+    one_page(s => {
+      for n, run in runs {
+        let (ids, text) = run
+        let glyphs = if shared { array } else { [] }
+        glyphs.clear()
+        for i, id in ids {
+          glyphs.push(glyph(id, i, i + 1))
+        }
+        s.draw_glyphs(
+          @export.Point::from_xy(10.0, 20.0 * (n + 1).to_double()),
+          glyphs,
+          font,
+          text,
+          10.0,
+        )
+        // What the next run will do to the array, and worse.
+        if shared {
+          for i in 0..<glyphs.length() {
+            glyphs[i] = glyph(0, 0, 0)
+          }
+        }
+      }
+    })
+  }
+  let separate = draw(false)
+  assert_eq(draw(true), separate)
+  // The text of the three runs is in the file.
+  let p = parse(separate)
+  let content = p.content(p.page(0))
+  assert_true(content.contains("Tf"))
+  assert_eq(content.split("ET").collect().length(), 4)
+}
