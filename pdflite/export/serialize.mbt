@@ -99,6 +99,10 @@ priv struct SerializeContext {
   /// The first error that aborts the export (raised when the document is
   /// finished, like krilla's deferred image errors).
   mut error : ExportError?
+  /// The references of the ICC-based sRGB and sGrey colour spaces, once
+  /// they exist.
+  mut srgb_color_space : Int32?
+  mut sgrey_color_space : Int32?
 }
 
 ///|
@@ -134,6 +138,8 @@ fn SerializeContext::new(settings : SerializeSettings) -> SerializeContext {
     num_tag_streams: 0,
     tag_stream_refs: Map([]),
     error: None,
+    srgb_color_space: None,
+    sgrey_color_space: None,
   }
 }
 
@@ -303,13 +309,28 @@ fn SerializeContext::icc_profile(self : SerializeContext, rgb : Bool) -> Int32 {
 
 ///|
 /// The ICC-based sRGB (`rgb`) or sGrey color space.
+///
+/// (Asked for every solid fill of a document without device colour spaces:
+/// the reference is kept where it is found without a key to hash, a
+/// closure and an option to make.)
 fn SerializeContext::icc_color_space(
   self : SerializeContext,
   rgb : Bool,
-) -> Int32 {
-  self.cached(if rgb { "cs:srgb" } else { "cs:sgrey" }, r => {
+) -> Int32? {
+  let known = if rgb { self.srgb_color_space } else { self.sgrey_color_space }
+  if known is Some(_) {
+    return known
+  }
+  let r = self.cached(if rgb { "cs:srgb" } else { "cs:sgrey" }, r => {
     self.put(r, Arr([Name("ICCBased"), Ref(self.icc_profile(rgb))]))
   })
+  let known = Some(r)
+  if rgb {
+    self.srgb_color_space = known
+  } else {
+    self.sgrey_color_space = known
+  }
+  known
 }
 
 ///|
@@ -321,18 +342,8 @@ fn SerializeContext::regular_color_space(
 ) -> Int32? {
   let no_device_cs = self.settings.no_device_cs
   match color {
-    Rgb(_, _, _) =>
-      if no_device_cs {
-        Some(self.icc_color_space(true))
-      } else {
-        None
-      }
-    Luma(_) =>
-      if no_device_cs {
-        Some(self.icc_color_space(false))
-      } else {
-        None
-      }
+    Rgb(_, _, _) => if no_device_cs { self.icc_color_space(true) } else { None }
+    Luma(_) => if no_device_cs { self.icc_color_space(false) } else { None }
     Cmyk(_, _, _, _) => {
       if no_device_cs {
         self.register_validation_error(MissingCMYKProfile)
