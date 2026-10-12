@@ -14,19 +14,29 @@ covers changes that have landed on `main` but are not yet published.
 
 ### moonbitlang/pdflite [Unreleased]
 
-- `export`: drawing text is faster, and every document is byte for byte what
-  it was. In typst.mbt the export of `bench/longer.typ` (415 000 glyphs in
-  36 000 runs) goes from 2469 to 1423 million instructions (-42 %),
-  `bench/long.typ` from 526 to 308 (-41 %). The time was in what a glyph
+- `export`: drawing text is faster, and a document is byte for byte what it
+  was (for a caller whose colour-glyph hook is a function of the glyph, see
+  below). In typst.mbt the export of `bench/longer.typ` (415 000 glyphs in
+  36 000 runs) goes from 2471 to 1427 million instructions (-42 %),
+  `bench/long.typ` from 526 to 318 (-40 %), and a document of Arabic and
+  Hebrew text from 2854 to 1590 (-44 %). The time was in what a glyph
   and a run of glyphs allocated and asked again and again, not in what is
   written:
   - `FontContainer::add_glyph`, which is called three to four times per
     glyph, asked the colour-glyph hook and remapped the glyph each time and
     returned a tuple. It keeps the CID of a glyph (krilla's `cid_cache`,
-    dense by glyph ID) and returns a value type.
-  - The text spanner, the grouper and the clamp of cluster ranges allocate
-    nothing per glyph; a run of text makes no closures, cells or tuples
-    (about twenty objects per run before).
+    dense by glyph ID) and returns a value type. So `ColorGlyphs.is_color`
+    is asked once per document about a glyph that is not a colour glyph,
+    until the font is given another hook (`Font::set_color_glyphs`); it was
+    asked every time. It must be a function of the glyph ID, and it must
+    not write to the glyphs that are being drawn, which are read in place
+    now (they were copied first).
+  - The check whether a run needs `/ActualText` spans, the grouper and the
+    clamp of cluster ranges allocate nothing per glyph, and neither does
+    the segmentation of a run that needs spans (right-to-left text, glyphs
+    that share a cluster); what a run allocates is its spans. A run of
+    text makes no closures or cells of its own (about twenty objects per
+    run before).
   - The `TJ` array of a run is written as it is encoded, through a scratch
     buffer of the content builder (krilla's), instead of built as objects
     first. The advance widths that the font gave are kept per glyph for
