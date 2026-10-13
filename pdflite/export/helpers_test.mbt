@@ -57,8 +57,9 @@ fn one_page(
   settings~ : @export.SerializeSettings = plain_settings(),
   width~ : Double = 200.0,
   height~ : Double = 100.0,
+  memo~ : @export.Memo = Memo(),
 ) -> Bytes raise {
-  let doc = @export.Document::new_with(settings)
+  let doc = @export.Document::new_with(settings, memo~)
   let page = doc.start_page_with(
     @export.PageSettings::from_wh(width, height).unwrap(),
   )

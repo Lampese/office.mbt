@@ -12,6 +12,33 @@ Breaking and notable changes for the published modules in this workspace.
 Entries are grouped by module and by the version they ship in; `Unreleased`
 covers changes that have landed on `main` but are not yet published.
 
+### moonbitlang/pdflite [Unreleased]
+
+- `export`: the host of a document can keep the compressed content streams
+  between documents. krilla memoizes `deflate_encode_memoized` by the bytes
+  of the stream (`comemo`), which is what makes the next export of a
+  document cheap whose pages are mostly what they were; the package keeps
+  nothing between documents, no table and no key. `Document::new_with(
+  settings, memo=..)` takes a `Memo`, made by `Memo(deflate=..)` of a
+  lookup: a function that is handed the data of a stream and the package's
+  compression and returns the compressed data, computed now or kept from
+  an earlier document. It is asked for what krilla compresses with
+  `deflate_encode_memoized` (the content streams of pages, form XObjects,
+  tiling patterns and Type 3 glyphs, ToUnicode CMaps and the PostScript
+  functions of gradients, where content streams are compressed) and never
+  for data without a byte; binary data (font programs, images, profiles,
+  embedded files) is compressed for every document as before. What a
+  lookup returns is written as it is and not checked: it must be what the
+  compression it was handed returns for that data. The compressor is
+  the package's own for every stream, so a document is byte for byte the
+  same with a host whose lookup keeps to that, with `Memo()` and without a
+  `memo`, and ordinary calls are unchanged. (`Document::new_with` has an
+  optional parameter now: code that passes the function itself as a value
+  needs a closure.) In typst.mbt, which keeps the streams by the hash of
+  their bytes, an export of `bench/longer.typ` whose pages are what they
+  were goes from 1114 to 773 million instructions (-31 %); a first export
+  pays 2 % for the hashes.
+
 ### moonbitlang/pdflite [0.3.10]
 
 - `export`: drawing text is faster, and a document is byte for byte what it

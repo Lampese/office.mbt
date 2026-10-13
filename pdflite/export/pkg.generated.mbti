@@ -177,7 +177,7 @@ pub struct Document {
 }
 pub fn Document::embed_file(Self, EmbeddedFile) -> Unit?
 pub fn Document::finish(Self) -> Bytes raise ExportError
-pub fn Document::new_with(SerializeSettings) -> Self
+pub fn Document::new_with(SerializeSettings, memo? : Memo) -> Self
 pub fn Document::register_named_destination(Self, NamedDestination) -> Unit?
 pub fn Document::set_metadata(Self, Metadata) -> Unit
 pub fn Document::set_outline(Self, Outline) -> Unit
@@ -342,6 +342,11 @@ pub(all) enum ListNumbering {
   LowerAlpha
   UpperAlpha
 } derive(Eq, @debug.Debug)
+
+pub struct Memo {
+  // private fields
+}
+pub fn Memo::Memo(deflate? : (Bytes, (Bytes) -> Bytes) -> Bytes) -> Self
 
 pub(all) struct Metadata {
   title : String?

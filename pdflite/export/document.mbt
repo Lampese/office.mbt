@@ -219,9 +219,14 @@ pub struct Document {
 }
 
 ///|
-/// Create a new document.
-pub fn Document::new_with(settings : SerializeSettings) -> Document {
-  { sc: SerializeContext::new(settings), }
+/// Create a new document. `memo` is what its host keeps between
+/// documents ([Memo]); a document that is given none computes everything
+/// itself.
+pub fn Document::new_with(
+  settings : SerializeSettings,
+  memo~ : Memo = Memo(),
+) -> Document {
+  { sc: SerializeContext::new(settings, memo), }
 }
 
 ///|
