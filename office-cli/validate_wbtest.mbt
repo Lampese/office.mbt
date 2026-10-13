@@ -87,7 +87,7 @@ fn rebuild_package_part(
     }
   }
   rebuilt.add(part, @utf8.encode(transform(text)))
-  @zip.write_preserving(rebuilt)
+  @zip.write(rebuilt, preserve=true)
 }
 
 ///|

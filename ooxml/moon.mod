@@ -3,7 +3,7 @@ name = "moonbitlang/ooxml"
 version = "0.1.0"
 
 import {
-  "moonbit-community/flate@0.8.5",
+  "moonbit-community/flate@0.9.0",
   "Milky2018/xml@0.5.0",
 }
 

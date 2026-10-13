@@ -442,12 +442,13 @@ pub fn read_docx(docx : Bytes) -> DocxDocument raise {
   // through before any limit is consulted
   let archive = @zip.read(
     docx,
-    limits=@zip.ReadLimits::default()
-      .with_package_limit(256 * 1024 * 1024)
-      .with_entries_limit(8192)
-      .with_entry_limit(64 * 1024 * 1024)
-      .with_total_limit(512 * 1024 * 1024)
-      .with_preserved_source_limit(512 * 1024 * 1024),
+    limits=ReadLimits(
+      max_package_bytes=256 * 1024 * 1024,
+      max_entries=8192,
+      max_entry_uncompressed_bytes=64 * 1024 * 1024,
+      max_total_uncompressed_bytes=512 * 1024 * 1024,
+      max_preserved_source_bytes=512 * 1024 * 1024,
+    ),
   )
   guard archive.get("word/document.xml") is Some(document_part) else {
     raise @core.DocxError::MissingPart(

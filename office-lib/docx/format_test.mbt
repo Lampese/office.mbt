@@ -273,7 +273,7 @@ async test "format transaction refuses a revision-tracking document" {
     let tracked = directory + "/tracked.docx"
     @afs.write_file(
       tracked,
-      @zip.write_preserving(rebuilt),
+      @zip.write(rebuilt, preserve=true),
       create_mode=CreateNew,
       permission=0o600,
     )
@@ -347,7 +347,7 @@ async fn preflight_fixture(
   let path = directory + "/" + name + ".docx"
   @afs.write_file(
     path,
-    @zip.write_preserving(rebuilt),
+    @zip.write(rebuilt, preserve=true),
     create_mode=CreateNew,
     permission=0o600,
   )
@@ -787,7 +787,7 @@ async fn repackaged_fixture(
   let path = directory + "/" + name + ".docx"
   @afs.write_file(
     path,
-    @zip.write_preserving(rebuilt),
+    @zip.write(rebuilt, preserve=true),
     create_mode=CreateNew,
     permission=0o600,
   )

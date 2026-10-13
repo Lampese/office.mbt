@@ -624,9 +624,11 @@ fn check_package_size(
 }
 
 ///|
-/// Bound copied source records by the input size. This is an enforced reader
-/// limit: overlapping records that need more copies are rejected, not assumed
-/// to fit merely because they reference a bounded input buffer.
+/// Bound the source that the ZIP reader keeps by the input size. This is an
+/// enforced reader limit. (flate 0.9.0 keeps one copy of the package and
+/// compares its length with the limit; 0.8.5 copied every record and
+/// counted the copies, which overlapping records could make more than the
+/// input.)
 fn transaction_archive_source_limit(bytes : BytesView) -> Int32 {
   bytes.length().min(transaction_max_total_preserved_source_bytes)
 }
@@ -724,12 +726,13 @@ fn read_transaction_archive(
   }
   let archive = @zip.read(
     bytes,
-    limits=@zip.ReadLimits::default()
-      .with_package_limit(transaction_max_package_bytes)
-      .with_entries_limit(transaction_max_archive_entries)
-      .with_entry_limit(transaction_max_entry_uncompressed_bytes)
-      .with_total_limit(aggregate_limit)
-      .with_preserved_source_limit(transaction_archive_source_limit(bytes)),
+    limits=ReadLimits(
+      max_package_bytes=transaction_max_package_bytes,
+      max_entries=transaction_max_archive_entries,
+      max_entry_uncompressed_bytes=transaction_max_entry_uncompressed_bytes,
+      max_total_uncompressed_bytes=aggregate_limit,
+      max_preserved_source_bytes=transaction_archive_source_limit(bytes),
+    ),
   ) catch {
     ZipError(LimitExceeded(TotalUncompressedBytes, _limit, actual), _) if aggregate_limit <
       transaction_max_total_uncompressed_bytes =>

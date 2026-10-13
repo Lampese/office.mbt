@@ -25,7 +25,7 @@ test "validate_ooxml_package flags a missing relationship target" {
       broken.add(entry.name(), entry.data())
     }
   }
-  let problems = @xlsx.validate_ooxml_package(@zip.write_preserving(broken))
+  let problems = @xlsx.validate_ooxml_package(@zip.write(broken, preserve=true))
   inspect(
     problems.iter().any(fn(p) { p.contains("missing required part") }),
     content="true",
@@ -59,7 +59,7 @@ test "OOXML validation decodes targets and ignores foreign relationship names" {
   assert_true(archive.replace("_rels/.rels", @encoding/utf8.encode(injected)))
   archive.add("custom/a&b.xml", @encoding/utf8.encode("<custom/>"))
   debug_inspect(
-    @xlsx.validate_ooxml_package(@zip.write_preserving(archive)),
+    @xlsx.validate_ooxml_package(@zip.write(archive, preserve=true)),
     content=(
       #|[]
     ),
@@ -77,7 +77,7 @@ test "validate_ooxml_package flags an undeclared content type" {
   }
   // add a part with an extension no Default/Override covers
   broken.add("xl/mystery.dat", b"\x00\x01\x02")
-  let problems = @xlsx.validate_ooxml_package(@zip.write_preserving(broken))
+  let problems = @xlsx.validate_ooxml_package(@zip.write(broken, preserve=true))
   inspect(
     problems
     .iter()
@@ -101,7 +101,7 @@ test "validate_ooxml_package flags a corrupt archive" {
 test "validate_ooxml_package classifies CRC corruption as unreadable" {
   let archive = @zip.Archive()
   archive.add("payload.bin", b"alpha", compression=Store)
-  let bytes = @zip.write_preserving(archive).to_array()
+  let bytes = @zip.write(archive, preserve=true).to_array()
   let original : Bytes = b"alpha"
   let replacement : Bytes = b"bravo"
   let mut payload_at = -1
@@ -131,12 +131,13 @@ test "OOXML validation reuses bounded archives and validates plain ones" {
   let limits = @xlsx.ReadLimits::new()
   let bounded = @zip.read(
     bytes,
-    limits=@zip.ReadLimits::default()
-      .with_package_limit(limits.max_package_bytes())
-      .with_entries_limit(limits.max_archive_entries())
-      .with_entry_limit(limits.max_entry_uncompressed_bytes())
-      .with_total_limit(limits.max_total_uncompressed_bytes())
-      .with_preserved_source_limit(limits.max_total_preserved_source_bytes()),
+    limits=ReadLimits(
+      max_package_bytes=limits.max_package_bytes(),
+      max_entries=limits.max_archive_entries(),
+      max_entry_uncompressed_bytes=limits.max_entry_uncompressed_bytes(),
+      max_total_uncompressed_bytes=limits.max_total_uncompressed_bytes(),
+      max_preserved_source_bytes=limits.max_total_preserved_source_bytes(),
+    ),
   )
   debug_inspect(
     @xlsx.validate_ooxml_bounded_archive(bounded, limits~),
@@ -224,7 +225,7 @@ test "OOXML validation follows XML content types beyond file suffixes" {
   let limit = 1024
   let result : Result[Array[String], Error] = Ok(
     @xlsx.validate_ooxml_package(
-      @zip.write_preserving(archive),
+      @zip.write(archive, preserve=true),
       limits=@xlsx.ReadLimits::with_values(max_xml_part_bytes=limit),
     ),
   ) catch {
@@ -301,7 +302,9 @@ test "OOXML validation bounds relationship findings and scan retention" {
   assert_true(
     archive.replace("_rels/.rels", @encoding/utf8.encode(rels.to_string())),
   )
-  let problems = @xlsx.validate_ooxml_package(@zip.write_preserving(archive))
+  let problems = @xlsx.validate_ooxml_package(
+    @zip.write(archive, preserve=true),
+  )
   assert_eq(problems.length(), 256)
   inspect(
     problems[problems.length() - 1],
@@ -374,7 +377,7 @@ test "OOXML validation counts case-varied relationship parts with XML whitespace
   }
   let limits = @xlsx.ReadLimits::with_values(max_relationship_records=1)
   let result : Result[Array[String], Error] = Ok(
-    @xlsx.validate_ooxml_package(@zip.write_preserving(archive), limits~),
+    @xlsx.validate_ooxml_package(@zip.write(archive, preserve=true), limits~),
   ) catch {
     error => Err(error)
   }

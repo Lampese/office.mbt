@@ -57,7 +57,7 @@ fn color_document(
     "word/settings.xml",
     @utf8.encode("<w:settings xmlns:w=\"\{ns}\">\{settings}</w:settings>"),
   )
-  try! @mbtzip.write_preserving(archive)
+  try! @mbtzip.write(archive, preserve=true)
 }
 
 ///|

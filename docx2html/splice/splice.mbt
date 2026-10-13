@@ -439,7 +439,7 @@ pub fn splice_docx(
   if plan.is_empty() {
     return original.to_owned()
   }
-  @mbtzip.write_preserving(output) catch {
+  @mbtzip.write(output, preserve=true) catch {
     ZipError(_, msg) =>
       raise InvalidZip(message="could not repack the package: \{msg}")
   }
@@ -460,7 +460,7 @@ pub fn splice_docx_archive(
     raise Unsupported(message="the splice output limit cannot be negative")
   }
   let output = build_spliced_archive(original, plan, require_pins, limits)
-  @mbtzip.write_preserving_limited(output, max_output_bytes~) catch {
+  @mbtzip.write(output, preserve=true, max_output_bytes~) catch {
     ZipError(LimitExceeded(OutputBytes, limit, _), _) =>
       raise Unsupported(
         message="the spliced package exceeds the output limit of \{limit} bytes",

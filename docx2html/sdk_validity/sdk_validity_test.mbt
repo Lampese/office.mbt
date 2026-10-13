@@ -407,7 +407,7 @@ async test "the SDK oracle rejects a misordered sectPr the structural tier accep
       rebuilt.add(name, archive.get(name).unwrap())
     }
   }
-  let broken = @mbtzip.write_preserving(rebuilt)
+  let broken = @mbtzip.write(rebuilt, preserve=true)
   // Our structural tier still accepts it: ordering inside sectPr is a SCHEMA
   // rule, not an OPC rule. That is precisely why the SDK gate exists.
   assert_eq(@opc.validate_docx_package(broken).length(), 0)
@@ -1625,7 +1625,7 @@ async test "L1 round 1: the plan survives hostile packages or fails closed" {
       let (name, text) = entry
       archive.add(name, @utf8.encode(text))
     }
-    @mbtzip.write_preserving(archive)
+    @mbtzip.write(archive, preserve=true)
   }
   fn note_spec_for() -> @docx_impl.CommentSpec raise {
     @docx2html.comment_spec(author="Matrix", from=0, to=0, [
@@ -1958,7 +1958,7 @@ async test "L1 round 1: the plan survives hostile packages or fails closed" {
       "\"><w:body><w:p><w:r><w:t>target</w:t></w:r></w:p><w:sectPr><w:pgSz w:w=\"12240\" w:h=\"15840\"/></w:sectPr></w:body></w:document>",
     ),
   )
-  let broken_bytes = @mbtzip.write_preserving(broken_types)
+  let broken_bytes = @mbtzip.write(broken_types, preserve=true)
   // The READER refuses the package outright — fail-closed one layer
   // earlier than the plan's sentinel (which stays as a belt for any
   // future tolerant-read path).
@@ -2169,7 +2169,7 @@ async test "L2 round 1: entry-level splicing preserves foreign thread content" {
     )
     archive.add("word/comments.xml", @utf8.encode(comments_xml))
     archive.add("word/commentsExtended.xml", @utf8.encode(extended_xml))
-    @mbtzip.write_preserving(archive)
+    @mbtzip.write(archive, preserve=true)
   }
   // 1+2. Foreign content (vendor attribute + element + Ignorable
   // tokens) and a done="on" spelling: resolving ANOTHER comment's
@@ -2406,7 +2406,7 @@ async test "L2 round 1: OPC targets and root retrofit adversaries" {
       "\"><w:comment w:id=\"0\" w:author=\"Ada\"><w:p><w:r><w:t>unstamped</w:t></w:r></w:p></w:comment></w:comments>",
     ),
   )
-  let hostile_package = @mbtzip.write_preserving(archive)
+  let hostile_package = @mbtzip.write(archive, preserve=true)
   let annotated = @docx2html.read_docx_annotated(hostile_package)
   // Resolve comment 0: the retrofit stamps the parent's paragraph with
   // the q: prefix (the existing w14-URI binding), skips the header's
@@ -2506,7 +2506,7 @@ async test "L2 round 2: Strict dot-dot comments parts resolve end to end" {
       "\"><w:comment w:id=\"0\" w:author=\"Orphan\"><w:p><w:r><w:t>decoy</w:t></w:r></w:p></w:comment></w:comments>",
     ),
   )
-  let hostile_package = @mbtzip.write_preserving(archive)
+  let hostile_package = @mbtzip.write(archive, preserve=true)
   let hostile = @docx2html.read_docx_annotated(hostile_package)
   try
     @docx_impl.plan_comment_resolution(
@@ -2536,7 +2536,7 @@ async test "L2 round 2: Strict dot-dot comments parts resolve end to end" {
       )
     }
   }
-  let clean_package = @mbtzip.write_preserving(clean_archive)
+  let clean_package = @mbtzip.write(clean_archive, preserve=true)
   let annotated = @docx2html.read_docx_annotated(clean_package)
   inspect(annotated.annotations().comments()[0].defined(), content="true")
   debug_inspect(

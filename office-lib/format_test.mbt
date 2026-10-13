@@ -24,7 +24,7 @@ fn replace_archive_part(
   if !replaced {
     fail("test archive did not contain \{name}")
   }
-  @zip.write_preserving(result)
+  @zip.write(result, preserve=true)
 }
 
 ///|
@@ -47,7 +47,7 @@ fn append_archive_part(
     )
   }
   result.add(name, content)
-  @zip.write_preserving(result)
+  @zip.write(result, preserve=true)
 }
 
 ///|
@@ -171,7 +171,7 @@ fn add_relationship_stress_parts(
     result.add(source_name, b"")
     result.add(relationships_name, relationships)
   }
-  @zip.write_preserving(result)
+  @zip.write(result, preserve=true)
 }
 
 ///|
@@ -200,7 +200,7 @@ fn rename_archive_part(
   if !renamed {
     fail("test archive did not contain \{old_name}")
   }
-  @zip.write_preserving(result)
+  @zip.write(result, preserve=true)
 }
 
 ///|
@@ -230,7 +230,7 @@ fn first_segment_colon_xlsx(target : String) -> Bytes raise {
       "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"/>",
     ),
   )
-  @zip.write_preserving(archive)
+  @zip.write(archive, preserve=true)
 }
 
 ///|
@@ -305,7 +305,7 @@ fn relocate_xlsx_main_part(data : BytesView) -> Bytes raise {
       data_descriptor=entry.data_descriptor(),
     )
   }
-  @zip.write_preserving(result)
+  @zip.write(result, preserve=true)
 }
 
 ///|
@@ -327,7 +327,7 @@ fn add_root_level_relationships(data : BytesView) -> Bytes raise {
       "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Type=\"https://example.com/relationships/workbook\" Target=\"xl/workbook.xml\"/></Relationships>",
     ),
   )
-  @zip.write_preserving(result)
+  @zip.write(result, preserve=true)
 }
 
 ///|
@@ -359,7 +359,7 @@ fn reencode_identification_parts_as_utf16(data : BytesView) -> Bytes raise {
       data_descriptor=entry.data_descriptor(),
     )
   }
-  @zip.write_preserving(result)
+  @zip.write(result, preserve=true)
 }
 
 ///|
@@ -445,7 +445,7 @@ fn prefix_xlsx_package_xml(
       data_descriptor=entry.data_descriptor(),
     )
   }
-  @zip.write_preserving(result)
+  @zip.write(result, preserve=true)
 }
 
 ///|
@@ -478,7 +478,7 @@ fn misalign_docx_main_part(data : BytesView) -> Bytes raise {
       )
     }
   }
-  @zip.write_preserving(result)
+  @zip.write(result, preserve=true)
 }
 
 ///|
@@ -769,7 +769,7 @@ test "detect_format treats ZIP directory names as exact physical records" {
   distinct.add("word/", b"")
   distinct.add("WORD/", b"")
   inspect(
-    @office.detect_format("book.xlsx", @zip.write_preserving(distinct)).name(),
+    @office.detect_format("book.xlsx", @zip.write(distinct, preserve=true)).name(),
     content="xlsx",
   )
 
@@ -785,7 +785,7 @@ test "detect_format treats ZIP directory names as exact physical records" {
   duplicate.add("word/", b"")
   duplicate.add("word/", b"")
   try
-    @office.detect_format("book.xlsx", @zip.write_preserving(duplicate))
+    @office.detect_format("book.xlsx", @zip.write(duplicate, preserve=true))
   catch {
     err =>
       assert_true(Show::to_string(err).contains("duplicate entry name: word/"))
@@ -1605,7 +1605,7 @@ test "detect_format rejects CRC-corrupted XLSX entries" {
     stored.add(entry.name(), entry.data(), compression=Store)
   }
   let corrupted = corrupt_stored_payload(
-    @zip.write_preserving(stored),
+    @zip.write(stored, preserve=true),
     b"hello",
   )
   try @office.detect_format("book.xlsx", corrupted) catch {
@@ -1998,7 +1998,7 @@ test "detect_format does not accept a content-type marker in an XML comment" {
       "<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><!-- application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml --></Types>",
     ),
   )
-  let data = @zip.write_preserving(archive)
+  let data = @zip.write(archive, preserve=true)
   try @office.detect_format("book.xlsx", data) catch {
     err =>
       inspect(

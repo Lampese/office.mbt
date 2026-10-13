@@ -67,7 +67,7 @@ fn minimal_docx(
     let (name, data) = part
     archive.add(name, data)
   }
-  try! @mbtzip.write_preserving(archive)
+  try! @mbtzip.write(archive, preserve=true)
 }
 
 ///|
@@ -199,7 +199,7 @@ test "OPC validation enforces the complete central-directory header limit" {
     .any(finding => finding.contains("central-directory file header exceeds")),
   )
   let report = @opc.validate_docx_package_report_limited(
-    @mbtzip.write_preserving(archive),
+    @mbtzip.write(archive, preserve=true),
     max_findings=8,
     max_message_chars=128,
   )
@@ -500,7 +500,7 @@ test "OPC part lookup preserves spelling while comparing case-insensitively" {
   )
   archive.add("CUSTOM/comments.xml", utf8_bytes("<comments/>"))
   debug_inspect(
-    @opc.validate_docx_package(try! @mbtzip.write_preserving(archive)),
+    @opc.validate_docx_package(try! @mbtzip.write(archive, preserve=true)),
     content="[]",
   )
 
@@ -797,7 +797,7 @@ test "the main part is found by following the officeDocument relationship" {
   archive.add("_rels/.rels", utf8_bytes(rels))
   archive.add("custom/main.xml", utf8_bytes(MINIMAL_DOCUMENT_XML))
   debug_inspect(
-    @opc.validate_docx_package(try! @mbtzip.write_preserving(archive)),
+    @opc.validate_docx_package(try! @mbtzip.write(archive, preserve=true)),
     content="[]",
   )
   // A dangling officeDocument relationship is a finding.
@@ -1228,19 +1228,21 @@ test "duplicate names and CRC corruption are findings" {
   archive.add("word/document.xml", utf8_bytes(MINIMAL_DOCUMENT_XML))
   archive.add("word/document.xml", utf8_bytes(MINIMAL_DOCUMENT_XML))
   debug_inspect(
-    @opc.validate_docx_package(try! @mbtzip.write_preserving(archive)),
+    @opc.validate_docx_package(try! @mbtzip.write(archive, preserve=true)),
     content=(
       #|["duplicate entry name: word/document.xml"]
     ),
   )
   // Flip one byte of the stored (uncompressed) document payload: inflation
   // tolerates it, the stored CRC exposes it. This is the exact corruption
-  // class that slipped through review fixtures before (issue #76).
+  // class that slipped through review fixtures before (issue #76). (Since
+  // flate 0.9.0 the ZIP reader finds it, and its error does not say in
+  // which entry; with 0.8.5 the finding ended ": word/document.xml".)
   let stored = @mbtzip.Archive()
   for entry in @mbtzip.read(minimal_docx()).entries() {
     stored.add(entry.name(), entry.data(), compression=Store)
   }
-  let bytes = @mbtzip.write_preserving(stored).to_array()
+  let bytes = @mbtzip.write(stored, preserve=true).to_array()
   let marker = utf8_bytes("<w:t>hi</w:t>")
   let mut at = -1
   let haystack = Bytes::from_array(bytes)
@@ -1255,7 +1257,7 @@ test "duplicate names and CRC corruption are findings" {
   debug_inspect(
     @opc.validate_docx_package(Bytes::from_array(bytes)),
     content=(
-      #|["entry data does not match its stored CRC-32: word/document.xml"]
+      #|["entry data does not match its stored CRC-32"]
     ),
   )
 }

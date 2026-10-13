@@ -25,7 +25,7 @@ fn sdk_rewrite_content_types(data : BytesView, marker : String) -> Bytes raise {
   if !replaced {
     fail("fixture did not contain [Content_Types].xml")
   }
-  @zip.write_preserving(result)
+  @zip.write(result, preserve=true)
 }
 
 ///|

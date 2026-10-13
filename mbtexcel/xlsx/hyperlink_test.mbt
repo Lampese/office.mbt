@@ -156,7 +156,7 @@ test "reader canonicalizes a merged non-anchor hyperlink identity" {
       patched.add(entry.name(), entry.data())
     }
   }
-  let parsed = @xlsx.read(@zip.write_preserving(patched))
+  let parsed = @xlsx.read(@zip.write(patched, preserve=true))
   inspect(parsed.get_hyperlinks("Sheet1").length(), content="1")
   inspect(parsed.get_hyperlinks("Sheet1")[0].reference, content="A1")
   debug_inspect(
@@ -190,7 +190,7 @@ test "reader rejects conflicting hyperlink identities in one merged range" {
     }
   }
   let result : Result[@xlsx.Workbook, Error] = Ok(
-    @xlsx.read(@zip.write_preserving(patched)),
+    @xlsx.read(@zip.write(patched, preserve=true)),
   ) catch {
     error => Err(error)
   }
@@ -498,7 +498,7 @@ test "hyperlink remove clears range reference" {
     "xl/worksheets/sheet1.xml",
     @encoding/utf8.encode(updated_sheet),
   )
-  let updated_bytes = @zip.write_preserving(updated_archive) catch {
+  let updated_bytes = @zip.write(updated_archive, preserve=true) catch {
     ZipError(_, message) => fail("zip write failed: \{message}")
   }
   let parsed = @xlsx.read(updated_bytes)
@@ -562,7 +562,7 @@ test "hyperlink invalid ref rejected on read" {
     "xl/worksheets/sheet1.xml",
     @encoding/utf8.encode(updated_sheet),
   )
-  let updated_bytes = @zip.write_preserving(updated_archive) catch {
+  let updated_bytes = @zip.write(updated_archive, preserve=true) catch {
     ZipError(_, message) => fail("zip write failed: \{message}")
   }
   let result : Result[@xlsx.Workbook, Error] = Ok(@xlsx.read(updated_bytes)) catch {
@@ -815,7 +815,7 @@ test "hyperlink with both r:id and location matches both filters" {
       patched.add(entry.name(), entry.data())
     }
   }
-  let parsed = @xlsx.read(@zip.write_preserving(patched))
+  let parsed = @xlsx.read(@zip.write(patched, preserve=true))
   let link = match parsed.get_cell_hyperlink("Sheet1", "A1") {
     Some(value) => value
     None => fail("missing hyperlink")

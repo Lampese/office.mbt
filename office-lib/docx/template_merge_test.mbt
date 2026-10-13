@@ -39,7 +39,7 @@ async test "docx template substitutes body and header stories" {
     let input = directory + "/tpl.docx"
     @afs.write_file(
       input,
-      @zip.write_preserving(rebuilt),
+      @zip.write(rebuilt, preserve=true),
       create_mode=CreateNew,
       permission=0o600,
     )
@@ -111,7 +111,7 @@ async test "docx template refuses missing keys without publishing" {
     let input = directory + "/tpl.docx"
     @afs.write_file(
       input,
-      @zip.write_preserving(rebuilt),
+      @zip.write(rebuilt, preserve=true),
       create_mode=CreateNew,
       permission=0o600,
     )
@@ -173,7 +173,7 @@ async fn docx_template_bytes_case(
   let input = directory + "/bytes-tpl.docx"
   @afs.write_file(
     input,
-    @zip.write_preserving(rebuilt),
+    @zip.write(rebuilt, preserve=true),
     create_mode=CreateNew,
     permission=0o600,
   )

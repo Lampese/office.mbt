@@ -664,8 +664,9 @@ pub async fn transact_docx_annotations(
       result.changed = result.changed_parts.length() > 0
       collected.val = Some(result)
       // serialize the fully-folded archive ONCE under the candidate ceiling
-      let bytes = @zip.write_preserving_limited(
+      let bytes = @zip.write(
         current,
+        preserve=true,
         max_output_bytes=budget.max_candidate_package_bytes(),
       ) catch {
         _ =>

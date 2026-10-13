@@ -429,8 +429,9 @@ fn write_raw_candidate_archive(
   } else {
     raw_max_package_bytes
   }
-  let bytes = @zip.write_preserving_limited(
+  let bytes = @zip.write(
     archive,
+    preserve=true,
     max_output_bytes=enforced_limit,
   ) catch {
     ZipError(LimitExceeded(OutputBytes, limit, _), _) =>

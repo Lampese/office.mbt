@@ -481,10 +481,7 @@ fn PackageBuilder::build_internal(
   }
   match limits {
     Some(l) =>
-      @mbtzip.write_preserving_limited(
-        archive,
-        max_output_bytes=l.max_output_bytes,
-      ) catch {
+      @mbtzip.write(archive, preserve=true, max_output_bytes=l.max_output_bytes) catch {
         ZipError(LimitExceeded(OutputBytes, limit, _), _) =>
           // The zip sizing pass short-circuits at the ceiling (bounded work),
           // so the exact serialized size is not computed; `actual` is the
@@ -498,7 +495,7 @@ fn PackageBuilder::build_internal(
           raise PackageBuildError("could not assemble the archive: \{msg}")
       }
     None =>
-      @mbtzip.write_preserving(archive) catch {
+      @mbtzip.write(archive, preserve=true) catch {
         ZipError(_, msg) =>
           raise PackageBuildError("could not assemble the archive: \{msg}")
       }

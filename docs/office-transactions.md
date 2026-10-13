@@ -124,8 +124,8 @@ retained records occupy less space.
 The mutation callback receives that remaining allowance as
 `TransactionBudget::max_candidate_package_bytes()`. Package serializers must
 apply it during sizing, not after returning bytes. Archive-backed raw mutation
-APIs require the value and pass it to `zip.write_limited`, so a source-near-
-envelope edit is rejected in the output-storage-free plan before the candidate
+APIs require the value and pass it to `zip.write` as `max_output_bytes`, so a
+source-near-envelope edit is rejected in the output-storage-free plan before the candidate
 buffer exists. The callback receives the original immutable `Bytes` directly;
 archive-backed raw operations report an explicit reuse-original result before
 ZIP sizing when the edited part is byte-identical, and the callback maps it to
@@ -145,7 +145,8 @@ markup tokens, concrete cell records, and retained row/column dimensions; batch
 application charges projected cell and row/column growth against those retained
 objects; and the generated archive checks every part plus the
 aggregate uncompressed payload before retaining it. Only then does
-`zip.write_limited` perform its allocation-free final package sizing pass. This
+`zip.write` with `max_output_bytes` perform its allocation-free final package
+sizing pass. This
 prevents a highly compressible workbook from bypassing the live boundary merely
 because its final ZIP is small.
 

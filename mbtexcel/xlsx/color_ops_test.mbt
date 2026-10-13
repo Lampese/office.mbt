@@ -60,7 +60,7 @@ test "get base color from theme and indexed colors" {
   }
   updated_archive.add("xl/theme/theme1.xml", @encoding/utf8.encode(theme_xml))
   updated_archive.add("xl/styles.xml", @encoding/utf8.encode(updated_styles))
-  let updated_bytes = @zip.write_preserving(updated_archive) catch {
+  let updated_bytes = @zip.write(updated_archive, preserve=true) catch {
     ZipError(_, message) => fail("zip write failed: \{message}")
   }
   let parsed = @xlsx.read(updated_bytes)

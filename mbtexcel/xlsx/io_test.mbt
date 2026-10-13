@@ -344,7 +344,7 @@ test "custom zip writer used" {
   let called = Ref(false)
   workbook.set_zip_writer(archive => {
     called.val = true
-    @zip.write_preserving(archive)
+    @zip.write(archive, preserve=true)
   })
   let bytes = workbook.write_to_buffer()
   guard called.val else { fail("zip writer was not called") }

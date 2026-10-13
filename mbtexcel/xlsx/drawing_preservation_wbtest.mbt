@@ -166,7 +166,7 @@ fn drawing_preservation_test_fixture(
       @encoding/utf8.encode(patched_content_types),
     ),
   )
-  @zip.write_preserving(archive)
+  @zip.write(archive, preserve=true)
 }
 
 ///|
@@ -255,7 +255,7 @@ test "opaque drawing anchors preserve order ids and relationship closure" {
   assert_drawing_preservation_test_output(first)
   // A second read/write cycle proves the isolated projection is itself a
   // complete, readable OPC subgraph rather than a one-shot copy operation.
-  let second = @zip.read(write(read(@zip.write_preserving(first))))
+  let second = @zip.read(write(read(@zip.write(first, preserve=true))))
   assert_drawing_preservation_test_output(second)
 }
 

@@ -4,7 +4,7 @@ fn tiny_package() -> Bytes raise {
   archive.add("a.xml", @utf8.encode("<r><a/></r>"))
   archive.add("b.bin", b"\x00\x01\x02\x03binary payload", compression=Store)
   archive.add("c.xml", @utf8.encode("<c/>"))
-  @mbtzip.write_preserving(archive)
+  @mbtzip.write(archive, preserve=true)
 }
 
 ///|
@@ -135,7 +135,7 @@ test "L0: archive validation ignores deterministic hash clustering" {
     assert_eq(name.hash() & 0x3FF, 0)
     archive.add(name, b"<r/>")
   }
-  let original = @mbtzip.write_preserving(archive)
+  let original = @mbtzip.write(archive, preserve=true)
   assert_eq(@splice.splice_docx(original, @splice.SplicePlan::new()), original)
 }
 
@@ -495,7 +495,7 @@ test "L0: duplicate zip entries and foreign encodings fail closed" {
   let doubled = @mbtzip.Archive()
   doubled.add("a.xml", @utf8.encode("<r/>"))
   doubled.add("a.xml", @utf8.encode("<r2/>"))
-  let dup_bytes = @mbtzip.write_preserving(doubled)
+  let dup_bytes = @mbtzip.write(doubled, preserve=true)
   expect_splice_failure(
     () => @splice.splice_docx(dup_bytes, @splice.SplicePlan::new()),
     "the package holds duplicate zip entries named 'a.xml'",
@@ -504,14 +504,14 @@ test "L0: duplicate zip entries and foreign encodings fail closed" {
   let aliased = @mbtzip.Archive()
   aliased.add("a.xml", @utf8.encode("<r/>"))
   aliased.add("A.XML", @utf8.encode("<r2/>"))
-  let aliased_bytes = @mbtzip.write_preserving(aliased)
+  let aliased_bytes = @mbtzip.write(aliased, preserve=true)
   expect_splice_failure(
     () => @splice.splice_docx(aliased_bytes, @splice.SplicePlan::new()),
     "the package holds case-equivalent zip entries 'a.xml' and 'A.XML'",
   )
   let case_source = @mbtzip.Archive()
   case_source.add("word/document.xml", @utf8.encode("<r/>"))
-  let case_source_bytes = @mbtzip.write_preserving(case_source)
+  let case_source_bytes = @mbtzip.write(case_source, preserve=true)
   let wrong_case_edit = @splice.SplicePlan::new()
   wrong_case_edit.edit_part(
     "WORD/DOCUMENT.XML",
@@ -544,7 +544,7 @@ test "L0: duplicate zip entries and foreign encodings fail closed" {
     compression=Store,
     data_descriptor=false,
   )
-  let directory_bytes = @mbtzip.write_preserving(directories)
+  let directory_bytes = @mbtzip.write(directories, preserve=true)
   let directory_plan = @splice.SplicePlan::new()
   directory_plan.edit_part(
     "a.xml",
@@ -573,8 +573,9 @@ test "L0: duplicate zip entries and foreign encodings fail closed" {
   duplicate_directories.add("word/", b"")
   duplicate_directories.add("word/", b"")
   duplicate_directories.add("a.xml", @utf8.encode("<r/>"))
-  let duplicate_directory_bytes = @mbtzip.write_preserving(
+  let duplicate_directory_bytes = @mbtzip.write(
     duplicate_directories,
+    preserve=true,
   )
   expect_splice_failure(
     () => {
@@ -585,7 +586,7 @@ test "L0: duplicate zip entries and foreign encodings fail closed" {
   // A UTF-16 part (BOM) cannot be spliced.
   let utf16 = @mbtzip.Archive()
   utf16.add("w.xml", b"\xFF\xFE<\x00r\x00/\x00>\x00")
-  let utf16_bytes = @mbtzip.write_preserving(utf16)
+  let utf16_bytes = @mbtzip.write(utf16, preserve=true)
   let plan16 = @splice.SplicePlan::new()
   plan16.edit_part("w.xml", @splice.span_edit(start=0, end=0, b""))
   expect_splice_failure(
@@ -598,7 +599,7 @@ test "L0: duplicate zip entries and foreign encodings fail closed" {
     "l.xml",
     @utf8.encode("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><r/>"),
   )
-  let latin_bytes = @mbtzip.write_preserving(latin)
+  let latin_bytes = @mbtzip.write(latin, preserve=true)
   let plan_latin = @splice.SplicePlan::new()
   plan_latin.edit_part("l.xml", @splice.span_edit(start=0, end=0, b""))
   expect_splice_failure(
@@ -611,7 +612,7 @@ test "L0: duplicate zip entries and foreign encodings fail closed" {
     "u.xml",
     @utf8.encode("<?xml version=\"1.0\" encoding=\"UTF-8\"?><r></r>"),
   )
-  let utf8_bytes = @mbtzip.write_preserving(utf8_decl)
+  let utf8_bytes = @mbtzip.write(utf8_decl, preserve=true)
   let plan_utf8 = @splice.SplicePlan::new()
   let source = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><r></r>"
   guard source.find("</r>") is Some(at) else { fail("expected </r>") }
@@ -655,7 +656,7 @@ test "L0 review round 1: malformed XML declarations fail closed" {
     "m.xml",
     @utf8.encode("<?xml version=\"1.0\" encoding=ISO-8859-1?><r></r>"),
   )
-  let malformed_bytes = @mbtzip.write_preserving(malformed)
+  let malformed_bytes = @mbtzip.write(malformed, preserve=true)
   let plan = @splice.SplicePlan::new()
   plan.edit_part("m.xml", @splice.span_edit(start=0, end=0, b""))
   expect_splice_failure(
@@ -668,7 +669,7 @@ test "L0 review round 1: malformed XML declarations fail closed" {
     "u.xml",
     @utf8.encode("<?xml version=\"1.0\" encoding=\"UTF-8?><r></r>"),
   )
-  let unterminated_bytes = @mbtzip.write_preserving(unterminated)
+  let unterminated_bytes = @mbtzip.write(unterminated, preserve=true)
   let plan2 = @splice.SplicePlan::new()
   plan2.edit_part("u.xml", @splice.span_edit(start=0, end=0, b""))
   expect_splice_failure(
@@ -689,7 +690,7 @@ test "L0 review round 2: 'encoding' inside a quoted value cannot fool the gate" 
       "<?xml version=\"encoding='UTF-8'\" encoding=\"ISO-8859-1\"?><r></r>",
     ),
   )
-  let devious_bytes = @mbtzip.write_preserving(devious)
+  let devious_bytes = @mbtzip.write(devious, preserve=true)
   let plan = @splice.SplicePlan::new()
   plan.edit_part("d.xml", @splice.span_edit(start=0, end=0, b""))
   expect_splice_failure(
@@ -700,7 +701,7 @@ test "L0 review round 2: 'encoding' inside a quoted value cannot fool the gate" 
   let canonical = @mbtzip.Archive()
   let canonical_source = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><r></r>"
   canonical.add("c.xml", @utf8.encode(canonical_source))
-  let canonical_bytes = @mbtzip.write_preserving(canonical)
+  let canonical_bytes = @mbtzip.write(canonical, preserve=true)
   let plan_ok = @splice.SplicePlan::new()
   guard canonical_source.find("</r>") is Some(at) else { fail("expected </r>") }
   plan_ok.edit_part(
@@ -716,7 +717,7 @@ test "L0 review round 2: 'encoding' inside a quoted value cannot fool the gate" 
   // A declaration with no encoding at all also passes.
   let plain = @mbtzip.Archive()
   plain.add("p.xml", @utf8.encode("<?xml version=\"1.0\"?><r></r>"))
-  let plain_bytes = @mbtzip.write_preserving(plain)
+  let plain_bytes = @mbtzip.write(plain, preserve=true)
   let plan_plain = @splice.SplicePlan::new()
   guard "<?xml version=\"1.0\"?><r></r>".find("</r>") is Some(plain_at) else {
     fail("expected </r>")
@@ -734,7 +735,7 @@ test "L0 review round 3: the declaration walker enforces the XML grammar" {
   fn reject(source : String, name : String) -> Unit raise {
     let archive = @mbtzip.Archive()
     archive.add(name, @utf8.encode(source))
-    let bytes = @mbtzip.write_preserving(archive)
+    let bytes = @mbtzip.write(archive, preserve=true)
     let plan = @splice.SplicePlan::new()
     plan.edit_part(name, @splice.span_edit(start=0, end=0, b""))
     expect_splice_failure(
@@ -757,7 +758,7 @@ test "L0 review round 3: the declaration walker enforces the XML grammar" {
   let pi = @mbtzip.Archive()
   let pi_source = "<?xml-stylesheet type=\"text/xsl\" href=\"style.xsl\"?><?xmlversion version=\"1.0\"?><r></r>"
   pi.add("pi.xml", @utf8.encode(pi_source))
-  let pi_bytes = @mbtzip.write_preserving(pi)
+  let pi_bytes = @mbtzip.write(pi, preserve=true)
   let pi_plan = @splice.SplicePlan::new()
   guard pi_source.find("</r>") is Some(pi_at) else { fail("expected </r>") }
   pi_plan.edit_part(
@@ -779,7 +780,7 @@ test "L0 review round 4: the declaration grammar is positional" {
   fn reject(source : String, name : String) -> Unit raise {
     let archive = @mbtzip.Archive()
     archive.add(name, @utf8.encode(source))
-    let bytes = @mbtzip.write_preserving(archive)
+    let bytes = @mbtzip.write(archive, preserve=true)
     let plan = @splice.SplicePlan::new()
     plan.edit_part(name, @splice.span_edit(start=0, end=0, b""))
     expect_splice_failure(
@@ -800,7 +801,7 @@ test "L0 review round 4: the declaration grammar is positional" {
   let fine = @mbtzip.Archive()
   let fine_source = "<?xml version=\"1.0\" standalone=\"yes\"?><r></r>"
   fine.add("f.xml", @utf8.encode(fine_source))
-  let fine_bytes = @mbtzip.write_preserving(fine)
+  let fine_bytes = @mbtzip.write(fine, preserve=true)
   let plan_fine = @splice.SplicePlan::new()
   guard fine_source.find("</r>") is Some(at) else { fail("expected </r>") }
   plan_fine.edit_part(
@@ -823,7 +824,7 @@ test "L0 review round 5: giant encoding labels stay bounded" {
     "\"?><r></r>"
   let archive = @mbtzip.Archive()
   archive.add("bounded.xml", @utf8.encode(source))
-  let archive_bytes = @mbtzip.write_preserving(archive)
+  let archive_bytes = @mbtzip.write(archive, preserve=true)
   let plan = @splice.SplicePlan::new()
   plan.edit_part("bounded.xml", @splice.span_edit(start=0, end=0, b""))
   expect_splice_failure(
@@ -853,7 +854,7 @@ test "default splice budget accepts ordinary namespace-dense OOXML" {
     @splice.span_edit(start=insert_at, end=insert_at, b""),
   )
   let result = @mbtzip.read(
-    @splice.splice_docx(@mbtzip.write_preserving(archive), plan),
+    @splice.splice_docx(@mbtzip.write(archive, preserve=true), plan),
   )
   guard result.get("word/document.xml") is Some(actual) else {
     fail("expected document.xml")

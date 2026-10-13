@@ -103,7 +103,7 @@ fn docx_region_fixture_with(
   if !replaced {
     fail("fixture lacks word/document.xml")
   }
-  @zip.write_preserving(rebuilt)
+  @zip.write(rebuilt, preserve=true)
 }
 
 ///|
@@ -394,7 +394,7 @@ async test "docx region unused keys attribute per region, not globally" {
           rebuilt.add(name, payload.to_owned())
         }
       }
-      @zip.write_preserving(rebuilt)
+      @zip.write(rebuilt, preserve=true)
     }
     let input = directory + "/two-region.docx"
     @afs.write_file(input, two_row, create_mode=CreateNew, permission=0o600)

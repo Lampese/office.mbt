@@ -19,7 +19,7 @@ fn raw_test_archive(entries : Array[(String, Bytes)]) -> Bytes raise {
   for entry in entries {
     archive.add(entry.0, entry.1)
   }
-  @zip.write_preserving(archive)
+  @zip.write(archive, preserve=true)
 }
 
 ///|
@@ -76,7 +76,7 @@ fn raw_test_add_hash_clustered_parts(
     assert_eq(name.hash() & 0x3FF, 0)
     output.add(name, b"")
   }
-  @zip.write_preserving(output)
+  @zip.write(output, preserve=true)
 }
 
 ///|
@@ -109,7 +109,7 @@ fn raw_test_replace_entry(
   if !found {
     fail("raw test fixture is missing entry '\{name}'")
   }
-  @zip.write_preserving(output)
+  @zip.write(output, preserve=true)
 }
 
 ///|
@@ -143,7 +143,7 @@ fn raw_test_add_entry(
     )
   }
   output.add(name, payload)
-  @zip.write_preserving(output)
+  @zip.write(output, preserve=true)
 }
 
 ///|
@@ -641,7 +641,7 @@ fn colliding_literal_docx_fixture() -> Bytes raise {
     output.add(entry.name(), data)
   }
   output.add("document", @utf8.encode("<literal/>"))
-  @zip.write_preserving(output)
+  @zip.write(output, preserve=true)
 }
 
 ///|
@@ -672,7 +672,7 @@ fn raw_reencode_package_xml_as_utf16(data : BytesView) -> Bytes raise {
       data_descriptor=entry.data_descriptor(),
     )
   }
-  @zip.write_preserving(result)
+  @zip.write(result, preserve=true)
 }
 
 ///|
@@ -918,7 +918,7 @@ test "raw inventory excludes ZIP directory markers and mutations preserve them" 
       data_descriptor=entry.data_descriptor(),
     )
   }
-  let with_directory = @zip.write_preserving(archive)
+  let with_directory = @zip.write(archive, preserve=true)
   let baseline = @raw.raw_inventory("baseline.docx", original)
   let inventory = @raw.raw_inventory("directory.docx", with_directory)
   assert_eq(inventory.parts.length(), baseline.parts.length())
@@ -966,7 +966,7 @@ test "raw inventory excludes ZIP directory markers and mutations preserve them" 
   }
   let (code, message) = raw_inventory_message_for(
     "duplicate-directory.docx",
-    @zip.write_preserving(duplicate),
+    @zip.write(duplicate, preserve=true),
   )
   assert_eq(code, "office.raw.invalid_package")
   assert_true(message.contains("duplicate directory entry '/word/'"))
@@ -1898,7 +1898,7 @@ test "raw ZIP expansion limits retain resource codes and details" {
     count_archive.add("entry-\{index}", b"")
   }
   let (count_code, count_details) = raw_inventory_error(
-    @zip.write_preserving(count_archive),
+    @zip.write(count_archive, preserve=true),
   )
   assert_eq(count_code, "office.raw.resource_limit")
   assert_true(count_details.contains("entry_count"))
@@ -1906,7 +1906,7 @@ test "raw ZIP expansion limits retain resource codes and details" {
   let entry_archive = @zip.Archive()
   entry_archive.add("entry", b"")
   let (entry_bytes, entry_records) = forge_raw_test_central_uncompressed_sizes(
-    @zip.write_preserving(entry_archive),
+    @zip.write(entry_archive, preserve=true),
     64 * 1024 * 1024 + 1,
   )
   assert_eq(entry_records, 1)
@@ -1919,7 +1919,7 @@ test "raw ZIP expansion limits retain resource codes and details" {
     aggregate_archive.add("aggregate-\{index}", b"")
   }
   let (aggregate_bytes, aggregate_records) = forge_raw_test_central_uncompressed_sizes(
-    @zip.write_preserving(aggregate_archive),
+    @zip.write(aggregate_archive, preserve=true),
     60 * 1024 * 1024,
   )
   assert_eq(aggregate_records, 5)

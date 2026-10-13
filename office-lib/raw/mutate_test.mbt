@@ -75,7 +75,7 @@ fn raw_test_mixed_zip_policies(source : BytesView) -> Bytes raise {
       data_descriptor=index % 3 != 0,
     )
   }
-  @zip.write_preserving(output)
+  @zip.write(output, preserve=true)
 }
 
 ///|
@@ -205,12 +205,13 @@ test "archive-backed raw APIs match byte-backed mutation without reinflation" {
   let from_bytes = @raw.raw_edit(Docx, original, request)
   let archive = @zip.read(
     original,
-    limits=@zip.ReadLimits::default()
-      .with_package_limit(original.length())
-      .with_entries_limit(8192)
-      .with_entry_limit(64 * 1024 * 1024)
-      .with_total_limit(256 * 1024 * 1024)
-      .with_preserved_source_limit(original.length()),
+    limits=ReadLimits(
+      max_package_bytes=original.length(),
+      max_entries=8192,
+      max_entry_uncompressed_bytes=64 * 1024 * 1024,
+      max_total_uncompressed_bytes=256 * 1024 * 1024,
+      max_preserved_source_bytes=original.length(),
+    ),
   )
   assert_eq(@raw.raw_identify_archive("input.docx", archive.clone()), Docx)
   let from_archive = @raw.raw_edit_archive(
@@ -234,12 +235,13 @@ test "archive-backed raw serialization applies caller budget before output" {
   let original = @word.new_blank_docx()
   let archive = @zip.read(
     original,
-    limits=@zip.ReadLimits::default()
-      .with_package_limit(original.length())
-      .with_entries_limit(8192)
-      .with_entry_limit(64 * 1024 * 1024)
-      .with_total_limit(256 * 1024 * 1024)
-      .with_preserved_source_limit(original.length()),
+    limits=ReadLimits(
+      max_package_bytes=original.length(),
+      max_entries=8192,
+      max_entry_uncompressed_bytes=64 * 1024 * 1024,
+      max_total_uncompressed_bytes=256 * 1024 * 1024,
+      max_preserved_source_bytes=original.length(),
+    ),
   )
   let request = @raw.raw_edit_request(
     "/document",
@@ -266,12 +268,13 @@ test "archive-backed identical replacement reuses source before ZIP planning" {
   let original = @word.new_blank_docx()
   let archive = @zip.read(
     original,
-    limits=@zip.ReadLimits::default()
-      .with_package_limit(original.length())
-      .with_entries_limit(8192)
-      .with_entry_limit(64 * 1024 * 1024)
-      .with_total_limit(256 * 1024 * 1024)
-      .with_preserved_source_limit(original.length()),
+    limits=ReadLimits(
+      max_package_bytes=original.length(),
+      max_entries=8192,
+      max_entry_uncompressed_bytes=64 * 1024 * 1024,
+      max_total_uncompressed_bytes=256 * 1024 * 1024,
+      max_preserved_source_bytes=original.length(),
+    ),
   )
   let document = @raw.raw_read("input.docx", original, "/document").xml_text()
   let mutation = @raw.raw_replace_part_archive(

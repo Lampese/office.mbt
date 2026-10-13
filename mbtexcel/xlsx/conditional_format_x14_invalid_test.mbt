@@ -30,7 +30,7 @@ test "x14 conditional formatting invalid extLst rejects read" {
     "xl/worksheets/sheet1.xml",
     @encoding/utf8.encode(updated_sheet),
   )
-  let updated_bytes = @zip.write_preserving(updated_archive) catch {
+  let updated_bytes = @zip.write(updated_archive, preserve=true) catch {
     ZipError(_, message) => fail("zip write failed: \{message}")
   }
   let result : Result[@xlsx.Workbook, Error] = Ok(@xlsx.read(updated_bytes)) catch {

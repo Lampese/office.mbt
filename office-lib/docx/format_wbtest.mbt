@@ -29,7 +29,7 @@ async fn format_readback_fixture(
   let path = directory + "/" + name
   @afs.write_file(
     path,
-    @zip.write_preserving(rebuilt),
+    @zip.write(rebuilt, preserve=true),
     create_mode=CreateNew,
     permission=0o600,
   )

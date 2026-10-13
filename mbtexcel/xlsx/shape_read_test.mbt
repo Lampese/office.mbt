@@ -77,7 +77,7 @@ test "native absolute shape geometry survives normalized roundtrip" {
   assert_true(
     archive.replace(drawing_path, @encoding/utf8.encode(absolute_drawing)),
   )
-  let parsed = @xlsx.read(@zip.write_preserving(archive))
+  let parsed = @xlsx.read(@zip.write(archive, preserve=true))
   let sheet = parsed.sheet("Sheet1").unwrap()
   inspect(sheet.shapes().length(), content="1")
   let shape = sheet.shapes()[0]
@@ -150,7 +150,7 @@ test "shape geometry follows anchor form and editAs oneCell normalizes" {
     #|  </xdr:twoCellAnchor>
     #|</xdr:wsDr>
   assert_true(archive.replace(drawing_path, @encoding/utf8.encode(drawing)))
-  let parsed = @xlsx.read(@zip.write_preserving(archive))
+  let parsed = @xlsx.read(@zip.write(archive, preserve=true))
   let shapes = parsed.sheet("Sheet1").unwrap().shapes()
   inspect(shapes.length(), content="2")
   inspect(shapes[0].width, content="10")

@@ -240,7 +240,7 @@ test "legacy mixed plain and rich comment rewrites without loss" {
     }
   }
   inspect(patched, content="true")
-  let parsed = @xlsx.read(@zip.write_preserving(legacy))
+  let parsed = @xlsx.read(@zip.write(legacy, preserve=true))
   match parsed.get_comment("Sheet1", "A1") {
     Some(comment) => {
       inspect(comment.text, content="plain rich")

@@ -647,40 +647,42 @@ pub fn validate_docx_package_report_limited(
   )
   let archive = @mbtzip.read(
     data,
-    limits=@mbtzip.ReadLimits::default()
-      .with_package_limit(
-        if max_zip_package_bytes > 0 {
-          max_zip_package_bytes
-        } else {
-          0
-        },
-      )
-      .with_entries_limit(if max_zip_entries > 0 { max_zip_entries } else { 0 })
-      .with_entry_limit(
-        if max_zip_entry_uncompressed_bytes > 0 {
-          max_zip_entry_uncompressed_bytes
-        } else {
-          0
-        },
-      )
-      .with_total_limit(
-        if max_zip_total_uncompressed_bytes > 0 {
-          max_zip_total_uncompressed_bytes
-        } else {
-          0
-        },
-      )
-      .with_preserved_source_limit(
-        if max_zip_total_preserved_source_bytes > 0 {
-          max_zip_total_preserved_source_bytes
-        } else {
-          0
-        },
-      ),
+    limits=ReadLimits(
+      max_package_bytes=if max_zip_package_bytes > 0 {
+        max_zip_package_bytes
+      } else {
+        0
+      },
+      max_entries=if max_zip_entries > 0 { max_zip_entries } else { 0 },
+      max_entry_uncompressed_bytes=if max_zip_entry_uncompressed_bytes > 0 {
+        max_zip_entry_uncompressed_bytes
+      } else {
+        0
+      },
+      max_total_uncompressed_bytes=if max_zip_total_uncompressed_bytes > 0 {
+        max_zip_total_uncompressed_bytes
+      } else {
+        0
+      },
+      max_preserved_source_bytes=if max_zip_total_preserved_source_bytes > 0 {
+        max_zip_total_preserved_source_bytes
+      } else {
+        0
+      },
+    ),
   ) catch {
     ZipError(LimitExceeded(kind, _limit, _actual), _) => {
       findings.mark_zip_resource_limit(zip_limit_kind_name(kind))
       findings.add("invalid ZIP archive: resource limit exceeded")
+      return findings.report()
+    }
+    // flate 0.9.0 checks the CRC-32 of every entry while it reads and does
+    // not say which entry failed; 0.8.5 left the check to
+    // `validate_docx_archive_into`, which names the entry and goes on to
+    // the other findings, and now only meets entries that passed this
+    // check.
+    ZipError(ChecksumMismatch, _) => {
+      findings.add("entry data does not match its stored CRC-32")
       return findings.report()
     }
     ZipError(_, msg) => {
@@ -797,10 +799,7 @@ fn validate_docx_archive_into(
     }
     let logical_name = check_entry_name(name, findings)
     let actual_crc = match
-      @flate_checksum.crc32_cancellable(
-        entry.data(),
-        cancelled=findings.cancelled,
-      ) {
+      crc32_cancellable(entry.data(), cancelled=findings.cancelled) {
       None => {
         findings.stop()
         return
@@ -2041,4 +2040,30 @@ pub fn read_opc_relationships_string_encoded_limited(
     budget,
     [PACKAGE_RELATIONSHIPS_NAMESPACE],
   )
+}
+
+///|
+/// The CRC-32 of `bytes`, or `None` if `cancelled` says so: it is asked
+/// before the first byte, between chunks of 4096 bytes and after the last.
+/// (flate 0.8.5 had this as `crc32_cancellable`; 0.9.0 checks the CRC of
+/// every entry it reads and has no such function.)
+fn crc32_cancellable(bytes : BytesView, cancelled~ : () -> Bool) -> UInt32? {
+  if cancelled() {
+    return None
+  }
+  let crc = @flate_checksum.Crc32()
+  let mut start = 0
+  while start < bytes.length() {
+    if start > 0 && cancelled() {
+      return None
+    }
+    let end = start + (bytes.length() - start).min(4096)
+    crc.update(bytes[start:end])
+    start = end
+  }
+  if cancelled() {
+    None
+  } else {
+    Some(crc.finish())
+  }
 }

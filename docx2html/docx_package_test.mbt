@@ -162,7 +162,7 @@ fn hf_package(
     let (name, text) = entry
     archive.add(name, utf8_part(text))
   }
-  try! @mbtzip.write_preserving(archive)
+  try! @mbtzip.write(archive, preserve=true)
 }
 
 ///|
