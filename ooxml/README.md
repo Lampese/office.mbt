@@ -4,7 +4,7 @@
 format-independent OPC packaging and XML support, below the document engines.
 
 - `opc`: named parts, content types, relationships, cloning, and ZIP input/output
-  through `moonbit-community/flate@0.8.1`.
+  through `moonbit-community/flate@0.9.0`.
 - `uri`: logical/physical part-name conversion, conflict detection, and relationship
   URI rules extracted from DOCX. Percent encoding and Unicode decoding use
   `moonbitlang/core/encoding/percent`, with OPC-specific escape handling retained. `docx2html/opc` re-exports its existing public

@@ -1,6 +1,6 @@
 name = "moonbitlang/pagelayout"
 
-version = "0.7.1"
+version = "0.8.0"
 
 readme = "README.mbt.md"
 
@@ -15,8 +15,8 @@ description = "Paginated document layout engine: format-neutral page-model IR wi
 import {
   "moonbitlang/async@0.22.4",
   "moonbitlang/x@0.4.50",
-  "moonbitlang/docx2html@0.6.1",
-  "moonbitlang/pdflite@0.3.2",
+  "moonbitlang/docx2html@0.7.0",
+  "moonbitlang/pdflite@0.4.0",
   "moonbit-community/flate@0.9.0",
 }
 
