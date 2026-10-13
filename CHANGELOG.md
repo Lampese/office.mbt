@@ -1,18 +1,19 @@
 # Changelog
 
-## Unreleased: PPTX Office integration
-
-- Add PPTX identification, slide outlines, slide/notes text extraction, and
-  transactional one-slide creation to the unified Office CLI.
-- Add the `moonbitlang/office-lib/pptx` SDK package. Existing-deck mutation,
-  batch authoring, selectors, and rendering remain outside this initial scope.
-
-
 Breaking and notable changes for the published modules in this workspace.
 Entries are grouped by module and by the version they ship in; `Unreleased`
 covers changes that have landed on `main` but are not yet published.
 
-### moonbitlang/pdflite [Unreleased]
+### moonbitlang/pdflite [0.4.0]
+
+- **BREAKING** (builds that use flate 0.8 elsewhere): requires
+  `moonbit-community/flate` 0.9.0, which renames API of 0.8.5, and a build
+  has one version of flate. Whatever else in a build uses flate must be on
+  0.9.0 too. Of this workspace that is moonbitlang/ooxml 0.1.0, mbtexcel
+  0.3.0, docx2html 0.7.0, pptx 0.1.0, pagelayout 0.8.0, office-lib 0.7.0
+  and office 0.3.0, released together with this version: mbtexcel 0.2.1,
+  docx2html 0.6.1, office-lib 0.6.2 and pagelayout 0.7.1 do not compile
+  with flate 0.9.0. pdflite's own API is what it was.
 
 - Depends on `moonbit-community/flate` 0.9.0 (from 0.8.5), as does every
   other module of the workspace that uses flate (ooxml, docx2html,
@@ -57,6 +58,20 @@ covers changes that have landed on `main` but are not yet published.
   one-shot `@zlib.compress` would be faster still and its streams
   smaller, but they are other bytes, so it is not used: every PDF would
   change.
+
+### moonbitlang/pagelayout [0.8.0]
+
+- **BREAKING** (builds that use flate 0.8 elsewhere): requires
+  `moonbit-community/flate` 0.9.0 (0.7.1 was published on 0.8.1), and with
+  it moonbitlang/docx2html 0.7.0 (from 0.6.1) and moonbitlang/pdflite 0.4.0
+  (from 0.3.2); see pdflite 0.4.0 above for what that asks of a build.
+  pagelayout's own API and its pages are what they were: `@docx.read_docx`
+  states its ZIP limits with flate's renamed `ReadLimits`, the same numbers.
+
+### moonbitlang/pdf2md [0.1.2]
+
+- Built on moonbitlang/pdflite 0.4.0 (from 0.2.2), so on flate 0.9.0. The
+  command line is what it was.
 
 ### moonbitlang/pdflite [0.3.11]
 
@@ -709,8 +724,11 @@ covers changes that have landed on `main` but are not yet published.
   `FontRegistry::uncovered` reports what neither the run's face nor that
   fallback can draw.
 
-### moonbitlang/ooxml [Unreleased]
+### moonbitlang/ooxml [0.1.0]
 
+- First release on Mooncakes, on `moonbit-community/flate` 0.9.0.
+  moonbitlang/docx2html 0.7.0, pptx 0.1.0, office-lib 0.7.0 and office
+  0.3.0 depend on it.
 - Add shared OPC, XML, and URI packages below the document engines. Extract
   DOCX's URI rules and preserve its existing public entry points as re-exports.
 - Use flate for ZIP I/O and `Milky2018/xml@0.5.0` for namespace-aware XML reading.
@@ -719,7 +737,20 @@ covers changes that have landed on `main` but are not yet published.
   incremental-attribute adapter. `XmlWriter::xml_declaration()` now raises
   `XmlError`; malformed output is rejected through `WriterMisuse`.
 
-### moonbitlang/docx2html [Unreleased]
+### moonbitlang/docx2html [0.7.0]
+
+- **BREAKING**: requires `moonbit-community/flate` 0.9.0 (0.6.1 was
+  published on 0.8.1), whose `@zip.Archive` is in this module's API
+  (`docx`, `opc`, `splice`, `zip`): code that makes or reads such an
+  archive with flate's 0.8 names moves to the 0.9.0 names with this
+  release. Requires moonbitlang/ooxml 0.1.0, a new dependency.
+
+- **BREAKING**: `RunProperties` has a field of another type and two new
+  ones: `font_size` is a `Double?` in points (it was an `Int?`, so
+  `w:sz="21"` reads as 10.5), and `font_size_cs` (`w:szCs`) and `color`
+  are new. A literal record must give the new fields, and an `Int`
+  variable that is passed as `font_size` needs `.to_double()`; the
+  README has the rest ("Font sizes").
 
 - Preserve run text colors in HTML conversion and DOCX writing, including
   document defaults, paragraph/character style inheritance, and theme colors
@@ -749,8 +780,10 @@ covers changes that have landed on `main` but are not yet published.
   (checked with both versions on an archive of two entries with its
   directory swapped).
 
-### moonbitlang/pptx [Unreleased]
+### moonbitlang/pptx [0.1.0]
 
+- First release on Mooncakes, on `moonbit-community/flate` 0.9.0 and
+  moonbitlang/ooxml 0.1.0. moonbitlang/office-lib 0.7.0 depends on it.
 - Move low-level `opc` and `xml` imports to `moonbitlang/ooxml/...`.
   Replace fzip with flate; `Presentation::save()` now raises `PptxError` and
   `Package::to_bytes()` raises `OpcError` on ZIP write failure.
@@ -770,7 +803,12 @@ covers changes that have landed on `main` but are not yet published.
   snapshots. Package enumeration and part payloads no longer expose writable
   backing storage.
 
-### moonbitlang/mbtexcel [Unreleased]
+### moonbitlang/mbtexcel [0.3.0]
+
+- **BREAKING**: requires `moonbit-community/flate` 0.9.0 (0.2.1 was
+  published on 0.8.1), whose `@zip.Archive` is in this module's API
+  (the root package and `xlsx`): code that makes or reads such an archive
+  with flate's 0.8 names moves to the 0.9.0 names with this release.
 
 - Depend on flate 0.9.0 (from 0.8.5). Workbooks that are written are byte
   for byte what they were (the large workbook of `regression_test.mbt`
@@ -783,7 +821,20 @@ covers changes that have landed on `main` but are not yet published.
   limit can now refuse a package with bytes between its records, and no
   longer refuses one for records that overlap.
 
-### moonbitlang/office-lib [Unreleased]
+### moonbitlang/office-lib [0.7.0]
+
+- **BREAKING**: requires `moonbit-community/flate` 0.9.0 (0.6.2 was
+  published on 0.8.1), whose `@zip.Archive` is in this module's API (the
+  root package, `docx`, `raw`, `transaction`), and with it
+  moonbitlang/mbtexcel 0.3.0 (from 0.2.1) and docx2html 0.7.0 (from
+  0.6.1). Requires moonbitlang/ooxml 0.1.0 and pptx 0.1.0, new
+  dependencies.
+
+- **BREAKING** (exhaustive matches only): `DocumentFormat` has a new
+  variant, `Pptx`.
+
+- Add the `moonbitlang/office-lib/pptx` SDK package. Existing-deck mutation,
+  batch authoring, selectors, and rendering remain outside this initial scope.
 
 - Depend on flate 0.9.0 (from 0.8.5). Its ZIP reader checks the CRC-32 of
   every entry while it reads and its error does not say which entry failed:
@@ -792,7 +843,14 @@ covers changes that have landed on `main` but are not yet published.
   of `transaction` and `raw` report such a package as an unreadable ZIP
   package (they reported the detector's message, with the name).
 
-### moonbitlang/office [Unreleased]
+### moonbitlang/office [0.3.0]
+
+- Built on moonbitlang/office-lib 0.7.0 (from 0.6.2), docx2html 0.7.0
+  (from 0.6.1), mbtexcel 0.3.0 (from 0.2.1), pagelayout 0.8.0 (from 0.2.1)
+  and ooxml 0.1.0 (new).
+
+- Add PPTX identification, slide outlines, slide/notes text extraction, and
+  transactional one-slide creation to the unified Office CLI.
 
 - Depend on flate 0.9.0 (from 0.8.5). A package with an entry that fails
   its CRC-32 is `office.invalid_package`, "invalid Office package: entry
