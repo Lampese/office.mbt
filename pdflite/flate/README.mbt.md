@@ -1,8 +1,11 @@
 # pdflite/flate
 
-`moonbitlang/pdflite/flate` adapts `moonbit-community/flate/zlib` for PDF streams. It
-works on `Bytes` and `BytesView`, exposes default and level-controlled encoders,
-and can decode one Flate stream prefix from a larger byte sequence.
+`moonbitlang/pdflite/flate` adapts `moonbit-community/flate` for PDF streams: its
+streaming zlib encoder, and for decoding its raw inflater under this package's own
+reading of the zlib header and checksum, with its zlib decoder behind it for every
+stream that is not complete and right. It works on `Bytes` and `BytesView`, exposes
+default and level-controlled encoders, and can decode one Flate stream prefix from
+a larger byte sequence.
 
 ```mermaid
 flowchart LR
@@ -54,6 +57,9 @@ test "prefix decoder reports consumed compressed bytes" {
 - Compression levels outside 0–9 raise `InvalidFlateData`.
 - Compressed bytes may differ from older miniz-based releases; the public
   signatures and decoded content are preserved.
+- The package keeps one encoder per level that was used, one inflater and one
+  array of 32 KiB for the process. A call writes into that array first and
+  returns a copy; calls do not suspend, so they cannot overlap.
 
 ## Pedantic Boundaries
 
@@ -74,6 +80,10 @@ test "prefix decoder reports consumed compressed bytes" {
 - README examples are blackbox tests for public Flate APIs.
 - Keep exact-byte tests for decoded output and malformed-header tests in the
   package test suite.
+- `pdf_flate_pins_wbtest.mbt` holds the compressed bytes of the encoder and the
+  decoder's verdicts on damaged streams. They change only with the compression
+  library: a failure there means that every PDF this package writes changed, or
+  that damaged input is read differently.
 - Run `moon test flate/README.mbt.md` after editing this file.
 - Run `moon info` before review; this README should not change
   `flate/pkg.generated.mbti`.
