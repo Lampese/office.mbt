@@ -272,17 +272,17 @@ async fn info(input : String, json : Bool) -> Result[Unit, String] {
       let violations = model.validate()
       if json {
         let report : Json = {
-          "pages": model.pages.length().to_json(),
-          "page_width_pt": width.to_json(),
-          "page_height_pt": height.to_json(),
-          "fonts": model.fonts.length().to_json(),
-          "runs": runs.to_json(),
-          "characters": characters.to_json(),
-          "valid": (violations.length() == 0).to_json(),
-          "dropped_characters": dropped.to_json(),
-          "uncovered_codepoints": uncovered.length().to_json(),
-          "pdf_unembeddable_images": dropped_images.to_json(),
-          "not_laid_out": unsupported.length().to_json(),
+          "pages": Json(model.pages.length()),
+          "page_width_pt": Json(width),
+          "page_height_pt": Json(height),
+          "fonts": Json(model.fonts.length()),
+          "runs": Json(runs),
+          "characters": Json(characters),
+          "valid": Json(violations.length() == 0),
+          "dropped_characters": Json(dropped),
+          "uncovered_codepoints": Json(uncovered.length()),
+          "pdf_unembeddable_images": Json(dropped_images),
+          "not_laid_out": Json(unsupported.length()),
         }
         @stdio.stdout.write(report.stringify() + "\n")
       } else {
