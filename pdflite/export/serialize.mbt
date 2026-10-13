@@ -225,8 +225,24 @@ fn SerializeContext::put_stream(
 /// images: krilla's `deflate_encode`) is compressed for every document, as
 /// krilla does; an image can keep its compressed samples itself
 /// ([Image::deflated]).
+///
+/// `subset` is the lookup of krilla's `subset_font` (`text/cid.rs`): the
+/// subset of a font that a document embeds, with the bounding box of its
+/// glyphs ([FontSubset]). It is called for every font with glyphs that are
+/// embedded as outlines, with the font, with the glyph IDs of the font that
+/// the document uses, in the order of their numbers in the subset
+/// (`.notdef` first; what a glyph remapper holds), and with the
+/// computation. The subset can have more glyphs than these, the components
+/// of composite glyphs, which the subsetter adds behind them. The result is
+/// a function of the font's data, its index in a collection, its variation
+/// coordinates and those glyph IDs, and of nothing else of the font or the
+/// document. The glyph IDs are a view of an array of the document: a host
+/// that keeps them copies them. The computation raises if the font cannot
+/// be subset; that error names the font of this document, so it is the
+/// error to raise for this document and not one to keep for another.
 pub struct Memo {
   priv deflate : (Bytes, (Bytes) -> Bytes) -> Bytes
+  priv subset : (Font, ArrayView[Int32], () -> FontSubset raise ExportError) -> FontSubset raise ExportError
 }
 
 ///|
@@ -234,13 +250,54 @@ pub struct Memo {
 /// without the one that is left out, so `Memo()` keeps nothing, which is
 /// what a document uses that is given no [Memo]. (A lookup that is added
 /// later is another optional parameter: calls stay what they are.)
-pub fn Memo::Memo(deflate? : (Bytes, (Bytes) -> Bytes) -> Bytes) -> Memo {
+pub fn Memo::Memo(
+  deflate? : (Bytes, (Bytes) -> Bytes) -> Bytes,
+  subset? : (Font, ArrayView[Int32], () -> FontSubset raise ExportError) -> FontSubset raise ExportError,
+) -> Memo {
   {
     deflate: match deflate {
       Some(deflate) => deflate
       None => (data, compute) => compute(data)
     },
+    subset: match subset {
+      Some(subset) => subset
+      None => (_, _, compute) => compute()
+    },
   }
+}
+
+///|
+/// The subset of a font as a document embeds it: the font file of the
+/// subset, the number of its glyphs and the bounding box of their outlines
+/// (what krilla's `subset_font` returns). It is made by the package and
+/// kept, if at all, by the host of a document ([Memo]); nothing of it
+/// changes after it is made.
+pub struct FontSubset {
+  priv data : Bytes
+  priv num_glyphs : Int32
+  priv bbox : (Float, Float, Float, Float)
+}
+
+///|
+/// The number of bytes of the subset's font file: what a host that keeps
+/// subsets holds per subset.
+pub fn FontSubset::size(self : FontSubset) -> Int32 {
+  self.data.length()
+}
+
+///|
+/// The subset of a font for the glyphs of the remapper (krilla's memoized
+/// `subset_font`): looked up by the host of the document, or computed
+/// ([subset_font]).
+fn SerializeContext::subset_font(
+  self : SerializeContext,
+  font : Font,
+  glyph_remapper : @subsetter.GlyphRemapper,
+) -> FontSubset raise ExportError {
+  (self.memo.subset)(font, glyph_remapper.remapped_gids(), () => {
+    let (data, num_glyphs, bbox) = subset_font(font, glyph_remapper)
+    { data, num_glyphs, bbox, }
+  })
 }
 
 ///|
