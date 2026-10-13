@@ -31,6 +31,33 @@ covers changes that have landed on `main` but are not yet published.
   compressing takes 10 % fewer instructions (377 to 338 million),
   decompressing 65 % fewer (506 to 176 million).
 
+- Flate streams are compressed and decompressed with less copying; the
+  bytes and the errors are what they were. The encoder's output was
+  drained into a window of 32 KiB and copied from there byte by byte: the
+  encoder now writes into the free end of one array (an array that the
+  package keeps for the first 32 KiB, a larger one of the call's own
+  beyond that), and the result is one copy of what it wrote. The
+  compressed bytes cannot change with this: the stream of the streaming
+  encoder does not depend on the windows it is drained into. The decoder
+  was a `@zlib.Decoder` per stream, which takes its input 64 KiB at a
+  time and copies what a step leaves, with the output copied byte by
+  byte. A stream that is complete, right and within the output limit is
+  now decoded by one raw inflater that the package keeps and resets, on
+  the input as it is, under the package's own reading of the two bytes of
+  zlib header and of the Adler-32, into one array the same way. Anything
+  else (damage, a cut stream, an output over the limit) is decoded again
+  by the loop that was the decoder before, so which error it is, and
+  whether it is the limit or the damage where a stream has both, cannot
+  differ from what it was; damaged input costs twice.
+  `flate/pdf_flate_reuse_wbtest.mbt` holds the two decoders against each
+  other. On the 128 streams of a 117-page document (6.5 MB), native, with
+  flate 0.9.0: compressing 338 to 329 million instructions (-3 %),
+  decompressing 176 to 75 million (-58 %); from the release with flate
+  0.8.5 that is -13 % and -85 % (26 to 24 ms and 73 to 7 ms). The
+  one-shot `@zlib.compress` would be faster still and its streams
+  smaller, but they are other bytes, so it is not used: every PDF would
+  change.
+
 ### moonbitlang/pdflite [0.3.11]
 
 - `export`: the host of a document can keep the compressed content streams

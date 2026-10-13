@@ -1,6 +1,8 @@
 import {
   "moonbitlang/pdflite/core",
   "moonbitlang/core/buffer",
+  "moonbit-community/flate" @deflate,
+  "moonbit-community/flate/checksum",
   "moonbit-community/flate/zlib",
 }
 
