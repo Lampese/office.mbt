@@ -12,7 +12,7 @@ Breaking and notable changes for the published modules in this workspace.
 Entries are grouped by module and by the version they ship in; `Unreleased`
 covers changes that have landed on `main` but are not yet published.
 
-### moonbitlang/pdflite [Unreleased]
+### moonbitlang/pdflite [0.3.11]
 
 - `export`: the host of a document can keep the compressed content streams
   between documents. krilla memoizes `deflate_encode_memoized` by the bytes
