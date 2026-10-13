@@ -4,13 +4,14 @@ fn bounded_invalid_xlsx_archive() -> @zip.Archive raise {
   source.add("payload.bin", b"not an XLSX workbook")
   let limits = xlsx_read_limits()
   @zip.read(
-    @zip.write_preserving(source),
-    limits=@zip.ReadLimits::default()
-      .with_package_limit(limits.max_package_bytes())
-      .with_entries_limit(limits.max_archive_entries())
-      .with_entry_limit(limits.max_entry_uncompressed_bytes())
-      .with_total_limit(limits.max_total_uncompressed_bytes())
-      .with_preserved_source_limit(limits.max_total_preserved_source_bytes()),
+    @zip.write(source, preserve=true),
+    limits=ReadLimits(
+      max_package_bytes=limits.max_package_bytes(),
+      max_entries=limits.max_archive_entries(),
+      max_entry_uncompressed_bytes=limits.max_entry_uncompressed_bytes(),
+      max_total_uncompressed_bytes=limits.max_total_uncompressed_bytes(),
+      max_preserved_source_bytes=limits.max_total_preserved_source_bytes(),
+    ),
   )
 }
 

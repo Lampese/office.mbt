@@ -64,7 +64,7 @@ test "integration x14 icon-set with sparkline and slicer coexistence" {
     "xl/worksheets/sheet2.xml",
     @encoding/utf8.encode(updated_sheet),
   )
-  let updated_bytes = @zip.write_preserving(updated_archive) catch {
+  let updated_bytes = @zip.write(updated_archive, preserve=true) catch {
     ZipError(_, message) => fail("zip write failed: \{message}")
   }
 

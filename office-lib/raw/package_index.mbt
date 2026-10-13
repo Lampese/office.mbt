@@ -1607,12 +1607,13 @@ fn read_bounded_archive(data : BytesView) -> @zip.Archive raise RawError {
   }
   let archive = @zip.read(
     data,
-    limits=@zip.ReadLimits::default()
-      .with_package_limit(raw_max_package_bytes)
-      .with_entries_limit(raw_max_archive_entries)
-      .with_entry_limit(raw_max_entry_bytes)
-      .with_total_limit(raw_max_total_uncompressed_bytes)
-      .with_preserved_source_limit(raw_max_total_preserved_source_bytes),
+    limits=ReadLimits(
+      max_package_bytes=raw_max_package_bytes,
+      max_entries=raw_max_archive_entries,
+      max_entry_uncompressed_bytes=raw_max_entry_bytes,
+      max_total_uncompressed_bytes=raw_max_total_uncompressed_bytes,
+      max_preserved_source_bytes=raw_max_total_preserved_source_bytes,
+    ),
   ) catch {
     ZipError(LimitExceeded(kind, limit, actual), _) =>
       raise raw_error(

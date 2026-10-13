@@ -216,7 +216,7 @@ test "row customFormat boundaries control style inheritance after roundtrip" {
     .replace(old="<row r=\"3\">", new="<row r=\"3\" customFormat=\"1\">")
   assert_true(archive.replace(path, @encoding/utf8.encode(patched)))
 
-  let parsed = read(@zip.write_preserving(archive))
+  let parsed = read(@zip.write(archive, preserve=true))
   guard parsed.sheet("S") is Some(parsed_sheet) else {
     fail("expected parsed worksheet")
   }
@@ -247,7 +247,7 @@ test "row customFormat boundaries control style inheritance after roundtrip" {
   assert_true(
     rewritten_xml.contains("<row r=\"3\" s=\"0\" customFormat=\"1\">"),
   )
-  let reparsed = read(@zip.write_preserving(rewritten))
+  let reparsed = read(@zip.write(rewritten, preserve=true))
   guard reparsed.sheet("S") is Some(reparsed_sheet) else {
     fail("expected reparsed worksheet")
   }

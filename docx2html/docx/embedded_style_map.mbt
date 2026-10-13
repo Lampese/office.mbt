@@ -85,7 +85,7 @@ fn zip_write_entries(entries : Array[ZipWriteEntry]) -> Bytes raise DocxError {
   for entry in entries {
     archive.add(entry.path, entry.content, compression=Deflate)
   }
-  @mbtzip.write_preserving(archive) catch {
+  @mbtzip.write(archive, preserve=true) catch {
     ZipError(_, msg) =>
       raise InvalidZip(message="failed to write ZIP archive: \{msg}")
   }

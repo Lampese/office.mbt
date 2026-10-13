@@ -89,7 +89,7 @@ test "DOCX view treats directory records as exact physical identities" {
     _ => fail("expected an exact duplicate directory to be rejected")
   }
 
-  let duplicate_bytes = @mbtzip.write_preserving(duplicate)
+  let duplicate_bytes = @mbtzip.write(duplicate, preserve=true)
   try @zip.open_zip(duplicate_bytes) catch {
     InvalidZip(message~) =>
       inspect(message, content="duplicate ZIP entry name: word/")

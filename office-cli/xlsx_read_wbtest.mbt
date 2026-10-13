@@ -96,12 +96,13 @@ fn xlsx_bounded_test_source(
 ) -> OfficeReadPackage raise {
   let archive = @zip.read(
     bytes,
-    limits=@zip.ReadLimits::default()
-      .with_package_limit(office_read_max_package_bytes)
-      .with_entries_limit(office_read_max_zip_entries)
-      .with_entry_limit(office_read_max_zip_entry_bytes)
-      .with_total_limit(office_read_max_zip_total_bytes)
-      .with_preserved_source_limit(office_read_max_preserved_source_bytes),
+    limits=ReadLimits(
+      max_package_bytes=office_read_max_package_bytes,
+      max_entries=office_read_max_zip_entries,
+      max_entry_uncompressed_bytes=office_read_max_zip_entry_bytes,
+      max_total_uncompressed_bytes=office_read_max_zip_total_bytes,
+      max_preserved_source_bytes=office_read_max_preserved_source_bytes,
+    ),
   )
   { file, format: Xlsx, bytes: Bytes::new(0), archive, }
 }
@@ -245,7 +246,7 @@ fn xlsx_strict_test_bytes() -> Bytes raise {
     @utf8.encode(workbook_relationships),
   )
   archive.add("xl/worksheets/sheet.xml", @utf8.encode(worksheet))
-  @zip.write_preserving(archive)
+  @zip.write(archive, preserve=true)
 }
 
 ///|
@@ -316,7 +317,7 @@ fn xlsx_relocated_test_bytes() -> Bytes raise {
   archive.add("art/Drawing.xml", @utf8.encode(drawing))
   archive.add("art/_rels/Drawing.xml.rels", @utf8.encode(drawing_relationships))
   archive.add("charts/Chart.xml", @utf8.encode(chart))
-  @zip.write_preserving(archive)
+  @zip.write(archive, preserve=true)
 }
 
 ///|
@@ -348,7 +349,7 @@ fn xlsx_default_declared_relocated_test_bytes() -> Bytes raise {
       data_descriptor=entry.data_descriptor(),
     )
   }
-  @zip.write_preserving(archive)
+  @zip.write(archive, preserve=true)
 }
 
 ///|
@@ -922,7 +923,7 @@ test "XLSX followers reject oversized shared masters before translation" {
   assert_true(archive.replace(path, @utf8.encode(updated)))
   let source = xlsx_bounded_test_source(
     "oversized-shared-formula.xlsx",
-    @zip.write_preserving(archive),
+    @zip.write(archive, preserve=true),
   )
   let projection = open_xlsx_projection(source, 10)
   guard resolve_xlsx_selector(projection, "/xlsx/sheet[name=\"Data\"]/cell[B1]")
@@ -976,7 +977,7 @@ test "XLSX structured reads reject shared-formula followers without a master" {
   assert_true(archive.replace(path, @utf8.encode(malformed)))
   let source = xlsx_bounded_test_source(
     "missing-shared-master.xlsx",
-    @zip.write_preserving(archive),
+    @zip.write(archive, preserve=true),
   )
   let error = xlsx_cli_error(() => ignore(open_xlsx_projection(source, 10)))
   assert_eq(error.code, "office.invalid_package")
@@ -1249,15 +1250,16 @@ test "XLSX structured reads reject non-finite package numbers" {
       @utf8.encode(sheet_xml.replace(old="<v>1</v>", new="<v>NaN</v>")),
     ),
   )
-  let bytes = @zip.write_preserving(archive)
+  let bytes = @zip.write(archive, preserve=true)
   let bounded = try! @zip.read(
     bytes,
-    limits=@zip.ReadLimits::default()
-      .with_package_limit(office_read_max_package_bytes)
-      .with_entries_limit(office_read_max_zip_entries)
-      .with_entry_limit(office_read_max_zip_entry_bytes)
-      .with_total_limit(office_read_max_zip_total_bytes)
-      .with_preserved_source_limit(office_read_max_preserved_source_bytes),
+    limits=ReadLimits(
+      max_package_bytes=office_read_max_package_bytes,
+      max_entries=office_read_max_zip_entries,
+      max_entry_uncompressed_bytes=office_read_max_zip_entry_bytes,
+      max_total_uncompressed_bytes=office_read_max_zip_total_bytes,
+      max_preserved_source_bytes=office_read_max_preserved_source_bytes,
+    ),
   )
   let source : OfficeReadPackage = {
     file: "non-finite.xlsx",
@@ -1288,7 +1290,7 @@ test "XLSX parse-time index corruption is classified as an invalid package" {
   )
   let shared_source = xlsx_bounded_test_source(
     "broken-shared.xlsx",
-    @zip.write_preserving(shared_archive),
+    @zip.write(shared_archive, preserve=true),
   )
   let shared = xlsx_cli_error(() => {
     ignore(open_xlsx_projection(shared_source, 10))
@@ -1314,7 +1316,7 @@ test "XLSX parse-time index corruption is classified as an invalid package" {
   )
   let style_source = xlsx_bounded_test_source(
     "broken-style.xlsx",
-    @zip.write_preserving(style_archive),
+    @zip.write(style_archive, preserve=true),
   )
   let style = xlsx_cli_error(() => {
     ignore(open_xlsx_projection(style_source, 10))
@@ -1346,7 +1348,7 @@ test "XLSX style parsing rejects non-finite JSON-facing numbers" {
     ),
   )
   let result : Result[@xlsx.Workbook, Error] = Ok(
-    @xlsx.read(@zip.write_preserving(archive)),
+    @xlsx.read(@zip.write(archive, preserve=true)),
   ) catch {
     error => Err(error)
   }
@@ -1376,7 +1378,7 @@ async test "XLSX displayed text preserves formula results formatted to blank" {
   )
   let projection = make_xlsx_projection(
     "blank-display.xlsx",
-    try! @xlsx.read(@zip.write_preserving(archive)),
+    try! @xlsx.read(@zip.write(archive, preserve=true)),
     10,
   )
   let under = Some(
@@ -1479,7 +1481,7 @@ async test "XLSX cached empty formula results remain distinct from a missing cac
   assert_true(
     archive.replace("xl/worksheets/sheet1.xml", @utf8.encode(cached_xml)),
   )
-  let parsed = @xlsx.read(@zip.write_preserving(archive))
+  let parsed = @xlsx.read(@zip.write(archive, preserve=true))
   guard parsed.sheet("Data") is Some(parsed_sheet) &&
     parsed_sheet.get_cell_formula_info_rc(1, 1) is Some(info) else {
     fail("expected cached formula metadata")
@@ -1510,7 +1512,7 @@ async test "XLSX cached empty formula results remain distinct from a missing cac
       ),
     ),
   )
-  let compact = @xlsx.read(@zip.write_preserving(compact_archive))
+  let compact = @xlsx.read(@zip.write(compact_archive, preserve=true))
   guard compact.sheet("Data") is Some(compact_sheet) &&
     compact_sheet.get_cell_formula_info_rc(1, 1) is Some(compact_info) else {
     fail("expected compact cached formula metadata")

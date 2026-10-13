@@ -42,12 +42,13 @@ test "archive-backed raw boundary rechecks limits regardless of provenance" {
   assert_eq(@raw.raw_identify_archive("unbounded.docx", unbounded), Docx)
   let bounded = @zip.read(
     original,
-    limits=@zip.ReadLimits::default()
-      .with_package_limit(original.length())
-      .with_entries_limit(8192)
-      .with_entry_limit(64 * 1024 * 1024)
-      .with_total_limit(256 * 1024 * 1024)
-      .with_preserved_source_limit(original.length()),
+    limits=ReadLimits(
+      max_package_bytes=original.length(),
+      max_entries=8192,
+      max_entry_uncompressed_bytes=64 * 1024 * 1024,
+      max_total_uncompressed_bytes=256 * 1024 * 1024,
+      max_preserved_source_bytes=original.length(),
+    ),
   )
   assert_eq(@raw.raw_identify_archive("bounded.docx", bounded.clone()), Docx)
   let changed = bounded.clone()
@@ -322,7 +323,7 @@ test "raw package metadata fields are bounded before portable validation" {
       "<w:document xmlns:w=\"\{word_namespace}\"><w:body/></w:document>",
     ),
   )
-  let package_data = @zip.write_preserving(archive)
+  let package_data = @zip.write(archive, preserve=true)
   assert_eq(
     raw_error_code(() => @raw.raw_inventory("bounded.docx", package_data)),
     "office.raw.resource_limit",

@@ -95,7 +95,7 @@ fn inject_rich_value_image(base : Bytes, media : Bytes) -> Bytes raise {
     ),
   )
   patched.add("xl/media/rv1.png", media)
-  @zip.write_preserving(patched)
+  @zip.write(patched, preserve=true)
 }
 
 ///|
@@ -193,7 +193,7 @@ fn inject_mismatched_rich_value(base : Bytes) -> Bytes raise {
     ),
   )
   patched.add("xl/media/rv1.png", b"png")
-  @zip.write_preserving(patched)
+  @zip.write(patched, preserve=true)
 }
 
 ///|
@@ -269,7 +269,7 @@ fn inject_web_image(base : Bytes, media : Bytes) -> Bytes raise {
     ),
   )
   patched.add("xl/media/web1.png", media)
-  @zip.write_preserving(patched)
+  @zip.write(patched, preserve=true)
 }
 
 ///|
@@ -368,7 +368,7 @@ fn inject_local_key_wins(base : Bytes, media : Bytes) -> Bytes raise {
     ),
   )
   patched.add("xl/media/web1.png", media)
-  @zip.write_preserving(patched)
+  @zip.write(patched, preserve=true)
 }
 
 ///|

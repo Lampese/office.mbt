@@ -3145,8 +3145,7 @@ fn enforce_archive_limits(
         actual=size,
       )
     }
-    let actual_crc = match
-      @flate_checksum.crc32_cancellable(entry.data(), cancelled~) {
+    let actual_crc = match crc32_cancellable(entry.data(), cancelled~) {
       None => raise ReadCancelled
       Some(crc) => crc
     }
@@ -3193,14 +3192,17 @@ fn read_limited_archive(
   cancelled~ : () -> Bool = () => false,
 ) -> @zip.Archive raise XlsxError {
   check_read_cancelled(cancelled)
-  let read_limits = @zip.ReadLimits::default()
-    .with_package_limit(limits.max_package_bytes)
-    .with_entries_limit(limits.max_archive_entries)
-    .with_entry_limit(limits.max_entry_uncompressed_bytes)
-    .with_total_limit(limits.max_total_uncompressed_bytes)
-    // The ZIP package preserves exact source records for lossless rewrites.
-    // Bound that second compressed representation independently from inflation.
-    .with_preserved_source_limit(limits.max_total_preserved_source_bytes)
+  let read_limits = @zip.ReadLimits(
+    max_package_bytes=limits.max_package_bytes,
+    max_entries=limits.max_archive_entries,
+    max_entry_uncompressed_bytes=limits.max_entry_uncompressed_bytes,
+    max_total_uncompressed_bytes=limits.max_total_uncompressed_bytes,
+    // The ZIP reader keeps a copy of the package for lossless rewrites. Bound
+    // that second compressed representation independently from inflation:
+    // flate 0.9.0 compares the length of the package with this limit (0.8.5
+    // counted the records it copied, which left out bytes between them).
+    max_preserved_source_bytes=limits.max_total_preserved_source_bytes,
+  )
   @zip.read(bytes, limits=read_limits, cancelled~) catch {
     ZipError(LimitExceeded(kind, limit, actual), _) =>
       raise ResourceLimitExceeded(
@@ -3209,6 +3211,11 @@ fn read_limited_archive(
         actual~,
       )
     ZipError(Cancelled, _) => raise ReadCancelled
+    // flate 0.9.0 checks the CRC-32 of every entry while it reads; 0.8.5 left
+    // that to `enforce_archive_limits`, whose own check now only meets
+    // entries that passed this one.
+    ZipError(ChecksumMismatch, _) =>
+      raise InvalidPackage(msg="ZIP entry CRC mismatch")
     _ => raise InvalidPackage(msg="unreadable ZIP package")
   }
 }
@@ -6423,4 +6430,30 @@ test "read wb: sheet views and sheet props parser guard branches part 5" {
     },
     content="true",
   )
+}
+
+///|
+/// The CRC-32 of `bytes`, or `None` if `cancelled` says so: it is asked
+/// before the first byte, between chunks of 4096 bytes and after the last.
+/// (flate 0.8.5 had this as `crc32_cancellable`; 0.9.0 checks the CRC of
+/// every entry it reads and has no such function.)
+fn crc32_cancellable(bytes : BytesView, cancelled~ : () -> Bool) -> UInt32? {
+  if cancelled() {
+    return None
+  }
+  let crc = @flate_checksum.Crc32()
+  let mut start = 0
+  while start < bytes.length() {
+    if start > 0 && cancelled() {
+      return None
+    }
+    let end = start + (bytes.length() - start).min(4096)
+    crc.update(bytes[start:end])
+    start = end
+  }
+  if cancelled() {
+    None
+  } else {
+    Some(crc.finish())
+  }
 }

@@ -20,7 +20,7 @@ fn wb_rewrite_content_types(
       data_descriptor=entry.data_descriptor(),
     )
   }
-  @zip.write_preserving(result)
+  @zip.write(result, preserve=true)
 }
 
 ///|
@@ -46,12 +46,13 @@ fn wb_large_candidate(data : BytesView) -> Bytes raise {
 fn wb_archive_retained_cost(bytes : BytesView) -> Int64 raise {
   let archive = @zip.read(
     bytes,
-    limits=@zip.ReadLimits::default()
-      .with_package_limit(transaction_max_package_bytes)
-      .with_entries_limit(transaction_max_archive_entries)
-      .with_entry_limit(transaction_max_entry_uncompressed_bytes)
-      .with_total_limit(transaction_max_total_uncompressed_bytes)
-      .with_preserved_source_limit(transaction_archive_source_limit(bytes)),
+    limits=ReadLimits(
+      max_package_bytes=transaction_max_package_bytes,
+      max_entries=transaction_max_archive_entries,
+      max_entry_uncompressed_bytes=transaction_max_entry_uncompressed_bytes,
+      max_total_uncompressed_bytes=transaction_max_total_uncompressed_bytes,
+      max_preserved_source_bytes=transaction_archive_source_limit(bytes),
+    ),
   )
   transaction_archive_retained_cost(bytes, archive) +
   transaction_archive_name_reserve(
@@ -76,7 +77,7 @@ test "archive name projections are bounded and charged before indexing" {
     "custom/" + "x".repeat(transaction_max_part_length) + ".xml",
     b"",
   )
-  let oversized_bytes = @zip.write_preserving(oversized)
+  let oversized_bytes = @zip.write(oversized, preserve=true)
   try
     ignore(
       read_transaction_archive(
@@ -108,15 +109,16 @@ test "archive name projections are bounded and charged before indexing" {
   for index in 0..<1_024 {
     many.add("custom/\{index}-\{suffix}.xml", b"")
   }
-  let many_bytes = @zip.write_preserving(many)
+  let many_bytes = @zip.write(many, preserve=true)
   let parsed = @zip.read(
     many_bytes,
-    limits=@zip.ReadLimits::default()
-      .with_package_limit(transaction_max_package_bytes)
-      .with_entries_limit(transaction_max_archive_entries)
-      .with_entry_limit(transaction_max_entry_uncompressed_bytes)
-      .with_total_limit(transaction_max_total_uncompressed_bytes)
-      .with_preserved_source_limit(transaction_archive_source_limit(many_bytes)),
+    limits=ReadLimits(
+      max_package_bytes=transaction_max_package_bytes,
+      max_entries=transaction_max_archive_entries,
+      max_entry_uncompressed_bytes=transaction_max_entry_uncompressed_bytes,
+      max_total_uncompressed_bytes=transaction_max_total_uncompressed_bytes,
+      max_preserved_source_bytes=transaction_archive_source_limit(many_bytes),
+    ),
   )
   let base_cost = transaction_archive_retained_cost(many_bytes, parsed)
   let name_reserve = transaction_archive_name_reserve(
@@ -265,12 +267,13 @@ fn wb_read_transaction_archive_with_limits(
 ) -> @zip.Archive raise TransactionError {
   @zip.read(
     bytes,
-    limits=@zip.ReadLimits::default()
-      .with_package_limit(transaction_max_package_bytes)
-      .with_entries_limit(max_entries)
-      .with_entry_limit(max_entry_uncompressed_bytes)
-      .with_total_limit(max_total_uncompressed_bytes)
-      .with_preserved_source_limit(transaction_archive_source_limit(bytes)),
+    limits=ReadLimits(
+      max_package_bytes=transaction_max_package_bytes,
+      max_entries~,
+      max_entry_uncompressed_bytes~,
+      max_total_uncompressed_bytes~,
+      max_preserved_source_bytes=transaction_archive_source_limit(bytes),
+    ),
   ) catch {
     ZipError(LimitExceeded(kind, limit, actual), _) =>
       raise resource_limit_error(
@@ -1097,7 +1100,7 @@ fn wb_archive(entries : Array[(String, Bytes)]) -> Bytes raise {
     let (name, bytes) = entry
     archive.add(name, bytes)
   }
-  @zip.write_preserving(archive)
+  @zip.write(archive, preserve=true)
 }
 
 ///|
@@ -1216,7 +1219,7 @@ fn wb_near_splice_limit_docx(token_units : Int32) -> (Bytes, Int32) raise {
       data_descriptor=entry.data_descriptor(),
     )
   }
-  (@zip.write_preserving(result), prefix.length() + 1)
+  (@zip.write(result, preserve=true), prefix.length() + 1)
 }
 
 ///|
@@ -1420,8 +1423,9 @@ async test "source-near-envelope budget rejects during ZIP planning" {
               Bytes::makei(growth_size, index => (index & 0xff).to_byte()),
               compression=Store,
             )
-            let candidate = @zip.write_preserving_limited(
+            let candidate = @zip.write(
               archive,
+              preserve=true,
               max_output_bytes=budget.max_candidate_package_bytes(),
             ) catch {
               ZipError(LimitExceeded(OutputBytes, _limit, _actual), _) => {

@@ -204,7 +204,7 @@ test "foreign style elements cannot spoof core fonts or cell formats" {
     fail("styles injection marker was not found")
   }
   assert_true(archive.replace("xl/styles.xml", @encoding/utf8.encode(modified)))
-  let parsed = @xlsx.read(@zip.write_preserving(archive))
+  let parsed = @xlsx.read(@zip.write(archive, preserve=true))
   inspect(parsed.get_default_font(), content="Arial")
   inspect(parsed.styles().length(), content="2")
   debug_inspect(parsed.get_cell_style("Sheet1", "A1"), content="Some(1)")
@@ -238,7 +238,7 @@ test "styles extLst roundtrip" {
     }
   }
   updated_archive.add("xl/styles.xml", @encoding/utf8.encode(updated_styles))
-  let updated_bytes = @zip.write_preserving(updated_archive) catch {
+  let updated_bytes = @zip.write(updated_archive, preserve=true) catch {
     ZipError(_, message) => fail("zip write failed: \{message}")
   }
   let parsed = @xlsx.read(updated_bytes)
@@ -292,7 +292,7 @@ test "styles tableStyles defaults roundtrip" {
     }
   }
   updated_archive.add("xl/styles.xml", @encoding/utf8.encode(updated_styles))
-  let updated_bytes = @zip.write_preserving(updated_archive) catch {
+  let updated_bytes = @zip.write(updated_archive, preserve=true) catch {
     ZipError(_, message) => fail("zip write failed: \{message}")
   }
   let parsed = @xlsx.read(updated_bytes)

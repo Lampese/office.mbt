@@ -64,7 +64,7 @@ fn docx_bytes(
     }
     None => ()
   }
-  @zip.write_preserving(archive)
+  @zip.write(archive, preserve=true)
 }
 
 ///|
@@ -343,7 +343,7 @@ test "tabs, line breaks and hyperlink runs contribute text" {
 test "missing document part is reported, not panicked" {
   let archive = @zip.Archive()
   archive.add("word/styles.xml", b"<x/>")
-  let bytes = @zip.write_preserving(archive)
+  let bytes = @zip.write(archive, preserve=true)
   try @docx.read_docx(bytes) catch {
     err => inspect(err is @core.DocxError::MissingPart(..), content="true")
   } noraise {
@@ -1140,7 +1140,7 @@ fn docx_with_furniture(body : String) -> Bytes raise {
       "><w:p><w:r><w:t>Page footer</w:t></w:r></w:p></w:ftr>",
     ),
   )
-  @zip.write_preserving(archive)
+  @zip.write(archive, preserve=true)
 }
 
 ///|
@@ -1265,7 +1265,7 @@ fn docx_with_image(drawing : String) -> Bytes raise {
     ),
   )
   archive.add("word/media/pic.png", tiny_png())
-  @zip.write_preserving(archive)
+  @zip.write(archive, preserve=true)
 }
 
 ///|
@@ -1377,7 +1377,7 @@ fn docx_with_page_field(footer_body : String) -> Bytes raise {
       "<?xml version=\"1.0\"?><w:ftr " + ns + ">" + footer_body + "</w:ftr>",
     ),
   )
-  @zip.write_preserving(archive)
+  @zip.write(archive, preserve=true)
 }
 
 ///|

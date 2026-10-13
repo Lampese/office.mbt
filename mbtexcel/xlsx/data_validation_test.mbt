@@ -130,7 +130,7 @@ test "data validation extension read follows namespace identity" {
       )
     }
   }
-  let new_bytes = @zip.write_preserving(out)
+  let new_bytes = @zip.write(out, preserve=true)
   let parsed = @xlsx.read(new_bytes)
   let dvs = parsed.get_data_validations("Sheet1")
   inspect(dvs.length(), content="1")

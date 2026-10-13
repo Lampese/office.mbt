@@ -101,7 +101,7 @@ test "archive boundary checks serialized, entry, and aggregate limits" {
     }),
     "entry_uncompressed_bytes",
   )
-  let unbounded = @zip.read(@zip.write_preserving(source_archive))
+  let unbounded = @zip.read(@zip.write(source_archive, preserve=true))
   assert_eq(
     wb_raw_archive_limit_kind(() => {
       check_bounded_raw_archive_limits(unbounded, 0, 1, 0, 0, 0)

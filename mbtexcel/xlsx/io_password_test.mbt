@@ -94,7 +94,7 @@ test "standard encryption distinguishes wrong passwords from malformed XLSX" {
   archive.add("unrelated.txt", b"not a workbook")
   let options = @xlsx.Options::with_values(password="correct")
   let malformed_encrypted = @xlsx.encrypt(
-    @zip.write_preserving(archive),
+    @zip.write(archive, preserve=true),
     options~,
   )
   let malformed : Result[@xlsx.Workbook, Error] = Ok(

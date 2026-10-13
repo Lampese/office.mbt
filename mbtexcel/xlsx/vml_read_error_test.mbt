@@ -27,7 +27,7 @@ test "read: missing legacyDrawing vml relationship errors" {
     "xl/worksheets/_rels/sheet1.xml.rels",
     @encoding/utf8.encode(bad_rels),
   )
-  let updated_bytes = @zip.write_preserving(updated) catch {
+  let updated_bytes = @zip.write(updated, preserve=true) catch {
     ZipError(_, message) => fail("zip write failed: \{message}")
   }
 
@@ -81,7 +81,7 @@ test "read: missing legacyDrawingHF vml relationship errors" {
     "xl/worksheets/_rels/sheet1.xml.rels",
     @encoding/utf8.encode(bad_rels),
   )
-  let updated_bytes = @zip.write_preserving(updated) catch {
+  let updated_bytes = @zip.write(updated, preserve=true) catch {
     ZipError(_, message) => fail("zip write failed: \{message}")
   }
 

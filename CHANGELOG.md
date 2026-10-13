@@ -12,6 +12,25 @@ Breaking and notable changes for the published modules in this workspace.
 Entries are grouped by module and by the version they ship in; `Unreleased`
 covers changes that have landed on `main` but are not yet published.
 
+### moonbitlang/pdflite [Unreleased]
+
+- Depends on `moonbit-community/flate` 0.9.0 (from 0.8.5), as does every
+  other module of the workspace that uses flate (ooxml, docx2html,
+  mbtexcel, office-lib, office, pagelayout, pptx). The compressed bytes
+  are what 0.8.5 wrote, so every PDF is byte for byte what it was: the
+  tests that pin them pass unchanged (`flate/pdf_flate_pins_wbtest.mbt`:
+  eleven kinds of stream at the ten levels and 760 outputs around the
+  edges of the output window; the vectors of
+  `flate/pdf_flate_determinism_wbtest.mbt`; the 34 documents of
+  `export/text_random_test.mbt`; docx2html's `commented.docx` and
+  mbtexcel's large workbook), and so do 2651 files of this repository
+  (71 MB) at level 6 and 1351 of them at every level, compressed by both
+  versions. What the decoder makes of damaged input is unchanged too
+  (20 185 damaged streams, `flate/pdf_flate_pins_wbtest.mbt`). flate
+  0.9.0 alone, on the 128 streams of a 117-page document (6.5 MB), native:
+  compressing takes 10 % fewer instructions (377 to 338 million),
+  decompressing 65 % fewer (506 to 176 million).
+
 ### moonbitlang/pdflite [0.3.11]
 
 - `export`: the host of a document can keep the compressed content streams
@@ -684,6 +703,25 @@ covers changes that have landed on `main` but are not yet published.
   Existing `docx2html/opc` functions and registry types remain available through
   re-exports; DOCX-specific validation and resource budgets remain in DOCX.
 
+- Depend on flate 0.9.0 (from 0.8.5). Its ZIP reader checks the CRC-32 of
+  every entry while it reads and its error does not say which entry failed,
+  so `validate_docx_package` reports a package with such an entry as the
+  one finding `entry data does not match its stored CRC-32`; with 0.8.5
+  the finding ended with the name of the entry and the validation went on
+  to the other findings. `validate_docx_archive` is unchanged.
+  `max_zip_total_preserved_source_bytes` is compared with the length of
+  the package now (0.8.5 counted the records it copied): with the default,
+  the package limit and a comment, nothing changes; a caller's lower limit
+  can now refuse a package with bytes between its records, and no longer
+  refuses one for records that overlap. Packages that are written are
+  byte for byte what they were (the tests that pin them pass unchanged),
+  with one exception that is flate's: a package whose central directory
+  lists the entries in another order than they are stored keeps the order
+  of its directory when it is written with its records preserved, edited
+  or not, where 0.8.5 wrote the directory in the order of the entries
+  (checked with both versions on an archive of two entries with its
+  directory swapped).
+
 ### moonbitlang/pptx [Unreleased]
 
 - Move low-level `opc` and `xml` imports to `moonbitlang/ooxml/...`.
@@ -704,6 +742,35 @@ covers changes that have landed on `main` but are not yet published.
   `ContentTypes::defaults()` / `overrides()`, and `Relationships::items()` for
   snapshots. Package enumeration and part payloads no longer expose writable
   backing storage.
+
+### moonbitlang/mbtexcel [Unreleased]
+
+- Depend on flate 0.9.0 (from 0.8.5). Workbooks that are written are byte
+  for byte what they were (the large workbook of `regression_test.mbt`
+  among them), and a package with an entry that fails its CRC-32 is
+  `InvalidPackage(msg="ZIP entry CRC mismatch")` as before (the ZIP reader
+  finds it now, before the other checks of the archive).
+  `ReadLimits`' `max_total_preserved_source_bytes` is compared with the
+  length of the package now (0.8.5 counted the records it copied): with
+  the default, the package limit and a comment, nothing changes; a lower
+  limit can now refuse a package with bytes between its records, and no
+  longer refuses one for records that overlap.
+
+### moonbitlang/office-lib [Unreleased]
+
+- Depend on flate 0.9.0 (from 0.8.5). Its ZIP reader checks the CRC-32 of
+  every entry while it reads and its error does not say which entry failed:
+  `detect_format` raises `InvalidPackage("entry data does not match its
+  stored CRC-32")` without the name of the entry, and the bounded readers
+  of `transaction` and `raw` report such a package as an unreadable ZIP
+  package (they reported the detector's message, with the name).
+
+### moonbitlang/office [Unreleased]
+
+- Depend on flate 0.9.0 (from 0.8.5). A package with an entry that fails
+  its CRC-32 is `office.invalid_package`, "invalid Office package: entry
+  data does not match its stored CRC-32", without the name of the entry
+  (flate's ZIP reader finds it now and does not say which entry it was).
 
 ### moonbitlang/mbtexcel [0.2.0]
 

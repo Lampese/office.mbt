@@ -1863,10 +1863,7 @@ fn format_from_archive(
     }
     physical_names[name] = true
     let actual_crc = match
-      @flate_checksum.crc32_cancellable(
-        entry.data(),
-        cancelled=context.cancelled,
-      ) {
+      crc32_cancellable(entry.data(), cancelled=context.cancelled) {
       None => raise Cancelled
       Some(crc) => crc
     }
@@ -2026,17 +2023,24 @@ pub fn detect_format(
   }
   let archive = @zip.read(
     data,
-    limits=@zip.ReadLimits::default()
-      .with_package_limit(max_package_bytes)
-      .with_entries_limit(max_archive_entries)
-      .with_entry_limit(max_entry_uncompressed_bytes)
-      .with_total_limit(max_total_uncompressed_bytes)
-      .with_preserved_source_limit(preserved_limit),
+    limits=ReadLimits(
+      max_package_bytes~,
+      max_entries=max_archive_entries,
+      max_entry_uncompressed_bytes~,
+      max_total_uncompressed_bytes~,
+      max_preserved_source_bytes=preserved_limit,
+    ),
     cancelled~,
   ) catch {
     ZipError(LimitExceeded(kind, limit, actual), _) =>
       raise ResourceLimit(kind=zip_limit_kind_name(kind), limit~, actual~)
     _ if cancelled() => raise Cancelled
+    // flate 0.9.0 checks the CRC-32 of every entry while it reads and does
+    // not say which entry failed; 0.8.5 left the check to
+    // `format_from_archive`, which names the entry and now only meets
+    // entries that passed this check.
+    ZipError(ChecksumMismatch, _) =>
+      raise InvalidPackage("entry data does not match its stored CRC-32")
     _ => raise InvalidPackage("archive is not a readable ZIP")
   }
   @opc_zip.validate_zip_headers(data, checkpoint=() => {
@@ -2098,4 +2102,30 @@ pub fn detect_archive_format(
   }
   context.checkpoint()
   actual
+}
+
+///|
+/// The CRC-32 of `bytes`, or `None` if `cancelled` says so: it is asked
+/// before the first byte, between chunks of 4096 bytes and after the last.
+/// (flate 0.8.5 had this as `crc32_cancellable`; 0.9.0 checks the CRC of
+/// every entry it reads and has no such function.)
+fn crc32_cancellable(bytes : BytesView, cancelled~ : () -> Bool) -> UInt32? {
+  if cancelled() {
+    return None
+  }
+  let crc = @flate_checksum.Crc32()
+  let mut start = 0
+  while start < bytes.length() {
+    if start > 0 && cancelled() {
+      return None
+    }
+    let end = start + (bytes.length() - start).min(4096)
+    crc.update(bytes[start:end])
+    start = end
+  }
+  if cancelled() {
+    None
+  } else {
+    Some(crc.finish())
+  }
 }

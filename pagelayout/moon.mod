@@ -17,7 +17,7 @@ import {
   "moonbitlang/x@0.4.50",
   "moonbitlang/docx2html@0.6.1",
   "moonbitlang/pdflite@0.3.2",
-  "moonbit-community/flate@0.8.5",
+  "moonbit-community/flate@0.9.0",
 }
 
 warnings = "+a-unused_optional_argument-unused_default_value-missing_invariant-missing_reasoning"

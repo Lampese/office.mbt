@@ -143,6 +143,16 @@ fn office_zip_read_failure(
           }),
         ),
       )
+    // flate 0.9.0 checks the CRC-32 of every entry while it reads and does
+    // not say which entry failed; with 0.8.5 the package detector found the
+    // mismatch after the read and named the entry.
+    ZipError(ChecksumMismatch, _) =>
+      CliFailure(
+        identify_error(
+          InvalidPackage("entry data does not match its stored CRC-32"),
+          file,
+        ),
+      )
     _ =>
       CliFailure(
         @lib.protocol_error(
@@ -185,12 +195,13 @@ async fn read_office_package(
   )
   let archive = @zip.read(
     data,
-    limits=@zip.ReadLimits::default()
-      .with_package_limit(office_read_max_package_bytes)
-      .with_entries_limit(office_read_max_zip_entries)
-      .with_entry_limit(office_read_max_zip_entry_bytes)
-      .with_total_limit(office_read_max_zip_total_bytes)
-      .with_preserved_source_limit(office_read_max_preserved_source_bytes),
+    limits=ReadLimits(
+      max_package_bytes=office_read_max_package_bytes,
+      max_entries=office_read_max_zip_entries,
+      max_entry_uncompressed_bytes=office_read_max_zip_entry_bytes,
+      max_total_uncompressed_bytes=office_read_max_zip_total_bytes,
+      max_preserved_source_bytes=office_read_max_preserved_source_bytes,
+    ),
     cancelled~,
   ) catch {
     error if cancelled() => raise error

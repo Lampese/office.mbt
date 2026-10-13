@@ -79,7 +79,7 @@ test "external drawing relationships are never dereferenced as package parts" {
     ),
   )
   let result : Result[@xlsx.Workbook, Error] = Ok(
-    @xlsx.read(@zip.write_preserving(archive)),
+    @xlsx.read(@zip.write(archive, preserve=true)),
   ) catch {
     error => Err(error)
   }
@@ -207,8 +207,8 @@ test "picture dimension parsing (emz/wmz)" {
     0xD7, 0xCD, 0xC6, 0x9A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xA0, 0x05, 0xD0,
     0x02, 0xA0, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   ]
-  let emz = @flate_gzip.gzip_compress(emf)
-  let wmz = @flate_gzip.gzip_compress(wmf)
+  let emz = @flate_gzip.compress(emf)
+  let wmz = @flate_gzip.compress(wmf)
   workbook.add_picture_from_bytes("Sheet1", "A1", emz, ".emz")
   workbook.add_picture_from_bytes("Sheet1", "B2", wmz, ".wmz")
   let bytes = @xlsx.write(workbook)

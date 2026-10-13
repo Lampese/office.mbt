@@ -16,7 +16,7 @@ fn rewrite_zip_entry(
     }
   }
   updated.add(path, bytes)
-  @zip.write_preserving(updated)
+  @zip.write(updated, preserve=true)
 }
 
 ///|
@@ -212,7 +212,7 @@ test "ooxml rels: reader rejects case-equivalent part collisions" {
     fail("missing workbook part")
   }
   archive.add("xl/Workbook.xml", workbook_xml)
-  let bytes = @zip.write_preserving(archive)
+  let bytes = @zip.write(archive, preserve=true)
   let result : Result[@xlsx.Workbook, @xlsx.XlsxError] = Ok(@xlsx.read(bytes)) catch {
     error => Err(error)
   }
@@ -279,7 +279,7 @@ test "ooxml rels: relocated workbook path requires root relationship and content
     "[Content_Types].xml",
     @encoding/utf8.encode(patched_content_types),
   )
-  let updated_bytes = @zip.write_preserving(updated) catch {
+  let updated_bytes = @zip.write(updated, preserve=true) catch {
     ZipError(_, message) => fail("zip write failed: \{message}")
   }
   let parsed = @xlsx.read(updated_bytes)
@@ -462,7 +462,7 @@ test "ooxml rels: chartsheet accepts absoluteAnchor drawings" {
   assert_true(
     archive.replace(drawing_path, @encoding/utf8.encode(absolute_drawing)),
   )
-  let parsed = @xlsx.read(@zip.write_preserving(archive))
+  let parsed = @xlsx.read(@zip.write(archive, preserve=true))
   inspect(parsed.chart_sheets().length(), content="1")
   assert_true(parsed.chart_sheets()[0].chart_xml().contains("ABSOLUTE"))
 }
@@ -497,7 +497,7 @@ test "ooxml rels: chartsheet requires its selected drawing part" {
       )
     }
   }
-  let result = Ok(@xlsx.read(@zip.write_preserving(without_drawing))) catch {
+  let result = Ok(@xlsx.read(@zip.write(without_drawing, preserve=true))) catch {
     error => Err(error)
   }
   match result {

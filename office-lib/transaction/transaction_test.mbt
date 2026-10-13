@@ -29,7 +29,7 @@ fn rewrite_content_types_fragment(
   if !replaced {
     fail("fixture did not contain [Content_Types].xml")
   }
-  @zip.write_preserving(result)
+  @zip.write(result, preserve=true)
 }
 
 ///|
@@ -110,7 +110,7 @@ fn transaction_zip_with_descriptors(data : BytesView) -> Bytes raise {
       data_descriptor=true,
     )
   }
-  @zip.write_preserving(result)
+  @zip.write(result, preserve=true)
 }
 
 ///|
@@ -131,7 +131,7 @@ fn transaction_zip_with_directories(
       data_descriptor=entry.data_descriptor(),
     )
   }
-  @zip.write_preserving(result)
+  @zip.write(result, preserve=true)
 }
 
 ///|
@@ -484,7 +484,7 @@ async test "custom identifier cannot replace portable input validation" {
     let input = "\{directory}/input.docx"
     let readable_zip = @zip.Archive()
     readable_zip.add("not-office.txt", b"readable zip")
-    write_test_file(input, @zip.write_preserving(readable_zip))
+    write_test_file(input, @zip.write(readable_zip, preserve=true))
     let identifier_calls = Ref(0)
     let mutated = Ref(false)
     let identifier = @transaction.transaction_identifier("custom-docx", (
@@ -521,7 +521,7 @@ async test "custom identifier cannot replace portable candidate validation" {
     write_test_file(input, original)
     let readable_zip = @zip.Archive()
     readable_zip.add("not-office.txt", b"readable zip")
-    let invalid_candidate = @zip.write_preserving(readable_zip)
+    let invalid_candidate = @zip.write(readable_zip, preserve=true)
     let identifier_calls = Ref(0)
     let identifier = @transaction.transaction_identifier("custom-docx", (
       _path,

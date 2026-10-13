@@ -87,7 +87,7 @@ test "integration unknown worksheet ext roundtrip with mixed known ext" {
     "xl/worksheets/sheet2.xml",
     @encoding/utf8.encode(updated_sheet),
   )
-  let updated_bytes = @zip.write_preserving(updated_archive) catch {
+  let updated_bytes = @zip.write(updated_archive, preserve=true) catch {
     ZipError(_, message) => fail("zip write failed: \{message}")
   }
 

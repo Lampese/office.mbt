@@ -538,13 +538,13 @@ fn image_dimensions_px(
     "emf" => emf_dimensions(data)
     "wmf" => wmf_dimensions(data)
     "emz" =>
-      try @flate_gzip.gunzip(data.to_owned()) catch {
+      try @flate_gzip.decompress(data.to_owned()) catch {
         _ => None
       } noraise {
         bytes => emf_dimensions(bytes)
       }
     "wmz" =>
-      try @flate_gzip.gunzip(data.to_owned()) catch {
+      try @flate_gzip.decompress(data.to_owned()) catch {
         _ => None
       } noraise {
         bytes => wmf_dimensions(bytes)

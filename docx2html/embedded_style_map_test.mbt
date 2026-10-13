@@ -5,7 +5,7 @@ fn style_map_embedding_zip(entries : Array[(String, String)]) -> Bytes raise {
     let (path, text) = entry
     archive.add(path, @utf8.encode(text), compression=Deflate)
   }
-  @mbtzip.write_preserving(archive)
+  @mbtzip.write(archive, preserve=true)
 }
 
 ///|

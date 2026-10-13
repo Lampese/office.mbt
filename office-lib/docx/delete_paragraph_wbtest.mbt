@@ -55,7 +55,7 @@ async fn delete_readback_case() -> (
     let input = directory + "/rb-in.docx"
     @afs.write_file(
       input,
-      @zip.write_preserving(rebuilt),
+      @zip.write(rebuilt, preserve=true),
       create_mode=CreateNew,
       permission=0o600,
     )

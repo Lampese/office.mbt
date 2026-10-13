@@ -486,7 +486,7 @@ test "header footer image read: missing vml relationship errors" {
     "xl/drawings/_rels/vmlDrawing1.vml.rels",
     @encoding/utf8.encode(bad_rels),
   )
-  let updated_bytes = @zip.write_preserving(updated_archive) catch {
+  let updated_bytes = @zip.write(updated_archive, preserve=true) catch {
     ZipError(_, message) => fail("zip write failed: \{message}")
   }
   let result : Result[@xlsx.Workbook, Error] = Ok(@xlsx.read(updated_bytes)) catch {

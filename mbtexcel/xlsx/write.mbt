@@ -4187,8 +4187,9 @@ fn write_with_io(
   let archive = archive.finish()
   match limits {
     Some(policy) =>
-      @zip.write_preserving_limited(
+      @zip.write(
         archive,
+        preserve=true,
         max_output_bytes=policy.max_output_bytes,
       ) catch {
         ZipError(LimitExceeded(OutputBytes, limit, _), _) =>
@@ -4206,7 +4207,7 @@ fn write_with_io(
             err => raise UnsupportedFeature(msg=repr(err))
           }
         None =>
-          @zip.write_preserving(archive) catch {
+          @zip.write(archive, preserve=true) catch {
             ZipError(_, msg) => raise UnsupportedFeature(msg~)
           }
       }

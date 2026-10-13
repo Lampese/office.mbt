@@ -190,7 +190,7 @@ fn docx_bytes(body : String) -> Bytes raise {
     body +
     "</w:body></w:document>"
   archive.add("word/document.xml", @utf8.encode(document))
-  @zip.write_preserving(archive)
+  @zip.write(archive, preserve=true)
 }
 
 ///|

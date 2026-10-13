@@ -4934,7 +4934,7 @@ test "comment creation refuses an MCE-synthesized Relationships root" {
   } else {
     archive.add("word/_rels/document.xml.rels", @utf8.encode(relationships))
   }
-  let source = @mbtzip.write_preserving(archive)
+  let source = @mbtzip.write(archive, preserve=true)
   assert_eq(@opc.validate_docx_package(source), [])
   let annotated = read_docx_annotated(source)
   let spec = comment_spec(author="MCE", from=0, to=0, [
@@ -4987,7 +4987,7 @@ test "threaded comment creation refuses an MCE-synthesized Relationships root" {
       @utf8.encode(wrap_relationships_document_root_for_test(rels_text)),
     ),
   )
-  let wrapped = @mbtzip.write_preserving(archive)
+  let wrapped = @mbtzip.write(archive, preserve=true)
   assert_eq(@opc.validate_docx_package(wrapped), [])
   let wrapped_model = read_docx_annotated(wrapped)
   let reply_spec = comment_spec(author="MCE", from=0, to=0, [
@@ -5028,7 +5028,7 @@ test "comment addition wires prefixed and self-closing OPC metadata" {
   assert_true(
     archive.replace("[Content_Types].xml", @utf8.encode(content_types)),
   )
-  let original = @mbtzip.write_preserving(archive)
+  let original = @mbtzip.write(archive, preserve=true)
   let annotated = read_docx_annotated(original)
   let spec = comment_spec(author="Prefix", from=0, to=0, [
     paragraph([run([text("prefixed metadata")])]),
@@ -5056,7 +5056,7 @@ test "comment addition wires prefixed and self-closing OPC metadata" {
   assert_true(
     types_text.contains("<ct:Override PartName=\"/word/comments.xml\""),
   )
-  let reparsed = read_docx_annotated(@mbtzip.write_preserving(result))
+  let reparsed = read_docx_annotated(@mbtzip.write(result, preserve=true))
   assert_eq(reparsed.annotations().comments().length(), 1)
 }
 
@@ -5107,7 +5107,7 @@ test "comment addition honors MCE-selected relocated comments relationships" {
         @utf8.encode(relationships),
       ),
     )
-    @mbtzip.write_preserving(archive)
+    @mbtzip.write(archive, preserve=true)
   }
 
   let process_content =
