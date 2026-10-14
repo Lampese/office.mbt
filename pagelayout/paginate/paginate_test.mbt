@@ -322,3 +322,56 @@ test "w:evenAndOddHeaders alternates by page number, not index" {
     ),
   )
 }
+
+///|
+test "inline header pictures keep coordinates after variable length page fields" {
+  let plain = body("\uFFFCafter")
+  let input = {
+    ..plain,
+    runs: [{ ..plain.runs[0], text: "99", field: PageNumber, }, plain.runs[0]],
+  }
+  let image = @paragraph.InlineImage::{
+    offset_utf16: 2,
+    width_pt: 20,
+    height_pt: 10,
+    data: b"image",
+    mime: "image/png",
+  }
+  let header = @paginate.Block::paragraph_with_images(input, [image])
+  let furniture = { ..@paginate.PageFurniture::none(), header: [header], }
+  let section = tiny_section(4)
+  let model = @paginate.paginate(
+    [
+      @paginate.Block::paragraph(body("first")),
+      PageBreak,
+      @paginate.Block::paragraph(body("second")),
+    ],
+    section~,
+    furniture~,
+  )
+  assert_eq(model.pages.length(), 2)
+  for index, page in model.pages {
+    let texts = page.items.filter_map(item => {
+      match item {
+        Text(run) => Some(run)
+        _ => None
+      }
+    })
+    assert_true(texts.any(run => run.text == (index + 1).to_string()))
+    assert_false(texts.any(run => run.text.contains("\uFFFC")))
+    let images = page.items.filter_map(item => {
+      match item {
+        Image(image) => Some(image)
+        _ => None
+      }
+    })
+    assert_eq(images.length(), 1)
+    let image = images[0]
+    assert_true(image.x_pt > section.margin_left_pt)
+    assert_true(image.y_pt >= section.header_pt)
+    assert_true(image.y_pt + image.h_pt < section.margin_top_pt)
+    let after = texts.filter(run => run.text == "after")
+    assert_eq(after.length(), 1)
+    assert_true((after[0].x_pt - image.x_pt - image.w_pt).abs() < 0.001)
+  }
+}

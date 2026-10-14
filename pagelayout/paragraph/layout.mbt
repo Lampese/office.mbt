@@ -56,6 +56,18 @@ pub fn layout_paragraph(
   width_pt : Double,
   fonts? : @fonts.FontRegistry,
 ) -> ParagraphLayout {
+  layout_paragraph_with_images(input, width_pt, [], fonts?).layout
+}
+
+///|
+/// Images participate in wrapping and line height, aligned to the baseline.
+/// The placeholder is never emitted as document text.
+pub fn layout_paragraph_with_images(
+  input : ParagraphInput,
+  width_pt : Double,
+  images : Array[InlineImage],
+  fonts? : @fonts.FontRegistry,
+) -> InlineParagraphLayout {
   // 1. concatenate runs; measure each with its resolved face
   let sb = StringBuilder()
   let advances : Array[Double] = []
@@ -99,6 +111,43 @@ pub fn layout_paragraph(
     offset += run.text.length()
   }
   let text = sb.to_string()
+  let inline : Map[Int32, InlineImage] = Map([])
+  let paragraph_width = width_pt -
+    input.style.indent_left_pt -
+    input.style.indent_right_pt
+  for image in images {
+    let at = image.offset_utf16
+    let image_width = if at == 0 && input.style.indent_first_pt > 0.0 {
+      paragraph_width - input.style.indent_first_pt
+    } else {
+      paragraph_width
+    }
+    if at < 0 ||
+      at >= text.length() ||
+      text[at].to_int() != 0xFFFC ||
+      image.width_pt <= 0.0 ||
+      image.height_pt <= 0.0 ||
+      image_width <= 0.0 ||
+      image.width_pt.is_inf() ||
+      image.height_pt.is_inf() ||
+      image.width_pt.is_nan() ||
+      image.height_pt.is_nan() {
+      continue
+    }
+    let scale = if image.width_pt > image_width {
+      image_width / image.width_pt
+    } else {
+      1.0
+    }
+    let image = {
+      ..image,
+      width_pt: image.width_pt * scale,
+      height_pt: image.height_pt * scale,
+    }
+    advances[at] = image.width_pt
+    inline[at] = image
+  }
+  let placed_images : Array[PlacedInlineImage] = []
 
   // A tab is not a glyph: it advances the pen to the next stop, so its
   // width depends on the text before it — which depends on where the
@@ -170,6 +219,15 @@ pub fn layout_paragraph(
       ascent = face.ascent_pt(size)
       natural = face.line_height_pt(size)
     }
+    let descent = natural - ascent
+    for at, image in inline {
+      if at >= line.start && at < line.end && image.height_pt > ascent {
+        ascent = image.height_pt
+      }
+    }
+    if ascent + descent > natural {
+      natural = ascent + descent
+    }
     let line_height = match style.line_spacing {
       Single => natural
       Multiple(m) => natural * m
@@ -203,30 +261,51 @@ pub fn layout_paragraph(
     let placed : Array[PlacedRun] = []
     let mut pen = x
     for seg in segments {
-      let seg_text = text[seg.start:seg.end].to_owned()
-      let seg_advances : Array[Double] = Array(capacity=seg.end - seg.start)
-      let mut seg_width = 0.0
-      for j in seg.start..<seg.end {
-        let mut a = advances[j]
-        if extra_per_space > 0 && text[j].to_int() == 0x20 {
-          a += extra_per_space
+      let mut start = seg.start
+      for end in seg.start..<=seg.end {
+        let image = if end == seg.end { None } else { inline.get(end) }
+        if end != seg.end && image is None {
+          continue
         }
-        seg_advances.push(a)
-        seg_width += a
+        let seg_advances : Array[Double] = Array(capacity=end - start)
+        let mut seg_width = 0.0
+        for j in start..<end {
+          let mut a = advances[j]
+          if extra_per_space > 0 && text[j].to_int() == 0x20 {
+            a += extra_per_space
+          }
+          seg_advances.push(a)
+          seg_width += a
+        }
+        if end > start {
+          placed.push({
+            font: {
+              family: segment_family(seg),
+              bold: seg.style.bold,
+              italic: seg.style.italic,
+            },
+            size_pt: seg.style.size_pt,
+            x_pt: pen,
+            text: text[start:end].to_owned(),
+            advances_pt: seg_advances,
+            color: seg.style.color,
+          })
+        }
+        pen += seg_width
+        if image is Some(image) {
+          placed_images.push({
+            line: line_index,
+            x_pt: pen,
+            y_pt: y + ascent - image.height_pt,
+            width_pt: image.width_pt,
+            height_pt: image.height_pt,
+            data: image.data,
+            mime: image.mime,
+          })
+          pen += image.width_pt
+        }
+        start = end + 1
       }
-      placed.push({
-        font: {
-          family: segment_family(seg),
-          bold: seg.style.bold,
-          italic: seg.style.italic,
-        },
-        size_pt: seg.style.size_pt,
-        x_pt: pen,
-        text: seg_text,
-        advances_pt: seg_advances,
-        color: seg.style.color,
-      })
-      pen += seg_width
     }
     line_boxes.push({
       baseline_pt: y + ascent,
@@ -235,7 +314,10 @@ pub fn layout_paragraph(
     })
     y += line_height
   }
-  { height_pt: y + style.space_after_pt, lines: line_boxes, }
+  {
+    layout: { height_pt: y + style.space_after_pt, lines: line_boxes, },
+    images: placed_images,
+  }
 }
 
 ///|
