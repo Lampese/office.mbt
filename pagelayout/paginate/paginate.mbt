@@ -197,25 +197,27 @@ fn lay_blocks(
         let layout = rich.layout
         let slots : Array[LineSlot] = []
         let mut top = input.style.space_before_pt
+        let mut next_image = 0
         for index, line in layout.lines {
+          let line_images : Array[@pagelayout.ImageItem] = []
+          while next_image < rich.images.length() &&
+                rich.images[next_image].line == index {
+            let image = rich.images[next_image]
+            line_images.push({
+              x_pt: image.x_pt,
+              y_pt: image.y_pt - top,
+              w_pt: image.width_pt,
+              h_pt: image.height_pt,
+              data: image.data,
+              mime: image.mime,
+            })
+            next_image += 1
+          }
           slots.push({
             rel_baseline_pt: line.baseline_pt - top,
             height_pt: line.height_pt,
             runs: line.runs,
-            images: rich.images.filter_map(image => {
-              if image.line == index {
-                Some({
-                  x_pt: image.x_pt,
-                  y_pt: image.y_pt - top,
-                  w_pt: image.width_pt,
-                  h_pt: image.height_pt,
-                  data: image.data,
-                  mime: image.mime,
-                })
-              } else {
-                None
-              }
-            }),
+            images: line_images,
           })
           top += line.height_pt
         }

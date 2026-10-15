@@ -520,3 +520,39 @@ test "stacked image block footers count each image's local y and height" {
     content="(true, true, true)",
   )
 }
+
+///|
+test "many inline images keep their line order across page boundaries" {
+  let text = [ for _ in 0..<128 => "\uFFFC" ].join("\n")
+  let images : Array[@paragraph.InlineImage] = [
+    for i in 0..<128 => {
+      {
+        offset_utf16: i * 2,
+        width_pt: (i + 1).to_double(),
+        height_pt: 10.0,
+        data: b"image",
+        mime: "image/png",
+      }
+    }
+  ]
+  let model = @paginate.paginate(
+    [@paginate.Block::paragraph_with_images(body(text), images)],
+    section=tiny_section(4),
+  )
+  let widths : Array[Double] = []
+  for page in model.pages {
+    for item in page.items {
+      if item is Image(image) {
+        widths.push(image.w_pt)
+      }
+    }
+  }
+  debug_inspect(
+    (
+      model.pages.length() > 1,
+      widths.length(),
+      widths == [ for i in 1..<=128 => i.to_double() ],
+    ),
+    content="(true, 128, true)",
+  )
+}
