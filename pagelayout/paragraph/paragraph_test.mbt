@@ -206,15 +206,18 @@ test "leading inline image respects first line indent and stays atomic" {
     100,
     [image],
   )
-  assert_eq(rich.images.length(), 1)
-  assert_eq(rich.images[0].width_pt, 80)
-  assert_eq(rich.images[0].height_pt, 40)
-  assert_eq(rich.images[0].x_pt, 20)
-  assert_true(rich.layout.lines.length() > 1)
-  assert_true(rich.layout.lines[0].height_pt >= 40)
-  assert_true(
-    rich.layout.lines.all(line => {
-      line.runs.all(run => !run.text.contains("\uFFFC"))
-    }),
+  debug_inspect(
+    rich.images.map(image => (image.width_pt, image.height_pt, image.x_pt)),
+    content="[(80, 40, 20)]",
+  )
+  debug_inspect(
+    (
+      rich.layout.lines.length() > 1,
+      rich.layout.lines[0].height_pt >= 40,
+      rich.layout.lines.all(line => {
+        line.runs.all(run => !run.text.contains("\uFFFC"))
+      }),
+    ),
+    content="(true, true, true)",
   )
 }
