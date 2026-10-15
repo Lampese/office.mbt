@@ -92,3 +92,102 @@ test "malformed gradient colors cannot enter a stylesheet" {
     content="(false, false)",
   )
 }
+
+///|
+test "hash-prefixed gradient colors render before and after workbook serialization" {
+  for (first, last) in [("#FF0000", "#0000FF"), ("#80FF0000", "#FF0000FF")] {
+    let workbook = @xlsx.Workbook::new()
+    ignore(workbook.add_sheet("Data"))
+    workbook.set_cell_int("Data", "A1", 1)
+    workbook.set_cell_style(
+      "Data",
+      "A1",
+      workbook.new_style(@xlsx.Style::fill(@xlsx.Fill::gradient(first, last))),
+    )
+    let expected = "linear-gradient(180deg,#FF0000 0%,#0000FF 100%)"
+    let direct = @xlsx2html.render_workbook(workbook, title="gradient")
+    let restored = @xlsx.read(@xlsx.write(workbook).exact_view())
+    debug_inspect(
+      (
+        direct.contains(expected),
+        @xlsx2html.render_workbook(restored, title="gradient").contains(
+          expected,
+        ),
+      ),
+      content="(true, true)",
+    )
+  }
+  for color in ["##FF0000", "#FF0000;", "#</style><script>x</script>"] {
+    debug_inspect(
+      @xlsx2html.style_css(
+        @xlsx.Style::fill(@xlsx.Fill::gradient(color, "#0000FF")),
+      ),
+      content="\"\"",
+    )
+  }
+}
+
+///|
+test "all linear gradient variants agree with serialized OOXML geometry" {
+  let degrees = [90, 270, 90, 0, 180, 0, 45, 255, 45, 135, 315, 135]
+  for shading, degree in degrees {
+    let fill = @xlsx.Fill::gradient("#FF0000", "#0000FF", shading~)
+    let style = @xlsx.Style::fill(fill)
+    let workbook = @xlsx.Workbook::new()
+    ignore(workbook.add_sheet("Data"))
+    workbook.set_cell_int("Data", "A1", 1)
+    workbook.set_cell_style("Data", "A1", workbook.new_style(style))
+    let bytes = @xlsx.write(workbook)
+    let archive = @zip.read(bytes)
+    guard archive.get("xl/styles.xml") is Some(styles) else {
+      fail("Missing workbook styles")
+    }
+    let xml = @utf8.decode(styles.exact_view())
+    let opening = if degree == 0 {
+      "<gradientFill>"
+    } else {
+      "<gradientFill degree=\"" + degree.to_string() + "\">"
+    }
+    let symmetric = shading is (2 | 5 | 8 | 11)
+    let css = @xlsx2html.style_css(style)
+    let stops : Array[String] = []
+    for index, part in xml.split("<stop position=\"") {
+      if index > 0 {
+        guard part.find("\"") is Some(end) else {
+          fail("Unterminated gradient stop")
+        }
+        stops.push(part[:end].to_owned())
+      }
+    }
+    let expected_stops = if symmetric { ["0", "0.5", "1"] } else { ["0", "1"] }
+    let css_stops = if symmetric {
+      "#FF0000 0%,#0000FF 50%,#FF0000 100%"
+    } else {
+      "#FF0000 0%,#0000FF 100%"
+    }
+    let expected_css = "background-image:linear-gradient(" +
+      ((degree + 90) % 360).to_string() +
+      "deg," +
+      css_stops +
+      ");"
+    let restored = @xlsx.read(bytes.exact_view())
+    debug_inspect(
+      (
+        xml.contains(opening),
+        stops == expected_stops,
+        css == expected_css,
+        @xlsx2html.render_workbook(workbook, title="Direct").contains(css),
+        @xlsx2html.render_workbook(restored, title="Restored").contains(css),
+      ),
+      content="(true, true, true, true, true)",
+    )
+  }
+  for shading in 12..<16 {
+    debug_inspect(
+      @xlsx2html.style_css(
+        @xlsx.Style::fill(@xlsx.Fill::gradient("#FF0000", "#0000FF", shading~)),
+      ),
+      content="\"\"",
+    )
+  }
+}

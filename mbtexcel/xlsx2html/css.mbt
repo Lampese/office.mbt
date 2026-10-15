@@ -216,8 +216,8 @@ fn resolved_css_color(
 // start at the upward direction. Symmetric variants repeat the first color.
 fn gradient_css(fill : @xlsx.Fill) -> String? {
   guard fill.colors is Some(colors) && colors.length() == 2 else { return None }
-  guard css_color(colors[0]) is Some(first) &&
-    css_color(colors[1]) is Some(last) else {
+  guard gradient_color(colors[0]) is Some(first) &&
+    gradient_color(colors[1]) is Some(last) else {
     return None
   }
   let shading = fill.shading.unwrap_or(0)
@@ -239,4 +239,16 @@ fn gradient_css(fill : @xlsx.Fill) -> String? {
     "\{first} 0%,\{last} 100%"
   }
   Some("linear-gradient(\{degree}deg,\{stops})")
+}
+
+///|
+// The fill API accepts one leading hash; validate the whole remaining value.
+fn gradient_color(raw : String) -> String? {
+  css_color(
+    if raw.has_prefix("#") && (raw.length() == 7 || raw.length() == 9) {
+      raw[1:].to_owned()
+    } else {
+      raw
+    },
+  )
 }
