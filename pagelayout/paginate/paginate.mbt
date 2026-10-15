@@ -674,9 +674,15 @@ fn furniture_varies(furniture : PageFurniture) -> Bool {
 fn furniture_height(items : Array[(Double, @pagelayout.PageItem)]) -> Double {
   let mut tallest = 0.0
   for entry in items {
-    let (dy, _) = entry
-    if dy > tallest {
-      tallest = dy
+    let (dy, item) = entry
+    // Text offsets are baselines; image offsets locate their top edge.
+    // ImageBlock also retains its position within the furniture in y_pt.
+    let bottom = match item {
+      Image(image) => dy + image.y_pt + image.h_pt
+      _ => dy
+    }
+    if bottom > tallest {
+      tallest = bottom
     }
   }
   tallest

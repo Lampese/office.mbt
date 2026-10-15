@@ -349,7 +349,7 @@ test "inline header pictures keep coordinates after variable length page fields"
     section~,
     furniture~,
   )
-  assert_eq(model.pages.length(), 2)
+  debug_inspect(model.pages.length(), content="2")
   for index, page in model.pages {
     let texts = page.items.filter_map(item => {
       match item {
@@ -357,21 +357,166 @@ test "inline header pictures keep coordinates after variable length page fields"
         _ => None
       }
     })
-    assert_true(texts.any(run => run.text == (index + 1).to_string()))
-    assert_false(texts.any(run => run.text.contains("\uFFFC")))
+    debug_inspect(
+      texts.any(run => run.text == (index + 1).to_string()),
+      content="true",
+    )
+    debug_inspect(
+      texts.any(run => run.text.contains("\uFFFC")),
+      content="false",
+    )
     let images = page.items.filter_map(item => {
       match item {
         Image(image) => Some(image)
         _ => None
       }
     })
-    assert_eq(images.length(), 1)
+    debug_inspect(images.length(), content="1")
     let image = images[0]
-    assert_true(image.x_pt > section.margin_left_pt)
-    assert_true(image.y_pt >= section.header_pt)
-    assert_true(image.y_pt + image.h_pt < section.margin_top_pt)
+    debug_inspect(
+      (
+        image.x_pt > section.margin_left_pt,
+        image.y_pt >= section.header_pt,
+        image.y_pt + image.h_pt < section.margin_top_pt,
+      ),
+      content="(true, true, true)",
+    )
     let after = texts.filter(run => run.text == "after")
-    assert_eq(after.length(), 1)
-    assert_true((after[0].x_pt - image.x_pt - image.w_pt).abs() < 0.001)
+    debug_inspect(after.length(), content="1")
+    debug_inspect(
+      (after[0].x_pt - image.x_pt - image.w_pt).abs() < 0.001,
+      content="true",
+    )
   }
+}
+
+///|
+fn footer_test_picture() -> @paragraph.InlineImage {
+  {
+    offset_utf16: 0,
+    width_pt: 20,
+    height_pt: 40,
+    data: b"image",
+    mime: "image/png",
+  }
+}
+
+///|
+test "an image-only inline footer ends at the footer bottom instead of being clipped" {
+  let section = tiny_section(4)
+  let footer = @paginate.Block::paragraph_with_images(body("\uFFFC"), [
+    footer_test_picture(),
+  ])
+  let furniture = { ..@paginate.PageFurniture::none(), footer: [footer], }
+  let model = @paginate.paginate(
+    [@paginate.Block::paragraph(body("Body"))],
+    section~,
+    furniture~,
+  )
+  let page = model.pages[0]
+  let images = page.items.filter_map(item => {
+    match item {
+      Image(image) => Some(image)
+      _ => None
+    }
+  })
+  debug_inspect(
+    images.map(image => {
+      (
+        image.w_pt,
+        image.h_pt,
+        (image.y_pt + image.h_pt - (page.height_pt - section.footer_pt)).abs() <
+        0.001,
+        image.y_pt >= 0.0 && image.y_pt + image.h_pt <= page.height_pt,
+      )
+    }),
+    content="[(20, 40, true, true)]",
+  )
+}
+
+///|
+test "a footer image after dynamic page fields reserves its final line height on every page" {
+  let section = tiny_section(4)
+  let plain = body("\n\uFFFC")
+  let input = {
+    ..plain,
+    runs: [{ ..plain.runs[0], text: "99", field: PageNumber, }, plain.runs[0]],
+  }
+  let image = { ..footer_test_picture(), offset_utf16: 3, }
+  let footer = @paginate.Block::paragraph_with_images(input, [image])
+  let furniture = { ..@paginate.PageFurniture::none(), footer: [footer], }
+  let model = @paginate.paginate(
+    [
+      @paginate.Block::paragraph(body("First body")),
+      PageBreak,
+      @paginate.Block::paragraph(body("Second body")),
+    ],
+    section~,
+    furniture~,
+  )
+  debug_inspect(model.pages.length(), content="2")
+  for index, page in model.pages {
+    let texts = page.items.filter_map(item => {
+      match item {
+        Text(run) => Some(run)
+        _ => None
+      }
+    })
+    let images = page.items.filter_map(item => {
+      match item {
+        Image(image) => Some(image)
+        _ => None
+      }
+    })
+    debug_inspect(
+      (
+        texts.any(run => run.text == (index + 1).to_string()),
+        texts.any(run => run.text.contains("\uFFFC")),
+        images.map(image => {
+          (
+            image.h_pt,
+            (image.y_pt + image.h_pt - (page.height_pt - section.footer_pt)).abs() <
+            0.001,
+            image.y_pt >= 0.0 && image.y_pt + image.h_pt <= page.height_pt,
+          )
+        }),
+      ),
+      content="(true, false, [(40, true, true)])",
+    )
+  }
+}
+
+///|
+test "stacked image block footers count each image's local y and height" {
+  let section = tiny_section(4)
+  let picture = footer_test_picture()
+  let furniture = {
+    ..@paginate.PageFurniture::none(),
+    footer: [
+      @paginate.Block::image(20, 20, picture.data, picture.mime),
+      @paginate.Block::image(20, 30, picture.data, picture.mime),
+    ],
+  }
+  let model = @paginate.paginate(
+    [@paginate.Block::paragraph(body("Body"))],
+    section~,
+    furniture~,
+  )
+  let page = model.pages[0]
+  let images = page.items.filter_map(item => {
+    match item {
+      Image(image) => Some(image)
+      _ => None
+    }
+  })
+  debug_inspect(images.length(), content="2")
+  debug_inspect(
+    (
+      (images[0].y_pt - (page.height_pt - section.footer_pt - 50)).abs() < 0.001,
+      (images[0].y_pt + images[0].h_pt - images[1].y_pt).abs() < 0.001,
+      (images[1].y_pt + images[1].h_pt - (page.height_pt - section.footer_pt)).abs() <
+      0.001,
+    ),
+    content="(true, true, true)",
+  )
 }
