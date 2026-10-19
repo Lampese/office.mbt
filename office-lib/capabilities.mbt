@@ -231,7 +231,7 @@ pub fn capability_formats() -> Array[CapabilityFormat] {
     {
       name: "pptx",
       aliases: ["powerpoint"],
-      description: "PresentationML presentations (identify, outline, text, and fresh creation)",
+      description: "PresentationML presentations (identify, outline, text, static preview/render, and fresh creation)",
       selector: {
         schema: "office.selector/1",
         root: "/pptx",
